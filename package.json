@@ -1,0 +1,11 @@
+{
+  "name": "isap-vms-service2",
+  "version": "1.0.0",
+  "config": {
+    "displayname": "iSap VMS Service2"
+  },
+  "description": "iSap VMS Service2 v1.00.00",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
