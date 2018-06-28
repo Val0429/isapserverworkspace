@@ -5,6 +5,10 @@
     "displayname": "iSap FTS Service"
   },
   "description": "iSap FTS Service v1.00.00",
+
+  "scripts": {
+    "start": "npm start --prefix ./../"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {}
