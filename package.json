@@ -7,7 +7,8 @@
   "description": "iSap VMS Service v1.00.00",
 
   "scripts": {
-    "start": "npm start --prefix ./../"
+    "start": "npm start --prefix ./../",
+    "create-project": "git checkout --orphan"
   },
   "author": "",
   "license": "ISC",
