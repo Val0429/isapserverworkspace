@@ -17,7 +17,7 @@ var action = new Action<Input>({
 
 action.ws(async (data) => {
     var socket = data.socket;
-    socket.on("close", () => {
+    socket.io.on("close", () => {
         subscription.unsubscribe();
     });
 

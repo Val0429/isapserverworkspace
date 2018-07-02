@@ -19,7 +19,7 @@ var action = new Action<Input>({
 action.ws(async (data) => {
     var socket = data.socket;
 
-    socket.on("close", () => {
+    socket.io.on("close", () => {
         subscription && subscription.unsubscribe();
     });
 
@@ -31,7 +31,7 @@ action.ws(async (data) => {
                 socket.send(JSON.stringify(data));
             },
             complete: () => {
-                setTimeout( () => socket.close(), 5000 );
+                socket.closeGracefully();
             }
         })
 });

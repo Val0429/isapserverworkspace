@@ -25,7 +25,7 @@ action.ws(async (data) => {
 
     // console.log('starttime', new Date(+data.parameters.starttime), 'endtime', new Date(+data.parameters.endtime));
 
-    socket.on("close", () => {
+    socket.io.on("close", () => {
         subscription && subscription.unsubscribe();
     });
 
@@ -37,7 +37,7 @@ action.ws(async (data) => {
                 socket.send(JSON.stringify(data));
             },
             complete: () => {
-                setTimeout( () => socket.close(), 5000 );
+                socket.closeGracefully();
             }
         })
 });
