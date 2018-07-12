@@ -23,12 +23,12 @@ export class FRSService {
     maintainTimer: any;
     logingIn: boolean = false;
     private login() {
-        if (this.maintainTimer) clearInterval(this.maintainTimer);
-        this.logingIn = true;
-
         const url: string = `http://${config.ip}:${config.port}/frs/cgi/login`;
 
         var tryLogin = () => {
+            if (this.logingIn === true) return;
+            this.logingIn = true;
+
             request({
                 url,
                 method: 'POST',
@@ -46,6 +46,7 @@ export class FRSService {
 
                 this.session_id = body.session_id;
                 /// After login and got session_id, maintain session every 1 minute.
+                if (this.maintainTimer) clearInterval(this.maintainTimer);
                 this.maintainTimer = setInterval( async () => {
                     var result = await this.maintainSession();
                     if (!result) clearInterval(this.maintainTimer);

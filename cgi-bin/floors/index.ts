@@ -2,10 +2,10 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
     Action, Errors,
-    Restful, FileHelper
+    Restful, FileHelper, ParseObject
 } from './../../../core/cgi-package';
 
-import { Floors, IFloors } from './../../custom/models/floors';
+import { Floors, IFloors } from './../../custom/models/index';
 import { Cameras, ICameras } from './../../custom/models/cameras';
 
 var action = new Action({
@@ -14,38 +14,72 @@ var action = new Action({
     permission: [RoleList.Administrator, RoleList.Kiosk]
 });
 
-const requiredParameters = ["floor", "image"];
-const otherParameters = ["name"];
-const acceptParameters = [...requiredParameters, ...otherParameters];
-// Restful.CRUD<IFloors>(action, Floors, requiredParameters, acceptParameters);
 
-Restful.C(action, Floors, requiredParameters, null, async (data) => {
-    return {
-        ...data,
-        image: <Parse.File>await FileHelper.toParseFile(<any>data.image)
-    }
+
+/// CRUD start /////////////////////////////////
+/********************************
+ * C: create object
+ ********************************/
+type InputC = Restful.InputC<IFloors>;
+type OutputC = Restful.OutputC<IFloors>;
+
+action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+    /// 1) Create Object
+    var obj = new Floors(data.inputType);
+    await obj.save(null, { useMasterKey: true });
+    /// 2) Output
+    return ParseObject.toOutputJSON(obj);
 });
 
-Restful.R(action, Floors, null, async (data) => {
-    var cameras = (await new Parse.Query(Cameras).equalTo("floor", data).find())
-        .map( (camera) => ({
-            ...camera.attributes,
-            objectId: camera.id,
-            floor: undefined,
-            createdAt: undefined,
-            updatedAt: undefined
-        }));
-    data.set("cameras", cameras);
-    return data;
+/********************************
+ * R: get object
+ ********************************/
+type InputR = Restful.InputR<IFloors>;
+type OutputR = Restful.OutputR<IFloors>;
+
+action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+    /// 1) Make Query
+    var query = new Parse.Query(Floors);
+    /// 2) With Extra Filters
+    query = Restful.Filter(query, data.inputType);
+    /// 3) Output
+    return Restful.Pagination(query, data.inputType);
 });
 
-Restful.U(action, Floors, acceptParameters, null, async (data) => {
-    return {
-        ...data,
-        image: data.image ? <Parse.File>await FileHelper.toParseFile(<any>data.image) : undefined
-    }
+/********************************
+ * U: update object
+ ********************************/
+type InputU = Restful.InputU<IFloors>;
+type OutputU = Restful.OutputU<IFloors>;
+
+action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+    /// 1) Get Object
+    var { objectId } = data.inputType;
+    var obj = await new Parse.Query(Floors).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId} not exists.`]);
+    /// 2) Modify
+    await obj.save({ ...data.inputType, objectId: undefined });
+    /// 3) Output
+    return ParseObject.toOutputJSON(obj);
 });
 
-Restful.D(action, Floors);
+/********************************
+ * D: delete object
+ ********************************/
+type InputD = Restful.InputD<IFloors>;
+type OutputD = Restful.OutputD<IFloors>;
+
+action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+    /// 1) Get Object
+    var { objectId } = data.inputType;
+    var obj = await new Parse.Query(Floors).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
+    /// 2) Delete
+    obj.destroy({ useMasterKey: true });
+    /// 3) Output
+    return ParseObject.toOutputJSON(obj);
+});
+/// CRUD end ///////////////////////////////////
+
 
 export default action;

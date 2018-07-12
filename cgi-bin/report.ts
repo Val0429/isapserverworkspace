@@ -6,6 +6,7 @@ import {
 import { FileHelper } from './../../helpers/parse-server/file-helper';
 
 import * as request from 'request';
+import * as fs from 'fs';
 
 import { Observable } from 'rxjs';
 import { sjRecognizedUser, sjNonRecognizedUser, RecognizedUser, NonRecognizedUser } from './../custom/services/frs-service';
@@ -28,10 +29,15 @@ action.post( async (data) => {
     var { time, cameraName, mp4, snapshot } = data.parameters;
     //console.log(time, cameraName, mp4.length, snapshot.length);
 
-    var mp4file = await FileHelper.toParseFile(mp4);
+    //var mp4file = await FileHelper.toParseFile(mp4);
     var snapshotfile = await FileHelper.toParseFile(snapshot);
-    var mp4url = mp4file.url().replace("//localhost", `//${Config.evis.thisComputerInternalAccessIp}`);
+    //var mp4url = mp4file.url().replace("//localhost", `//${Config.evis.thisComputerInternalAccessIp}`);
     var snapshoturl = snapshotfile.url().replace("//localhost", `//${Config.evis.thisComputerInternalAccessIp}`);
+
+    var filename = `${new Date().valueOf()}.mp4`;
+    var mp4url = `http://${Config.evis.thisComputerInternalAccessIp}:${Config.core.port}/files/${filename}`;
+    var mp4data = new Buffer(mp4, 'base64');
+    fs.writeFile(`${__dirname}/../custom/files/${filename}`, mp4data);
 
     var url = `http://${Config.evis.ip}:${Config.evis.port}/pushevents`;
     

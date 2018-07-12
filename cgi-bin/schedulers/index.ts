@@ -2,144 +2,70 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
     Action, Errors,
-    Restful, EventSubjects,
-    InputRestfulR, OutputRestfulR,
-    InputRestfulU, OutputRestfulU,
-    InputRestfulC, OutputRestfulC,
-    InputRestfulD, OutputRestfulD,
+    Restful, EventSubjects, ParseObject,
 } from './../../../core/cgi-package';
 
 import { IScheduleTimes, IScheduleActions, ISchedulers, Schedulers, ScheduleTimes, ScheduleActions } from './../../../models/schedulers/schedulers.base';
 
+
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Administrator]
 });
 
-export interface InputBase {
-    event: string;
-    time?: IScheduleTimes;
-    actions: IScheduleActions<any>[];
-}
+/// CRUD start /////////////////////////////////
+/********************************
+ * C: create object
+ ********************************/
+type InputC = Restful.InputC<ISchedulers>;
+type OutputC = Restful.OutputC<ISchedulers, { parseObject: false }>;
 
-/// C: create ///////////////////////////////////////
-export type InputPost = InputRestfulC<InputBase>;
-export type OutputPost = OutputRestfulR<ISchedulers>;
-
-action.post<InputPost, OutputPost>({
-    requiredParameters: ["event", "actions", "actions.action", "actions.template", "actions.data"]
-}, async (data) => {
-    var { event, time: p_time, actions: p_actions } = data.parameters;
-
-    /// check event exists
-    if (!EventSubjects[event]) throw Errors.throw(Errors.CustomNotExists, [`Event <${event}> not exists.`]);
-
-    /// check action valid
-    if (!Array.isArray(p_actions)) throw Errors.throw(Errors.CustomInvalid, [`<actions> should be array type.`]);
-
-    var time = createScheduleTimes(p_time);
-    if (time) await time.save();
-
-    var actions = createScheduleActions(p_actions);
-    for (var i=0; i<actions.length; ++i) await actions[i].save();
-
-    var ss = new Schedulers({
-        event, actions, time
-    });
-    await ss.save();
-
-    return ss;
+action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+    /// 1) Create Object
+    var obj = new Schedulers(data.inputType);
+    await obj.save(null, { useMasterKey: true });
+    /// 2) Output
+    return ParseObject.toOutputJSON(obj);
 });
-/////////////////////////////////////////////////////
 
-/// R: get //////////////////////////////////////////
-export type InputGet = InputRestfulR<{
-    event?: string;
-}>;
-export type OutputGet = OutputRestfulR<ISchedulers>;
+/********************************
+ * R: get object
+ ********************************/
+type InputR = Restful.InputR<ISchedulers>;
+type OutputR = Restful.OutputR<ISchedulers>;
 
-action.get<InputGet, OutputGet>(async (data) => {
-    var params = data.parameters;
-    var query = new Parse.Query(Schedulers).include("actions").include("time");
-    params.event && query.equalTo("event", params.event);
-
-    return await Restful.SingleOrPagination( query, params, null );
+action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+    /// 1) Make Query
+    var query = new Parse.Query(Schedulers)
+        .include("actions")
+        .include("time");
+    /// 2) With Extra Filters
+    query = Restful.Filter(query, data.inputType);
+    /// 3) Output
+    return Restful.Pagination(query, data.inputType);
 });
-/////////////////////////////////////////////////////
 
-/// U: put //////////////////////////////////////////
-export type InputPut = InputRestfulU<Partial<InputBase>>;
-export type OutputPut = OutputRestfulU<ISchedulers>;
-action.put<InputPut, OutputPut>({
-    requiredParameters: ["objectId"],
-}, async (data) => {
-    var { event, time, actions } = data.parameters;
+/********************************
+ * D: delete object
+ ********************************/
+type InputD = Restful.InputD<ISchedulers>;
+type OutputD = Restful.OutputD<ISchedulers>;
 
-    var schedule = await new Parse.Query(Schedulers)
+action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+    /// 1) Get Object
+    var { objectId } = data.inputType;
+    var obj = await new Parse.Query(Schedulers)
         .include("actions")
         .include("time")
-        .get(data.parameters.objectId);
-
-    if (event) schedule.setValue("event", event);
-    if (time) {
-        schedule.getValue("time").destroy();
-        schedule.setValue("time", createScheduleTimes(time));
-    }
-    if (actions) {
-        schedule.getValue("actions").forEach( (data) => data.destroy() );
-        schedule.setValue("actions", createScheduleActions(actions));
-    }
-    await schedule.save();
-
-    return schedule;
+        .get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Schedulers <${objectId}> not exists.`]);
+    /// 2) Delete
+    obj.getValue("time").destroy();
+    obj.getValue("actions").forEach( (data) => data.destroy() );
+    obj.destroy({ useMasterKey: true });
+    /// 3) Output
+    return ParseObject.toOutputJSON(obj);
 });
-/////////////////////////////////////////////////////
-
-/// D: delete ///////////////////////////////////////
-export type InputDelete = InputRestfulD<{
-    objectId?: string;
-}>;
-export type OutputDelete = OutputRestfulD<ISchedulers>;
-
-action.delete<InputDelete, OutputDelete>({
-    requiredParameters: ["objectId"]
-}, async (data) => {
-    var params = data.parameters;
-    var o = await new Parse.Query(Schedulers)
-        .include("actions")
-        .include("time")
-        .get(params.objectId);
-
-    /// delete actions
-    o.getValue("actions").forEach( (data) => data.destroy() );
-
-    /// delete time
-    o.getValue("time").destroy();
-
-    await o.destroy();
-
-    return o;
-});
-/////////////////////////////////////////////////////
+/// CRUD end ///////////////////////////////////
 
 export default action;
-
-function createScheduleTimes(time: IScheduleTimes): ScheduleTimes {
-    if (!time) return undefined;
-    if (time.start===undefined || time.end===undefined || time.type===undefined || time.unitsOfType===undefined)
-        throw Errors.throw(Errors.CustomInvalid, [`Time object should contain <start, end, type, unitsOfType>.`]);
-
-    time.start = new Date(time.start);
-    time.end = new Date(time.end);
-    return new ScheduleTimes(time);
-}
-
-function createScheduleActions(actions: IScheduleActions<any>[]): ScheduleActions[] {
-    var ary = [];
-    for (var action of actions) {
-        ary.push(
-            new ScheduleActions(action)
-        );
-    }
-    return ary;
-}

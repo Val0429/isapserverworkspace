@@ -17,5 +17,6 @@ export interface IFloors {
      */
     image: Parse.File;
 }
+export type TFloors = IFloors;
 @registerSubclass() export class Floors extends ParseObject<IFloors> {}
 ////////////////////////////////////////////////////

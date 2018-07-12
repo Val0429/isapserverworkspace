@@ -1,8 +1,8 @@
 import {
-    express, Response, Router,
-    Parse, IRole, IUser, RoleList,
-    Action, Errors, Events, EventConfigChanged,
-    Config, IConfig,
+    express, Request, Response, Router,
+    Parse, IRole, IUser, RoleList, IConfig, Config, IConfigSetup,
+    Action, Errors, Floors,
+    Restful, FileHelper, ParseObject
 } from './../../../core/cgi-package';
 
 
@@ -11,94 +11,44 @@ var action = new Action({
     permission: [RoleList.SystemAdministrator]
 });
 
-/// GET: get config /////////////////////////////////////
-export interface InputGet {
-    sessionId: string;
-
-    /**
-     * can be from params: config sub catagory
-     */
+/// CRUD start /////////////////////////////////
+/********************************
+ * R: get object
+ ********************************/
+interface InputR {
     key?: string;
 }
-export type OutputGet = IConfig | IConfig[keyof IConfig];
-action.get<InputGet, OutputGet>("/:key(\\w{0,})", async (data) => {
-    var key = data.parameters.key;
+type OutputR = IConfig | IConfig[keyof IConfig];
+
+action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+    var { key } = data.inputType;
     var config = key ? Config[key] : Config;
     if (!config) throw Errors.throw(Errors.ParametersInvalid, ["key"]);
-
     return config;
 });
-/////////////////////////////////////////////////////////
 
-/// POST: modify config /////////////////////////////////
-export interface InputPost {
-    sessionId: string;
-
-    /**
-     * can be from params: config sub catagory
-     */
-    key?: string;
-
-    /**
-     * { key: value } to update the config.
-     */
-    data: object;
+/********************************
+ * C: update object
+ ********************************/
+interface InputC {
+    data: IConfigSetup;
 }
-action.post<InputPost>({
-    path: "/:key(\\w{0,})",
-}, async (data) => {
-    
+type OutputC = any;
+action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var updateSingleKey = async (key: string, data) => {
-        /// check key
-        var config = Config[key];
-        if (!config) throw Errors.throw(Errors.ParametersInvalid, ["key"]);
-        
-        /// check data
-        for (var k in data) {
-            if (config[k] === undefined) throw Errors.throw(Errors.ParametersInvalid, [`data.${k}`]);
-        }
-
         /// update data
         await updateConfig(key, data);
         /// update memory
         Config[key] = { ...Config[key], ...data };
     }
 
-    /// write event
-    var { key, data: value } = data.parameters;
-    var event = new EventConfigChanged({
-        owner: data.user,
-        key, value
-    });
-    await Events.save(event);
-
-    /// update
-    if (key) await updateSingleKey(key, value);
-    else {
-        for (var key in value) {
-            await updateSingleKey(key, value[key]);
-        }
+    var value = data.inputType.data;
+    for (var key in value) {
+        await updateSingleKey(key, value[key]);
     }
-
-    // /// check key
-    // var key = data.parameters.key;
-    // var config = Config[key];
-    // if (!config) throw Errors.throw(Errors.ParametersInvalid, ["key"]);
-
-    // /// check data
-    // var content = data.parameters.data;
-    // for (var k in content) {
-    //     if (config[k] === undefined) throw Errors.throw(Errors.ParametersInvalid, [`data.${k}`]);
-    // }
-
-    // /// update data
-    // await updateConfig(key, content);
-    // /// update memory
-    // Config[key] = { ...Config[key], ...content };
-
-    return;
+    return value;
 });
-/////////////////////////////////////////////////////////
+// /// CRUD end ///////////////////////////////////
 
 export default action;
 
@@ -168,4 +118,3 @@ async function updateConfig(key: string, data: object) {
     /// 6) write back
     await (<any>promisify(fs.writeFile))(result, final);
 }
-
