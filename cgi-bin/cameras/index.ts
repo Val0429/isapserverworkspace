@@ -3,7 +3,7 @@ import {
     Parse, IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
     Restful, FileHelper, ParseObject
-} from './../../../core/cgi-package';
+} from 'core/cgi-package';
 
 
 

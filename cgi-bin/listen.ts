@@ -2,10 +2,10 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
     Action, Errors,
-} from './../../core/cgi-package';
+} from 'core/cgi-package';
 
 import { Observable } from 'rxjs';
-import { sjRecognizedUser, sjNonRecognizedUser } from './../custom/services/frs-service';
+import { sjRecognizedUser, sjNonRecognizedUser } from 'workspace/custom/services/frs-service';
 
 export interface Input {
     sessionId: string;

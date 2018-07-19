@@ -1,8 +1,9 @@
-import { waitServerReady } from './../../../core/pending-tasks';
-import { Config } from './../../../core/config.gen';
-import { RoleList } from './../../../core/userRoles.gen';
-import { createIndex } from './../../../helpers/parse-server/parse-helper';
+import { waitServerReady } from 'core/pending-tasks';
+import { Config } from 'core/config.gen';
+import { RoleList } from 'core/userRoles.gen';
+import { createIndex } from 'helpers/parse-server/parse-helper';
 
+Config.mongodb.enable &&
 waitServerReady(async () => {
 
     /// indexes ////////////////

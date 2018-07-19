@@ -2,15 +2,15 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
     Action, Errors, Config,
-} from './../../core/cgi-package';
-import { FileHelper } from './../../helpers/parse-server/file-helper';
+} from 'core/cgi-package';
+import { FileHelper } from 'helpers/parse-server/file-helper';
 
 import * as request from 'request';
 import * as fs from 'fs';
 
 import { Observable } from 'rxjs';
-import { sjRecognizedUser, sjNonRecognizedUser, RecognizedUser, NonRecognizedUser } from './../custom/services/frs-service';
-import frs from './../custom/services/frs-service';
+import { sjRecognizedUser, sjNonRecognizedUser, RecognizedUser, NonRecognizedUser } from 'workspace/custom/services/frs-service';
+import frs from 'workspace/custom/services/frs-service';
 
 export interface Input {
     time: number;

@@ -2,9 +2,9 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
     Action, Errors,
-} from './../../core/cgi-package';
+} from 'core/cgi-package';
 
-import frs from './../custom/services/frs-service';
+import frs from 'workspace/custom/services/frs-service';
 
 
 export interface Input {

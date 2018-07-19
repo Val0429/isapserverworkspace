@@ -3,10 +3,10 @@ import {
     Parse, IRole, IUser, RoleList,
     Action, Errors,
     Restful, FileHelper, ParseObject
-} from './../../../core/cgi-package';
+} from 'core/cgi-package';
 
-import { Floors, IFloors } from './../../custom/models/index';
-import { Cameras, ICameras } from './../../custom/models/cameras';
+import { Floors, IFloors } from 'workspace/custom/models/index';
+import { Cameras, ICameras } from 'workspace/custom/models/cameras';
 
 var action = new Action({
     loginRequired: true,

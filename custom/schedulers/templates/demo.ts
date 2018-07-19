@@ -1,6 +1,6 @@
-import { DynamicLoader } from './../../../../helpers/dynamic-loader/dynamic-loader';
-import { ParseObject } from './../../../../helpers/parse-server/parse-helper';
-import { ScheduleTemplateBase, IScheduleTemplateBase, ISchedulersHandle } from './../../../../models/schedulers/schedulers.base';
+import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
+import { ParseObject } from 'helpers/parse-server/parse-helper';
+import { ScheduleTemplateBase, IScheduleTemplateBase, ISchedulersHandle } from 'models/schedulers/schedulers.base';
 
 import { InputDataJustForDemo } from './../actions/demo';
 

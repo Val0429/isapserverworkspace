@@ -1,5 +1,5 @@
 
-import { Config } from './../../../config_default/parse-server';
+import { Config } from 'config_default/parse-server';
 
 var config: Partial<Config> = {
     appId: "APPLICATIONKEY",

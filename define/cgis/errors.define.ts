@@ -1,4 +1,4 @@
-import { Config } from './../../../models/cgis/errors.define';
+import { Config } from 'models/cgis/errors.define';
 
 var errors: Config[] = [
     /// Visitor Register
