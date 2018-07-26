@@ -1,9 +1,9 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList,
+    Parse, IRole, IUser, RoleList, IUserKioskData,
     Action, Errors,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful
-} from './../../../core/cgi-package';
+    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+} from 'core/cgi-package';
 
 
 var action = new Action({
@@ -11,43 +11,130 @@ var action = new Action({
     permission: [RoleList.SystemAdministrator]
 });
 
-import {
-    InputGet, OutputGet, funcGet,
-    InputPost, OutputPost, funcPost,
-    InputPut, OutputPut, funcPut,
-    InputDelete, OutputDelete, funcDelete
-} from './../users/index';
 
-/// get users //////////////////////
-action.get<InputGet, OutputGet>(funcGet(true));
-////////////////////////////////////
+/// C: create users ///////////////////////
+type InputC = Restful.InputC<IUser<IUserKioskData>>;
+type OutputC = Restful.OutputC<IUser<IUserKioskData>>;
 
-/// create users ///////////////////
-var userfields = ["username", "password", "email", "data"];
-action.post<InputPost, OutputPost>({
-    requiredParameters: ["username", "password", "roles", "data.kioskId", "data.kioskName"],
-}, async (data) => {
+action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+    /// 1) Create Users
+    var user = new Parse.User();
+    var roles = data.inputType.roles;
+
+    /// 2) Check Role
+    var roleNames: RoleList[] = data.inputType.roles;
+    for (var role of roleNames)
+        if (role !== RoleList.Kiosk)
+            throw Errors.throw(Errors.CustomInvalid, [`Role <${getEnumKey(RoleList, role)}> not available.`]); 
+
+    /// 3) Signup Users
     try {
-        return await funcPost(true)(data);
+        user = await user.signUp({
+            ...data.inputType,
+            roles: undefined
+        }, { useMasterKey: true });
+
     } catch(reason) {
         if (reason instanceof Parse.Error && reason.code === 203)
             throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
         throw reason;
     }
+
+    /// 4) Add to Role
+    var roleAry = [];
+    for (var name of roleNames) {
+        var r = await new Parse.Query(Parse.Role)
+            .equalTo("name", name)
+            .first();
+        r.getUsers().add(user);
+        r.save(null, {useMasterKey: true});
+        roleAry.push(r);
+    }
+
+    /// 5) Add Role to User
+    user.set("roles", roleAry);
+    await user.save(null, { useMasterKey: true });
+
+    return ParseObject.toOutputJSON(user);
 });
-////////////////////////////////////
+///////////////////////////////////////////
 
-/// modify users ///////////////////
-var usermfields = ["password", "email", "data"];
-action.put<InputPut, OutputPut>({
-    requiredParameters: ["username"],
-}, funcPut);
-////////////////////////////////////
 
-/// delete users ///////////////////
-action.delete<InputDelete, OutputDelete>({
-    requiredParameters: ["username"]
-}, funcDelete);
-////////////////////////////////////
+/// R: get users //////////////////////////
+type InputR = Restful.InputR<IUser<IUserKioskData>>;
+type OutputR = Restful.OutputR<IUser<IUserKioskData>>;
+
+action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+    var kioskRole = await new Parse.Query(Parse.Role)
+        .equalTo("name", RoleList.Kiosk)
+        .first();
+    
+    var query = new Parse.Query(Parse.User)
+        .include("roles")
+        .equalTo("roles", kioskRole);
+
+    query = Restful.Filter(query, data.inputType);
+
+    return Restful.Pagination(query, data.inputType);
+});
+///////////////////////////////////////////
+
+
+/// U: modify users ///////////////////////
+type InputU = Restful.InputU<IUser<IUserKioskData>>;
+type OutputU = Restful.OutputU<IUser<IUserKioskData>>;
+
+action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+    var { objectId } = data.inputType;
+
+    var kioskRole = await new Parse.Query(Parse.Role)
+        .equalTo("name", RoleList.Kiosk)
+        .first();
+
+    /// 1) Get User
+    var user = await new Parse.Query(Parse.User)
+        .equalTo("roles", kioskRole)
+        .get(objectId);
+    if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
+
+    try {
+        /// 2) Modify
+        await user.save({
+            ...data.inputType,
+            /// ignore update of username, roles
+            username: undefined, roles: undefined
+        }, {useMasterKey: true});
+
+    } catch(reason) {
+        throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
+    }
+
+    return ParseObject.toOutputJSON(user);
+});
+///////////////////////////////////////////
+
+/// D: delete users ///////////////////////
+type InputD = Restful.InputD<IUser<IUserKioskData>>;
+type OutputD = Restful.OutputD<IUser<IUserKioskData>>;
+
+action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+    var { objectId } = data.inputType;
+
+    var kioskRole = await new Parse.Query(Parse.Role)
+        .equalTo("name", RoleList.Kiosk)
+        .first();
+
+    /// 1) Get User
+    var user = await new Parse.Query(Parse.User)
+        .include("roles")
+        .equalTo("roles", kioskRole)
+        .get(objectId);
+    if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
+
+    user.destroy({ useMasterKey: true });
+
+    return ParseObject.toOutputJSON(user);
+});
+///////////////////////////////////////////
 
 export default action;

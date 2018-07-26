@@ -10,17 +10,19 @@ import { Floors, IFloors } from './../../custom/models/floors';
 //import * as csv from 'fast-csv';
 import * as parseCsv from 'node-csv-parse';
 
-export interface InputPost {
-    sessionId: string;
-    data: string;
-}
-
-var action = new Action<InputPost>({
+var action = new Action({
     loginRequired: true,
     postSizeLimit: 1024*1024*10,
     permission: [RoleList.Administrator, RoleList.Kiosk]
-})
-.post( async (data) => {
+});
+
+interface ICsvC {
+    data: string;
+}
+
+type InputC = Restful.InputC<ICsvC>;
+
+action.post<InputC>({ inputType: "InputC" }, async (data) => {
     var content = new Buffer(data.parameters.data, 'base64').toString();
     var result = parseCsv(content);
 

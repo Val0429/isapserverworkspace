@@ -7,7 +7,6 @@ import {
 
 
 export interface Input {
-    sessionId: string;
     username: string;
 }
 
@@ -17,7 +16,7 @@ export interface Output {
 
 export default new Action<Input, Output>({
     loginRequired: true,
-    requiredParameters: ["username"],
+    inputType: "Input",
     permission: [RoleList.Kiosk]
 })
 .post(async (data) => {

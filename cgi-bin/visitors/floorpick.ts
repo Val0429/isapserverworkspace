@@ -6,14 +6,13 @@ import {
 } from './../../../core/cgi-package';
 
 export interface Input {
-    sessionId: string;
     personId: string;
     floorId: string;
 }
 
 export default new Action<Input>({
     loginRequired: true,
-    requiredParameters: ["personId", "floorId"],
+    inputType: "Input",
     permission: [RoleList.Kiosk]
 })
 .post(async (data) => {

@@ -6,7 +6,6 @@ import {
 } from './../../../core/cgi-package';
 
 export interface Input {
-    sessionId: string;
     username: string;
 }
 
@@ -16,7 +15,7 @@ export interface Output {
 
 export default new Action<Input, Output>({
     loginRequired: true,
-    requiredParameters: ["username"],
+    inputType: "Input",
     permission: [RoleList.Kiosk]
 })
 .post(async (data) => {
@@ -29,7 +28,7 @@ export default new Action<Input, Output>({
     /// Error if exists
     if (status == "fetch") {
         /// Double check registration complete
-        var events = await Events.fetchLast(EventList.RegistrationComplete, person);
+        var events = await Events.fetchLast(EventList.EventRegistrationComplete, person);
         if (events) throw Errors.throw(Errors.VisitorAlreadyExists);
     }
 

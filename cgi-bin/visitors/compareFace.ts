@@ -9,7 +9,6 @@ import { Buffer } from 'buffer';
 import FRS from './../../custom/services/frs-service';
 
 export interface Input {
-    sessionId: string;
     personId: string;
     image: string;
 }
@@ -20,7 +19,7 @@ export interface Output {
 
 export default new Action<Input, Output>({
     loginRequired: true,
-    requiredParameters: ["personId", "image"],
+    inputType: "Input",
     permission: [RoleList.Kiosk]
 })
 .post(async (data) => {
@@ -37,7 +36,7 @@ export default new Action<Input, Output>({
     }
 
     /// Get Person pre-saved image
-    var events = await Events.fetchLast(EventList.ScanIDCard, person);
+    var events = await Events.fetchLast(EventList.EventScanIDCard, person);
     if (!events) throw Errors.throw(Errors.Custom, [`Person with id <${personId}> not yet registered with face image.`]);
     var event = await events.getValue("entity").fetch();
 
