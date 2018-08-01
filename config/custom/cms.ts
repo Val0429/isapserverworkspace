@@ -1,6 +1,6 @@
 var config: Config = {
-    ip: "172.16.10.90",
-    port: 8080,
+    ip: "172.16.10.109",
+    port: 9090,
     account: "Admin",
     password: "123456"
 }
