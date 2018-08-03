@@ -35,8 +35,17 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         }, { useMasterKey: true });
 
     } catch(reason) {
-        if (reason instanceof Parse.Error && reason.code === 203)
-            throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
+        if (reason instanceof Parse.Error) {
+            switch (reason.code) {
+                case 202:
+                    throw Errors.throw(Errors.CustomBadRequest, [<any>reason]);
+                case 203:
+                    throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
+                default:
+            }
+        }
+        // if (reason instanceof Parse.Error && reason.code === 203)
+        //     throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
         throw reason;
     }
 

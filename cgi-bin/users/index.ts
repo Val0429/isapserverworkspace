@@ -28,10 +28,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             throw Errors.throw(Errors.CustomInvalid, [`Role <${getEnumKey(RoleList, role)}> not available.`]); 
 
     /// 3) Signup Users
-    user = await user.signUp({
-        ...data.inputType,
-        roles: undefined
-    }, { useMasterKey: true });
+    try {
+        user = await user.signUp({
+            ...data.inputType,
+            roles: undefined
+        }, { useMasterKey: true });
+    } catch(e) {
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
+    }
 
     /// 4) Add to Role
     var roleAry = [];
