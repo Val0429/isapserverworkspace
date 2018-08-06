@@ -101,6 +101,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         username: undefined, roles: undefined
     }, {useMasterKey: true});
 
+    /// 3) Hide password
+    user.set("password", undefined);
+
     return ParseObject.toOutputJSON(user);
 });
 ///////////////////////////////////////////

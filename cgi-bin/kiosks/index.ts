@@ -118,6 +118,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
     }
 
+    /// 3) Hide password
+    user.set("password", undefined);
+
     return ParseObject.toOutputJSON(user);
 });
 ///////////////////////////////////////////
