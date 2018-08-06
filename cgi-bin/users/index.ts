@@ -70,20 +70,22 @@ type InputU = Restful.InputU<IUser>;
 type OutputU = Restful.OutputU<IUser>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
-    var { username } = data.inputType;
+    var { objectId } = data.inputType;
 
     /// 1) Get User
     var user = await new Parse.Query(Parse.User)
-        .equalTo("username", data.inputType.username)
-        .first();
-    if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${username}> not exists.`]);
+        .get(objectId);
+    if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
 
     /// 2) Modify
     await user.save({
         ...data.inputType,
         /// ignore update of username, roles
         username: undefined, roles: undefined
-    });
+    }, {useMasterKey: true});
+
+    /// 3) Hide password
+    user.set("password", undefined);
 
     return ParseObject.toOutputJSON(user);
 });
