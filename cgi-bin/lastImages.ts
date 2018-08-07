@@ -10,6 +10,8 @@ import frs from 'workspace/custom/services/frs-service';
 
 export interface Input {
     sessionId: string;
+    start: number;
+    end: number;
 }
 
 var action = new Action<Input>({
@@ -23,7 +25,7 @@ action.ws(async (data) => {
         subscription && subscription.unsubscribe();
     });
 
-    var subscription = frs.lastImages()
+    var subscription = frs.lastImages(data.parameters.start, data.parameters.end)
         .subscribe({
             next: (data) => {
                 /// workaround for test
