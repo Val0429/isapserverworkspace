@@ -174,10 +174,13 @@ export class FRSService {
         });
     }
 
-    lastImages(): Subject<RecognizedUser | NonRecognizedUser> {
-        var now = Date.now();
-        var hours = 60*60*1000;
-        return this.search(null, now-8*hours, now);
+    lastImages(start: number = null, end: number = null): Subject<RecognizedUser | NonRecognizedUser> {
+        if (end === null || start === null) {
+            const hours = 60*60*1000;
+            end = Date.now();
+            start = end - 8 * hours;
+        }
+        return this.search(null, start, end);
     }
 
     search(face: RecognizedUser | NonRecognizedUser, starttime: number, endtime: number): Subject<RecognizedUser | NonRecognizedUser> {
