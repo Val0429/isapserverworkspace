@@ -9,7 +9,6 @@ import * as request from 'request';
 import * as fs from 'fs';
 
 import { Observable } from 'rxjs';
-import { sjRecognizedUser, sjNonRecognizedUser, RecognizedUser, NonRecognizedUser } from 'workspace/custom/services/frs-service';
 import frs from 'workspace/custom/services/frs-service';
 
 export interface Input {

@@ -5,8 +5,9 @@ import {
 } from 'core/cgi-package';
 
 import { Observable } from 'rxjs';
-import { sjRecognizedUser, sjNonRecognizedUser, RecognizedUser, NonRecognizedUser } from 'workspace/custom/services/frs-service';
 import frs from 'workspace/custom/services/frs-service';
+import { RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service/core';
+import { filterFace, test } from 'workspace/custom/services/frs-service/filter-face';
 
 export interface Input {
     sessionId: string;
@@ -26,6 +27,7 @@ action.ws(async (data) => {
     });
 
     var subscription = frs.lastImages(data.parameters.start, data.parameters.end)
+        .pipe( filterFace() )
         .subscribe({
             next: (data) => {
                 /// workaround for test

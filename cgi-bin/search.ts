@@ -5,14 +5,14 @@ import {
 } from 'core/cgi-package';
 
 import { Observable } from 'rxjs';
-import { sjRecognizedUser, sjNonRecognizedUser, RecognizedUser, NonRecognizedUser } from 'workspace/custom/services/frs-service';
+import { RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service';
 import frs from 'workspace/custom/services/frs-service';
 
 export interface Input {
     sessionId: string;
     starttime: Date;
     endtime: Date;
-    face: RecognizedUser | NonRecognizedUser;
+    face: RecognizedUser | UnRecognizedUser;
 }
 
 var action = new Action<Input>({

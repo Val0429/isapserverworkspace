@@ -5,7 +5,7 @@ import {
 } from 'core/cgi-package';
 
 import { Observable } from 'rxjs';
-import { sjRecognizedUser, sjNonRecognizedUser } from 'workspace/custom/services/frs-service';
+import frs, { sjRecognizedUser, sjUnRecognizedUser } from 'workspace/custom/services/frs-service';
 
 export interface Input {
     sessionId: string;
@@ -21,11 +21,16 @@ action.ws(async (data) => {
         subscription.unsubscribe();
     });
 
-    var subscription = Observable.merge(sjRecognizedUser, sjNonRecognizedUser)
+    // var subscription = Observable.merge(sjRecognizedUser, sjUnRecognizedUser)
+    //     .subscribe( (data) => {
+    //         /// workaround for test
+    //         data = { ...data, face_feature: undefined };
+    //         socket.send(JSON.stringify(data));
+    //     });
+
+    let subscription = frs.sjLiveFace
         .subscribe( (data) => {
-            /// workaround for test
-            data = { ...data, face_feature: undefined };
-            socket.send(JSON.stringify(data));
+            socket.send( JSON.stringify({...data, face_feature: undefined}) );
         });
 });
 
