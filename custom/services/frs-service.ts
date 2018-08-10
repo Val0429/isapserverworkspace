@@ -249,8 +249,6 @@ export class FRSService {
                     // console.log(data.type, data.timestamp);
                     sj.next( queue.shift() );
                 }
-                if (recog.finished && nonrecog.finished)
-                    sj.complete();
 
             } else {
             /// 2) if passin face is nonrecognized, return recognized, compare all nonrecognized.
@@ -268,6 +266,8 @@ export class FRSService {
                     sj.next( data );
                 }
             }
+            if (recog.finished && nonrecog.finished)
+                sj.complete();
         }
 
         function prepareQueue(recognizeBase: boolean) {

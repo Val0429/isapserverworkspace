@@ -1,5 +1,9 @@
+
+/// 3 days
+// searchDurationSeconds: 259200, 28800
+
 var config: Config = {
-    searchDurationSeconds: 60,
+    searchDurationSeconds: 259200,
     possibleCompanionDurationSeconds: 5,
     groupInfo: [
         {
