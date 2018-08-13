@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { UserType, RecognizedUser, UnRecognizedUser } from './core';
 import { FaceFeatureCompare } from './../../modules/face-feature-compare';
 
@@ -43,6 +43,11 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
         }
 
         return Observable.create( (subscriber) => {
+            /// if no response more than tracing seconds, resolve.
+            source.switchMap( () => {
+                return Observable.timer(traceMilliSeconds)
+            }).subscribe( () => resolveAll() );
+
             let resolveAll = () => {
                 if (caches.length === 0) return;
                 /// 1) remove indexes
@@ -96,7 +101,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                 switch (type) {
                     case UserType.UnRecognized:
                         let val: UnRecognizedUser = value as UnRecognizedUser;
-                        val.valFaceId = uniqueCount++;
+                        val.valFaceId = ++uniqueCount;
                         resolveCache(val.timestamp);
                         for (let i=indexType.length-1; i>=0; --i) {
                             let prev: UnRecognizedUser = indexType[i] as UnRecognizedUser;
@@ -105,6 +110,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                             if (FaceFeatureCompare.sync(buffer, prebuffer) < targetScore) continue;
                             /// replace
                             val.timestamp = prev.timestamp;
+                            val.snapshot = prev.snapshot;
                             val.valFaceId = prev.valFaceId;
                             tryCallback(val);
                             Object.assign(prev, val);
@@ -117,7 +123,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
 
                     case UserType.Recognized:
                         let valrec: RecognizedUser = value as RecognizedUser;
-                        valrec.valFaceId = uniqueCount++;
+                        valrec.valFaceId = ++uniqueCount;
                         resolveCache(valrec.timestamp);
                         var personId = valrec.person_id;
                         for (let i=indexType.length-1; i>=0; --i) {
@@ -125,6 +131,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                             if (prev.person_id !== personId) continue;
                             /// replace
                             valrec.timestamp = prev.timestamp;
+                            valrec.snapshot = prev.snapshot;
                             valrec.valFaceId = prev.valFaceId;
                             tryCallback(valrec);
                             Object.assign(prev, valrec);

@@ -7,12 +7,12 @@ import {
 import { Observable } from 'rxjs';
 import frs from 'workspace/custom/services/frs-service';
 import { RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service/core';
-import { filterFace, test } from 'workspace/custom/services/frs-service/filter-face';
+import { filterFace } from 'workspace/custom/services/frs-service/filter-face';
 
 export interface Input {
     sessionId: string;
-    start: number;
-    end: number;
+    start?: number;
+    end?: number;
 }
 
 var action = new Action<Input>({
@@ -26,12 +26,11 @@ action.ws(async (data) => {
         subscription && subscription.unsubscribe();
     });
 
-    var subscription = frs.lastImages(data.parameters.start, data.parameters.end)
-        .pipe( filterFace() )
+    let start = data.parameters.start ? +data.parameters.start : null;
+    let end = data.parameters.end ? +data.parameters.end : null;
+    var subscription = frs.lastImages(start, end, { excludeFaceFeature: true })
         .subscribe({
             next: (data) => {
-                /// workaround for test
-                data = { ...data, face_feature: undefined };
                 socket.send(JSON.stringify(data));
             },
             complete: () => {

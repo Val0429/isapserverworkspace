@@ -29,7 +29,7 @@ action.ws(async (data) => {
         subscription && subscription.unsubscribe();
     });
 
-    var subscription = frs.search(eval(`(${data.parameters.face})`), <any>data.parameters.starttime, <any>data.parameters.endtime)
+    var subscription = frs.search(eval(`(${data.parameters.face})`), +data.parameters.starttime, +data.parameters.endtime)
         .subscribe({
             next: (data) => {
                 /// workaround for test

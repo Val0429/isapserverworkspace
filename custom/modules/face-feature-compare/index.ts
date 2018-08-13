@@ -2,7 +2,7 @@ var ffc = require('./featureCompareWin/build/Release/faceFeatureCompare')();
 // var faceFeatureCompare = require('./featureCompareLinux/build/Release/faceFeatureCompare')();
 
 export namespace FaceFeatureCompare {
-    function getScore(result) {
+    function getScore(result): number {
         return JSON.parse(result).score;
     }
 
@@ -12,7 +12,7 @@ export namespace FaceFeatureCompare {
     }
 
     export function async(buffer1, buffer2) {
-        return new Promise( (resolve) => {
+        return new Promise<number>( (resolve) => {
             ffc.faceFeatureCompareAsync( buffer1, buffer2, (score) => {
                 //setImmediate(() => resolve(score));
                 resolve(getScore(score));

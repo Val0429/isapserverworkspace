@@ -17,6 +17,13 @@ waitServerReady(async () => {
         { "floor": 1 },
         { unique: true }
     );
+    /// Faces
+    createIndex("FRSFaces", "facesIndexMain",
+        { "groups.name": 1, "channel": 1, "timestamp": 1 }
+    );
+    createIndex("FRSFaces", "facesIndexName",
+        { "person_info.fullname": "text" }
+    );
     ////////////////////////////
 
     /// default ////////////////
