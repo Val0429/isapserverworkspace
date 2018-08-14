@@ -5,6 +5,8 @@ import {
     Restful,
 } from './../../../core/cgi-package';
 
+import { FileHelper } from 'helpers/parse-server/file-helper';
+
 import { Floors, IFloors } from './../../custom/models/floors';
 
 //import * as csv from 'fast-csv';
@@ -23,7 +25,7 @@ interface ICsvC {
 type InputC = Restful.InputC<ICsvC>;
 
 action.post<InputC>({ inputType: "InputC" }, async (data) => {
-    var content = new Buffer(data.parameters.data, 'base64').toString();
+    var content = FileHelper.toBufferFromBase64(data.parameters.data);
     var result = parseCsv(content);
 
     var floors: Floors[] = result.asObjects()
@@ -42,7 +44,11 @@ action.post<InputC>({ inputType: "InputC" }, async (data) => {
 
     await Parse.Object.saveAll(floors);
     
-    return;
+    return {
+        paging: {
+            count: floors.length
+        }
+    }
 });
 
 export default action;
