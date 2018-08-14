@@ -48,7 +48,7 @@ export class FRSService {
     lastImages(start: number = null, end: number = null, options: FetchOptions = {}): Subject<RecognizedUser | UnRecognizedUser> {
         if (end === null || start === null) {
             const hours = 60*60*1000;
-            end = Date.now();
+            end = Date.now() + hours; //Date.now();
             start = end - 8 * hours;
         }
         return this.localFetchAll(start, end, options);
@@ -93,7 +93,6 @@ export class FRSService {
             if (options.excludeFaceFeature === true) {
                 result = result.project({ face_feature: 0 });
             }
-
             
             result.forEach((data) => {
                 sj.next(data);
