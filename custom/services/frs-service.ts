@@ -10,12 +10,18 @@ import { UserType, sjRecognizedUser, sjUnRecognizedUser, RecognizedUser, UnRecog
 export * from './frs-service/core';
 import { filterFace } from './frs-service/filter-face';
 import { Semaphore } from 'helpers/utility/semaphore';
+import { Cameras } from './../models/cameras';
 import * as mongo from 'mongodb';
 
 const collection: string = "FRSFaces";
 
+const groups: string[] = Config.fts.groupInfo.map( (data) => data.name );
+
 export interface FetchOptions {
     excludeFaceFeature?: boolean;
+    name?: string;
+    groups?: string[];
+    cameras?: string[];
 }
 
 export class FRSService {
@@ -84,15 +90,48 @@ export class FRSService {
             let db = client.db(Config.mongodb.collection);
             let col = db.collection(collection);
 
-            let result = col.find({
+            // let result = col.find({
+            //     '$text': {
+            //         '$search': 'Morris'
+            //     },
+            //     'timestamp': {
+            //         '$gte': starttime,
+            //         '$lte': endtime
+            //     },
+            //     'groups.name': { '$in': [ null, /^./ ] },
+            //     'channel': 'Camera_04_01',
+            // }).sort({timestamp: 1});
+
+            let query = {
                 'timestamp': {
                     '$gte': starttime,
                     '$lte': endtime
-                }
-            }).sort({timestamp: 1});
+                },
+            }
+            /// add name: text search, if exists
+            if (options.name) query['$text'] = { '$search': options.name };
+            /// group name
+            if (!options.groups) query['groups.name'] = { '$in': [null, ...groups] };
+            else {
+                /// workaround for 'No Match'
+                if (options.groups.indexOf('No Match') >= 0) options.groups.unshift(null);
+                query['groups.name'] = { '$in': options.groups };
+            }
+            /// channel
+            if (options.cameras) query['channel'] = { '$in': options.cameras };
+            else {
+                let pCameras = await new Parse.Query(Cameras).find();
+                let cameras: string[] = pCameras.map( (data) => data.getValue("sourceid") );
+                query['channel'] = { '$in': [null, ...cameras] };
+            }
+            /// execute
+            let result = col.find(query).sort({timestamp: 1});
+
             if (options.excludeFaceFeature === true) {
                 result = result.project({ face_feature: 0 });
             }
+
+            // console.log('???', await result.explain());
             
             result.forEach((data) => {
                 sj.next(data);

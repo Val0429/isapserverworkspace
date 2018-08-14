@@ -27,7 +27,7 @@ export interface RecognizedUser {
     verify_face_id: string;
     action_enable: number;
     request_client_param: string;
-    groups: string[];
+    groups: { name: string, group_id: string }[];
     face_feature: string;
     /**
      * valFaceId: Val added feature. to replace with previous same id.

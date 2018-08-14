@@ -6,7 +6,7 @@ import {
 
 import { Observable } from 'rxjs';
 import frs from 'workspace/custom/services/frs-service';
-import { RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service/core';
+import { UserType, RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service/core';
 import { filterFace } from 'workspace/custom/services/frs-service/filter-face';
 
 export interface Input {
@@ -25,6 +25,18 @@ export interface Input {
      * keep returning latest faces.
      */
     alive?: boolean;
+    /**
+     * name filter.
+     */
+    name?: string;
+    /**
+     * groups filter.
+     */
+    groups?: string;
+    /**
+     * cameras filter.
+     */
+    cameras?: string;
 }
 
 var action = new Action<Input>({
@@ -42,10 +54,10 @@ action.ws(async (data) => {
     let start = data.parameters.start ? +data.parameters.start : null;
     let end = data.parameters.end ? +data.parameters.end : null;
     let alive = (data.parameters.alive as any as string) === 'true' ? true : false;
-    console.log(data.parameters, alive);
     let pureListen = (data.parameters.pureListen as any as string) === 'true' ? true : false;
-
-    // console.log(data.parameters, start, end);
+    let name = data.parameters.name ? data.parameters.name : null;
+    let groups = data.parameters.groups ? data.parameters.groups.split(",") : null;
+    let cameras = data.parameters.cameras ? data.parameters.cameras.split(",") : null;
 
     // /// old method
     // var subscription = frs.lastImages(start, end, { excludeFaceFeature: true })
@@ -58,9 +70,8 @@ action.ws(async (data) => {
     //         }
     //     });
 
-
     /// new method
-    var searchedFaces = frs.lastImages(start, end, { excludeFaceFeature: true });
+    var searchedFaces = frs.lastImages(start, end, { excludeFaceFeature: true, name, groups, cameras });
     var liveFaces = frs.sjLiveFace;
 
     /// search face until complete
@@ -84,9 +95,39 @@ action.ws(async (data) => {
     let fetchFaces = () => {
         /// hook new faces
         subscription = liveFaces
+            .filter( localFilter )
             .subscribe( (data) => {
-                socket.send( JSON.stringify({...data, face_feature: undefined}) );
+                Send(data);
             });
+    }
+
+    let localFilter = (data: RecognizedUser | UnRecognizedUser): boolean => {
+        /// filter name, groups, cameras
+        /// 1) name
+        if (name) {
+            if (data.type === UserType.UnRecognized) return false;
+            else if (data.type === UserType.Recognized && data.person_info.fullname.indexOf(name) < 0) return false;
+        }
+        /// 2) groups
+        if (groups) {
+            if (data.type === UserType.UnRecognized && groups.indexOf("No Match") < 0) return false;
+            else if (data.type === UserType.Recognized) {
+                let groupname = data.groups === null || data.groups.length === 0 ? null : data.groups[0].name;
+                if (groupname === null) return false;
+                if (groups.indexOf(groupname) < 0) return false;
+            }
+        }
+
+        /// 3) cameras
+        if (cameras) {
+            if (cameras.indexOf(data.channel) < 0) return false;
+        }
+
+        return true;
+    }
+
+    let Send = (data: RecognizedUser | UnRecognizedUser) => {
+        socket.send(JSON.stringify({...data, face_feature: undefined}));
     }
 
     /// buffer live faces until searched face complete
@@ -95,6 +136,7 @@ action.ws(async (data) => {
 
     } else if (alive && !pureListen) {
         liveFaces
+            .filter( localFilter )
             .bufferWhen( () => lastSearchedFace )
             .first()
             .subscribe( async (data) => {
@@ -110,7 +152,7 @@ action.ws(async (data) => {
                     }
                 }
                 /// output latest face
-                for (let input of data) socket.send(JSON.stringify(input));
+                for (let obj of data) Send(obj);
 
                 fetchFaces();
             });
