@@ -25,7 +25,7 @@ interface ICsvC {
 type InputC = Restful.InputC<ICsvC>;
 
 action.post<InputC>({ inputType: "InputC" }, async (data) => {
-    var content = FileHelper.toBufferFromBase64(data.parameters.data);
+    var content = FileHelper.toBufferFromBase64(data.parameters.data).toString();
     var result = parseCsv(content);
 
     var floors: Floors[] = result.asObjects()
@@ -36,7 +36,7 @@ action.post<InputC>({ inputType: "InputC" }, async (data) => {
                     floor: +value.floor,
                     unitNo: value.unitNo,
                     name: value.name,
-                    phone: value.phone.split(",")
+                    phone: (value.phone || "").split(",")
                 }));
             } while(0);
             return final;
