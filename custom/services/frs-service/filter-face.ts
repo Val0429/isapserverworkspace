@@ -103,6 +103,18 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                         let val: UnRecognizedUser = value as UnRecognizedUser;
                         val.valFaceId = ++uniqueCount;
                         resolveCache(val.timestamp);
+
+                        /// elimate more unrecognized as recognized
+                        let indexTypeR = indexChannel[UserType.Recognized] || [];
+                        for (let i=indexTypeR.length-1; i>=0; --i) {
+                            let prev: RecognizedUser = indexTypeR[i] as RecognizedUser;
+                            let highestScore: any = val.highest_score || {};
+                            if (prev.person_info.fullname === highestScore.fullname && highestScore.score >= 0.6) {
+                                /// totally remove this face
+                                return;
+                            }
+                        }
+
                         for (let i=indexType.length-1; i>=0; --i) {
                             let prev: UnRecognizedUser = indexType[i] as UnRecognizedUser;
                             var buffer = new Buffer(val.face_feature, 'binary');

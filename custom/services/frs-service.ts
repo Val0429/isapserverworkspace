@@ -9,8 +9,11 @@ import { FaceFeatureCompare } from './../modules/face-feature-compare';
 import { UserType, sjRecognizedUser, sjUnRecognizedUser, RecognizedUser, UnRecognizedUser } from './frs-service/core';
 export * from './frs-service/core';
 import { filterFace } from './frs-service/filter-face';
+import { semaphore } from './frs-service/semaphore';
 import { Semaphore } from 'helpers/utility/semaphore';
 import { Cameras } from './../models/cameras';
+import { searchRecognizedFace } from './frs-service/search-recognized-face';
+import { searchUnRecognizedFace } from './frs-service/search-unrecognized-face';
 import * as mongo from 'mongodb';
 
 const collection: string = "FRSFaces";
@@ -68,6 +71,7 @@ export class FRSService {
                 method: 'GET',
                 encoding: null
             }, (err, res, body) => {
+                if (err) { reject(err); return; }
                 resp.setHeader("content-type", res.headers["content-type"]);
                 resp.end(body, "binary");
                 resolve();
@@ -142,7 +146,7 @@ export class FRSService {
         return sj;
     }
     /// load faces from remote FRS
-    fetchAll(starttime: number, endtime: number): Subject<RecognizedUser | UnRecognizedUser> {
+    fetchAll(starttime: number, endtime: number, pageSize: number = 20): Subject<RecognizedUser | UnRecognizedUser> {
         var sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
         const url: string = this.makeUrl('getverifyresultlist');
@@ -250,13 +254,13 @@ export class FRSService {
        
         return sj;
     }
+
     search(face: RecognizedUser | UnRecognizedUser, starttime: number, endtime: number): Subject<RecognizedUser | UnRecognizedUser> {
         let sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
         (async () => {
-            let faceFeature, faceBuffer;
-
             /// 1) get back face_feature
+            let faceFeature, faceBuffer;
             let backs: any[] = await this.fetchAll(face.timestamp, face.timestamp)
                 .bufferCount(Number.MAX_SAFE_INTEGER)
                 .toPromise();
@@ -269,54 +273,30 @@ export class FRSService {
             }
             faceBuffer = new Buffer(faceFeature, 'binary');
 
+            /// 2)
             let lock = new Semaphore(16);
-
-            this.localFetchAll(starttime, endtime)
+            let count = 0;
+            /// 2.1) adjust starttime / endtime with possible companion duration
+            let adjustStartTime = starttime - Config.fts.possibleCompanionDurationSeconds*1000;
+            let adjustEndTime = endtime + Config.fts.possibleCompanionDurationSeconds*1000;
+            this.localFetchAll(adjustStartTime, adjustEndTime, { excludeFaceFeature: face.type === UserType.Recognized ? true : false })
+                .pipe( semaphore<RecognizedUser | UnRecognizedUser>(16, async (data) => {
+                    if (face.type === UserType.UnRecognized && data.type === UserType.UnRecognized) {
+                        var buffer = new Buffer(data.face_feature, 'binary');
+                        var score = await FaceFeatureCompare.async(faceBuffer, buffer);
+                        data.score = score;
+                    }
+                    return data;
+                }) )
+                .pipe( face.type === UserType.Recognized ? searchRecognizedFace(face) : searchUnRecognizedFace(face) )
                 .subscribe( async (data) => {
-                    await lock.toPromise();
-                    do {
-                        /// 1) if passin face is recognized, return all.
-                        if (face.type === UserType.Recognized) break;
-                        else {
-                        /// 2) if passin face is unrecognized, return recognized, compare all unrecognized.
-                            if (data.type === UserType.Recognized) break;
 
-                            var buffer = new Buffer(data.face_feature, 'binary');
-                            var score = await FaceFeatureCompare.async(faceBuffer, buffer);
-                            data.score = score;
-                            break;
-                        }
-
-                    } while(0);
                     sj.next(data);
-                    lock.release();
+
                 }, () => {}, async () => {
-                    await lock.onCompleted();
                     sj.complete();
                 });
-
-            /// fetch and compare
-            // this.localFetchAll(starttime, endtime)
-            //     .subscribe( (data) => {
-            //         do {
-            //             /// 1) if passin face is recognized, return all.
-            //             if (face.type === UserType.Recognized) break;
-            //             else {
-            //             /// 2) if passin face is unrecognized, return recognized, compare all unrecognized.
-            //                 if (data.type === UserType.Recognized) break;
-
-            //                 var buffer = new Buffer(data.face_feature, 'binary');
-            //                 var score = FaceFeatureCompare.sync(faceBuffer, buffer);
-            //                 data.score = score;
-            //                 break;
-            //             }
-
-            //         } while(0);
-            //         sj.next(data);
-            //     }, () => {}, () => {
-            //         sj.complete()
-            //     });
-
+            
         })();
         
         return sj;
@@ -472,7 +452,7 @@ export class FRSService {
                 allPromises.push( col.insertMany(data) );
             }, () => {}, async () => {
                 if (allPromises.length !== 0) await Promise.all(allPromises);
-                if (prev !== 0) console.log("<Recover FRS DB> Saved into DB, completed.");
+                if (prev !== 0) console.log("<Recover FRS DB> Save into DB completed.");
                 this.sjRecovered.next(true);
             });
 
@@ -481,7 +461,7 @@ export class FRSService {
         let last: RecognizedUser | UnRecognizedUser = null;
         console.time("<Recover FRS DB> Done load");
         //this.lastImages(0, Number.MAX_SAFE_INTEGER)
-        this.fetchAll(lastTimestamp, Number.MAX_SAFE_INTEGER)
+        this.fetchAll(lastTimestamp, Number.MAX_SAFE_INTEGER, 100)
             .pipe( filterFace(() => prev++) )
             .subscribe( (data) => {
                 let picked = this.makeDBObject(data);

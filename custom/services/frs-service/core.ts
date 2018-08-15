@@ -32,6 +32,13 @@ export interface RecognizedUser {
     /**
      * valFaceId: Val added feature. to replace with previous same id.
      */
+    /**
+     * hint for this is the searched face.
+     */
+    search_ok?: boolean;
+    /**
+     * valFaceId: Val added feature. to replace with previous same id.
+     */
     valFaceId?: number;
 }
 
@@ -54,6 +61,10 @@ export interface UnRecognizedUser {
      * score: Val added feature. only /search will have score.
      */
     score?: number;
+    /**
+     * hint for this is the searched face.
+     */
+    search_ok?: boolean;
     /**
      * valFaceId: Val added feature. to replace with previous same id.
      */
