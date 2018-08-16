@@ -35,22 +35,32 @@ export class FRSService {
     private livestream: Observable<RecognizedUser | UnRecognizedUser>;
     public sjLiveFace: Subject<RecognizedUser | UnRecognizedUser> = new Subject();
 
+    private db: mongo.Db;
+
     constructor() {
         this.login();
 
-        /// init main stream
-        this.livestream = Observable.merge(sjRecognizedUser, sjUnRecognizedUser)
-            .pipe( filterFace( async (compared) => {
-                await this.waitForRecover();
-                await this.waitForLogin();
-                this.sjLiveFace.next(compared);
-            }) );
+        (async () => {
+            /// create db
+            const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
+            let client = await mongo.MongoClient.connect(url);
+            this.db = client.db(Config.mongodb.collection);
 
-        /// recover db
-        this.recoverDB();
+            /// init main stream
+            this.livestream = Observable.merge(sjRecognizedUser, sjUnRecognizedUser)
+                .pipe( filterFace( async (compared) => {
+                    await this.waitForRecover();
+                    await this.waitForLogin();
+                    this.sjLiveFace.next(compared);
+                }) );
 
-        /// write db
-        this.writeDB();
+            /// recover db
+            this.recoverDB();
+
+            /// write db
+            this.writeDB();
+
+        })();
     }
 
     /// public functions ////////////////////
@@ -92,10 +102,7 @@ export class FRSService {
             await this.waitForRecover();
 
             /// read local db
-            const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-            let client = await mongo.MongoClient.connect(url);
-            let db = client.db(Config.mongodb.collection);
-            let col = db.collection(collection);
+            let col = this.db.collection(collection);
 
             // let result = col.find({
             //     '$text': {
@@ -139,11 +146,11 @@ export class FRSService {
             }
 
             // console.log('???', await result.explain());
-            
+
             result.forEach((data) => {
                 sj.next(data);
             }, () => sj.complete());
-            
+
         })();
 
         return sj;
@@ -262,14 +269,20 @@ export class FRSService {
         let sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
         (async () => {
+            /// 0) extract back timestamp from snapshot
+            let snapshot = face.snapshot;
+            let regex = /^[^0-9]*([0-9]+)/;
+            let timestamp = +snapshot.match(regex)[1];
+
             /// 1) get back face_feature
             let faceFeature, faceBuffer;
-            let backs: any[] = await this.fetchAll(face.timestamp, face.timestamp)
+            let backs: any[] = await this.fetchAll(timestamp, timestamp)
                 .bufferCount(Number.MAX_SAFE_INTEGER)
                 .toPromise();
             if (!Array.isArray(backs)) backs = [backs];
+
             for (var back of backs) {
-                if (face.snapshot === back.snapshot) {
+                if (snapshot === back.snapshot) {
                     faceFeature = back.face_feature;
                     break;
                 }
@@ -277,32 +290,27 @@ export class FRSService {
             faceBuffer = new Buffer(faceFeature, 'binary');
 
             /// 2)
-            let count = 0;
-            let time = 0;
             /// 2.1) adjust starttime / endtime with possible companion duration
             let adjustStartTime = starttime - Config.fts.possibleCompanionDurationSeconds*1000;
             let adjustEndTime = endtime + Config.fts.possibleCompanionDurationSeconds*1000;
             this.localFetchAll(adjustStartTime, adjustEndTime, { excludeFaceFeature: face.type === UserType.Recognized ? true : false })
                 .pipe( semaphore<RecognizedUser | UnRecognizedUser>(16, async (data) => {
-                    let start = Date.now();
                     if (face.type === UserType.UnRecognized && data.type === UserType.UnRecognized) {
-                        var buffer = new Buffer(data.face_feature, 'binary');
-                        var score = await FaceFeatureCompare.async(faceBuffer, buffer);
+                        // //var buffer = new Buffer(data.face_feature, 'binary');
+                        let buffer = (data.face_feature as any).buffer;
+                         var score = await FaceFeatureCompare.async(faceBuffer, buffer);
                         data.score = score;
                     }
-                    time += (Date.now() - start);
                     return data;
                 }) )
                 .pipe( face.type === UserType.Recognized ? searchRecognizedFace(face) : searchUnRecognizedFace(face) )
                 .subscribe( async (data) => {
-
                     sj.next(data);
 
                 }, () => {}, async () => {
-                    console.log('total cost: ', time);
                     sj.complete();
                 });
-            
+
         })();
         
         return sj;
@@ -436,10 +444,7 @@ export class FRSService {
         console.log("<Recover FRS DB> Started...");
 
         /// read local db
-        const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-        let client = await mongo.MongoClient.connect(url);
-        let db = client.db(Config.mongodb.collection);
-        let col = db.collection(collection);
+        let col = this.db.collection(collection);
 
         /// get last timestamp
         let result = await col.find().sort({timestamp: -1}).limit(1).toArray();
@@ -467,7 +472,7 @@ export class FRSService {
         /// batch and save to db
         let bsSubscription = sjBatchSave.bufferTime(1000)
             .subscribe( (data: any[]) => {
-                if (data.length === 0) return sjBatchSave.complete();
+                if (data.length === 0) return;
                 allPromises.push( col.insertMany(data) );
             }, () => {}, async () => {
                 if (allPromises.length !== 0) await Promise.all(allPromises);
@@ -494,15 +499,13 @@ export class FRSService {
                     console.log(`from: ${new Date(first.timestamp).toISOString()}, to: ${new Date(last.timestamp).toISOString()}`);
                     console.log(`<Recover FRS DB> ${prev} faces loaded. After remove duplicate, ${count} left.`);
                 }
+                sjBatchSave.complete();
                 console.timeEnd("<Recover FRS DB> Done load");
             });
     }
     private async writeDB() {
         /// read local db
-        const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-        let client = await mongo.MongoClient.connect(url);
-        let db = client.db(Config.mongodb.collection);
-        let col = db.collection(collection);
+        let col = this.db.collection(collection);
 
         let sjBatchSave: Subject<any> = new Subject();
         let bsSubscription = sjBatchSave.bufferTime(1000)
@@ -541,14 +544,15 @@ export class FRSService {
         //     { type, person_info, person_id, score, snapshot, channel, timestamp, groups, face_feature, highest_score }
         // ))(o);
         let picked = ((
-            { type, person_id, snapshot, channel, timestamp, face_feature }
+            { type, person_id, snapshot, channel, timestamp }
         ) => (
-            { type, person_id, snapshot, channel, timestamp, face_feature }
+            { type, person_id, snapshot, channel, timestamp }
         ))(o) as any;
         o.person_info !== undefined && (picked.person_info = o.person_info);
         o.score !== undefined && (picked.score = o.score);
         o.groups !== undefined && (picked.groups = o.groups);
         o.highest_score !== undefined && (picked.highest_score = o.highest_score);
+        picked.face_feature = new Buffer(o.face_feature, 'binary');
 
         return picked;
     }
