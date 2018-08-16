@@ -1,4 +1,5 @@
 import { Observable, Subject } from 'rxjs';
+import { Config } from 'core/config.gen';
 import { UserType, RecognizedUser, UnRecognizedUser } from './core';
 import { FaceFeatureCompare } from './../../modules/face-feature-compare';
 
@@ -15,8 +16,9 @@ interface Removing {
 }
 
 let uniqueCount = 0;
-export function filterFace(compareCallback: (face: RecognizedUser | UnRecognizedUser) => void = null,
-    traceMilliSeconds: number = 10000, targetScore: number = 0.5) {
+const targetScore = Config.fts.specialScoreForUnRecognizedFace;
+const traceMilliSeconds = Config.fts.throttleKeepSameFaceSeconds * 1000;
+export function filterFace(compareCallback: (face: RecognizedUser | UnRecognizedUser) => void = null) {
 
     let tryCallback = (face: RecognizedUser | UnRecognizedUser) => {
         compareCallback !== null && compareCallback(face);
@@ -109,7 +111,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                         for (let i=indexTypeR.length-1; i>=0; --i) {
                             let prev: RecognizedUser = indexTypeR[i] as RecognizedUser;
                             let highestScore: any = val.highest_score || {};
-                            if (prev.person_info.fullname === highestScore.fullname && highestScore.score >= 0.6) {
+                            if (prev.person_info.fullname === highestScore.fullname && highestScore.score >= Config.fts.specialScoreForUnRecognizedFace) {
                                 /// totally remove this face
                                 return;
                             }
@@ -119,10 +121,10 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                             let prev: UnRecognizedUser = indexType[i] as UnRecognizedUser;
                             var buffer = new Buffer(val.face_feature, 'binary');
                             var prebuffer = new Buffer(prev.face_feature, 'binary');
-                            if (FaceFeatureCompare.sync(buffer, prebuffer) < targetScore) continue;
+                            let score = FaceFeatureCompare.sync(buffer, prebuffer);
+                            if (score < targetScore) continue;
                             /// replace
                             val.timestamp = prev.timestamp;
-                            val.snapshot = prev.snapshot;
                             val.valFaceId = prev.valFaceId;
                             tryCallback(val);
                             Object.assign(prev, val);
@@ -143,7 +145,6 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                             if (prev.person_id !== personId) continue;
                             /// replace
                             valrec.timestamp = prev.timestamp;
-                            valrec.snapshot = prev.snapshot;
                             valrec.valFaceId = prev.valFaceId;
                             tryCallback(valrec);
                             Object.assign(prev, valrec);

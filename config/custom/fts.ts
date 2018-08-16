@@ -7,6 +7,8 @@
 var config: Config = {
     searchDurationSeconds: 7776000,
     possibleCompanionDurationSeconds: 5,
+    specialScoreForUnRecognizedFace: 0.6,
+    throttleKeepSameFaceSeconds: 10,
     groupInfo: [
         {
             name: "VIP",
@@ -36,5 +38,7 @@ export interface IGroupInfo {
 export interface Config {
     searchDurationSeconds: number;
     possibleCompanionDurationSeconds: number;
+    specialScoreForUnRecognizedFace: number;
+    throttleKeepSameFaceSeconds: number;
     groupInfo: IGroupInfo[];
 }

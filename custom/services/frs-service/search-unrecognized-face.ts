@@ -32,7 +32,7 @@ export function searchUnRecognizedFace(face: UnRecognizedUser) {
             let subscription = source.subscribe( async (value: RecognizedUser | UnRecognizedUser) => {
 
                 /// 1) find unrecognized user score for same person
-                if (value.type === UserType.UnRecognized && value.score >= 0.6) {
+                if (value.type === UserType.UnRecognized && value.score >= Config.fts.specialScoreForUnRecognizedFace) {
                     value.search_ok = true;
                     match = value;
                     matchStart = value.timestamp - possibleCompanionMilliSeconds;

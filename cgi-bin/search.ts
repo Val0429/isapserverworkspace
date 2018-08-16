@@ -24,7 +24,6 @@ action.ws(async (data) => {
     var socket = data.socket;
 
     // console.log('starttime', new Date(+data.parameters.starttime), 'endtime', new Date(+data.parameters.endtime));
-
     socket.io.on("close", () => {
         subscription && subscription.unsubscribe();
     });

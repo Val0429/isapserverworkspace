@@ -14,6 +14,7 @@ import { Semaphore } from 'helpers/utility/semaphore';
 import { Cameras } from './../models/cameras';
 import { searchRecognizedFace } from './frs-service/search-recognized-face';
 import { searchUnRecognizedFace } from './frs-service/search-unrecognized-face';
+import { saveSnapshot } from './frs-service/save-snapshot';
 import * as mongo from 'mongodb';
 
 const collection: string = "FRSFaces";
@@ -62,8 +63,8 @@ export class FRSService {
         }
         return this.localFetchAll(start, end, options);
     }
-    snapshot(image: string, resp: Response): Promise<void> {
-        return new Promise<void>( async (resolve, reject) => {
+    snapshot(image: string, resp: Response = null): Promise<string> {
+        return new Promise<string>( async (resolve, reject) => {
             await this.waitForLogin();
             var url: string = this.makeUrl(`snapshot/session_id=${this.sessionId}&image=${image}`);
             request({
@@ -72,9 +73,11 @@ export class FRSService {
                 encoding: null
             }, (err, res, body) => {
                 if (err) { reject(err); return; }
-                resp.setHeader("content-type", res.headers["content-type"]);
-                resp.end(body, "binary");
-                resolve();
+                if (resp !== null) {
+                    resp.setHeader("content-type", res.headers["content-type"]);
+                    resp.end(body, "binary");
+                }
+                resolve(body);
             });
         });
     }
@@ -274,18 +277,20 @@ export class FRSService {
             faceBuffer = new Buffer(faceFeature, 'binary');
 
             /// 2)
-            let lock = new Semaphore(16);
             let count = 0;
+            let time = 0;
             /// 2.1) adjust starttime / endtime with possible companion duration
             let adjustStartTime = starttime - Config.fts.possibleCompanionDurationSeconds*1000;
             let adjustEndTime = endtime + Config.fts.possibleCompanionDurationSeconds*1000;
             this.localFetchAll(adjustStartTime, adjustEndTime, { excludeFaceFeature: face.type === UserType.Recognized ? true : false })
                 .pipe( semaphore<RecognizedUser | UnRecognizedUser>(16, async (data) => {
+                    let start = Date.now();
                     if (face.type === UserType.UnRecognized && data.type === UserType.UnRecognized) {
                         var buffer = new Buffer(data.face_feature, 'binary');
                         var score = await FaceFeatureCompare.async(faceBuffer, buffer);
                         data.score = score;
                     }
+                    time += (Date.now() - start);
                     return data;
                 }) )
                 .pipe( face.type === UserType.Recognized ? searchRecognizedFace(face) : searchUnRecognizedFace(face) )
@@ -294,6 +299,7 @@ export class FRSService {
                     sj.next(data);
 
                 }, () => {}, async () => {
+                    console.log('total cost: ', time);
                     sj.complete();
                 });
             
@@ -446,6 +452,19 @@ export class FRSService {
         let count = 0;
         let sjBatchSave: Subject<any> = new Subject();
         let allPromises = [];
+
+        /// save snapshots
+        let ssCount = 0;
+        let bsSnapshotSubscription = sjBatchSave
+            .pipe( saveSnapshot(12) )
+            .subscribe({
+                next: () => ++ssCount,
+                complete: () => {
+                    if (ssCount > 0) console.log(`<Recover FRS DB> ${ssCount} of snapshots saved.`);
+                }
+            });
+
+        /// batch and save to db
         let bsSubscription = sjBatchSave.bufferTime(1000)
             .subscribe( (data: any[]) => {
                 if (data.length === 0) return sjBatchSave.complete();
@@ -461,7 +480,7 @@ export class FRSService {
         let last: RecognizedUser | UnRecognizedUser = null;
         console.time("<Recover FRS DB> Done load");
         //this.lastImages(0, Number.MAX_SAFE_INTEGER)
-        this.fetchAll(lastTimestamp, Number.MAX_SAFE_INTEGER, 100)
+        this.fetchAll(lastTimestamp, Number.MAX_SAFE_INTEGER, 20)
             .pipe( filterFace(() => prev++) )
             .subscribe( (data) => {
                 let picked = this.makeDBObject(data);
@@ -492,10 +511,12 @@ export class FRSService {
                 col.insertMany(data);
             });
         
-        this.livestream.subscribe((data) => {
-            let picked = this.makeDBObject(data);
-            sjBatchSave.next(picked);
-        });
+        this.livestream
+            .pipe( saveSnapshot(12) )
+            .subscribe((data) => {
+                let picked = this.makeDBObject(data);
+                sjBatchSave.next(picked);
+            });
     }
     /////////////////////////////////
 
