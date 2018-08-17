@@ -99,6 +99,9 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                 let indexType = indexChannel[type];
                 if (indexType == undefined) indexType = indexChannel[type] = [];
 
+                /// translate face feature as Buffer
+                value.face_feature = new Buffer(value.face_feature, 'binary') as any;
+
                 /// 1) replace or new
                 switch (type) {
                     case UserType.UnRecognized:
@@ -106,6 +109,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                         val.valFaceId = ++uniqueCount;
                         resolveCache(val.timestamp);
 
+                        let buffer = val.face_feature as any as Buffer;
                         /// elimate more unrecognized as recognized
                         let indexTypeR = indexChannel[UserType.Recognized] || [];
                         for (let i=indexTypeR.length-1; i>=0; --i) {
@@ -115,12 +119,18 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                                 /// totally remove this face
                                 return;
                             }
+                            // let prebuffer = prev.face_feature as any as Buffer;
+                            // let score = FaceFeatureCompare.sync(buffer, prebuffer);
+                            // if (score >= targetScore)
+                            //     /// totally remove this face
+                            //     return;
                         }
 
                         for (let i=indexType.length-1; i>=0; --i) {
                             let prev: UnRecognizedUser = indexType[i] as UnRecognizedUser;
-                            var buffer = new Buffer(val.face_feature, 'binary');
-                            var prebuffer = new Buffer(prev.face_feature, 'binary');
+                            // var buffer = new Buffer(val.face_feature, 'binary');
+                            // var prebuffer = new Buffer(prev.face_feature, 'binary');
+                            let prebuffer = prev.face_feature as any as Buffer;
                             let score = FaceFeatureCompare.sync(buffer, prebuffer);
                             if (score < targetScore) continue;
                             /// replace

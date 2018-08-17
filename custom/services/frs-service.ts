@@ -279,7 +279,14 @@ export class FRSService {
             let backs: any[] = await this.fetchAll(timestamp, timestamp)
                 .bufferCount(Number.MAX_SAFE_INTEGER)
                 .toPromise();
-            if (!Array.isArray(backs)) backs = [backs];
+
+            /// 1.1) FRS record being deleted. try again within local db.
+            if (backs === undefined) {
+                backs = await this.localFetchAll(face.timestamp, face.timestamp)
+                    .bufferCount(Number.MAX_SAFE_INTEGER)
+                    .toPromise();
+            }
+            if (backs === undefined) backs = [];
 
             for (var back of backs) {
                 if (snapshot === back.snapshot) {
@@ -544,15 +551,15 @@ export class FRSService {
         //     { type, person_info, person_id, score, snapshot, channel, timestamp, groups, face_feature, highest_score }
         // ))(o);
         let picked = ((
-            { type, person_id, snapshot, channel, timestamp }
+            { type, person_id, snapshot, channel, timestamp, face_feature }
         ) => (
-            { type, person_id, snapshot, channel, timestamp }
+            { type, person_id, snapshot, channel, timestamp, face_feature }
         ))(o) as any;
         o.person_info !== undefined && (picked.person_info = o.person_info);
         o.score !== undefined && (picked.score = o.score);
         o.groups !== undefined && (picked.groups = o.groups);
         o.highest_score !== undefined && (picked.highest_score = o.highest_score);
-        picked.face_feature = new Buffer(o.face_feature, 'binary');
+        //picked.face_feature = new Buffer(o.face_feature, 'binary');
 
         return picked;
     }
