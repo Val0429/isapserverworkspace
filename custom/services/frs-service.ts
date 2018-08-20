@@ -491,15 +491,15 @@ export class FRSService {
         let first: RecognizedUser | UnRecognizedUser = null;
         let last: RecognizedUser | UnRecognizedUser = null;
         console.time("<Recover FRS DB> Done load");
-        //this.lastImages(0, Number.MAX_SAFE_INTEGER)
         this.fetchAll(lastTimestamp, Number.MAX_SAFE_INTEGER, 20)
-            .pipe( filterFace(() => prev++) )
+            .do( () => ++prev )
+            .pipe( filterFace() )
             .subscribe( (data) => {
                 let picked = this.makeDBObject(data);
                 sjBatchSave.next(picked);
                 if (first === null) first = picked as any;
                 last = picked as any;
-                count++;
+                ++count;
             }, () => {}, () => {
                 // console.log('prev', prev, 'total', count);
                 if (prev !== 0) {

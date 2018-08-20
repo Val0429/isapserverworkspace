@@ -119,13 +119,9 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                                 /// totally remove this face
                                 return;
                             }
-                            // let prebuffer = prev.face_feature as any as Buffer;
-                            // let score = FaceFeatureCompare.sync(buffer, prebuffer);
-                            // if (score >= targetScore)
-                            //     /// totally remove this face
-                            //     return;
                         }
 
+                        /// compare the rest unrecognized as same face
                         for (let i=indexType.length-1; i>=0; --i) {
                             let prev: UnRecognizedUser = indexType[i] as UnRecognizedUser;
                             // var buffer = new Buffer(val.face_feature, 'binary');
@@ -140,7 +136,7 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                             Object.assign(prev, val);
                             return;
                         }
-                        tryCallback(val);
+
                         (indexType as UnRecognizedUser[]).push(val);
                         caches.push(val);
                         break;
@@ -150,6 +146,8 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                         valrec.valFaceId = ++uniqueCount;
                         resolveCache(valrec.timestamp);
                         var personId = valrec.person_id;
+
+                        /// merge same recognized user together
                         for (let i=indexType.length-1; i>=0; --i) {
                             let prev: RecognizedUser = indexType[i] as RecognizedUser;
                             if (prev.person_id !== personId) continue;
@@ -160,6 +158,48 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                             Object.assign(prev, valrec);
                             return;
                         }
+                        // for (let i=indexTypeU.length-1; i>=0; --i) {
+                        //     let prev: RecognizedUser = indexTypeR[i] as RecognizedUser;
+                        //     let highestScore: any = val.highest_score || {};
+                        //     if (prev.person_info.fullname === highestScore.fullname && highestScore.score >= Config.fts.specialScoreForUnRecognizedFace) {
+                        //         /// totally remove this face
+                        //         return;
+                        //     }
+                        // }
+
+                        /// find previous unrecognized user simular
+                        let indexTypeU = indexChannel[UserType.UnRecognized] || [];
+                        for (let i=0; i<indexTypeU.length; ++i) {
+                            let prev: UnRecognizedUser = indexTypeU[i] as UnRecognizedUser;
+                            let highestScore: any = prev.highest_score || {};
+                            if (valrec.person_info.fullname === highestScore.fullname && highestScore.score >= Config.fts.specialScoreForUnRecognizedFace) {
+                                /// replace this face
+                                valrec.timestamp = prev.timestamp;
+                                valrec.valFaceId = prev.valFaceId;
+                                tryCallback(valrec);
+                                Object.assign(prev, valrec);
+                                /// put into recognized
+                                indexTypeU.splice(i, 1);
+                                let indexTypeR: RecognizedUser[] = indexType as RecognizedUser[];
+                                let k = indexTypeR.length-1;
+                                for (; k>=0; --k) {
+                                    let temprec: RecognizedUser = indexTypeR[k];
+                                    if (temprec.timestamp < prev.timestamp) break;
+                                }
+                                indexTypeR.splice(k+1, 0, prev as any as RecognizedUser);
+
+                                /// remove every matches right after
+                                for (let j=indexTypeU.length-1; j>=i; --j) {
+                                    prev = indexTypeU[j] as UnRecognizedUser;
+                                    highestScore = prev.highest_score || {};
+                                    if (valrec.person_info.fullname === highestScore.fullname && highestScore.score >= Config.fts.specialScoreForUnRecognizedFace) {
+                                        indexTypeU.splice(j, 1);
+                                    }
+                                }
+                                return;
+                            }
+                        }
+
                         tryCallback(valrec);
                         (indexType as RecognizedUser[]).push(valrec);
                         caches.push(valrec);

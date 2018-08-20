@@ -5,10 +5,10 @@
 // 7776000
 
 var config: Config = {
-    searchDurationSeconds: 28800,
+    searchDurationSeconds: 5,
     possibleCompanionDurationSeconds: 5,
     specialScoreForUnRecognizedFace: 0.4,
-    throttleKeepSameFaceSeconds: 15,
+    throttleKeepSameFaceSeconds: 10,
     groupInfo: [
         {
             name: "VIP",
@@ -23,7 +23,7 @@ var config: Config = {
         {
             name: "No Match",
             color: "#222",
-            glowcolor: "Violet"
+            glowcolor: "White"
         }
     ]
 }
