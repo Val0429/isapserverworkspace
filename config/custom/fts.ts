@@ -8,7 +8,7 @@ var config: Config = {
     searchDurationSeconds: 5,
     possibleCompanionDurationSeconds: 5,
     specialScoreForUnRecognizedFace: 0.4,
-    throttleKeepSameFaceSeconds: 10,
+    throttleKeepSameFaceSeconds: 15,
     groupInfo: [
         {
             name: "VIP",
