@@ -24,10 +24,10 @@ action.ws(async (data) => {
     var socket = data.socket;
 
     // console.log('starttime', new Date(+data.parameters.starttime), 'endtime', new Date(+data.parameters.endtime));
-    let start = Date.now();
+    // let start = Date.now();
     socket.io.on("close", () => {
         subscription && subscription.unsubscribe();
-        console.log('time cost: ', Date.now()-start);
+        // console.log('time cost: ', Date.now()-start);
     });
 
     var subscription = frs.search(eval(`(${data.parameters.face})`), +data.parameters.starttime, +data.parameters.endtime)
