@@ -34,7 +34,6 @@ action.post<InputC>({ inputType: "InputC" }, async (data) => {
                 if (!value.floor || !value.name) break;
                 final.push(new Floors({
                     floor: +value.floor,
-                    unitNo: value.unitNo,
                     name: value.name,
                     phone: (value.phone || "").split(",")
                 }));

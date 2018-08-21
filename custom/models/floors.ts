@@ -4,8 +4,6 @@ import { registerSubclass, ParseObject } from './../../../helpers/parse-server/p
 export interface IFloors {
     floor: number;
     name: string;
-    unitNo: string;
-    phone: string[];
 }
 @registerSubclass() export class Floors extends ParseObject<IFloors> {}
 ////////////////////////////////////////////////////
