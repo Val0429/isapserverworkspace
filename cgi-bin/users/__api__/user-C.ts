@@ -6,66 +6,14 @@ import {
     getEnumKey, getEnumKeyArray, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 
-
+import { permissionMapC } from './core';
 
 import ast from './../../../../services/ast-services/ast-client';
 
 export type InputC = Restful.InputC<IUser<any>>;
 export type OutputC = Restful.OutputC<IUser<any>>;
 
-/**
- * SystemAdministrator: Can only create SystemAdministrator, Administrator.
- * Administrator: Can only crate TenantAdministrator.
- * TenantAdministrator: Can only create TenantUser.
- */
-const permissionMapC = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.TenantAdministrator],
-    [RoleList.TenantAdministrator]: [RoleList.TenantUser]
-}
-
-/**
- * SystemAdministrator: Can only see SystemAdministrator, Administrator.
- * Administrator: Can only see TenantAdministrator and self.
- * TenantAdministrator: Can see everything in same company.
- * TenantUser: Can only see his invited Visitor.
- */
-const permissionMapR = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.TenantAdministrator],
-    [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator, RoleList.TenantUser]
-}
-
-/**
- * SystemAdministrator: Can only update SystemAdministrator, Administrator.
- * Administrator: Can only update TenantAdministrator and self.
- * TenantAdministrator: Can only update TenantUser, and self.
- * TenantUser: Can only update Visitors.
- */
-const permissionMapU = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.TenantAdministrator],
-    [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator, RoleList.TenantUser]
-}
-/**
- * SystemAdministrator: Can only delete Administrator.
- * Administrator: Can only delete TenantAdministrator. All TenantUser created by it should be deleted accordingly.
- * TenantAdministrator: Can only delete TenantUser created by him. All visitors created by it should be deleted accordingly.
- * TenantUser: Can only delete Visitors created by him.
- */
-const permissionMapD = {
-    [RoleList.SystemAdministrator]: [RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.TenantAdministrator],
-    [RoleList.TenantAdministrator]: [RoleList.TenantUser]
-}
-
 export default function(action: Action) {
-
-// const permissionMapC = {
-//     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-//     [RoleList.Administrator]: [RoleList.TenantAdministrator],
-//     [RoleList.TenantAdministrator]: [RoleList.TenantUser]
-// }
 
 function validateRoles(availableRoles: RoleList[], userRoles: RoleList[]) {
     let result = userRoles.filter( (role) => availableRoles.indexOf(role) < 0 );
@@ -74,8 +22,6 @@ function validateRoles(availableRoles: RoleList[], userRoles: RoleList[]) {
 }
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    console.time('got')
-    console.time('got1')
     const { roles: userRoles } = data.inputType;
 
     /// 1) Get Current User Roles
@@ -88,23 +34,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }, []);
     /// 3) Validate UserRoles
     validateRoles(availableRoles, userRoles);
-    console.timeEnd('got1')
 
     /// 4) Trigger param validation on roles
     for (let userRole of userRoles) {
-        let type = RoleInterfaceLiteralList[userRole];
-        let rtn = await ast.requestValidation({
-            path: __filename,
-            type
-        }, data.parameters);
+        let rtn = await ast.requestValidation(RoleInterfaceLiteralList[userRole], data.parameters);
     }
-    // var rtn = await ast.requestValidation({
-    //     path: __filename,
-    //     type
-    // }, req.parameters);
     
-     console.timeEnd('got')
-
     /// 5) Create. Signup User
     let user: Parse.User = new Parse.User();
     try {
