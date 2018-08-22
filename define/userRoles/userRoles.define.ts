@@ -1,7 +1,9 @@
 var userRoles: Config[] = [
-    [0, "Administrator"],
+    [0, "SystemAdministrator"],
 
-    [1, "TenantAdministrator", `
+    [10, "Administrator"],
+
+    [20, "TenantAdministrator", `
         /**
          * Which company this Tenant Administrator is in.
          */
@@ -10,18 +12,18 @@ var userRoles: Config[] = [
          * Which floors this Tenant Administrator is allowed to create user.
          */
         floor: Floors[];
-    `, ["Companies"]],
+    `, ["Companies", "Floors"]],
 
-    [2, "TenantUser", `
+    [21, "TenantUser", `
         /**
-         * Who created this Tenant User.
+         * Which company this Tenant Administrator is in.
          */
-        parent: Parse.User;
+        company: Companies;
         /**
          * Which floor this Tenant User is allowed to invite.
          */
         floor: Floors[];
-    `, ["Floors"]],
+    `, ["Companies", "Floors"]],
 
     [80, "Kiosk", `
         /**
@@ -29,9 +31,7 @@ var userRoles: Config[] = [
          */
         kioskId: string;
         kioskName: string;
-    `],
-
-    [99, "SystemAdministrator"]
+    `]
 ];
 
 export default userRoles;

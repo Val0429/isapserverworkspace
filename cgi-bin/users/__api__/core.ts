@@ -9,7 +9,7 @@ import {
  */
 export const permissionMapC = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.TenantAdministrator, RoleList.TenantUser],
+    [RoleList.Administrator]: [RoleList.TenantAdministrator], //, RoleList.TenantUser],
     [RoleList.TenantAdministrator]: [RoleList.TenantUser]
 }
 
@@ -21,7 +21,7 @@ export const permissionMapC = {
  */
 export const permissionMapR = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.TenantAdministrator],
+    [RoleList.Administrator]: [RoleList.TenantAdministrator], // RoleList.Administrator, 
     [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator, RoleList.TenantUser]
 }
 
@@ -46,4 +46,21 @@ export const permissionMapD = {
     [RoleList.SystemAdministrator]: [RoleList.Administrator],
     [RoleList.Administrator]: [RoleList.TenantAdministrator],
     [RoleList.TenantAdministrator]: [RoleList.TenantUser]
+}
+
+function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
+export function getAvailableRoles(currentUserRoles: Parse.Role[], permissionMap: any) {
+    /// 1) Get Current User Roles
+    let roles = currentUserRoles.map( (role) => role.getName() );
+    /// 2) Get Available Create Roles
+    let availableRoles: RoleList[] = roles.reduce( (final, data) => {
+        let permissions = permissionMap[data];
+        final.splice(final.length, 0, ...permissions);
+        return final;
+    }, []);
+    /// 3) Make unique
+    return availableRoles.filter( onlyUnique );
 }

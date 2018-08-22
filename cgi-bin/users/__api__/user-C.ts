@@ -4,9 +4,10 @@ import {
     Action, Errors, UserType,
     RoleInterfaceLiteralList, IUserSystemAdministrator, IUserAdministrator, IUserTenantAdministrator, IUserTenantUser,
     getEnumKey, getEnumKeyArray, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+    deepMerge
 } from 'core/cgi-package';
 
-import { permissionMapC } from './core';
+import { permissionMapC, getAvailableRoles } from './core';
 
 import ast from './../../../../services/ast-services/ast-client';
 
@@ -24,23 +25,18 @@ function validateRoles(availableRoles: RoleList[], userRoles: RoleList[]) {
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     const { roles: userRoles } = data.inputType;
 
-    /// 1) Get Current User Roles
-    let roles = data.role.map( (role) => role.getName() );
-    /// 2) Get Available Create Roles
-    let availableRoles: RoleList[] = roles.reduce( (final, data) => {
-        let permissions = permissionMapC[data];
-        final.splice(final.length, 0, ...permissions);
-        return final;
-    }, []);
-    /// 3) Validate UserRoles
+    /// 1) Get available roles
+    let availableRoles = getAvailableRoles(data.role, permissionMapC);
+    /// 2) Validate UserRoles
     validateRoles(availableRoles, userRoles);
 
-    /// 4) Trigger param validation on roles
+    /// 3) Trigger param validation on roles
     for (let userRole of userRoles) {
         let rtn = await ast.requestValidation(RoleInterfaceLiteralList[userRole], data.parameters);
+        data.inputType = deepMerge(data.inputType, rtn);
     }
-    
-    /// 5) Create. Signup User
+
+    /// 4) Create. Signup User
     let user: Parse.User = new Parse.User();
     try {
         user = await user.signUp({
@@ -51,7 +47,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 
-    /// 5.1) Add to Role
+    /// 4.1) Add to Role
     var roleAry = [];
     for (var name of userRoles) {
         var r = await new Parse.Query(Parse.Role)
@@ -62,7 +58,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         roleAry.push(r);
     }
 
-    /// 6) Add Role to User
+    /// 5) Add Role to User
     user.set("roles", roleAry);
     await user.save(null, { useMasterKey: true });
 
