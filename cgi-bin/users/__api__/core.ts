@@ -10,7 +10,8 @@ import {
 export const permissionMapC = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
     [RoleList.Administrator]: [RoleList.TenantAdministrator], //, RoleList.TenantUser],
-    [RoleList.TenantAdministrator]: [RoleList.TenantUser]
+    [RoleList.TenantAdministrator]: [RoleList.TenantUser],
+    [RoleList.TenantUser]: []
 }
 
 /**
@@ -21,8 +22,9 @@ export const permissionMapC = {
  */
 export const permissionMapR = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.TenantAdministrator], // RoleList.Administrator, 
-    [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator, RoleList.TenantUser]
+    [RoleList.Administrator]: [RoleList.Administrator, RoleList.TenantAdministrator],
+    [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator, RoleList.TenantUser],
+    [RoleList.TenantUser]: []
 }
 
 /**
@@ -33,8 +35,9 @@ export const permissionMapR = {
  */
 export const permissionMapU = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.TenantAdministrator],
-    [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator, RoleList.TenantUser]
+    [RoleList.Administrator]: [RoleList.Administrator /* only self */, RoleList.TenantAdministrator],
+    [RoleList.TenantAdministrator]: [RoleList.TenantAdministrator /* only self */, RoleList.TenantUser],
+    [RoleList.TenantUser]: [RoleList.TenantUser]
 }
 /**
  * SystemAdministrator: Can only delete Administrator.
@@ -43,9 +46,10 @@ export const permissionMapU = {
  * TenantUser: Can only delete Visitors created by him.
  */
 export const permissionMapD = {
-    [RoleList.SystemAdministrator]: [RoleList.Administrator],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
     [RoleList.Administrator]: [RoleList.TenantAdministrator],
-    [RoleList.TenantAdministrator]: [RoleList.TenantUser]
+    [RoleList.TenantAdministrator]: [RoleList.TenantUser],
+    [RoleList.TenantUser]: []
 }
 
 function onlyUnique(value, index, self) {
