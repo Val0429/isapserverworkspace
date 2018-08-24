@@ -1,19 +1,16 @@
-import { waitServerReady } from './../../../core/pending-tasks';
+import { serverReady } from './../../../core/pending-tasks';
 import { Config } from './../../../core/config.gen';
 import { RoleList } from './../../../core/userRoles.gen';
 import { createIndex, sharedMongoDB } from './../../../helpers/parse-server/parse-helper';
 
-waitServerReady(async () => {
+(async () => {
+    await serverReady;
 
     /// indexes ////////////////
     /// Kiosk
     createIndex("_User", "kioskUniqueID",
         { "data.kioskId": 1 },
         { unique: true, partialFilterExpression: { "data.kioskId": { $exists: true } } }
-    );
-    /// Pins
-    createIndex("Pins", "pinIndex",
-        { "index": 1 }
     );
     ////////////////////////////
 
@@ -57,36 +54,4 @@ waitServerReady(async () => {
     }
     ////////////////////////////
 
-    /// Generate pin code
-    let db = await sharedMongoDB();
-    let col = db.collection("Pins");
-    if (await col.findOne({}) === null) {
-        console.log("<PinCode> Creating...");
-        console.time("<PinCode> Created");
-        let pinNumbers = new Array(900000);
-        for (let i=100000, j=0; i<1000000; ++i, ++j) {
-            pinNumbers[j] = i;
-        }
-        function shuffle(array) {
-            let currentIndex = array.length, temporaryValue, randomIndex;
-            // While there remain elements to shuffle...
-            while (0 !== currentIndex) {
-                // Pick a remaining element...
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex -= 1;
-
-                // And swap it with the current element.
-                temporaryValue = array[currentIndex];
-                array[currentIndex] = array[randomIndex];
-                array[randomIndex] = temporaryValue;
-            }
-        }
-        shuffle(pinNumbers);
-        /// Batch save pin code into database
-        col.insertMany(pinNumbers.map( (pin, index) => ({index, pin}) ), (err, result) => {
-            console.timeEnd("<PinCode> Created");
-        });
-    }
-    ////////////////////////////
-
-});
+})();

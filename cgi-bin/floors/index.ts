@@ -34,6 +34,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 type InputR = Restful.InputR<IFloors>;
 type OutputR = Restful.OutputR<IFloors>;
 
+import pinCode from 'services/pin-code/pin-code';
+
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Floors);

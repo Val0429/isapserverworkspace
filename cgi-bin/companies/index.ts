@@ -37,7 +37,8 @@ type OutputR = Restful.OutputR<ICompanies>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Companies);
+    var query = new Parse.Query(Companies)
+        .include("floor");
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
