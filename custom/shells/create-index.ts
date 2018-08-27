@@ -3,5 +3,4 @@ import { Config } from 'core/config.gen';
 import { RoleList } from 'core/userRoles.gen';
 import { createIndex, sharedMongoDB } from 'helpers/parse-server/parse-helper';
 
-import './create-index/kiosk';
-import './create-index/user-roles';
+import './create-index/index';
