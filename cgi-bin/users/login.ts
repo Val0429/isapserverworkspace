@@ -25,16 +25,21 @@ export default new Action<Input, Output>({
 .all( async (data) => {
     /// Try login
     var obj = await UserHelper.login(data.inputType);
+    let user = await new Parse.Query(Parse.User)
+        .include("roles")
+        .include("data.company")
+        .include("data.floor")
+        .get(obj.user.id);
 
     var ev = new EventLogin({
-        owner: obj.user
+        owner: user
     });
     Events.save(ev);
 
     return ParseObject.toOutputJSON({
         sessionId: obj.sessionId,
         serverTime: new Date(),
-        user: obj.user
+        user: user
     });
 });
 
