@@ -11,6 +11,8 @@ export interface IInvitations {
     dates: Date[];
     pins: Pin[];
     purpose: Purposes;
+    sendEmail?: boolean;
+    sendSMS?: boolean;
     cancelled?: boolean;
 }
 @registerSubclass() export class Invitations extends ParseObject<IInvitations> {}

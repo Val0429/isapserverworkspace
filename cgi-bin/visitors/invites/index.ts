@@ -10,6 +10,8 @@ import { Invitations, IInvitations } from './../../../custom/models/invitations'
 import { Purposes } from './../../../custom/models/purposes';
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';
 
+import { ScheduleControllerEmail_PreRegistration } from './../../../custom/schedulers/controllers/email-@pre-registration';
+
 const inviteFilter = { parent: false, visitor: { company: false, status: (status) => getEnumKey(VisitorStatus, status) } };
 
 var action = new Action({
@@ -56,6 +58,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     /// V2.0) Save
     await obj.save({ pins, parent, cancelled, visitor }, { useMasterKey: true });
+
+    //new ScheduleControllerEmail_PreRegistration().do(obj);
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);
