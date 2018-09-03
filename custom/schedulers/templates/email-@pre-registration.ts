@@ -1,14 +1,6 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
-import { ScheduleTemplateBase } from 'models/schedulers/schedulers.base';
+import { ScheduleTemplateBase, IOutputScheduleTemplateEmail } from 'models/schedulers/schedulers.base';
 import { Pin } from 'services/pin-code/pin-code';
-
-
-/// email core ////////////////////////////
-export interface IOutputScheduleTemplateEmail {
-    subject: string;
-    body: string;
-}
-///////////////////////////////////////////
 
 export interface PinCodeInstance {
     pins: Pin[];
@@ -20,6 +12,8 @@ export interface IInputScheduleTemplateEmail_PreRegistration {
     company: {
         /// Company name
         name: string;
+        email: string;
+        phone: string;
     },
     visitor: {
         /// Visitor name, email, phone
@@ -61,7 +55,7 @@ export class ScheduleTemplateEmail_PreRegistration extends ScheduleTemplateBase<
             }).join("")
         }
 
-        <p>For further inquiries contact: <b>${input.visitor.name}</b> at <a href="mailto://${input.visitor.email}">${input.visitor.email}</a> / ${input.visitor.phone}</p>
+        <p>For further inquiries contact: <b>${input.company.name}</b> at <a href="mailto://${input.company.email}">${input.company.email}</a> / ${input.company.phone}</p>
     </div>
             `;
 

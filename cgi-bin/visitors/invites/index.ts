@@ -11,6 +11,7 @@ import { Purposes } from './../../../custom/models/purposes';
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';
 
 import { ScheduleControllerEmail_PreRegistration } from './../../../custom/schedulers/controllers/email-@pre-registration';
+import { ScheduleControllerSMS_PreRegistration } from './../../../custom/schedulers/controllers/sms-@pre-registration';
 
 const inviteFilter = { parent: false, visitor: { company: false, status: (status) => getEnumKey(VisitorStatus, status) } };
 
@@ -59,7 +60,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// V2.0) Save
     await obj.save({ pins, parent, cancelled, visitor }, { useMasterKey: true });
 
-    //new ScheduleControllerEmail_PreRegistration().do(obj);
+    /// send email
+    data.inputType.notify.visitor.email && new ScheduleControllerEmail_PreRegistration().do(obj);
+    /// todo: send sms
+    data.inputType.notify.visitor.phone && new ScheduleControllerSMS_PreRegistration().do(obj);
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);
@@ -110,3 +114,4 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 });
 
 export default action;
+

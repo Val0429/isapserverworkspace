@@ -1,8 +1,8 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
 import { EventLogin } from 'core/events.gen';
 
-import { ScheduleTemplateEmail_PreRegistration } from './../templates/email-@pre-registration';
-import { ScheduleControllerBase, ScheduleActionEmail } from 'models/schedulers/schedulers.base';
+import { ScheduleTemplateSMS_PreRegistration } from './../templates/sms-@pre-registration';
+import { ScheduleControllerBase, ScheduleActionSMS } from 'models/schedulers/schedulers.base';
 import { Invitations, IInvitations } from './../../../custom/models/invitations';
 
 import { getEnumKey } from 'helpers/utility/get-enum-key';
@@ -14,15 +14,15 @@ import { Purposes } from './../../models/purposes';
 import { IUserTenantAdministrator } from 'core/userRoles.gen';
 
 
-@DynamicLoader.set("ScheduleController.Email.PreRegistration")
-export class ScheduleControllerEmail_PreRegistration extends ScheduleControllerBase<
+@DynamicLoader.set("ScheduleController.SMS.PreRegistration")
+export class ScheduleControllerSMS_PreRegistration extends ScheduleControllerBase<
     Invitations,
-    ScheduleActionEmail,
-    ScheduleTemplateEmail_PreRegistration
+    ScheduleActionSMS,
+    ScheduleTemplateSMS_PreRegistration
     > {
     
     constructor() {
-        super(ScheduleActionEmail, ScheduleTemplateEmail_PreRegistration);
+        super(ScheduleActionSMS, ScheduleTemplateSMS_PreRegistration);
 
         this.registerTemplate( async (event, data) => {
             let invitation: IInvitations = event.attributes;
@@ -57,7 +57,8 @@ export class ScheduleControllerEmail_PreRegistration extends ScheduleControllerB
             let invitation: IInvitations = event.attributes;
             let visitor: IVisitors = invitation.visitor.attributes;
             return {
-                to: [visitor.email]
+                comPort: "COM8",
+                timeout: 10000
             }
         });
     }
