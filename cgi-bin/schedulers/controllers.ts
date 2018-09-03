@@ -5,7 +5,7 @@ import {
     Restful, EventSubjects
 } from 'core/cgi-package';
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
-import { ScheduleActionBase, ScheduleTemplateBase } from 'models/schedulers/schedulers.base';
+import { ScheduleControllerBase } from 'models/schedulers/schedulers.base';
 
 var action = new Action({
     loginRequired: true,
@@ -17,17 +17,17 @@ export interface Input {
 }
 export type Output = string[];
 
-export function getTemplates() {
+export function getControllers() {
     var results = [];
     var list = DynamicLoader.all();
     for (var o in list) {
-         list[o].prototype instanceof ScheduleTemplateBase && results.push(o);
+         list[o].prototype instanceof ScheduleControllerBase && results.push(o);
     }
     return results;
 }
 
 action.get<Input, Output>( async (data) => {
-    return getTemplates();
+    return getControllers();
 });
 /////////////////////////////////////////////////////
 

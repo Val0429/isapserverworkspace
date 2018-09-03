@@ -5,7 +5,7 @@
 // 7776000
 
 var config: Config = {
-    searchDurationSeconds: 5,
+    searchDurationSeconds: 259200,
     possibleCompanionDurationSeconds: 5,
     specialScoreForUnRecognizedFace: 0.4,
     throttleKeepSameFaceSeconds: 15,
