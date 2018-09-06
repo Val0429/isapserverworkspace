@@ -1,5 +1,6 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
 import { EventLogin } from 'core/events.gen';
+import { Config } from 'core/config.gen';
 
 import { ScheduleTemplateSMS_PreRegistration } from './../templates/sms-@pre-registration';
 import { ScheduleControllerBase, ScheduleActionSMS } from 'models/schedulers/schedulers.base';
@@ -57,8 +58,8 @@ export class ScheduleControllerSMS_PreRegistration extends ScheduleControllerBas
             let invitation: IInvitations = event.attributes;
             let visitor: IVisitors = invitation.visitor.attributes;
             return {
-                comPort: "COM8",
-                timeout: 10000
+                comPort: Config.sms.comPort,
+                timeout: Config.sms.timeout
             }
         });
     }
