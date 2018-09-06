@@ -31,7 +31,7 @@ export class ScheduleControllerEmail_PreRegistration extends ScheduleControllerB
             let admin: IUserTenantAdministrator = (await invitation.parent.fetch()).attributes;
             let purpose = await invitation.purpose.fetch();
             let pins = invitation.pins;
-            let dates = invitation.dates;
+            let dates = invitation.dates.map( date => date.start );
             
             return {
                 company: {

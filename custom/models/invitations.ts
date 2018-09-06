@@ -7,15 +7,20 @@ import { Pin } from 'services/pin-code/pin-code';
 
 export interface IInvitationNotify {
     visitor: {
-        email: string;
-        phone: string;
+        email: boolean;
+        phone: boolean;
     }
+}
+
+export interface IInvitationDate {
+    start: Date;
+    end: Date;
 }
 
 export interface IInvitations {
     parent: Parse.User;
     visitor: Visitors;
-    dates: Date[];
+    dates: IInvitationDate[];
     pins: Pin[];
     purpose: Purposes;
     notify: IInvitationNotify;

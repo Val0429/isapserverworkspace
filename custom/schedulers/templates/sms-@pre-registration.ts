@@ -42,7 +42,7 @@ export class ScheduleTemplateSMS_PreRegistration extends ScheduleTemplateBase<
                 input.pinCodes.dates.map( (date, index) => {
                     let pin = input.pinCodes.pins[index];
                     return `
-Date: ${date.toString().replace(/\(.*\)/, "")}, 
+Date: ${date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}, 
 Pincode: ${pin}. 
                     `;
                 }).join("")

@@ -49,7 +49,7 @@ export class ScheduleTemplateEmail_PreRegistration extends ScheduleTemplateBase<
             input.pinCodes.dates.map( (date, index) => {
                 let pin = input.pinCodes.pins[index];
                 return `
-                    <p>Your visit date is: <b style="font-size: 24">${date}</b></p>
+                    <p>Your visit date is: <b style="font-size: 24">${date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</b></p>
                     <p>Your Pincode is: <b style="font-size: 24">${pin}</b></p>
                 `;
             }).join("")
