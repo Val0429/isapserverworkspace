@@ -144,6 +144,8 @@ export function filterFace(compareCallback: (face: RecognizedUser | UnRecognized
                     case UserType.Recognized:
                         let valrec: RecognizedUser = value as RecognizedUser;
                         valrec.valFaceId = ++uniqueCount;
+                        /// todo workaround: delete empty group
+                        valrec.groups.length === 0 && (valrec.groups = undefined);
                         resolveCache(valrec.timestamp);
                         var personId = valrec.person_id;
 

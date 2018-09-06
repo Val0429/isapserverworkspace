@@ -1,8 +1,8 @@
 var config: Config = {
-    ip: "172.16.10.49",
+    ip: "172.16.10.31",
     port: 8088,
     wsport: 7077,
-    account: "valadmin",
+    account: "val",
     password: "123456"
 }
 export default config;
