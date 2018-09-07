@@ -25,7 +25,6 @@ var action = new Action({
  * C: create object
  ********************************/
 interface ICInvitations extends IInvitations {
-    pins: never;
     parent: never;
 }
 type InputC = Restful.InputC<ICInvitations>;
@@ -41,6 +40,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     /// V1.1) Make Pins
     let pins = await PinCode.next(data.inputType.dates.length);
+    /// V1.1.1) Merge Pins
+    for (let i=0; i<pins.length; ++i) data.inputType.dates[i].pin = pins[i];
 
     /// V1.2) Fetch or Create Visitors
     const { phone, email } = data.inputType.visitor.attributes;
@@ -58,7 +59,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }
 
     /// V2.0) Save
-    await obj.save({ pins, parent, cancelled, visitor }, { useMasterKey: true });
+    await obj.save({ parent, cancelled, visitor }, { useMasterKey: true });
 
     /// send email
     data.inputType.notify.visitor.email && new ScheduleControllerEmail_PreRegistration().do(obj);

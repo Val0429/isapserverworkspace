@@ -53,7 +53,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Visitors)
         .get(objectId);
-    if (!obj || obj.getValue("status") === VisitorStatus.Completed) throw Errors.throw(Errors.CustomNotExists, [`Visitors <${objectId}> already registered not exists.`]);
+    if (!obj || obj.getValue("status") === VisitorStatus.Completed) throw Errors.throw(Errors.CustomNotExists, [`Visitors <${objectId}> already registered or not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, status: VisitorStatus.Completed, objectId: undefined });
 

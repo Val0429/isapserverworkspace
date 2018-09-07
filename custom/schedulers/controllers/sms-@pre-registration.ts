@@ -31,7 +31,7 @@ export class ScheduleControllerSMS_PreRegistration extends ScheduleControllerBas
             let company: ICompanies = (await visitor.company.fetch()).attributes;
             let admin: IUserTenantAdministrator = (await invitation.parent.fetch()).attributes;
             let purpose = await invitation.purpose.fetch();
-            let pins = invitation.pins;
+            let pins = invitation.dates.map( date => date.pin );
             let dates = invitation.dates.map( date => date.start );
             
             return {

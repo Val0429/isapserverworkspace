@@ -12,16 +12,16 @@ export interface IInvitationNotify {
     }
 }
 
-export interface IInvitationDate {
+export interface IInvitationDateAndPin {
     start: Date;
     end: Date;
+    pin?: Pin;
 }
 
 export interface IInvitations {
     parent: Parse.User;
     visitor: Visitors;
-    dates: IInvitationDate[];
-    pins: Pin[];
+    dates: IInvitationDateAndPin[];
     purpose: Purposes;
     notify: IInvitationNotify;
     cancelled?: boolean;
