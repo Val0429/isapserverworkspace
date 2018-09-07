@@ -7,11 +7,16 @@ export enum VisitorStatus {
     Completed = 1
 }
 
+export interface IVisitorsIDCard {
+    images: Parse.File[];
+}
+
 export interface IVisitors {
     name: string;
     phone: string;
     email: string;
     image?: Parse.File;
+    idcard?: IVisitorsIDCard;
     status?: VisitorStatus;
     company?: Companies;
 }

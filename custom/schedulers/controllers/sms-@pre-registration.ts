@@ -58,6 +58,7 @@ export class ScheduleControllerSMS_PreRegistration extends ScheduleControllerBas
             let invitation: IInvitations = event.attributes;
             let visitor: IVisitors = invitation.visitor.attributes;
             return {
+                phone: visitor.phone,
                 comPort: Config.sms.comPort,
                 timeout: Config.sms.timeout
             }

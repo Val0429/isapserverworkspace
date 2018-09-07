@@ -14,6 +14,31 @@ var events: Config[] = [
     ////////////////////////////////////////////
 
     /// 3000 for Visitor ///////////////////////
+
+    /// 3500 - Strict Rule Register
+    ["3501", "PreRegistrationComplete", `
+        /**
+         * Invitation visitor that completes register.
+         */
+        invitation: Invitations;
+        /**
+         * Company that invites this visitor.
+         */
+        company: Companies;
+    `, ["Companies", "Invitations"]],
+
+    ["3510", "StrictTryCheckIn", `
+        pin: string;        
+        /**
+         * Invitation visitor that completes register.
+         */
+        invitation: Invitations;
+        /**
+         * Company that invites this visitor.
+         */
+        company: Companies;
+    `],
+
     /// 3600 - Register
     ["3601", "TryRegister"],
     ["3602", "PickFloor", `

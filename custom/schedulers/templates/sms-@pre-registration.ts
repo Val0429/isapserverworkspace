@@ -34,8 +34,6 @@ export class ScheduleTemplateSMS_PreRegistration extends ScheduleTemplateBase<
         super();
 
         this.register( (input) => {
-            let phone = input.visitor.phone;
-            
             let message = `
             ${input.visitor.name}, ${input.company.name} has sent you invitation for your ${input.visitor.purposeOfVisit}.
             ${
@@ -50,7 +48,7 @@ Pincode: ${pin}.
 Click here to complete your registration: ${input.linkPreRegistrationPage}
             `;
 
-            return { phone, message }
+            return { message }
         });
     }
 
