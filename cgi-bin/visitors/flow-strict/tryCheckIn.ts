@@ -24,9 +24,10 @@ export default new Action<Input, Output>({
     let { pin } = data.inputType;
 
     let { owner, invitation, result, company, visitor } = await tryCheckInWithPinCode(pin);
+    let kiosk = data.user;
 
     /// save event
-    let event = new EventStrictTryCheckIn({ owner, pin, invitation, company, visitor });
+    let event = new EventStrictTryCheckIn({ owner, pin, invitation, company, visitor, kiosk });
     Events.save(event);
 
     return ParseObject.toOutputJSON(invitation);

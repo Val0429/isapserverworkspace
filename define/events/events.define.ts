@@ -39,6 +39,7 @@ var events: Config[] = [
          */
         company: Companies;
         visitor: Visitors;
+        kiosk: Parse.User;
     `],
 
     ["3511", "StrictConfirmPhoneNumber", `
@@ -57,6 +58,7 @@ var events: Config[] = [
          */
         company: Companies;
         visitor: Visitors;
+        kiosk: Parse.User;
     `],
 
     ["3512", "StrictScanIDCard", `
@@ -68,6 +70,7 @@ var events: Config[] = [
         invitation: Invitations;
         company: Companies;
         visitor: Visitors;
+        kiosk: Parse.User;
     `],
 
     ["3513", "StrictCompareFace", `
@@ -76,6 +79,7 @@ var events: Config[] = [
         invitation: Invitations;
         company: Companies;
         visitor: Visitors;
+        kiosk: Parse.User;
     `],
 
     ["3514", "StrictCompleteCheckIn", `
@@ -83,6 +87,7 @@ var events: Config[] = [
         invitation: Invitations;
         company: Companies;
         visitor: Visitors;
+        kiosk: Parse.User;
     `],
 
     /// 3600 - Register

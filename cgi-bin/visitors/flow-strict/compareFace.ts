@@ -29,7 +29,8 @@ export default new Action<Input, Output>({
     let { pin, image } = data.inputType;
 
     let { owner, invitation, result, company, visitor } = await tryCheckInWithPinCode(pin);
-    let eventData = { owner, pin, invitation, company, visitor, image: null, score: 0 };
+    let kiosk = data.user;
+    let eventData = { owner, pin, invitation, company, visitor, kiosk, image: null, score: 0 };
 
     let saveEvent = async () => {
         let pimage = await FileHelper.toParseFile(image);

@@ -24,7 +24,8 @@ export default new Action<Input, Output>({
     let { pin } = data.inputType;
 
     let { owner, invitation, result, company, visitor, index } = await tryCheckInWithPinCode(pin);
-    let eventData = { owner, pin, invitation, company, visitor };
+    let kiosk = data.user;
+    let eventData = { owner, pin, invitation, company, visitor, kiosk };
 
     let saveEvent = () => {
         /// save event
