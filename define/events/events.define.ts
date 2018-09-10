@@ -25,7 +25,8 @@ var events: Config[] = [
          * Company that invites this visitor.
          */
         company: Companies;
-    `, ["Companies", "Invitations"]],
+        visitor: Visitors;
+    `, ["Companies", "Invitations", "Visitors"]],
 
     ["3510", "StrictTryCheckIn", `
         pin: string;        
@@ -37,6 +38,51 @@ var events: Config[] = [
          * Company that invites this visitor.
          */
         company: Companies;
+        visitor: Visitors;
+    `],
+
+    ["3511", "StrictConfirmPhoneNumber", `
+        pin: string;
+        phone: string;
+        /**
+         * correct or wrong phone number?
+         */
+        result: boolean;
+        /**
+         * Invitation visitor that completes register.
+         */
+        invitation: Invitations;
+        /**
+         * Company that invites this visitor.
+         */
+        company: Companies;
+        visitor: Visitors;
+    `],
+
+    ["3512", "StrictScanIDCard", `
+        pin: string;
+        name: string;
+        birthdate: string;
+        idnumber: string;
+        images: Parse.File[];
+        invitation: Invitations;
+        company: Companies;
+        visitor: Visitors;
+    `],
+
+    ["3513", "StrictCompareFace", `
+        pin: string;
+        image: Parse.File;
+        invitation: Invitations;
+        company: Companies;
+        visitor: Visitors;
+    `],
+
+    ["3514", "StrictCompleteCheckIn", `
+        pin: string;
+        invitation: Invitations;
+        company: Companies;
+        visitor: Visitors;
     `],
 
     /// 3600 - Register

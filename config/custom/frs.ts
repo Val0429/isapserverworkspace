@@ -1,7 +1,7 @@
 var config: Config = {
     ip: "172.16.10.31",
     port: 8088,
-    account: "UserDos",
+    account: "val",
     password: "123456"
 }
 export default config;

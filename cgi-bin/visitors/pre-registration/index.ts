@@ -15,7 +15,8 @@ const filter = { status: (value) => getEnumKey(VisitorStatus, value), company: f
 
 var action = new Action({
     loginRequired: false,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Administrator],
+    postSizeLimit: 1024*1024*10
 });
 
 /// CRUD start /////////////////////////////////
@@ -68,7 +69,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         let event = new EventPreRegistrationComplete({
             owner: invitations.getValue("parent"),
             invitation: invitations,
-            company: obj.getValue("company")
+            company: obj.getValue("company"),
+            visitor: obj
         });
         Events.save(event);
     }

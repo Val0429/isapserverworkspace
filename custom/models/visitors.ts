@@ -8,6 +8,9 @@ export enum VisitorStatus {
 }
 
 export interface IVisitorsIDCard {
+    name: string;
+    birthdate: string;
+    idnumber: string;
     images: Parse.File[];
 }
 

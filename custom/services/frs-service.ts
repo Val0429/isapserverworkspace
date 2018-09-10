@@ -18,13 +18,12 @@ export class FRSService {
                 json: true,
                 body: { username: config.account, password: config.password }
             }, (err, res, body) => {
-                if (err) {
+                if (err || !body.session_id) {
                     console.log(`Login FRS Server failed@${config.ip}:${config.port}. Retry in 1 second.`);
                     setTimeout(() => { tryLogin() }, 1000);
                     return;
                 }
                 console.log(`Login into FRS Server@${config.ip}:${config.port}.`);
-
                 this.session_id = body.session_id;
                 /// After login and got session_id, maintain session every 1 minute.
                 setInterval( () => {

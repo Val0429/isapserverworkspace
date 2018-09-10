@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
     Action, Errors, Person, ParseObject,
-    Events, EventStrictConfirmPhoneNumber
+    Events, EventStrictScanIDCard
 } from 'core/cgi-package';
 
 import { Pin } from 'services/pin-code/pin-code';
@@ -11,7 +11,11 @@ import { tryCheckInWithPinCode } from './__api__/core';
 
 export interface Input {
     pin: Pin;
-    phone: string;
+
+    name: string;
+    birthdate: string;
+    idnumber: string;
+    images: Parse.File[];
 }
 
 export type Output = Invitations;
@@ -22,24 +26,25 @@ export default new Action<Input, Output>({
     permission: [RoleList.Kiosk]
 })
 .post(async (data) => {
-    let { pin, phone } = data.inputType;
+    let { pin, name, birthdate, idnumber, images } = data.inputType;
 
     let { owner, invitation, result, company, visitor } = await tryCheckInWithPinCode(pin);
-    let eventData = { owner, pin, invitation, company, visitor, phone, result: true };
+    let eventData = { owner, pin, invitation, company, visitor,
+        name, birthdate, idnumber, images };
 
     let saveEvent = () => {
         /// save event
-        let event = new EventStrictConfirmPhoneNumber(eventData);
+        let event = new EventStrictScanIDCard(eventData);
         Events.save(event);
     }
 
-    /// validate phone
-    try {
-        if (visitor.getValue("phone") !== data.inputType.phone) {
-            eventData.result = false;
-            throw Errors.throw(Errors.CustomBadRequest, [`Invalid phone number for Pin-Code <${pin}>.`]);
+    await visitor.save({
+        idcard: {
+            name, birthdate, images, idnumber
         }
-    } catch(e) { throw e } finally { saveEvent() }
+    });
+
+    saveEvent();
 
     return ParseObject.toOutputJSON(invitation);
 });

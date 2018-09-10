@@ -16,6 +16,7 @@ export interface IInvitationDateAndPin {
     start: Date;
     end: Date;
     pin?: Pin;
+    used?: boolean;
 }
 
 export interface IInvitations {

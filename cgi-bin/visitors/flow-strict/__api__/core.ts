@@ -5,10 +5,15 @@ import {
 } from 'core/cgi-package';
 import { Pin } from 'services/pin-code/pin-code';
 import { Invitations, IInvitationDateAndPin } from './../../../../custom/models/invitations';
+import { Companies } from './../../../../custom/models/companies';
+import { Visitors } from './../../../../custom/models/visitors';
 
 export interface IResultTryCheckInWithPinCode {
     invitation: Invitations;
     result: IInvitationDateAndPin;
+    company: Companies;
+    visitor: Visitors;
+    owner: Parse.User;
     index: number;
 }
 
@@ -31,7 +36,7 @@ export async function tryCheckInWithPinCode(pin: Pin): Promise<IResultTryCheckIn
 
         result = dates.reduce<IInvitationDateAndPin>( (final, value, idx) => {
             if (value.pin !== pin) return final;
-            if (value.start <= now && value.end > now) {
+            if (value.start <= now && value.end > now && value.used !== true) {
                 index = idx;
                 return value;
             }
@@ -39,7 +44,14 @@ export async function tryCheckInWithPinCode(pin: Pin): Promise<IResultTryCheckIn
         }, null);
         if (!result) break;
 
-        return { invitation, result, index }
+        /// 3) visitor
+        let visitor = invitation.getValue("visitor");
+        /// 4) company
+        let company = await visitor.getValue("company").fetch();
+        /// 5) owner
+        let owner = await invitation.getValue("parent").fetch();
+
+        return { invitation, result, company, visitor, owner, index }
 
     } while(0);
 

@@ -23,7 +23,11 @@ export default new Action<Input, Output>({
 .post(async (data) => {
     let { pin } = data.inputType;
 
-    let { invitation, result } = await tryCheckInWithPinCode(pin);
+    let { owner, invitation, result, company, visitor } = await tryCheckInWithPinCode(pin);
+
+    /// save event
+    let event = new EventStrictTryCheckIn({ owner, pin, invitation, company, visitor });
+    Events.save(event);
 
     return ParseObject.toOutputJSON(invitation);
 });
