@@ -1,0 +1,21 @@
+import { EventList } from 'core/events.gen';
+import { serverReady } from 'core/pending-tasks';
+import scheduler, { Schedulers } from 'core/scheduler-loader';
+
+
+(async () => {
+    await serverReady;
+
+
+/// Schedule - PreRegistrationComplete
+scheduler.register(new Schedulers({
+    event: EventList.EventPreRegistrationComplete,
+    actions: [
+        { controller: "ScheduleController.Email.PreRegistrationComplete" },
+        { controller: "ScheduleController.SMS.PreRegistrationComplete" }
+    ]
+}));
+
+
+})();
+
