@@ -16,6 +16,15 @@ scheduler.register(new Schedulers({
     ]
 }));
 
+/// Schedule - Visitor Checked-In
+scheduler.register(new Schedulers({
+    event: EventList.EventStrictCompleteCheckIn,
+    actions: [
+        { controller: "ScheduleController.Email.VisitorCheckedIn" },
+        { controller: "ScheduleController.SMS.VisitorCheckedIn" }
+    ]
+}));
+
 
 })();
 
