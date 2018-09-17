@@ -19,13 +19,12 @@ var action = new Action({
 //     start: Date;
 //     end: Date;
 // }
-type InputROrigin = IEvents & {
+interface InputRange {
     start: Date;
     end: Date;
-};
-
-type InputR = Restful.InputR<InputROrigin>;
-type OutputR = Restful.OutputR<InputROrigin>;
+}
+type InputR = Restful.InputR<IEvents> & InputRange;
+type OutputR = Restful.OutputR<IEvents>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
@@ -40,10 +39,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         return false;
     }
     if (containRole(data.role, RoleList.TenantAdministrator)) {
-        query = query.equalTo("data.company.objectId", data.user.get("data").company.id);
+        query.equalTo("data.company.objectId", data.user.get("data").company.id);
     } else if (containRole(data.role, RoleList.TenantUser)) {
-        query = query.equalTo("data.owner.objectId", data.user.id);
+        query.equalTo("data.owner.objectId", data.user.id);
     }
+
+    /// V2.2) Filter time range
+    query.greaterThanOrEqualTo("createdAt", data.inputType.start);
+    query.lessThan("createdAt", data.inputType.end);
 
     /// V3) Output
     return Restful.Pagination(query, data.inputType, Events.Query.filter(), async (data: Events[]): Promise<Events[]> => {
