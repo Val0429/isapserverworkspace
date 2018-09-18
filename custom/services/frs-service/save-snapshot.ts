@@ -20,7 +20,7 @@ export function saveSnapshot(asyncCount: number) {
                         let exists = await new Promise((resolve, reject) => { fs.exists(path, (ex) => resolve(ex)); });
                         if (exists === false) {
                             let result = await frs.snapshot(value.snapshot);
-                            fs.writeFile(path, result);
+                            fs.writeFile(path, result, () => {});
                         }
                         
                     } catch(e) {

@@ -1,4 +1,4 @@
-var ffc = require('./featureCompareWin/build/Release/faceFeatureCompare')();
+var ffc = require('./featureCompareWin/build/Release/faceFeatureCompare');
 // var faceFeatureCompare = require('./featureCompareLinux/build/Release/faceFeatureCompare')();
 
 export namespace FaceFeatureCompare {
