@@ -1,10 +1,10 @@
 {
   "name": "isap-fts-service",
-  "version": "1.0.0",
+  "version": "2.01.02",
   "config": {
     "displayname": "iSap FTS Service"
   },
-  "description": "iSap FTS Service v1.00.00",
+  "description": "iSap FTS Service v2.01.02",
 
   "scripts": {
     "start": "npm start --prefix ./../",
