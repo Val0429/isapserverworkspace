@@ -10,7 +10,7 @@ import { Purposes, IPurposes } from './../../custom/models/purposes';
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Administrator, RoleList.TenantAdministrator, RoleList.TenantUser]
 });
 
 /// CRUD start /////////////////////////////////
