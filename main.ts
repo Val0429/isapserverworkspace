@@ -14,12 +14,15 @@ import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
 
 var testFunc = (async () => {
-    let result = await modbusClient.connect(1);
-    let result_write  = await modbusClient.write(ModbusDescriptions.DO_Value,0,[1,1,1,1]);
-    let result_read  = await modbusClient.read(ModbusDescriptions.DO_Value,0,8);
-    let infos = await modbusClient.getDeviceInfo();
-    console.log(result_read);
-    console.log(infos);
+    let result_read  = modbusClient.read(ModbusDescriptions.DO_Value,0,8,3000);
+    let infos        = modbusClient.getDeviceInfo(4000);
+    let result       = modbusClient.connect(1);
+
+    let data = await Promise.all([result_read,infos]);
+
+    console.log(data[0]);
+    console.log(data[1]);
+
     modbusClient.disconnect();
 });
 
@@ -28,10 +31,12 @@ let modbusClient : ModBusService;
 
 
 ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then((config)=>{
+
     modbusClient = new ModBusService(config);
     testFunc();
+
 }).catch((e)=>{
-    throw e;
+    throw `LoadMoxaSystemConfig : ${e}`;
 })
 
 

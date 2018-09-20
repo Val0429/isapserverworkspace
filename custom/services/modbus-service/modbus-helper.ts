@@ -2,6 +2,7 @@ import { IModbusDeviceConfig, ModbusDescriptions, ModbusFunctionCodes } from "./
 import { readFileSync, writeFileSync, readFile, fstat } from "fs";
 import { isNullOrUndefined } from "util";
 import { reject, resolve, promisify } from "bluebird";
+import ast from 'services/ast-services/ast-client';
 
 /* 
 function readFilePromise(filename: string, encoding: string = null): Promise<string | Buffer> {
@@ -16,7 +17,7 @@ function readFilePromise(filename: string, encoding: string = null): Promise<str
 
 export namespace ModbusHelper{
 
-    let descriptionArray : Array<string>  = Enum2ValueArray(ModbusDescriptions);
+    let descriptionArray  : Array<string>  = Enum2ValueArray(ModbusDescriptions);
     let functionCodeArray : Array<string> = Enum2ValueArray(ModbusFunctionCodes);
 
     /**
@@ -44,7 +45,7 @@ export namespace ModbusHelper{
         try{
             readFileCtx = await (promisify(readFile) as any)(loc, encoding);
         }catch(e){
-            Promise.reject("Internal Error: <ModbusHelper::LoadMoxaSystemConfig> read file error, message : " + e);
+            return Promise.reject("Internal Error: <ModbusHelper::LoadMoxaSystemConfig> read file error, message : " + e);
         }
 
         let modbusDevConfig : IModbusDeviceConfig = {} as any;
@@ -73,12 +74,14 @@ export namespace ModbusHelper{
                 modbusDevConfig[descStr.toString()].totalChannels = chNum;
             }
 
+            //await ast.requestValidation("IModbusDeviceConfig", modbusDevConfig);
+
             //read ip address
             modbusDevConfig.connect_config = { } as any ;
             modbusDevConfig.connect_config.ip = lineCtx[260].substr(lineCtx[260].indexOf('=')+1);
 
         } catch(e){
-            Promise.reject("Internal Error: <ModbusHelper::LoadMoxaSystemConfig> analysis file content error, message : " + e);
+            return Promise.reject("Internal Error: <ModbusHelper::LoadMoxaSystemConfig> analysis file content error, message : " + e);
         }
         
         return modbusDevConfig;

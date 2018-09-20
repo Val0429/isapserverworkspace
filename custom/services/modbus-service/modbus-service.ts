@@ -1,8 +1,10 @@
 import { isEmpty }                      from "rxjs/operator/isEmpty";
-import { isNull, isUndefined, isArray } from "util";
+import { isNull, isUndefined, isArray, isNullOrUndefined } from "util";
 import { map }                          from "rxjs/operators";
-import { BitwiseParser }                from "./bitwise-paser"
+import { BitwiseParser }                from "./bitwise-parser"
 import { toArray }                      from "rxjs/operator/toArray";
+import { BehaviorSubject, Observable } from 'rxjs';
+import { SignalObject } from "./signalObject";
 
 
 /**
@@ -103,8 +105,10 @@ var ModbusRTU = require("modbus-serial");
  */
 export class ModBusService {
 
-    private config : IModbusDeviceConfig;
-    private client = new ModbusRTU();
+    private signal : SignalObject        = null     ;
+    private client                       = new ModbusRTU()     ;
+
+    private config : IModbusDeviceConfig = undefined;
 
     /**
      * constructor : Initial config
@@ -112,6 +116,8 @@ export class ModBusService {
      */
     constructor(config: IModbusDeviceConfig) { 
         this.setConfig(config);
+        this.signal = new SignalObject(false);
+        this.client = new ModbusRTU();
     }
 
     /**
@@ -139,7 +145,8 @@ export class ModBusService {
         let result = 
             this.client.connectTCP(this.config.connect_config.ip).then(()=>{
                 this.client.setID(deviceID);
-                console.log("Connect to ip:<"+ this.config.connect_config.ip + "> success.")
+                this.signal.set(true);
+                console.log(`Connect to ip:<${this.config.connect_config.ip}> success.`)
             }).catch((e)=>{
                 throw `Internal Error: <ModBusService::connect> connect fail, maybe address wrong.`;
             });
@@ -151,7 +158,8 @@ export class ModBusService {
      */
     public disconnect(){
         this.client.close();
-        console.log("Disconnect with <"+ this.config.connect_config.ip + "> complete.");
+        this.signal.set(false);
+        console.log(`Disconnect with <${this.config.connect_config.ip}> complete.`);
     }
 
     /**
@@ -170,14 +178,19 @@ export class ModBusService {
      * 
      * return <Array<number>> data array
      */
-    public async read(desc : ModbusDescriptions, index : number, length : number) : Promise<Array<number>>{
-        if(this.isConnected() == false) Promise.reject(`Internal Error: <ModBusService::read> read fail, no connection.`);
+    public async read(desc : ModbusDescriptions, index : number, length : number, timeout ?: number) : Promise<Array<number>>{
+
+        try{
+            await this.signal.wait(v => v,timeout); 
+        }catch(e){
+            return Promise.reject(`Internal Error: <ModBusService::read> read fail, still no connection for ${Math.abs(timeout)} ms.`);
+        }
 
         let result  : any;
         let address : number = this.config[desc.toString()].address + index;
         let addressShift = index + length;
         if(addressShift < 0 || addressShift > this.config[desc.toString()].totalChannels) 
-            Promise.reject("Internal Error: <ModBusService::read> read ["+desc+"]fail, <ModBusService::read> index + length("+addressShift+") > total channels("+this.config[desc.toString()].totalChannels + ")");
+            return Promise.reject(`Internal Error: <ModBusService::read> read [${desc}] fail, <ModBusService::read> index + length("+addressShift+") > total channels(${this.config[desc.toString()].totalChannels})`);
 
         switch(this.config[desc.toString()].functionCode){
             case ModbusFunctionCodes.Coil_Status:
@@ -199,8 +212,9 @@ export class ModBusService {
             return vals.slice(0,length);
         } 
         catch(e) {
-            Promise.reject("Internal Error: <ModBusService::read> read ["+desc+"]fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).");
+            return Promise.reject(`Internal Error: <ModBusService::read> read [${desc}] fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).`);
         }
+
     }
 
     /**
@@ -209,8 +223,13 @@ export class ModBusService {
      * @param index <number> start index ( shift from started address )
      * @param val   <Array<number>> number array
      */
-    public async write(desc : ModbusDescriptions, index : number, val : Array<number> | number) : Promise<void>{
-        if(this.isConnected() == false) Promise.reject(`Internal Error: <ModBusService::write> write fail, no connection.`);
+    public async write(desc : ModbusDescriptions, index : number, val : Array<number> | number, timeout ?: number) : Promise<void>{
+
+        try{
+            await this.signal.wait(v => v,timeout); 
+        }catch(e){
+            return Promise.reject(`Internal Error: <ModBusService::write> write fail, still no connection for ${Math.abs(timeout)} ms.`);
+        }
 
         let result  : any;
         let address : number = this.config[desc.toString()].address + index;
@@ -219,7 +238,7 @@ export class ModBusService {
 
         let addressShift = index + length;
         if(addressShift < 0 || addressShift > this.config[desc.toString()].totalChannels) 
-            Promise.reject("Internal Error: <ModBusService::read> write ["+desc+"] fail, <ModBusService::write> index + length > total channels.");
+            return Promise.reject(`Internal Error: <ModBusService::write> write [${desc}] fail, <ModBusService::write> index + length > total channels.`);
 
         switch(this.config[desc.toString()].functionCode){
             case ModbusFunctionCodes.Coil_Status:
@@ -229,13 +248,13 @@ export class ModBusService {
                 result = this.client.writeRegisters(address,val);
                 break;
             default:
-                Promise.reject("Internal Error: <ModBusService::write> write ["+desc+"]fail, <ModBusService::write> not support <ModbusDescriptions::Input_*> .");
+            return Promise.reject(`Internal Error: <ModBusService::write> write [${desc}] fail, <ModBusService::write> not support <ModbusDescriptions::Input_*> .`);
         }
         try {
             await result;
         } 
         catch(e) {
-            Promise.reject("Internal Error: <ModBusService::write> write ["+desc+"]fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).");
+            return Promise.reject(`Internal Error: <ModBusService::write> write [${desc}] fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).`);
         }
     }
     
@@ -243,9 +262,14 @@ export class ModBusService {
      * Get device informations, including ip, device name, module name, mac address...
      * return <IModBusDeviceInfos> 
      */
-    public async getDeviceInfo() : Promise<IModBusDeviceInfos>{
-        if(this.isConnected() == false) Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> getDeviceInfo fail, no connection.`);
-        
+    public async getDeviceInfo(timeout ?: number) : Promise<IModBusDeviceInfos>{
+
+        try{
+            await this.signal.wait(v => v,timeout); 
+        }catch(e){
+            return Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> read fail, still no connection for ${Math.abs(timeout)} ms.`);
+        }
+
         let resultParam : IModBusDeviceInfos = {} as any;
         let exception   : string;
 
@@ -276,7 +300,7 @@ export class ModBusService {
             return resultParam;
 
         } catch(e) {
-            Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> getDeviceInfo fail.`);
+            return Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> getDeviceInfo fail.`);
         }
     }
 
@@ -292,7 +316,7 @@ export class ModBusService {
         for(let i : number = 0 ; i < 4 ; i++){
             var num = Number(strArr[i]);
             if(isNaN(num) || num < 0 || num > 255){
-                throw `Internal Error: <ModBusService::verifyIP> address format error, address ip:<`+ address + '>';
+                throw `Internal Error: <ModBusService::verifyIP> address format error, address ip:<${address}>`;
             }
         }
     }

@@ -17,7 +17,7 @@ export namespace BitwiseParser{
      * 
      * return 
      */
-    export async function Word2ByteArray(numAry: Array<number>) : Promise<Array<number>>{
+    export function Word2ByteArray(numAry: Array<number>) : Array<number>{
         let result  : Array<number> = [];
         for(let val of numAry){
             let num1 : number = (<number>(val) & 0xFF00) >> 8;
@@ -41,7 +41,7 @@ export namespace BitwiseParser{
      * 
      * @param numAry word data array
      */
-    export async function Word2ByteString(numAry: Array<number>) : Promise<string>{
+    export function Word2ByteString(numAry: Array<number>) : string{
         let result  : string = "";
         for(let val of numAry){
             let num1 : number = (<number>(val) & 0xFF00) >> 8;
@@ -67,7 +67,7 @@ export namespace BitwiseParser{
      * 
      * @param numAry word data array
      */
-    export async function Word2HexString(numAry: Array<number>) : Promise<string>{
+    export function Word2HexString(numAry: Array<number>) : string{
 
         let result  : string = "";
 
@@ -99,7 +99,7 @@ export namespace BitwiseParser{
      * 
      * @param numAry word data array
      */
-    export async function Word2Int32(numAry: Array<number>) : Promise<Array<number>>{
+    export function Word2Int32(numAry: Array<number>) : Array<number>{
         let result   : Array<number> = [];
         let counter  : number = 0;
         let temp : number = 0;

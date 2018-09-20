@@ -152,6 +152,3 @@ let ModbusDeviceConfig : IModbusDeviceConfig = {
 }
 
 export { ModbusDeviceConfig }
-
-
-
