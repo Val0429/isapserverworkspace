@@ -1,283 +1,289 @@
 import { isEmpty }                      from "rxjs/operator/isEmpty";
-import { isNull, isUndefined }          from "util";
+import { isNull, isUndefined, isArray } from "util";
 import { map }                          from "rxjs/operators";
 import { BitwiseParser }                from "./bitwise-paser"
+import { toArray }                      from "rxjs/operator/toArray";
+
+
+/**
+ * <enum> Descriptions of Moxa device
+ */
+export enum ModbusDescriptions{
+    DO_Value                         = "DO_Value"                       ,  
+    DO_Pulse_Status                  = "DO_Pulse_Status"                ,  
+    DO_Value_All                     = "DO_Value_All"                   , 
+    DI_Value                         = "DI_Value"                       ,  
+    DI_Counter_Value                 = "DI_Counter_Value"               ,    
+    DI_Value_All                     = "DI_Value_All"                   ,
+    DI_Counter_StartStop             = "DI_Counter_StartStop"           ,
+    DI_Counter_Reset                 = "DI_Counter_Reset"               ,
+    P2P_Connect_status               = "P2P_Connect_status"             ,
+    P2P_Output_Safe_Flag             = "P2P_Output_Safe_Flag"           ,
+    Clear_P2P_Output_Safe_Flag       = "Clear_P2P_Output_Safe_Flag"     ,
+    Clear_Watchdog_Alarm             = "Clear_Watchdog_Alarm"           ,
+    DO_PulseCount                    = "DO_PulseCount"                  ,
+    DO_PulseOnWidth                  = "DO_PulseOnWidth"                ,
+    DO_PulseOffWidth                 = "DO_PulseOffWidth"               ,
+    DI_Counter_Overflow_Flag         = "DI_Counter_Overflow_Flag"       ,
+    DI_Counter_Overflow_Flag_Clear   = "DI_Counter_Overflow_Flag_Clear" ,
+    Model_Name                       = "Model_Name"                     ,
+    Device_Name                      = "Device_Name"                    ,
+    Device_Up_Time                   = "Device_Up_Time"                 ,
+    Firmware_Version                 = "Firmware_Version"               ,
+    Firmware_Build_Date              = "Firmware_Build_Date"            ,
+    Mac_Address                      = "Mac_Address"                    ,
+    IP_Address                       = "IP_Address"
+}
+
+/**
+ * <enum> Function codes of Moxa device
+ */
+export enum ModbusFunctionCodes {
+    Coil_Status       = "Coil Status"     ,
+    Input_Status      = "Input Status"    ,
+    Holding_Register  = "Holding Register",
+    Input_Register    = "Input Register"
+}
+
+
+/**
+ * <Interface> Configs of moxa device 
+ */
+export type IModbusDeviceConfig = {
+    connect_config : {
+        ip      : string;
+    };
+} & {
+    [key in keyof typeof ModbusDescriptions]: {
+        address      : number;
+        functionCode : ModbusFunctionCodes;
+        totalChannels: number;
+    };
+};
+
+
+/**
+ * <interface> Informations of moxa device
+ */
+export interface IModBusDeviceInfos{
+    modelName           : string;
+    deviceName          : string;
+    deviceUpTimeInSec   : number;
+    firmware            : string;
+    macAddress          : string;
+    ipAddress           : string;
+}
+
 
 
 var ModbusRTU = require("modbus-serial");
 
+/**
+ * This class is use to connect moxa device by ip address.
+ * It have functions that get/set values, get device infomations.
+ * Example :
+    let modbusClient : ModBusService;
 
-/*
-*   Moxa I/O Descriptions -> Values, Pulses, Flags, and counters 
-*/
-export enum ModbusDescriptions{
-    DO_Value                         = 0x0001,  
-    DO_Pulse_Status                  = 0x0002,  
-    DO_Value_All                     = 0x0003, 
-     
-    DI_Value                         = 0x0011,  
-    DI_Counter_Value                 = 0x0012,    
-    DI_Value_All                     = 0x0013,
-    DI_Counter_StartStop             = 0x0014,
-    DI_Counter_Reset                 = 0x0015,
+    var testFunc = (async () => {
+        let result = await modbusClient.connect(1);
+        let result_write  = await modbusClient.write(ModbusDescriptions.DO_Value,0,[1,1,1,1]);
+        let result_read  = await modbusClient.read(ModbusDescriptions.DO_Value,0,8);
+        let infos = await modbusClient.getDeviceInfo();
+        console.log(result_read);
+        console.log(infos);
+        modbusClient.disconnect();
+    });
 
-    P2P_Connect_status               = 0x0021,
-    P2P_Output_Safe_Flag             = 0x0022,
-
-    Clear_P2P_Output_Safe_Flag       = 0x0031,
-    Clear_Watchdog_Alarm             = 0x0032,
-
-    DO_PulseCount                    = 0x0004,
-    DO_PulseOnWidth                  = 0x0005,
-    DO_PulseOffWidth                 = 0x0006,
-    DI_Counter_Overflow_Flag         = 0x0016,
-    DI_Counter_Overflow_Flag_Clear   = 0x0017,
-
-    Address_Mode                     = 0x00FF
-}
-
-/*
-*   Moxa I/O Descriptions -> Device name, model infos, address...
-*/
-export interface IModBusDeviceInfos{
-    modelName       :       string  ;   //E1212
-    deviceName      :       string  ;   //Usually empty
-    deviceUpTime    :       number  ;   //In second
-    firmware        :       string  ;   //V3000 Build17111512
-    macAddress      :       string  ;   //00-90-e8-48-cf-be
-    ipAddress       :       string  ;   //192.168.127.254
-}
-
-/*
-*   Moxa function code types
-*/
-export enum ModBusCodeType {
-    Coil_Status         ,
-    Input_Status        ,
-    Holding_Register    ,
-    Input_Register
-}
-
-export interface IModBusConfig{
-    address :  string;
-    id      :  number;
-}
-
-export interface IModBusRead{
-    desc   : ModbusDescriptions ;
-    code   : ModBusCodeType     ;
-    index  : number             ;   //if desc === Address_Mode, index = address
-    length : number             ;
-}
-
-export interface IModBusWrite{
-    desc   : ModbusDescriptions   ;
-    code   : ModBusCodeType       ;
-    index  : number               ; //if desc === Address_Mode, index = address
-    val    : Array<number>        ;
-}
-
-/*
-*  Dictionary : Mapping description and device address
-*/
-class Dictionary {
-    [index: number]: number;
-}
-
-let dicAddress : Dictionary = new Dictionary();
-
-dicAddress[ModbusDescriptions.DO_Value]                         = 0     ;
-dicAddress[ModbusDescriptions.DO_Pulse_Status]                  = 16    ;
-dicAddress[ModbusDescriptions.DO_Value_All]                     = 32    ;
-
-dicAddress[ModbusDescriptions.DI_Value]                         = 0     ;
-dicAddress[ModbusDescriptions.DI_Counter_Value]                 = 16    ;
-dicAddress[ModbusDescriptions.DI_Value_All]                     = 48    ;
-dicAddress[ModbusDescriptions.DI_Counter_StartStop]             = 256   ;
-dicAddress[ModbusDescriptions.DI_Counter_Reset]                 = 272   ;
-
-dicAddress[ModbusDescriptions.P2P_Connect_status]               = 4096  ;
-dicAddress[ModbusDescriptions.P2P_Output_Safe_Flag]             = 4112  ;
-
-dicAddress[ModbusDescriptions.Clear_P2P_Output_Safe_Flag]       = 4128  ;
-dicAddress[ModbusDescriptions.Clear_Watchdog_Alarm]             = 4144  ;
-
-dicAddress[ModbusDescriptions.DO_PulseCount]                    = 36    ;
-dicAddress[ModbusDescriptions.DO_PulseOnWidth]                  = 52    ;
-dicAddress[ModbusDescriptions.DO_PulseOffWidth]                 = 68    ;
-
-dicAddress[ModbusDescriptions.DI_Counter_Overflow_Flag]         = 1000  ;
-dicAddress[ModbusDescriptions.DI_Counter_Overflow_Flag_Clear]   = 288   ;
-
-dicAddress[ModbusDescriptions.Address_Mode]                     = 0     ;
-
-/*
-*   This class is use to connect moxa device by ip address.
-*   It have functions that get/set values, get device infomations.
-*   Example:
-*   
-*/
+    ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then((config)=>{
+        modbusClient = new ModBusService(config);
+        testFunc();
+    }).catch((e)=>{
+        throw e;
+    })
+ */
 export class ModBusService {
 
-    private config : IModBusConfig;
+    private config : IModbusDeviceConfig;
     private client = new ModbusRTU();
 
-    constructor(config: IModBusConfig) { 
+    /**
+     * constructor : Initial config
+     * @param config <IModbusDeviceConfig> config
+     */
+    constructor(config: IModbusDeviceConfig) { 
         this.setConfig(config);
     }
 
-    /*
-    *   Connection Relation
-    */
-
-    //Set a new config when disconnecting 
-    public setConfig(config: IModBusConfig){
+    /**
+     * Set config when disconnected
+     * @param config <IModbusDeviceConfig> config
+     */
+    public setConfig(config: IModbusDeviceConfig){
         if(this.isConnected()) throw `Internal Error: <ModBusService::setConfig> Still connecting, do not change config.`;
-        this.verifyIP(config.address); 
+        this.verifyIP(config.connect_config.ip); 
         this.config = config;
     }
 
-    //Get config in anytime, return  <IModBusConfig>
-    public getConfig() : IModBusConfig { return this.config; }
+    /**
+     * Get config file
+     * 
+     * return <IModbusDeviceConfig>
+     */
+    public getConfig() : IModbusDeviceConfig { return this.config; }
 
-    //Connect to the moxa device. Log connect success when successful, throw fail when connecting error.
-    public async connect() : Promise<void> {
+    /**
+     * Connect to device
+     * @param deviceID Assign a custom device id ( > 0 ) 
+     */
+    public async connect(deviceID : number) : Promise<void> {
         let result = 
-            this.client.connectTCP(this.config.address).then(()=>{
-                this.client.setID(this.config.id);
-                console.log("Connect to ip:<"+ this.config.address + "> success.")
+            this.client.connectTCP(this.config.connect_config.ip).then(()=>{
+                this.client.setID(deviceID);
+                console.log("Connect to ip:<"+ this.config.connect_config.ip + "> success.")
             }).catch((e)=>{
                 throw `Internal Error: <ModBusService::connect> connect fail, maybe address wrong.`;
             });
         return result;
     }
 
-    //Disconnect
+    /**
+     * Disconnect with device
+     */
     public disconnect(){
         this.client.close();
-        console.log("Disconnect with <"+ this.config.address + "> complete.");
+        console.log("Disconnect with <"+ this.config.connect_config.ip + "> complete.");
     }
 
-    //return true if connect == true
+    /**
+     * return <boolean> Connected or not
+     */
     public isConnected() : boolean{
         return  (this.client.isOpen === true) ? true : false;
     }
 
 
-    /*
-    *   Read data using enum descriptions and function codes.
-    */
-    public async read(IRead : IModBusRead) : Promise<Array<number>>{
-
+    /**
+     * Read data from device, must be connected first.
+     * @param desc   <ModbusDescriptions> which colunm want to read
+     * @param index  <number> start index ( shift from started address )
+     * @param length <number> read length / channel
+     * 
+     * return <Array<number>> data array
+     */
+    public async read(desc : ModbusDescriptions, index : number, length : number) : Promise<Array<number>>{
         if(this.isConnected() == false) Promise.reject(`Internal Error: <ModBusService::read> read fail, no connection.`);
-        if(IRead.desc !== ModbusDescriptions.Address_Mode)
-            if(IRead.index < 0 || IRead.index > 16) Promise.reject(`Internal Error: <ModBusService::read> read fail, <Interface IModBusRead.index> must between 0 and 16.`);
 
         let result  : any;
-        let address : number = dicAddress[IRead.desc] + IRead.index;
-        let length  : number = IRead.length;
+        let address : number = this.config[desc.toString()].address + index;
+        let addressShift = index + length;
+        if(addressShift < 0 || addressShift > this.config[desc.toString()].totalChannels) 
+            Promise.reject("Internal Error: <ModBusService::read> read ["+desc+"]fail, <ModBusService::read> index + length("+addressShift+") > total channels("+this.config[desc.toString()].totalChannels + ")");
 
-        if(length < 0 || length > 16) Promise.reject(`Internal Error: <ModBusService::read> write fail, <Interface IModBusRead.length> must be between 0 and 16.`);
-
-        switch(IRead.code){
-            case ModBusCodeType.Coil_Status:
+        switch(this.config[desc.toString()].functionCode){
+            case ModbusFunctionCodes.Coil_Status:
                 result = this.client.readCoils(address,length);
                 break;
-            case ModBusCodeType.Holding_Register:
+            case ModbusFunctionCodes.Holding_Register:
                 result = this.client.readHoldingRegisters(address,length);
                 break;
-            case ModBusCodeType.Input_Register:
+            case ModbusFunctionCodes.Input_Register:
                 result = this.client.readInputRegisters(address,length);
                 break;
-            case ModBusCodeType.Input_Status:
+            case ModbusFunctionCodes.Input_Status:
                 result = this.client.readDiscreteInputs(address,length);
                 break;
         }
         try {
             let p: any = await result;
             let vals: Array<number> = (p.data as Array<number>).map( (value) => +value );
-            return vals.slice(0,IRead.length);
+            return vals.slice(0,length);
         } 
         catch(e) {
-            Promise.reject(`Internal Error: <ModBusService::read> read fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).`);
+            Promise.reject("Internal Error: <ModBusService::read> read ["+desc+"]fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).");
         }
     }
 
-    /*
-    *   Write data using enum descriptions and function codes.
-    */
-    public async write(IWrite : IModBusWrite) : Promise<void>{
+    /**
+     * Write data into device
+     * @param desc  <ModbusDescriptions> which colunm want to write
+     * @param index <number> start index ( shift from started address )
+     * @param val   <Array<number>> number array
+     */
+    public async write(desc : ModbusDescriptions, index : number, val : Array<number> | number) : Promise<void>{
         if(this.isConnected() == false) Promise.reject(`Internal Error: <ModBusService::write> write fail, no connection.`);
-        if(IWrite.desc !== ModbusDescriptions.Address_Mode)
-            if(IWrite.index < 0 || IWrite.index > 16) Promise.reject(`Internal Error: <ModBusService::write> write fail, <Interface IModBusWrite.index> must between 0 and 16.`);
 
         let result  : any;
-        let address : number = dicAddress[IWrite.desc] + IWrite.index;
-        let length  : number = IWrite.val.length;
+        let address : number = this.config[desc.toString()].address + index;
+        val = !Array.isArray(val) ? [val] : val;
+        let length  : number = val.length;
 
-        if(length < 0 || length > 16) Promise.reject(`Internal Error: <ModBusService::write> write fail, <Interface IModBusWrite.length> must be between 0 and 16.`);
+        let addressShift = index + length;
+        if(addressShift < 0 || addressShift > this.config[desc.toString()].totalChannels) 
+            Promise.reject("Internal Error: <ModBusService::read> write ["+desc+"] fail, <ModBusService::write> index + length > total channels.");
 
-        switch(IWrite.code){
-            case ModBusCodeType.Coil_Status:
-                result = this.client.writeCoils(address,IWrite.val);
+        switch(this.config[desc.toString()].functionCode){
+            case ModbusFunctionCodes.Coil_Status:
+                result = this.client.writeCoils(address,val);
                 break;
-            case ModBusCodeType.Holding_Register:
-                result = this.client.readHoldingRegisters(address,length);
+            case ModbusFunctionCodes.Holding_Register:
+                result = this.client.writeRegisters(address,val);
                 break;
             default:
-                Promise.reject(`Internal Error: <ModBusService::write> write fail, <Interface IModBusWrite.code> not support 'Input_*' .`);
+                Promise.reject("Internal Error: <ModBusService::write> write ["+desc+"]fail, <ModBusService::write> not support <ModbusDescriptions::Input_*> .");
         }
         try {
             await result;
         } 
         catch(e) {
-            Promise.reject(`Internal Error: <ModBusService::read> read fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).`);
+            Promise.reject("Internal Error: <ModBusService::write> write ["+desc+"]fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).");
         }
     }
-
-    /*
-    *   Get all device infos
-    */
+    
+    /**
+     * Get device informations, including ip, device name, module name, mac address...
+     * return <IModBusDeviceInfos> 
+     */
     public async getDeviceInfo() : Promise<IModBusDeviceInfos>{
         if(this.isConnected() == false) Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> getDeviceInfo fail, no connection.`);
         
         let resultParam : IModBusDeviceInfos = {} as any;
         let exception   : string;
 
-        let result_modelName    = this.client.readInputRegisters(5000,10);
-        let result_deviceName   = this.client.readInputRegisters(5040,30);
-        let result_deviceUpTime = this.client.readInputRegisters(5020,2) ;
-        let result_fwVersion    = this.client.readInputRegisters(5029,2) ;
-        let result_fwBuildDate  = this.client.readInputRegisters(5031,2) ;
-        let result_macAddress   = this.client.readInputRegisters(5024,3) ;
-        let result_ipAddress    = this.client.readInputRegisters(5027,2) ;
+        let result_modelName    = this.read(ModbusDescriptions.Model_Name          , 0, this.config.Model_Name.totalChannels);
+        let result_deviceName   = this.read(ModbusDescriptions.Device_Name         , 0, this.config.Device_Name.totalChannels);
+        let result_deviceUpTime = this.read(ModbusDescriptions.Device_Up_Time      , 0, this.config.Device_Up_Time.totalChannels) ;
+        let result_fwVersion    = this.read(ModbusDescriptions.Firmware_Version    , 0, this.config.Firmware_Version.totalChannels) ;
+        let result_fwBuildDate  = this.read(ModbusDescriptions.Firmware_Build_Date , 0, this.config.Firmware_Build_Date.totalChannels) ;
+        let result_macAddress   = this.read(ModbusDescriptions.Mac_Address         , 0, this.config.Mac_Address.totalChannels) ;
+        let result_ipAddress    = this.read(ModbusDescriptions.IP_Address          , 0, this.config.IP_Address.totalChannels) ;
 
         try {
-            let modelNameAry     : Array<number> = await BitwiseParser.Word2ByteArray((await result_modelName).data)    ;
-            let deviceNameAry    : Array<number> = await BitwiseParser.Word2ByteArray((await result_deviceName).data)   ;
-            let deviceUpTimeAry  : Array<number> = await BitwiseParser.Word2Int32((await result_deviceUpTime).data)     ;
-            let fwVersionStr     : string        = await BitwiseParser.Word2ByteString((await result_fwVersion).data)   ;
-            let fwBuildDateAry   : string        = await BitwiseParser.Word2ByteString((await result_fwBuildDate).data) ;
-            let macAddressStr    : string        = await BitwiseParser.Word2HexString((await result_macAddress).data)   ;
-            let ipAddressAry     : Array<number> = await BitwiseParser.Word2ByteArray((await result_ipAddress).data)    ;
+            let modelNameAry     : Array<number> = await BitwiseParser.Word2ByteArray(await result_modelName)    ;
+            let deviceNameAry    : Array<number> = await BitwiseParser.Word2ByteArray(await result_deviceName)   ;
+            let deviceUpTimeAry  : Array<number> = await BitwiseParser.Word2Int32(await result_deviceUpTime)     ;
+            let fwVersionStr     : string        = await BitwiseParser.Word2ByteString(await result_fwVersion)   ;
+            let fwBuildDateAry   : string        = await BitwiseParser.Word2ByteString(await result_fwBuildDate) ;
+            let macAddressStr    : string        = await BitwiseParser.Word2HexString(await result_macAddress)   ;
+            let ipAddressAry     : Array<number> = await BitwiseParser.Word2ByteArray(await result_ipAddress)    ;
             
-            resultParam.modelName   = String.fromCharCode(...modelNameAry).replace(/\0/g,'').trim();
-            resultParam.deviceName  = String.fromCharCode(...deviceNameAry).replace(/\0/g,'').trim();
-            resultParam.deviceUpTime= deviceUpTimeAry[0];
-            resultParam.firmware    = "V" + fwVersionStr + " Build" + fwBuildDateAry;
-            resultParam.macAddress  = macAddressStr.replace(/(.{2})/g,"$1-").substr(0,17);
-            resultParam.ipAddress   = ipAddressAry[0] + '.' + ipAddressAry[1] + '.' + ipAddressAry[2] + '.' + ipAddressAry[3];
+            resultParam.modelName         = String.fromCharCode(...modelNameAry).replace(/\0/g,'').trim();
+            resultParam.deviceName        = String.fromCharCode(...deviceNameAry).replace(/\0/g,'').trim();
+            resultParam.deviceUpTimeInSec = deviceUpTimeAry[0];
+            resultParam.firmware          = "V" + fwVersionStr + " Build" + fwBuildDateAry;
+            resultParam.macAddress        = macAddressStr.replace(/(.{2})/g,"$1-").substr(0,17);
+            resultParam.ipAddress         = ipAddressAry[0] + '.' + ipAddressAry[1] + '.' + ipAddressAry[2] + '.' + ipAddressAry[3];
 
             return resultParam;
 
         } catch(e) {
-            Promise.reject(`Internal Error: <ModBusService::read> read fail.`);
+            Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> getDeviceInfo fail.`);
         }
-
-        return;
     }
 
-    //Verify IP address format    
+    /**
+     * Verify ip
+     * @param address ip address. e.g. "192.168.127.254"
+     */
     private verifyIP(address: string) : void{
         let isThrow : boolean = false;
         let strArr : Array<string> = address.split('.');
@@ -286,11 +292,9 @@ export class ModBusService {
         for(let i : number = 0 ; i < 4 ; i++){
             var num = Number(strArr[i]);
             if(isNaN(num) || num < 0 || num > 255){
-                isThrow = true;
-                break;
+                throw `Internal Error: <ModBusService::verifyIP> address format error, address ip:<`+ address + '>';
             }
         }
-        if(isThrow) throw `Internal Error: <ModBusService::verifyIP> address format error, address ip:<`+ address + '>';
     }
 
 }

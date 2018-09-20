@@ -7,36 +7,36 @@ import './custom/shells/create-index';
 import * as express from 'express';
 app.use('/files', express.static(`${__dirname}/custom/files`));
 
-// app.use('/snapshot', express.static(`${__dirname}/custom/files/snapshots`));
+import { ModBusService, ModbusDescriptions, IModbusDeviceConfig } from './custom/services/modbus-service/modbus-service';
+import { ModbusDeviceConfig } from './custom/models/modbus';
+import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
-import { ModBusService, IModBusConfig, IModBusRead, ModbusDescriptions, ModBusCodeType, IModBusWrite } from './custom/services/modbus-service/modbus-service';
 
 
-let config : IModBusConfig = {
-    "address"   : "192.168.127.254",
-    "id"        : 1
-}
-
-let readConfig : IModBusRead = {
-    "desc"      : ModbusDescriptions.Address_Mode ,
-    "code"      : ModBusCodeType.Holding_Register ,
-    "index"     : 0                               ,
-    "length"    : 1                          
-}
-let writeConfig : IModBusWrite = {
-    "desc"      : ModbusDescriptions.DO_Value,
-    "code"      : ModBusCodeType.Coil_Status ,
-    "index"     : 1                          ,
-    "val"       : [+true,+true,+true]                       
-}
-var modbusClient = new ModBusService(config);
-
-(async () => {
-    let result = await modbusClient.connect();
-    //let result_write = await modbusClient.write(writeConfig);
-    let result_read  = await modbusClient.read(readConfig);
+var testFunc = (async () => {
+    let result = await modbusClient.connect(1);
+    let result_write  = await modbusClient.write(ModbusDescriptions.DO_Value,0,[1,1,1,1]);
+    let result_read  = await modbusClient.read(ModbusDescriptions.DO_Value,0,8);
     let infos = await modbusClient.getDeviceInfo();
     console.log(result_read);
     console.log(infos);
     modbusClient.disconnect();
-})();
+});
+
+
+let modbusClient : ModBusService;
+
+
+ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then((config)=>{
+    modbusClient = new ModBusService(config);
+    testFunc();
+}).catch((e)=>{
+    throw e;
+})
+
+
+
+
+
+
+
