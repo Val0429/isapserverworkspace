@@ -9,7 +9,7 @@ export class SignalObject<T = boolean>{
         this.subject = new BehaviorSubject<T>(val);
     }
 
-    public async wait(predicate, timeout ?: number | Date){
+    public async wait( timeout : number | Date = undefined, predicate = (v => v)){
         let result = isNullOrUndefined(timeout) ? 
                     this.subject.filter(predicate).first().toPromise() :
                     this.subject.filter(predicate).timeout(timeout).first().toPromise();

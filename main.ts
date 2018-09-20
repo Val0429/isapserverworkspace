@@ -14,8 +14,8 @@ import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
 
 var testFunc = (async () => {
-    let result_read  = modbusClient.read(ModbusDescriptions.DO_Value,0,8,3000);
-    let infos        = modbusClient.getDeviceInfo(4000);
+    let result_read  = modbusClient.read(ModbusDescriptions.DO_Value,0,8,1000);
+    let infos        = modbusClient.getDeviceInfo(1000);
     let result       = modbusClient.connect(1);
 
     let data = await Promise.all([result_read,infos]);

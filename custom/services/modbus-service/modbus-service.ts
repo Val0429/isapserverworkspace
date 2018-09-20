@@ -181,7 +181,7 @@ export class ModBusService {
     public async read(desc : ModbusDescriptions, index : number, length : number, timeout ?: number) : Promise<Array<number>>{
 
         try{
-            await this.signal.wait(v => v,timeout); 
+            await this.signal.wait(timeout); 
         }catch(e){
             return Promise.reject(`Internal Error: <ModBusService::read> read fail, still no connection for ${Math.abs(timeout)} ms.`);
         }
@@ -226,7 +226,7 @@ export class ModBusService {
     public async write(desc : ModbusDescriptions, index : number, val : Array<number> | number, timeout ?: number) : Promise<void>{
 
         try{
-            await this.signal.wait(v => v,timeout); 
+            await this.signal.wait(timeout); 
         }catch(e){
             return Promise.reject(`Internal Error: <ModBusService::write> write fail, still no connection for ${Math.abs(timeout)} ms.`);
         }
@@ -265,7 +265,7 @@ export class ModBusService {
     public async getDeviceInfo(timeout ?: number) : Promise<IModBusDeviceInfos>{
 
         try{
-            await this.signal.wait(v => v,timeout); 
+            await this.signal.wait(timeout); 
         }catch(e){
             return Promise.reject(`Internal Error: <ModBusService::getDeviceInfo> read fail, still no connection for ${Math.abs(timeout)} ms.`);
         }
@@ -323,3 +323,11 @@ export class ModBusService {
 
 }
 
+
+// interface MultipleSeq {
+//     result: boolean;
+//     index: number;
+//     addr: string;
+// }
+
+// let tt: SignalObject<MultipleSeq> = new SignalObject<MultipleSeq>();
