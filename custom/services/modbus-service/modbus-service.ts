@@ -86,48 +86,79 @@ var ModbusRTU = require("modbus-serial");
  * It have functions that get/set values, get device infomations.
  * Example :
  * ------------------------------------------------------------------
-    let modbusClient : ModBusService;
+ 
+    //Read system config from file ( the system config is created by software<moxa search IO> which is download from their web page)
+    ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then(async (config)=>{
+        try{
+            //Init test const number and array
+            const moxaTimeout : number = 2000; 
+            const writeTestData : Array<number> = [0,0,1,1,0,0,1,0];
 
-    var testFunc = (async () => {
-        let result       = modbusClient.connect(1);
-        let infos        = modbusClient.getDeviceInfo(1000);
-        let result_write1 = modbusClient.write(ModbusDescriptions.DO_Value, 0, [0,0,1,1,0,0,1,0], moxaTimeout);
-        let result_write2 = modbusClient.write(ModbusDescriptions.DO_Value, 0, [1,1,0,0,1,1,0,1], moxaTimeout);
-        let result_write3 = modbusClient.write(ModbusDescriptions.DO_Value, 0, [1,0,1,0,1,0,1,0], moxaTimeout);
-        let result_read  = modbusClient.read(ModbusDescriptions.DO_Value  , 0, 8, moxaTimeout);
-        let data = await Promise.all([result_read,infos]);
-        console.log(data[0]);
-        console.log(data[1]);
-        modbusClient.disconnect();
-    });
+            //Create object and set config at the same time
+            let modbusClient = new ModBusService(config);
 
-    ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then((config)=>{
-        modbusClient = new ModBusService(config);
-        testFunc();
+            //Connect
+            let result        = modbusClient.connect(1);
+
+            //Get device informations
+            let result_infos  = modbusClient.getDeviceInfo();
+
+            //Write data to DO value
+            let result_write1 = modbusClient.write(ModbusDescriptions.DO_Value, 0, writeTestData, moxaTimeout);
+
+            //Read differenct index and length data
+            let result_read1  = modbusClient.read(ModbusDescriptions.DO_Value);
+            let result_read2  = modbusClient.read(ModbusDescriptions.DO_Value, 3);
+            let result_read3  = modbusClient.read(ModbusDescriptions.DO_Value, 2, 4);
+
+            //Wait
+            let data          = await Promise.all([result_read1, result_read2, result_read3]);
+            let infos         = await result_infos;
+
+            //Print result log
+            console.log(`Moxa device infomations`);
+            console.log(infos);
+            console.log(`Moxa DO_Value Data : `, writeTestData);
+            console.log(`Read all           : `, data[0]);
+            console.log(`Read index 3 to end:          `, data[1]);
+            console.log(`Read index 2 to 5  :       `, data[2]);
+
+            //Disconnect
+            modbusClient.disconnect();
+
+        }catch(e){
+            throw `modbus-service error : ${e}`;
+        }
     }).catch((e)=>{
         throw `LoadMoxaSystemConfig : ${e}`;
     })
+    
  * ------------------------------------------------------------------   
  */
 export class ModBusService {
 
     //Use to wait ( read/write after connected)
-    private signal : SignalObject        = null          ;
+    protected signal   : SignalObject        = null          ;
 
     //moxa device config
-    private config : IModbusDeviceConfig = undefined     ;
+    protected config   : IModbusDeviceConfig = undefined     ;
 
     //node-module :: modbus-serial object 
-    private client : any                 = undefined     ;
+    protected client   : any                 = undefined     ;
+
+    protected deviceID : number              = -1            ;
 
     /**
      * constructor : Initial config
      * @param config <IModbusDeviceConfig> config
      */
-    constructor(config: IModbusDeviceConfig) { 
+    constructor(config ?: IModbusDeviceConfig) {
+        
         this.client = new ModbusRTU();
+
         this.signal = new SignalObject(false);
-        this.setConfig(config);
+
+        if(isNullOrUndefined(config) === false) this.setConfig(config);
     }
 
     /**
@@ -135,11 +166,12 @@ export class ModBusService {
      * @param deviceID Assign a custom device id ( > 0 ) 
      */
     public async connect(deviceID : number) : Promise<void> {
+        if(isNullOrUndefined(this.config) === true) throw `Internal Error: <ModBusService::connect> connect fail, without setting device config.`;
         let result = 
             this.client.connectTCP(this.config.connect_config.ip).then(()=>{
-                this.client.setID(deviceID);
+                this.client.setID(this.deviceID = deviceID);
                 this.signal.set(true);
-                console.log(`Connect to ip:<${this.config.connect_config.ip}> success.`)
+                console.log(`Connect to {deviceID : ${this.deviceID}, ip:<${this.config.connect_config.ip}>} success.`)
             }).catch((e)=>{
                 throw `Internal Error: <ModBusService::connect> connect fail, maybe address wrong.`;
             });
@@ -152,7 +184,9 @@ export class ModBusService {
     public disconnect(){
         this.client.close();
         this.signal.set(false);
-        console.log(`Disconnect with <${this.config.connect_config.ip}> complete.`);
+        console.log(`Disconnect with {deviceID : ${this.deviceID}, ip:<${this.config.connect_config.ip}>} complete.`);
+        this.config = undefined;
+        this.deviceID = -1;
     }
 
     /**
@@ -166,10 +200,11 @@ export class ModBusService {
      * Set config when disconnected
      * @param config <IModbusDeviceConfig> config
      */
-    public setConfig(config: IModbusDeviceConfig){
+    public setConfig(config: IModbusDeviceConfig) : ModBusService{
         if(this.isConnected()) throw `Internal Error: <ModBusService::setConfig> Still connecting, do not change config.`;
         this.verifyIP(config.connect_config.ip); 
         this.config = config;
+        return this;
     }
 
     /**
@@ -334,7 +369,7 @@ export class ModBusService {
      * Verify ip
      * @param address ip address. e.g. "192.168.127.254"
      */
-    private verifyIP(address: string) : void{
+    protected verifyIP(address: string) : void{
         let isThrow : boolean = false;
         let strArr : Array<string> = address.split('.');
 

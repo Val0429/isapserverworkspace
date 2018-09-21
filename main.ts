@@ -10,40 +10,78 @@ app.use('/files', express.static(`${__dirname}/custom/files`));
 import { ModBusService, ModbusDescriptions } from './custom/services/modbus-service/modbus-service';
 import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
-const moxaTimeout : number = 1000; 
 
-var TestFuncSet = (async () => {
 
-    modbusClient.connect(1);
-    let infos         = modbusClient.getDeviceInfo(moxaTimeout);
-    let result_read1  = modbusClient.read(ModbusDescriptions.DI_Value);
-    let result_read2  = modbusClient.read(ModbusDescriptions.DO_Value);
-    let result_read3  = modbusClient.read(ModbusDescriptions.DO_Pulse_Status);
+//Read system config from file ( the system config is created by software<moxa search IO> which is download from their web page)
+ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then(async (config)=>{
+    try{
+        //Init test const number and array
+        const moxaTimeout : number = 2000; 
+        const writeTestData : Array<number> = [0,0,1,1,0,0,1,0];
 
-    let data          = await Promise.all([infos,result_read1, result_read2,result_read3]);
-    modbusClient.disconnect();
+        //Create object and set config at the same time
+        let modbusClient = new ModBusService(config);
 
-    console.log(data[0]);
-    console.log(data[1]);
-    console.log(data[2]);
-    console.log(data[3]);
+        //Connect
+        let result        = modbusClient.connect(1);
 
-});
+        //Get device informations
+        let result_infos  = modbusClient.getDeviceInfo();
 
-let modbusClient : ModBusService;
+        //Write data to DO value
+        let result_write1 = modbusClient.write(ModbusDescriptions.DO_Value, 0, writeTestData, moxaTimeout);
 
-ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then((config)=>{
+        //Read differenct index and length data
+        let result_read1  = modbusClient.read(ModbusDescriptions.DO_Value);
+        let result_read2  = modbusClient.read(ModbusDescriptions.DO_Value, 3);
+        let result_read3  = modbusClient.read(ModbusDescriptions.DO_Value, 2, 4);
 
-    modbusClient = new ModBusService(config);
-    TestFuncSet();
+        //Wait
+        let data          = await Promise.all([result_read1, result_read2, result_read3]);
+        let infos         = await result_infos;
 
+        //Print result log
+        console.log(`Moxa device infomations`);
+        console.log(infos);
+        console.log(`Moxa DO_Value Data : `, writeTestData);
+        console.log(`Read all           : `, data[0]);
+        console.log(`Read index 3 to end:          `, data[1]);
+        console.log(`Read index 2 to 5  :       `, data[2]);
+
+        //Disconnect
+        modbusClient.disconnect();
+
+    }catch(e){
+        throw `modbus-service error : ${e}`;
+    }
 }).catch((e)=>{
     throw `LoadMoxaSystemConfig : ${e}`;
 })
 
-
-
-
-
-
-
+/*
+import ast from 'services/ast-services/ast-client';
+interface Test {
+    prop1: string;
+    prop2: number;
+    prop3: TestEnum;
+}
+type PTest = Partial<Test>;
+enum TestEnum {
+    User,
+    Guest,
+    Visitor
+}
+(async () => {
+    let testdata = {
+        prop1: "123",
+        prop2: 123,
+        prop3: "Visitor"
+    }
+    try {
+        let result = await ast.requestValidation("Test", testdata);
+        console.log('result', result);
+    } catch(e) {
+        console.log(e);
+    }
+})();
+*/
