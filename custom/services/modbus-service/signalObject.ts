@@ -1,6 +1,7 @@
 import { BehaviorSubject } from "rxjs";
 import { isNullOrUndefined } from "util";
 
+
 export class SignalObject<T = boolean>{
 
     private subject: BehaviorSubject<T> = null;

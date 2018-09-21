@@ -1,4 +1,4 @@
-import { IModbusDeviceConfig, ModbusFunctionCodes } from "../services/modbus-service/modbus-service";
+import { IModbusDeviceConfig, ModbusFunctionCodes } from "../../services/modbus-service/modbus-service";
 
 let ModbusDeviceConfig : IModbusDeviceConfig = {
 

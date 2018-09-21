@@ -84,15 +84,19 @@ var ModbusRTU = require("modbus-serial");
  * This class is use to connect moxa device by ip address.
  * It have functions that get/set values, get device infomations.
  * Example :
+ * ------------------------------------------------------------------
     let modbusClient : ModBusService;
 
     var testFunc = (async () => {
-        let result = await modbusClient.connect(1);
-        let result_write  = await modbusClient.write(ModbusDescriptions.DO_Value,0,[1,1,1,1]);
-        let result_read  = await modbusClient.read(ModbusDescriptions.DO_Value,0,8);
-        let infos = await modbusClient.getDeviceInfo();
-        console.log(result_read);
-        console.log(infos);
+        let result       = modbusClient.connect(1);
+        let infos        = modbusClient.getDeviceInfo(1000);
+        let result_write1 = modbusClient.write(ModbusDescriptions.DO_Value, 0, [0,0,1,1,0,0,1,0], moxaTimeout);
+        let result_write2 = modbusClient.write(ModbusDescriptions.DO_Value, 0, [1,1,0,0,1,1,0,1], moxaTimeout);
+        let result_write3 = modbusClient.write(ModbusDescriptions.DO_Value, 0, [1,0,1,0,1,0,1,0], moxaTimeout);
+        let result_read  = modbusClient.read(ModbusDescriptions.DO_Value  , 0, 8, moxaTimeout);
+        let data = await Promise.all([result_read,infos]);
+        console.log(data[0]);
+        console.log(data[1]);
         modbusClient.disconnect();
     });
 
@@ -100,15 +104,20 @@ var ModbusRTU = require("modbus-serial");
         modbusClient = new ModBusService(config);
         testFunc();
     }).catch((e)=>{
-        throw e;
+        throw `LoadMoxaSystemConfig : ${e}`;
     })
+ * ------------------------------------------------------------------   
  */
 export class ModBusService {
 
-    private signal : SignalObject        = null     ;
-    private client                       = new ModbusRTU()     ;
+    //Use to wait ( read/write after connected)
+    private signal : SignalObject        = null          ;
 
-    private config : IModbusDeviceConfig = undefined;
+    //moxa device config
+    private config : IModbusDeviceConfig = undefined     ;
+
+    //node-module :: modbus-serial object 
+    private client                       = undefined     ;
 
     /**
      * constructor : Initial config
@@ -119,23 +128,6 @@ export class ModBusService {
         this.signal = new SignalObject(false);
         this.client = new ModbusRTU();
     }
-
-    /**
-     * Set config when disconnected
-     * @param config <IModbusDeviceConfig> config
-     */
-    public setConfig(config: IModbusDeviceConfig){
-        if(this.isConnected()) throw `Internal Error: <ModBusService::setConfig> Still connecting, do not change config.`;
-        this.verifyIP(config.connect_config.ip); 
-        this.config = config;
-    }
-
-    /**
-     * Get config file
-     * 
-     * return <IModbusDeviceConfig>
-     */
-    public getConfig() : IModbusDeviceConfig { return this.config; }
 
     /**
      * Connect to device
@@ -169,16 +161,41 @@ export class ModBusService {
         return  (this.client.isOpen === true) ? true : false;
     }
 
+    /**
+     * Set config when disconnected
+     * @param config <IModbusDeviceConfig> config
+     */
+    public setConfig(config: IModbusDeviceConfig){
+        if(this.isConnected()) throw `Internal Error: <ModBusService::setConfig> Still connecting, do not change config.`;
+        this.verifyIP(config.connect_config.ip); 
+        this.config = config;
+    }
+
+    /**
+     * Get config file
+     * return <IModbusDeviceConfig>
+     */
+    public getConfig() : IModbusDeviceConfig { return this.config; }
+
+    /**
+     * Get device id
+     * return <number>
+     */
+    public getDeviceID() : number{ return this.client.getID(); }
+
 
     /**
      * Read data from device, must be connected first.
-     * @param desc   <ModbusDescriptions> which colunm want to read
-     * @param index  <number> start index ( shift from started address )
-     * @param length <number> read length / channel
-     * 
+     * @param desc    <ModbusDescriptions> which colunm want to read
+     * @param index   <number> start index ( shift from started address )
+     * @param length  <number> read length / channel
+     * @param timeout <number> how long you want to wait for connecting
      * return <Array<number>> data array
      */
-    public async read(desc : ModbusDescriptions, index : number, length : number, timeout ?: number) : Promise<Array<number>>{
+    public async read(desc    : ModbusDescriptions, 
+                      index   : number   = 0, 
+                      length  : number   = 0xFF,
+                      timeout : number   = 1000) : Promise<Array<number>>{
 
         try{
             await this.signal.wait(timeout); 
@@ -186,13 +203,17 @@ export class ModBusService {
             return Promise.reject(`Internal Error: <ModBusService::read> read fail, still no connection for ${Math.abs(timeout)} ms.`);
         }
 
-        let result  : any;
-        let address : number = this.config[desc.toString()].address + index;
+        let configDesc = this.config[desc.toString()];
+        
+        if(length == 0xFF) length = configDesc.totalChannels - index;
+        
         let addressShift = index + length;
-        if(addressShift < 0 || addressShift > this.config[desc.toString()].totalChannels) 
-            return Promise.reject(`Internal Error: <ModBusService::read> read [${desc}] fail, <ModBusService::read> index + length("+addressShift+") > total channels(${this.config[desc.toString()].totalChannels})`);
+        if(addressShift < 0 || addressShift > configDesc.totalChannels) 
+            return Promise.reject(`Internal Error: <ModBusService::read> read [${desc}] fail, <ModBusService::read> index + length("+addressShift+") > total channels(${configDesc.totalChannels})`);
 
-        switch(this.config[desc.toString()].functionCode){
+        let result  : any;
+        let address : number = configDesc.address + index;
+        switch(configDesc.functionCode){
             case ModbusFunctionCodes.Coil_Status:
                 result = this.client.readCoils(address,length);
                 break;
@@ -219,11 +240,15 @@ export class ModBusService {
 
     /**
      * Write data into device
-     * @param desc  <ModbusDescriptions> which colunm want to write
-     * @param index <number> start index ( shift from started address )
-     * @param val   <Array<number>> number array
+     * @param desc    <ModbusDescriptions> which colunm want to write
+     * @param index   <number> start index ( shift from started address )
+     * @param val     <Array<number>> number array
+     * @param timeout <number> how long you want to wait for connecting
      */
-    public async write(desc : ModbusDescriptions, index : number, val : Array<number> | number, timeout ?: number) : Promise<void>{
+    public async write(desc     : ModbusDescriptions, 
+                       index    : number, 
+                       val      : Array<number> | number, 
+                       timeout  : number = 1000) : Promise<void>{
 
         try{
             await this.signal.wait(timeout); 
@@ -231,16 +256,16 @@ export class ModBusService {
             return Promise.reject(`Internal Error: <ModBusService::write> write fail, still no connection for ${Math.abs(timeout)} ms.`);
         }
 
-        let result  : any;
-        let address : number = this.config[desc.toString()].address + index;
+        let configDesc = this.config[desc.toString()];
         val = !Array.isArray(val) ? [val] : val;
-        let length  : number = val.length;
 
-        let addressShift = index + length;
-        if(addressShift < 0 || addressShift > this.config[desc.toString()].totalChannels) 
-            return Promise.reject(`Internal Error: <ModBusService::write> write [${desc}] fail, <ModBusService::write> index + length > total channels.`);
+        let addressShift = index + val.length;
+        if(addressShift < 0 || addressShift > configDesc.totalChannels) 
+            return Promise.reject(`Internal Error: <ModBusService::write> write [${desc}] fail, <ModBusService::write> index + length > total channels.(${configDesc.totalChannels})`);
 
-        switch(this.config[desc.toString()].functionCode){
+        let result  : any;
+        let address : number = configDesc.address + index;
+        switch(configDesc.functionCode){
             case ModbusFunctionCodes.Coil_Status:
                 result = this.client.writeCoils(address,val);
                 break;
@@ -260,9 +285,10 @@ export class ModBusService {
     
     /**
      * Get device informations, including ip, device name, module name, mac address...
+     * @param timeout <number> how long you want to wait for connecting
      * return <IModBusDeviceInfos> 
      */
-    public async getDeviceInfo(timeout ?: number) : Promise<IModBusDeviceInfos>{
+    public async getDeviceInfo(timeout : number = 1000) : Promise<IModBusDeviceInfos>{
 
         try{
             await this.signal.wait(timeout); 
@@ -322,12 +348,3 @@ export class ModBusService {
     }
 
 }
-
-
-// interface MultipleSeq {
-//     result: boolean;
-//     index: number;
-//     addr: string;
-// }
-
-// let tt: SignalObject<MultipleSeq> = new SignalObject<MultipleSeq>();

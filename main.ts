@@ -7,33 +7,35 @@ import './custom/shells/create-index';
 import * as express from 'express';
 app.use('/files', express.static(`${__dirname}/custom/files`));
 
-import { ModBusService, ModbusDescriptions, IModbusDeviceConfig } from './custom/services/modbus-service/modbus-service';
-import { ModbusDeviceConfig } from './custom/models/modbus';
+import { ModBusService, ModbusDescriptions } from './custom/services/modbus-service/modbus-service';
 import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
+const moxaTimeout : number = 1000; 
 
+var TestFuncSet = (async () => {
 
-var testFunc = (async () => {
-    let result_read  = modbusClient.read(ModbusDescriptions.DO_Value,0,8,1000);
-    let infos        = modbusClient.getDeviceInfo(1000);
-    let result       = modbusClient.connect(1);
+    modbusClient.connect(1);
+    let infos         = modbusClient.getDeviceInfo(moxaTimeout);
+    let result_read1  = modbusClient.read(ModbusDescriptions.DI_Value);
+    let result_read2  = modbusClient.read(ModbusDescriptions.DO_Value);
+    let result_read3  = modbusClient.read(ModbusDescriptions.DO_Pulse_Status);
 
-    let data = await Promise.all([result_read,infos]);
+    let data          = await Promise.all([infos,result_read1, result_read2,result_read3]);
+    modbusClient.disconnect();
 
     console.log(data[0]);
     console.log(data[1]);
+    console.log(data[2]);
+    console.log(data[3]);
 
-    modbusClient.disconnect();
 });
 
-
 let modbusClient : ModBusService;
-
 
 ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then((config)=>{
 
     modbusClient = new ModBusService(config);
-    testFunc();
+    TestFuncSet();
 
 }).catch((e)=>{
     throw `LoadMoxaSystemConfig : ${e}`;
