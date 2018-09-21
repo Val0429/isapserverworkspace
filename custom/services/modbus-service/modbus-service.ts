@@ -5,6 +5,7 @@ import { BitwiseParser }                from "./bitwise-parser"
 import { toArray }                      from "rxjs/operator/toArray";
 import { BehaviorSubject, Observable } from 'rxjs';
 import { SignalObject } from "./signalObject";
+import { Semaphore } from 'helpers/utility/semaphore';
 
 
 /**
@@ -117,16 +118,16 @@ export class ModBusService {
     private config : IModbusDeviceConfig = undefined     ;
 
     //node-module :: modbus-serial object 
-    private client                       = undefined     ;
+    private client : any                 = undefined     ;
 
     /**
      * constructor : Initial config
      * @param config <IModbusDeviceConfig> config
      */
     constructor(config: IModbusDeviceConfig) { 
-        this.setConfig(config);
-        this.signal = new SignalObject(false);
         this.client = new ModbusRTU();
+        this.signal = new SignalObject(false);
+        this.setConfig(config);
     }
 
     /**
@@ -198,7 +199,7 @@ export class ModBusService {
                       timeout : number   = 1000) : Promise<Array<number>>{
 
         try{
-            await this.signal.wait(timeout); 
+            await this.signal.wait(timeout);
         }catch(e){
             return Promise.reject(`Internal Error: <ModBusService::read> read fail, still no connection for ${Math.abs(timeout)} ms.`);
         }
@@ -235,7 +236,6 @@ export class ModBusService {
         catch(e) {
             return Promise.reject(`Internal Error: <ModBusService::read> read [${desc}] fail, maybe index/length error or descript & code not match ( User-defined in Modbus ).`);
         }
-
     }
 
     /**
