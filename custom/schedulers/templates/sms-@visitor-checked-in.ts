@@ -1,5 +1,5 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
-import { ScheduleTemplateBase, IOutputScheduleTemplateSMS } from 'models/schedulers/schedulers.base';
+import { ScheduleTemplateBase, ScheduleActionSMS } from 'models/schedulers/schedulers.base';
 import { Pin } from 'services/pin-code/pin-code';
 
 
@@ -17,8 +17,8 @@ export interface IInputScheduleTemplateSMS_VisitorCheckedIn {
 }
 
 export class ScheduleTemplateSMS_VisitorCheckedIn extends ScheduleTemplateBase<
-    IInputScheduleTemplateSMS_VisitorCheckedIn,
-    IOutputScheduleTemplateSMS
+    ScheduleActionSMS,
+    IInputScheduleTemplateSMS_VisitorCheckedIn
     > {
 
     constructor() {

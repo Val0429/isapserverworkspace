@@ -1,5 +1,5 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
-import { ScheduleTemplateBase, IOutputScheduleTemplateEmail } from 'models/schedulers/schedulers.base';
+import { ScheduleTemplateBase, ScheduleActionEmail } from 'models/schedulers/schedulers.base';
 
 
 export interface IInputScheduleTemplateEmail_VisitorCheckedIn {
@@ -16,8 +16,8 @@ export interface IInputScheduleTemplateEmail_VisitorCheckedIn {
 }
 
 export class ScheduleTemplateEmail_VisitorCheckedIn extends ScheduleTemplateBase<
-    IInputScheduleTemplateEmail_VisitorCheckedIn,
-    IOutputScheduleTemplateEmail
+    ScheduleActionEmail,
+    IInputScheduleTemplateEmail_VisitorCheckedIn
     > {
 
     constructor() {

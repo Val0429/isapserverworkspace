@@ -1,5 +1,5 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
-import { ScheduleTemplateBase, IOutputScheduleTemplateEmail } from 'models/schedulers/schedulers.base';
+import { ScheduleTemplateBase, ScheduleActionEmail } from 'models/schedulers/schedulers.base';
 
 
 export interface IInputScheduleTemplateEmail_PreRegistrationComplete {
@@ -12,8 +12,8 @@ export interface IInputScheduleTemplateEmail_PreRegistrationComplete {
 }
 
 export class ScheduleTemplateEmail_PreRegistrationComplete extends ScheduleTemplateBase<
-    IInputScheduleTemplateEmail_PreRegistrationComplete,
-    IOutputScheduleTemplateEmail
+    ScheduleActionEmail,
+    IInputScheduleTemplateEmail_PreRegistrationComplete
     > {
 
     constructor() {

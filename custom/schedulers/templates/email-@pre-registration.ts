@@ -1,5 +1,5 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
-import { ScheduleTemplateBase, IOutputScheduleTemplateEmail } from 'models/schedulers/schedulers.base';
+import { ScheduleTemplateBase, ScheduleActionEmail } from 'models/schedulers/schedulers.base';
 import { Pin } from 'services/pin-code/pin-code';
 
 export interface PinCodeInstance {
@@ -27,8 +27,8 @@ export interface IInputScheduleTemplateEmail_PreRegistration {
 }
 
 export class ScheduleTemplateEmail_PreRegistration extends ScheduleTemplateBase<
-    IInputScheduleTemplateEmail_PreRegistration,
-    IOutputScheduleTemplateEmail
+    ScheduleActionEmail,
+    IInputScheduleTemplateEmail_PreRegistration
     > {
 
     constructor() {
