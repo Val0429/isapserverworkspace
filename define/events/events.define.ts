@@ -80,6 +80,7 @@ var events: Config[] = [
         company: Companies;
         visitor: Visitors;
         kiosk: Parse.User;
+        score: number;
     `],
 
     ["3514", "StrictCompleteCheckIn", `
