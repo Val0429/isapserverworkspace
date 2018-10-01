@@ -40,7 +40,7 @@ export interface Input {
 }
 
 var action = new Action<Input>({
-    loginRequired: true,
+    loginRequired: false,
 });
 
 action.ws(async (data) => {

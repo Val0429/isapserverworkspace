@@ -10,9 +10,9 @@ app.use('/files', express.static(`${__dirname}/custom/files`));
 import { ModBusService, ModbusDescriptions } from './custom/services/modbus-service/modbus-service';
 import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
+/*
 
-
-//Read system config from file ( the system config is created by software<moxa search IO> which is download from their web page)
+//Read system config from file ( the system config is created by software<moxa search IO> which is download from their website)
 ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then(async (config)=>{
     try{
         //Init test const number and array
@@ -41,9 +41,9 @@ ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then(async (confi
         let infos         = await result_infos;
 
         //Print result log
-        console.log(`Moxa device infomations`);
+        console.log(`\nMoxa device infomations`);
         console.log(infos);
-        console.log(`Moxa DO_Value Data : `, writeTestData);
+        console.log(`\nMoxa DO_Value Data : `, writeTestData);
         console.log(`Read all           : `, data[0]);
         console.log(`Read index 3 to end:          `, data[1]);
         console.log(`Read index 2 to 5  :       `, data[2]);
@@ -58,6 +58,7 @@ ModbusHelper.LoadMoxaSystemConfig("E:/moxaConfig.txt",'utf-8').then(async (confi
     throw `LoadMoxaSystemConfig : ${e}`;
 })
 
+*/
 /*
 import ast from 'services/ast-services/ast-client';
 interface Test {

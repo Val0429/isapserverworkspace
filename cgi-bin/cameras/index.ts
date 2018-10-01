@@ -8,7 +8,7 @@ import {
 
 
 var action = new Action({
-    loginRequired: true,
+    loginRequired: false,
     permission: [RoleList.Administrator]
 });
 
@@ -23,6 +23,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Cameras(data.inputType);
     await obj.save(null, { useMasterKey: true });
+    
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -37,8 +38,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Cameras)
         .include("floor");
+    console.log(query);
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
+   // console.log(query);
+
     /// 3) Output
     return Restful.Pagination(query, data.inputType);
 });

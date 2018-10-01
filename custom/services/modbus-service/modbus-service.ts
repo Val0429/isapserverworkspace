@@ -77,8 +77,6 @@ export interface IModBusDeviceInfos{
     ipAddress           : string;
 }
 
-
-
 var ModbusRTU = require("modbus-serial");
 
 /**
@@ -146,6 +144,7 @@ export class ModBusService {
     //node-module :: modbus-serial object 
     protected client   : any                 = undefined     ;
 
+    //Device
     protected deviceID : number              = -1            ;
 
     /**

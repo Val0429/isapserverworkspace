@@ -4,17 +4,6 @@ import { isNullOrUndefined } from "util";
 import { reject, resolve, promisify } from "bluebird";
 import ast from 'services/ast-services/ast-client';
 
-/* 
-function readFilePromise(filename: string, encoding: string = null): Promise<string | Buffer> {
-    return new Promise<string | Buffer>((resolve, reject) => {
-        readFile(filename, encoding, (err, data) => {
-            if (err) return reject(err);
-            resolve(data);
-        });
-    });
-}
-*/
-
 export namespace ModbusHelper{
 
     let descriptionArray  : Array<string>  = Enum2ValueArray(ModbusDescriptions);
@@ -82,6 +71,12 @@ export namespace ModbusHelper{
 
         } catch(e){
             return Promise.reject("Internal Error: <ModbusHelper::LoadMoxaSystemConfig> analysis file content error, message : " + e);
+        }
+
+        try {
+            let result = await ast.requestValidation("IModbusDeviceConfig", modbusDevConfig);
+        } catch(e) {
+            console.log(`Internal Error: <ModbusHelper::LoadMoxaSystemConfig> IModbusDeviceConfig verity fail, message : ${e}`);
         }
         
         return modbusDevConfig;

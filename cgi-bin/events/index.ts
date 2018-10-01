@@ -7,7 +7,7 @@ import {
 
 
 var action = new Action({
-    loginRequired: true,
+    loginRequired: false,
     permission: [RoleList.Administrator]
 });
 
