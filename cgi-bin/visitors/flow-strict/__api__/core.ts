@@ -36,7 +36,8 @@ export async function tryCheckInWithPinCode(pin: Pin): Promise<IResultTryCheckIn
 
         result = dates.reduce<IInvitationDateAndPin>( (final, value, idx) => {
             if (value.pin !== pin) return final;
-            if (value.start <= now && value.end > now && value.used !== true) {
+            let start = new Date(value.start), end = new Date(value.end);
+            if (start <= now && end > now && value.used !== true) {
                 index = idx;
                 return value;
             }
