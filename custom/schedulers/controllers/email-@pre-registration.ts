@@ -1,4 +1,5 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
+import { Config } from 'core/config.gen';
 import { EventLogin } from 'core/events.gen';
 
 import { ScheduleTemplateEmail_PreRegistration } from './../templates/email-@pre-registration';
@@ -26,6 +27,7 @@ export class ScheduleControllerEmail_PreRegistration extends ScheduleControllerB
 
         this.registerTemplate( async (event, data) => {
             let invitation: IInvitations = event.attributes;
+            let visitorId: string = invitation.visitor.id;
             let visitor: IVisitors = invitation.visitor.attributes;
             let company: ICompanies = (await visitor.company.fetch()).attributes;
             let admin: IUserTenantAdministrator = (await invitation.parent.fetch()).attributes;
@@ -43,7 +45,7 @@ export class ScheduleControllerEmail_PreRegistration extends ScheduleControllerB
                     pins,
                     dates
                 },
-                linkPreRegistrationPage: "http://www.google.com",
+                linkPreRegistrationPage: `http://localhost:${Config.core.port}/registration/potrait?objectId=${visitorId}`,
                 visitor: {
                     name: visitor.name,
                     email: visitor.email,

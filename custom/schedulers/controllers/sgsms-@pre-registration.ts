@@ -27,6 +27,7 @@ export class ScheduleControllerSGSMS_PreRegistration extends ScheduleControllerB
 
         this.registerTemplate( async (event, data) => {
             let invitation: IInvitations = event.attributes;
+            let visitorId: string = invitation.visitor.id;
             let visitor: IVisitors = invitation.visitor.attributes;
             let company: ICompanies = (await visitor.company.fetch()).attributes;
             let admin: IUserTenantAdministrator = (await invitation.parent.fetch()).attributes;
@@ -44,7 +45,7 @@ export class ScheduleControllerSGSMS_PreRegistration extends ScheduleControllerB
                     pins,
                     dates
                 },
-                linkPreRegistrationPage: "http://www.google.com",
+                linkPreRegistrationPage: `http://localhost:${Config.core.port}/registration/potrait?objectId=${visitorId}`,
                 visitor: {
                     name: visitor.name,
                     email: visitor.email,
