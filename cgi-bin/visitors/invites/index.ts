@@ -2,6 +2,7 @@ import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList, UserType,
     Action, Errors,
+    EventInvitationComplete, Events,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 
@@ -61,10 +62,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// V2.0) Save
     await obj.save({ parent, cancelled, visitor }, { useMasterKey: true });
 
-    /// send email
-    data.inputType.notify.visitor.email && new ScheduleControllerEmail_PreRegistration().do(obj);
-    /// todo: send sms
-    data.inputType.notify.visitor.phone && new ScheduleControllerSMS_PreRegistration().do(obj);
+    /// V2.1) Save Event
+    let event = new EventInvitationComplete({
+        owner: obj.getValue("parent"),
+        invitation: obj,
+        company,
+        visitor
+    });
+    Events.save(event);
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);

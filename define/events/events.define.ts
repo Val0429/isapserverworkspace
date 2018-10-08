@@ -15,6 +15,12 @@ var events: Config[] = [
 
     /// 3000 for Visitor ///////////////////////
 
+    ["3400", "InvitationComplete", `
+        invitation: Invitations;
+        company: Companies;
+        visitor: Visitors;
+    `, ["Companies", "Invitations", "Visitors"]],
+
     /// 3500 - Strict Rule Register
     ["3501", "PreRegistrationComplete", `
         /**

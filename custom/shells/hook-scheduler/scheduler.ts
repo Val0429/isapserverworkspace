@@ -25,12 +25,14 @@ scheduler.register(new Schedulers({
     ]
 }));
 
-// scheduler.register(new Schedulers({
-//     event: EventList.EventLogin,
-//     actions: [
-//         { controller: "ScheduleController.Email.LoginExample" }
-//     ]
-// }));
+/// Schedule - Invitation Complete
+scheduler.register(new Schedulers({
+    event: EventList.EventInvitationComplete,
+    actions: [
+        { controller: "ScheduleController.Email.PreRegistration" },
+        { controller: "ScheduleController.SMS.PreRegistration" }
+    ]
+}));
 
 })();
 
