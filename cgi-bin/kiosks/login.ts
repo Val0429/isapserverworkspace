@@ -28,8 +28,9 @@ export default new Action<Input, Output>({
         .first();
     let testuser = await new Parse.Query(Parse.User)
         .equalTo("roles", kioskRole)
+        .equalTo("data.activated", true)
         .equalTo("username", data.inputType.username).first();
-    if (!testuser) throw Errors.throw(Errors.CustomBadRequest, [`User <${data.inputType.username}> not exists or should be a kiosk role.`]);
+    if (!testuser) throw Errors.throw(Errors.CustomBadRequest, [`User <${data.inputType.username}> not exists or should be a kiosk role, or not yet activated.`]);
 
     /// Try login
     var obj = await UserHelper.login(data.inputType);

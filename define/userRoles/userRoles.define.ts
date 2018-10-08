@@ -31,6 +31,7 @@ var userRoles: Config[] = [
          */
         kioskId: string;
         kioskName: string;
+        activated?: boolean;
     `]
 ];
 

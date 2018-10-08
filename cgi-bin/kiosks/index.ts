@@ -1,10 +1,12 @@
 import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList, IUserKioskData,
-    Action, Errors,
+    Action, Errors, O,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 
+import licenseService from 'services/license';
+import { kioskLicense } from './../../custom/shells/hook-scheduler/scheduler';
 
 var action = new Action({
     loginRequired: true,
@@ -20,6 +22,21 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Users
     var user = new Parse.User();
     var roles = data.inputType.roles;
+
+    /// V1.1) Get kiosks count
+    let kioskRole = await new Parse.Query(Parse.Role)
+        .equalTo("name", RoleList.Kiosk)
+        .first();
+    let kioskCounts = await new Parse.Query(Parse.User)
+        .equalTo("roles", kioskRole)
+        .count();
+    /// V1.2) Check license
+    let license = await licenseService.getLicense();
+    let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+    if (kioskCounts >= totalCounts)
+        throw Errors.throw(Errors.CustomBadRequest, [`License required to add more kiosks. Currently full: ${kioskCounts}/${totalCounts}`]);
+    /// V1.3) After verify passed, set activated
+    (data.inputType.data as any).activated = true;
 
     /// 2) Check Role
     var roleNames: RoleList[] = data.inputType.roles;
@@ -106,6 +123,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         .include("roles")
         .get(objectId);
     if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
+    /// V1.1) activated cannot change
+    if (data.inputType.data && data.inputType.data.activated !== undefined)
+        (data.inputType.data as any).activated = user.attributes.data.activated;
 
     /// 2.0) Prepare params to feed in
     var input = { ...data.inputType };
@@ -143,7 +163,26 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
         .get(objectId);
     if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
 
-    user.destroy({ useMasterKey: true });
+    await user.destroy({ useMasterKey: true });
+
+    /// V1.1) re-activate kiosks
+    let kioskCounts = await new Parse.Query(Parse.User)
+        .equalTo("roles", kioskRole)
+        .count();
+    let license = await licenseService.getLicense();
+    let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+    if (kioskCounts >= totalCounts) {
+        let kiosks = await new Parse.Query(Parse.User)
+            .equalTo("roles", kioskRole)
+            .find();
+        for (let i=0; i<kiosks.length; ++i) {
+            let kiosk = kiosks[i];
+            kiosk.save({
+                ...kiosk.attributes.data,
+                activated: i < totalCounts ? true : false
+            }, { useMasterKey: true });
+        }
+    }
 
     return ParseObject.toOutputJSON(user);
 });
