@@ -15,8 +15,8 @@ export async function makeScheduler(force: boolean = false) {
     /// hook schedulers by events
     let promises = [];
     let schedulers = [];
-    let events = ["EventPreRegistrationComplete", "EventStrictCompleteCheckIn", "EventInvitationComplete"];
-    let controllers = ["PreRegistrationComplete", "VisitorCheckedIn", "PreRegistration"];
+    let events = ["EventPreRegistrationComplete", "EventStrictCompleteCheckIn"];//, "EventInvitationComplete"];
+    let controllers = ["PreRegistrationComplete", "VisitorCheckedIn"];//, "PreRegistration"];
     for (let key in events) {
         let event = events[key];
         let controller = controllers[key];
