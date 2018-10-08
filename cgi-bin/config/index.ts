@@ -1,10 +1,11 @@
 import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList, IConfig, Config, IConfigSetup,
-    Action, Errors, Floors,
+    Action, Errors, Floors, O,
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { makeScheduler } from './../../custom/shells/hook-scheduler/scheduler';
 
 var action = new Action({
     loginRequired: true,
@@ -46,6 +47,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     for (var key in value) {
         await updateSingleKey(key, value[key]);
     }
+
+    /// V1) remake scheduler if enable changed
+    if (O(value.sms).enable !== undefined || O(value.smtp).enable !== undefined || O(value.sgsms).enable !== undefined) {
+        makeScheduler(true);
+    }
+
     return value;
 });
 // /// CRUD end ///////////////////////////////////

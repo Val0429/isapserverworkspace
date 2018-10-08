@@ -71,7 +71,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     });
     Events.save(event);
 
-    /// 2) Output
+    /// 3) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);
 });
 
