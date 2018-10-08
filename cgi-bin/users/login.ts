@@ -23,6 +23,15 @@ export default new Action<Input, Output>({
     inputType: "Input",
 })
 .all( async (data) => {
+    /// test: cannot login as kiosk
+    var kioskRole = await new Parse.Query(Parse.Role)
+        .equalTo("name", RoleList.Kiosk)
+        .first();
+    let testuser = await new Parse.Query(Parse.User)
+        .notEqualTo("roles", kioskRole)
+        .equalTo("username", data.inputType.username).first();
+    if (!testuser) throw Errors.throw(Errors.CustomBadRequest, [`User <${data.inputType.username}> not exists or should not be a kiosk role.`]);
+
     /// Try login
     var obj = await UserHelper.login(data.inputType);
     let user = await new Parse.Query(Parse.User)
@@ -35,12 +44,6 @@ export default new Action<Input, Output>({
         owner: user
     });
     Events.save(ev);
-
-    // /// include email
-    // let db = await sharedMongoDB();
-    // let col = db.collection("_User");
-    // let result = await col.findOne({ _id: user.id }, { projection: {email: 1} });
-    // let userData = { ...user.attributes, email: result.email, ACL: undefined };
 
     return ParseObject.toOutputJSON({
         sessionId: obj.sessionId,
