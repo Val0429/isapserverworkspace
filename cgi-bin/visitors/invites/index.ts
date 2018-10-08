@@ -1,7 +1,7 @@
 import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList, UserType,
-    Action, Errors,
+    Action, Errors, Config,
     EventInvitationComplete, Events,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
@@ -11,8 +11,7 @@ import { Invitations, IInvitations } from './../../../custom/models/invitations'
 import { Purposes } from './../../../custom/models/purposes';
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';
 
-import { ScheduleControllerEmail_PreRegistration } from './../../../custom/schedulers/controllers/email-@pre-registration';
-import { ScheduleControllerSMS_PreRegistration } from './../../../custom/schedulers/controllers/sms-@pre-registration';
+import { ScheduleControllerEmail_PreRegistration, ScheduleControllerSMS_PreRegistration, ScheduleControllerSGSMS_PreRegistration } from './../../../custom/schedulers/controllers';
 
 const inviteFilter = { parent: false, visitor: { company: false, status: (status) => getEnumKey(VisitorStatus, status) } };
 
@@ -70,6 +69,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         visitor
     });
     Events.save(event);
+
+    /// send email
+    data.inputType.notify.visitor.email && Config.smtp.enable && new ScheduleControllerEmail_PreRegistration().do(obj);
+    /// send sms
+    data.inputType.notify.visitor.phone && Config.sms.enable && new ScheduleControllerSMS_PreRegistration().do(obj);
+    data.inputType.notify.visitor.phone && Config.sgsms.enable && new ScheduleControllerSGSMS_PreRegistration().do(obj);
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);
