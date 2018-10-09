@@ -23,7 +23,8 @@ export type Output = Invitations;
 export default new Action<Input, Output>({
     loginRequired: true,
     inputType: "Input",
-    permission: [RoleList.Kiosk]
+    permission: [RoleList.Kiosk],
+    postSizeLimit: 1024*1024*10
 })
 .post(async (data) => {
     let { pin, name, birthdate, idnumber, images } = data.inputType;
