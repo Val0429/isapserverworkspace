@@ -1,6 +1,7 @@
 import config from './../../config/custom/frs';
 import * as request from 'request';
 import * as http from 'http';
+import { Log } from 'helpers/utility';
 
 export class FRSService {
     session_id: string;
@@ -19,11 +20,11 @@ export class FRSService {
                 body: { username: config.account, password: config.password }
             }, (err, res, body) => {
                 if (err || !body.session_id) {
-                    console.log(`Login FRS Server failed@${config.ip}:${config.port}. Retry in 1 second.`);
+                    Log.Error('FRS Server', `Login failed@${config.ip}:${config.port}. Retry in 1 second.`);
                     setTimeout(() => { tryLogin() }, 1000);
                     return;
                 }
-                console.log(`Login into FRS Server@${config.ip}:${config.port}.`);
+                Log.Info('FRS Server', `Login into Server@${config.ip}:${config.port}.`);
                 this.session_id = body.session_id;
                 /// After login and got session_id, maintain session every 1 minute.
                 setInterval( () => {
@@ -43,7 +44,7 @@ export class FRSService {
             body: { session_id: this.session_id }
         }, (err, res, body) => {
             if (err) {
-                console.log(`Maintain FRS session failed@${config.ip}:${config.port}.`);
+                Log.Error('FRS Server', `Maintain FRS session failed@${config.ip}:${config.port}.`);
             }
             // console.log('maintain success', body);
         });
@@ -59,7 +60,7 @@ export class FRSService {
                 body: { session_id: this.session_id, image_1, image_2 }
             }, (err, res, body) => {
                 if (err) {
-                    console.log(`FRS compare face failed.`, err);
+                    Log.Error('FRS Server', `Compare face failed. ${err}`);
                     reject(err); return;
                 }
                 if (body.score === undefined) { reject(body); return; }
