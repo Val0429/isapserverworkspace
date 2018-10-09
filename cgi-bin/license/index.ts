@@ -7,7 +7,6 @@ import {
 import * as request from 'request';
 import licenseService from 'services/license';
 import { promisify } from 'bluebird';
-var getMac = require('getmac').getMac;
 
 var action = new Action({
     loginRequired: true,
@@ -20,31 +19,29 @@ var action = new Action({
  ********************************/
 interface InputC {
     keyOrData: string;
+    mac?: string;
 }
 
 action.post<InputC>({ inputType: "InputC" }, async (data) => {
-    let { keyOrData: key } = data.inputType;
+    let { keyOrData: key, mac } = data.inputType;
     if (key.length === 29) {
-        let mac: string = await promisify(getMac)() as string;
+        if (!mac) throw Errors.throw(Errors.ParametersRequired, ["mac"]);
         /// 1) online license 29 digits
         /// 1.1) VerifyLicenseKey
         let res1: number = await licenseService.verifyLicenseKey({key});
         if (res1 <= 0) throw Errors.throw(Errors.CustomBadRequest, ["License invalid."]);
         /// 1.2) send online url
         let url = `http://www.isapsolution.com/register.aspx?L=${key}&M=${mac}`;
-        let res2: string = await new Promise( (resolve, reject) => {
+        let xml = await new Promise( (resolve, reject) => {
             request({
-                url,
-                method: 'POST'
+                url, method: 'POST'
             }, (err, res, body) => {
                 if (err) throw err;
+                if (/^ERROR/.test(body)) reject( Errors.throw(Errors.CustomBadRequest, [`License Invalid: ${body}`]) );
                 resolve(body);
             });
-        }) as string;
-        /// 1.2.1) If there are 'ERROR' inside body, throw
-        if (/^ERROR/.test(res2)) throw Errors.throw(Errors.CustomBadRequest, [`License Invalid: ${res2}`]);
-        /// 1.3) AddLicense
-        await licenseService.addLicense({ xml: res2 });
+        }) as any as string;
+        await licenseService.addLicense({ xml });
 
     } else {
         /// 2) offline register
