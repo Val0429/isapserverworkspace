@@ -28,7 +28,8 @@ export default new Action<Input, Output>({
 
     /// save event
     let event = new EventStrictTryCheckIn({ owner, pin, invitation, company, visitor, kiosk });
-    Events.save(event, {owner, invitation, company, visitor, kiosk});
+    let visitorName = visitor.getValue("name");
+    Events.save(event, {owner, invitation, company, visitor, kiosk, visitorName});
 
     return ParseObject.toOutputJSON(invitation);
 });

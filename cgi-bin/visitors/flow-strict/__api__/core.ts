@@ -46,7 +46,7 @@ export async function tryCheckInWithPinCode(pin: Pin): Promise<IResultTryCheckIn
         if (!result) break;
 
         /// 3) visitor
-        let visitor = invitation.getValue("visitor");
+        let visitor = await invitation.getValue("visitor").fetch();
         /// 4) company
         let company = await visitor.getValue("company").fetch();
         /// 5) owner

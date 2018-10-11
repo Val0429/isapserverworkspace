@@ -70,7 +70,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         company,
         visitor
     });
-    Events.save(event, {owner, invitation, company, visitor});
+    let visitorName = visitor.getValue("name");
+    Events.save(event, {owner, invitation, company, visitor, visitorName});
 
     /// send email
     data.inputType.notify.visitor.email && Config.smtp.enable && new ScheduleControllerEmail_PreRegistration().do(obj);

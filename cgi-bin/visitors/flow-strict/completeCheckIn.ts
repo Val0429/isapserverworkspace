@@ -30,7 +30,8 @@ export default new Action<Input, Output>({
     let saveEvent = () => {
         /// save event
         let event = new EventStrictCompleteCheckIn(eventData);
-        Events.save(event, {owner, invitation, company, visitor, kiosk});
+        let visitorName = visitor.getValue("name");
+        Events.save(event, {owner, invitation, company, visitor, kiosk, visitorName});
     }
 
     /// invalidate pin
