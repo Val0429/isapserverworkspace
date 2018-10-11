@@ -1,0 +1,75 @@
+import {
+    express, Request, Response, Router, Restful, Events, EventList,
+    Parse, IRole, IUser, RoleList, ParseObject, EventsSubject,
+    Action, Errors, EventStrictCompareFace, O, EventType, getEnumKey
+} from 'core/cgi-package';
+
+import { InvestigationResult } from './../investigation';
+import { Purposes, Visitors, Invitations, Companies } from './../../../custom/models';
+import { Subject, Observable } from 'rxjs';
+
+export interface Input {}
+
+export interface OutputData {
+    visitor: Visitors;
+    invitation: Invitations;
+    events: EventType<any>[];
+}
+export type Output = OutputData[] | EventType<any>;
+
+
+var action = new Action({
+    loginRequired: true,
+    permission: [RoleList.Administrator, RoleList.TenantAdministrator, RoleList.TenantUser]
+});
+
+action.ws( async (data) => {
+    let socket = data.socket;
+
+    let now = new Date();
+    let start = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
+    data.inputType = {
+        paging: { all: "true" },
+        start,
+        end: new Date(start.valueOf() + 86400*1000)
+    }
+    let result = await InvestigationResult(data);
+    socket.send(JSON.stringify(result));
+
+    let allEvents = [];
+    function containRole(roles: Parse.Role[], role: RoleList): boolean {
+        for (let r of roles) if (r.getName() === role) return true;
+        return false;
+    }
+    let subscription = EventsSubject
+        .filter( (events) => {
+            if (containRole(data.role, RoleList.TenantAdministrator)) {
+                return data.user.get("data").company.id === events.getValue("data").company.objectId;
+            } else if (containRole(data.role, RoleList.TenantUser)) {
+                return data.user.id === events.getValue("owner").id;
+            }
+            return true;
+        })
+        .subscribe( async (events) => {
+            await events.fetch();
+            let entity = await events.getValue("entity").fetch();
+
+            function tryFetch(value): Promise<void> {
+                if (!value) return Promise.resolve(null);
+                return value.fetch();
+            }
+            /// include
+            await Promise.all(
+                ["visitor", "company", "invitation", "owner", "kiosk", "purpose"].map((value) => tryFetch(entity.get(value)) )
+                );
+
+            socket.send(ParseObject.toOutputJSON(entity));
+        });
+
+    socket.io.on("close", () => {
+        subscription.unsubscribe();
+    });
+
+});
+
+export default action;

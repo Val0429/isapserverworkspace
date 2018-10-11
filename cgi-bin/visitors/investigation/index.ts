@@ -10,8 +10,8 @@ export interface Input {
     name?: string;
     purpose?: Purposes;
     kiosk?: Parse.User;
-    start?: Date;
-    end?: Date;
+    start: Date;
+    end: Date;
 }
 
 export interface OutputData {
@@ -30,7 +30,7 @@ var action = new Action<Input, Output>({
     permission: [RoleList.Administrator, RoleList.TenantAdministrator, RoleList.TenantUser]
 });
 
-action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
+export async function InvestigationResult(data) {
     /// V0) default value
     // if (!data.inputType.start || !data.inputType.end) {
     //     let now = new Date(Date.now());
@@ -38,12 +38,36 @@ action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
     //     data.inputType.end = new Date(data.inputType.start.valueOf() + 86400*1000);
     // }
 
+    let { start, end, name, purpose, kiosk } = data.inputType;
+
     /// 1) Make Query
     let query = new Parse.Query(Events)
         .equalTo("action", EventList.EventStrictTryCheckIn);
     
-    data.inputType.start && (query.greaterThanOrEqualTo("createdAt", data.inputType.start));
-    data.inputType.end && (query.lessThan("createdAt", data.inputType.end));
+    start && (query.greaterThanOrEqualTo("createdAt", start));
+    end && (query.lessThan("createdAt", end));
+
+    /// V1.1) Filter company or user
+    function containRole(roles: Parse.Role[], role: RoleList): boolean {
+        for (let r of roles) if (r.getName() === role) return true;
+        return false;
+    }
+    if (containRole(data.role, RoleList.TenantAdministrator)) {
+        query.equalTo("data.company.objectId", data.user.get("data").company.id);
+    } else if (containRole(data.role, RoleList.TenantUser)) {
+        query.equalTo("data.owner.objectId", data.user.id);
+    }
+
+    /// V1.2) Text search
+    let findOptions = undefined;
+    if (name) {
+        findOptions = {
+            $text: { $search: name }
+        }
+    }
+    /// V1.3) purpose & kiosk
+    purpose && (query.equalTo("data.purpose.objectId", purpose.id));
+    kiosk && (query.equalTo("data.kiosk.objectId", kiosk.id));
 
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
@@ -59,7 +83,6 @@ action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
             action: (v) => getEnumKey(EventList, v)
         }
     }, async (inputEvents) => {
-
         let result = [];
         for (let event of inputEvents) {
             let data = event.getValue("data");
@@ -82,13 +105,23 @@ action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
                 .lessThan("createdAt", endAt)
                 .equalTo("data.visitor.objectId", visitor.id)
                 .find();
+
+            // for (let i=0; i<relatedEvents.length; ++i) {
+            //     let event = relatedEvents[i];
+            //     if (i>0 && event.getValue("action") === EventList.EventTryCheckIn) break;
+            //     let entity = event.getValue("entity");
+            //     await entity.fetch();
+            //     events.push(entity);
+            // }
+            /// "wait all" version
+            let promises = [];
             for (let i=0; i<relatedEvents.length; ++i) {
                 let event = relatedEvents[i];
                 if (i>0 && event.getValue("action") === EventList.EventTryCheckIn) break;
                 let entity = event.getValue("entity");
-                await entity.fetch();
-                events.push(entity);
+                promises.push( entity.fetchOrNull() );
             }
+            events = await Promise.all(promises);
 
             result.push( {
                 owner,
@@ -103,18 +136,11 @@ action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
 
         return result;
 
-    });
+    }, findOptions);
+}
 
-    // /// 1) Make Query
-    // var query = new Parse.Query(Invitations)
-    //     .include("visitor")
-    //     .include("purpose")
-    //     .equalTo("parent", data.user);
-
-    // /// 2) With Extra Filters
-    // query = Restful.Filter(query, data.inputType);
-    // /// 3) Output
-    // return Restful.Pagination(query, data.inputType, inviteFilter);
+action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
+    return InvestigationResult(data);
 
 });
 
