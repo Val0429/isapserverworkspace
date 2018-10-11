@@ -31,7 +31,7 @@ export default new Action<Input, Output>({
     let saveEvent = () => {
         /// save event
         let event = new EventStrictConfirmPhoneNumber(eventData);
-        Events.save(event);
+        Events.save(event, {owner, invitation, company, visitor, kiosk});
     }
 
     /// validate phone

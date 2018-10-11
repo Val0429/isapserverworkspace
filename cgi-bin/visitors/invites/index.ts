@@ -62,13 +62,15 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     await obj.save({ parent, cancelled, visitor }, { useMasterKey: true });
 
     /// V2.1) Save Event
+    let invitation = obj;
+    let owner = invitation.getValue("parent");
     let event = new EventInvitationComplete({
-        owner: obj.getValue("parent"),
-        invitation: obj,
+        owner,
+        invitation,
         company,
         visitor
     });
-    Events.save(event);
+    Events.save(event, {owner, invitation, company, visitor});
 
     /// send email
     data.inputType.notify.visitor.email && Config.smtp.enable && new ScheduleControllerEmail_PreRegistration().do(obj);

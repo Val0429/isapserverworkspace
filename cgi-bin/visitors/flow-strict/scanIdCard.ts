@@ -37,7 +37,7 @@ export default new Action<Input, Output>({
     let saveEvent = () => {
         /// save event
         let event = new EventStrictScanIDCard(eventData);
-        Events.save(event);
+        Events.save(event, {owner, invitation, company, visitor, kiosk});
     }
 
     await visitor.save({

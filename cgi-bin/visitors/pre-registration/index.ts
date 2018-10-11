@@ -59,20 +59,23 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     await obj.save({ ...data.inputType, status: VisitorStatus.Completed, objectId: undefined });
 
     /// V2.1) Save Event
-    let invitations = await new Parse.Query(Invitations)
+    let invitation = await new Parse.Query(Invitations)
         .descending("createdAt")
         .equalTo("visitor", obj)
         .first();
 
     /// V2.2) Special case: if invitation not exists.
-    if (invitations) {
+    if (invitation) {
+        let owner = invitation.getValue("parent"); 
+        let visitor = obj;
+        let company = visitor.getValue("company");
         let event = new EventPreRegistrationComplete({
-            owner: invitations.getValue("parent"),
-            invitation: invitations,
-            company: obj.getValue("company"),
-            visitor: obj
+            owner,
+            invitation,
+            company,
+            visitor
         });
-        Events.save(event);
+        Events.save(event, {owner, invitation, company, visitor});
     }
 
     /// 3) Output

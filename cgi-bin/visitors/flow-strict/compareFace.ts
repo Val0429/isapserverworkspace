@@ -37,7 +37,7 @@ export default new Action<Input, Output>({
         eventData.image = pimage;
         /// save event
         let event = new EventStrictCompareFace(eventData);
-        Events.save(event);
+        Events.save(event, {owner, invitation, company, visitor, kiosk});
     }
     /// get images
     let images: Parse.File[] = [
