@@ -35,10 +35,11 @@ export default new Action<Input, Output>({
     let saveEvent = async () => {
         let pimage = await FileHelper.toParseFile(image);
         let visitorName = visitor.getValue("name");
+        let purpose = invitation.getValue("purpose");
         eventData.image = pimage;
         /// save event
         let event = new EventStrictCompareFace(eventData);
-        Events.save(event, {owner, invitation, company, visitor, kiosk, visitorName});
+        Events.save(event, {owner, invitation, company, visitor, kiosk, purpose, visitorName});
     }
     /// get images
     let images: Parse.File[] = [

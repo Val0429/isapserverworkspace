@@ -76,7 +76,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
             visitor
         });
         let visitorName = visitor.getValue("name");
-        Events.save(event, {owner, invitation, company, visitor, visitorName});
+        let purpose = invitation.getValue("purpose");
+        Events.save(event, {owner, invitation, company, visitor, purpose, visitorName});
     }
 
     /// 3) Output
