@@ -45,7 +45,7 @@ export class ScheduleControllerSMS_PreRegistration extends ScheduleControllerBas
                     pins,
                     dates
                 },
-                linkPreRegistrationPage: `http://localhost:${Config.core.port}/registration/potrait?objectId=${visitorId}`,
+                linkPreRegistrationPage: `http://${Config.core.publicExternalIP}:${Config.core.port}/registration/potrait?objectId=${visitorId}`,
                 visitor: {
                     name: visitor.name,
                     email: visitor.email,
