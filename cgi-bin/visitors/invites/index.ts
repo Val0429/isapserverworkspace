@@ -100,7 +100,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
-    return Restful.Pagination(query, data.inputType, inviteFilter);
+    return Restful.Pagination(query, data.parameters, inviteFilter);
 });
 
 /********************************

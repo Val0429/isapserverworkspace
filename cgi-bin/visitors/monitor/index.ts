@@ -10,13 +10,9 @@ import { Subject, Observable } from 'rxjs';
 
 export interface Input {}
 
-export interface OutputData {
-    visitor: Visitors;
-    invitation: Invitations;
-    events: EventType<any>[];
-}
-export type Output = OutputData[] | EventType<any>;
+import { OutputData } from './../investigation';
 
+export type Output = Restful.InputR<OutputData> | EventType<any>;
 
 var action = new Action({
     loginRequired: true,

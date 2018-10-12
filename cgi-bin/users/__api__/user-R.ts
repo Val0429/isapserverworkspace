@@ -47,7 +47,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         query.equalTo("data.company.objectId", company.id);
     }
 
-    return Restful.Pagination(query, data.inputType);
+    return Restful.Pagination(query, data.parameters);
 });
 
 }

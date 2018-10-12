@@ -49,7 +49,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     query.lessThan("createdAt", data.inputType.end);
 
     /// V3) Output
-    return Restful.Pagination(query, data.inputType, Events.Query.filter(), async (data: Events[]): Promise<Events[]> => {
+    return Restful.Pagination(query, data.parameters, Events.Query.filter(), async (data: Events[]): Promise<Events[]> => {
         await Events.Query.tuner()(data);
 
         function tryFetch(input: ParseObject<any>, key: string): Promise<void> {

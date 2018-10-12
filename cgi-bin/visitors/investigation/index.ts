@@ -17,10 +17,14 @@ export interface Input {
 export interface OutputData {
     visitor: Visitors;
     invitation: Invitations;
+    owner: Parse.User;
+    company: Companies;
+    kiosk: Parse.User;
+    purpose: Purposes;
     events: EventType<any>[];
 }
 
-export type Output = OutputData[];
+export type Output = OutputData;
 
 type InputR = Restful.InputR<Input>;
 type OutputR = Restful.OutputR<Output>;
@@ -72,7 +76,7 @@ export async function InvestigationResult(data) {
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
-    return Restful.Pagination(query, data.inputType, {
+    return Restful.Pagination(query, data.parameters, {
         events: {
             owner: false,
             invitation: false,
