@@ -63,11 +63,8 @@ export async function InvestigationResult(data) {
     }
 
     /// V1.2) Text search
-    let findOptions = undefined;
     if (name) {
-        findOptions = {
-            $text: { $search: name }
-        }
+        query.equalTo("data.visitorName", name);
     }
     /// V1.3) purpose & kiosk
     purpose && (query.equalTo("data.purpose.objectId", purpose.id));
@@ -140,7 +137,7 @@ export async function InvestigationResult(data) {
 
         return result;
 
-    }, findOptions);
+    });
 }
 
 action.get<InputR, OutputR>({inputType: "Input"}, async (data) => {
