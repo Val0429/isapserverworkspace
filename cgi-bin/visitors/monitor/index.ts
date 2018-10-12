@@ -59,7 +59,9 @@ action.ws( async (data) => {
                 ["visitor", "company", "invitation", "owner", "kiosk", "purpose"].map((value) => tryFetch(entity.get(value)) )
                 );
 
-            socket.send(ParseObject.toOutputJSON(entity));
+            socket.send(ParseObject.toOutputJSON(entity, {
+                action: (v) => getEnumKey(EventList, v)
+            }));
         });
 
     socket.io.on("close", () => {
