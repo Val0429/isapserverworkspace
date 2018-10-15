@@ -64,14 +64,14 @@ export async function InvestigationResult(data) {
 
     /// V1.2) Text search
     if (name) {
-        query.equalTo("data.visitorName", name);
+        query.contains("data.visitorName", name);
     }
     /// V1.3) purpose & kiosk
     purpose && (query.equalTo("data.purpose.objectId", purpose.id));
     kiosk && (query.equalTo("data.kiosk.objectId", kiosk.id));
 
     /// 2) With Extra Filters
-    query = Restful.Filter(query, data.inputType);
+    //query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters, {
         visitor: {
