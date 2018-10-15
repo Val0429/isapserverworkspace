@@ -4,7 +4,7 @@ import {
     Action, Errors, EventStrictCompareFace, O, EventType, getEnumKey
 } from 'core/cgi-package';
 
-import { Purposes, Visitors, Invitations, Companies } from './../../../custom/models';
+import { Purposes, Visitors, VisitorStatus, Invitations, Companies } from './../../../custom/models';
 
 export interface Input {
     name?: string;
@@ -74,6 +74,9 @@ export async function InvestigationResult(data) {
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters, {
+        visitor: {
+            status: (v) => getEnumKey(VisitorStatus, v)
+        },
         events: {
             owner: false,
             invitation: false,
