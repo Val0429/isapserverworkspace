@@ -5,7 +5,7 @@ import {
 } from 'core/cgi-package';
 
 import { InvestigationResult } from './../investigation';
-import { Purposes, Visitors, Invitations, Companies } from './../../../custom/models';
+import { Purposes, Visitors, VisitorStatus, Invitations, Companies } from './../../../custom/models';
 import { Subject, Observable } from 'rxjs';
 
 export interface Input {}
@@ -52,14 +52,19 @@ action.ws( async (data) => {
 
             function tryFetch(value): Promise<void> {
                 if (!value) return Promise.resolve(null);
-                return value.fetch();
+                return value.fetch({useMasterKey: true});
             }
             /// include
             await Promise.all(
-                ["visitor", "company", "invitation", "owner", "kiosk", "purpose"].map((value) => tryFetch(entity.get(value)) )
+                ["visitor", "company", "invitation", "owner", "kiosk"].map((value) => tryFetch(entity.get(value)) )
                 );
+            let invitation: Invitations = entity.get("invitation");
+            invitation && (await invitation.getValue("purpose").fetchOrNull());
 
             socket.send(ParseObject.toOutputJSON(entity, {
+                visitor: {
+                    status: (v) => getEnumKey(VisitorStatus, v),
+                },
                 action: (v) => getEnumKey(EventList, v)
             }));
         });

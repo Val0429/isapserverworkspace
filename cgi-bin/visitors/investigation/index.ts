@@ -94,8 +94,8 @@ export async function InvestigationResult(data) {
             let visitor = await new Visitors(data.visitor).fetchOrNull();
             let company = await new Companies(data.company).fetchOrNull();
             let invitation = await new Invitations(data.invitation).fetchOrNull();
-            let owner = null; try { owner = await new Parse.User(data.owner).fetch({useMasterKey: true}); } catch(e) {}
-            let kiosk = null; try { kiosk = await new Parse.User(data.kiosk).fetch({useMasterKey: true}); } catch(e) {}
+            let owner = null; try { owner = await data.owner.fetch(); } catch(e) {}
+            let kiosk = null; try { kiosk = await data.kiosk.fetch(); } catch(e) {}
             let purpose = await new Purposes(data.purpose).fetchOrNull();
 
             /// make events
