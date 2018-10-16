@@ -29,7 +29,7 @@ export class ScheduleTemplateEmail_VisitorCheckedIn extends ScheduleTemplateBase
             let body = `
     <div style="color: #333; font-family: Calibri Light; font-size: 18;">
         <p>Hi ${input.host.name},</p>
-        <p>Your visitor ${input.visitor.name} has arrived and checked-in at ${input.kiosk.name}.</p>
+        <p>Your visitor <b>${input.visitor.name}</b> has arrived and checked-in at <b>${input.kiosk.name}</b>.</p>
     </div>
             `;
 

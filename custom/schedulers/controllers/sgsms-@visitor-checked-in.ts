@@ -31,7 +31,7 @@ export class ScheduleControllerSGSMS_VisitorCheckedIn extends ScheduleController
             let invitation: IInvitations = (await event.getValue("invitation").fetch()).attributes;
             let visitor: IVisitors = (await invitation.visitor.fetch()).attributes;
             let admin: IUserTenantAdministrator = (await invitation.parent.fetch()).attributes;
-            let kiosk: IUserKiosk = (await event.getValue("owner").fetch()).attributes;
+            let kiosk: IUserKiosk = (await event.getValue("kiosk").fetch()).attributes;
             let purpose: IPurposes = (await invitation.purpose.fetch()).attributes;
             
             return {
