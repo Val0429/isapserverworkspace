@@ -87,6 +87,10 @@ var events: Config[] = [
         visitor: Visitors;
         kiosk: Parse.User;
         score: number;
+        /**
+         * Compare face result.
+         */
+        result: boolean;
     `],
 
     ["3514", "StrictCompleteCheckIn", `

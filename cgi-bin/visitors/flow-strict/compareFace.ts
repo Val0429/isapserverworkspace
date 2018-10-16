@@ -18,6 +18,7 @@ export interface Input {
 
 export interface Output {
     score: number;
+    result: boolean;
 }
 
 export default new Action<Input, Output>({
@@ -31,7 +32,7 @@ export default new Action<Input, Output>({
 
     let { owner, invitation, result, company, visitor } = await tryCheckInWithPinCode(pin);
     let kiosk = data.user;
-    let eventData = { owner, pin, invitation, company, visitor, kiosk, image: null, score: 0 };
+    let eventData = { owner, pin, invitation, company, visitor, kiosk, image: null, score: 0, result: false };
 
     let saveEvent = async () => {
         let pimage = await FileHelper.toParseFile(image);
@@ -63,10 +64,13 @@ export default new Action<Input, Output>({
         } catch(e) { throw JSON.stringify(e) }
     }
     eventData.score = score;
+    let scoreResult = score >= Config.vms.compareFaceThreshold;
+    eventData.result = scoreResult;
 
     saveEvent();
 
     return {
-        score
+        score,
+        result: scoreResult
     }
 });
