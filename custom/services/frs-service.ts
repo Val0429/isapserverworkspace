@@ -9,6 +9,7 @@ export class FRSService {
         this.login();
     }
 
+    private maintainInterval;
     login() {
         const url: string = `http://${config.ip}:${config.port}/frs/cgi/login`;
 
@@ -27,7 +28,8 @@ export class FRSService {
                 Log.Info('FRS Server', `Login into Server@${config.ip}:${config.port}.`);
                 this.session_id = body.session_id;
                 /// After login and got session_id, maintain session every 1 minute.
-                setInterval( () => {
+                this.maintainInterval && clearInterval(this.maintainInterval);
+                this.maintainInterval = setInterval( () => {
                     this.maintainSession();
                 }, 60000);
             });
@@ -45,6 +47,8 @@ export class FRSService {
         }, (err, res, body) => {
             if (err) {
                 Log.Error('FRS Server', `Maintain FRS session failed@${config.ip}:${config.port}.`);
+                this.maintainInterval && clearInterval(this.maintainInterval);
+                this.login();
             }
             // console.log('maintain success', body);
         });
