@@ -32,5 +32,20 @@ export default new Action<Input, Output>({
     let purpose = invitation.getValue("purpose");
     Events.save(event, {owner, invitation, company, visitor, kiosk, purpose, visitorName});
 
+    /// enroll into FRS
+    /// 1) get all groups
+    /// 1.1) find visitor group. if no go 1.2)
+    /// 1.2) create visitor group
+    /// 2) create person
+    /// 2.1) add person into group
+    
+    /// 1)
+
+    /// remove from FRS
+    /// 1) get all groups
+    /// 1.1) find visitor group. if no go 1.2)
+    /// 2) get all person
+    /// 2.1) find all in Visitor group and remove
+
     return ParseObject.toOutputJSON(invitation);
 });
