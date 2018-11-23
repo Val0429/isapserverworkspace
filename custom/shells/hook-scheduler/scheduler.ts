@@ -59,13 +59,19 @@ export async function makeScheduler(force: boolean = false) {
         let kioskCounts = await new Parse.Query(Parse.User)
             .equalTo("roles", kioskRole)
             .count();
-        
+
         let license = await licenseService.getLicense();
-        let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+
+        /// todo: remake O
+        //let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+        let totalCounts = 0;
+        let summary = license.summary[kioskLicense];
+        if (summary) totalCounts = summary.totalCount;
 
         let kiosks = await new Parse.Query(Parse.User)
             .equalTo("roles", kioskRole)
             .find();
+
         for (let i=0; i<kiosks.length; ++i) {
             let kiosk = kiosks[i];
             kiosk.attributes.data.activated = i < totalCounts ? true : false;
