@@ -42,8 +42,8 @@ export class ScheduleTemplateEmail_PreRegistration extends ScheduleTemplateBase<
         <p>Hi ${input.visitor.name},</p>
         <p>${input.company.name} has sent you an invitation for your ${input.visitor.purposeOfVisit}.
         Kindly complete the registration by following the instructions on this link:</p>
-        <p><a href="${input.linkPreRegistrationPage}">Click here to complete your registration</a> --> Unique Link to Pre-Registration Page
-        Take note of your PinCode / QRCode to verify your registration to our Kiosk.</p>
+        <p><a href="${input.linkPreRegistrationPage}">Click here to complete your registration</a> <br/>
+        You will need to enter the Pin Code / QR Code at the Registration Kiosk.</p>
 
         ${
             input.pinCodes.dates.map( (date, index) => {
@@ -55,7 +55,7 @@ export class ScheduleTemplateEmail_PreRegistration extends ScheduleTemplateBase<
             }).join("")
         }
 
-        <p>For further inquiries contact: <b>${input.company.name}</b> at <a href="mailto://${input.company.email}">${input.company.email}</a> / ${input.company.phone}</p>
+        <p>For further inquiries contact: <b>${input.company.name}</b> at <a href="mailto://${input.company.email}">${input.company.email} / ${input.company.phone}</a></p>
     </div>
             `;
 
