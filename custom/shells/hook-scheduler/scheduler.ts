@@ -5,6 +5,7 @@ import scheduler, { Schedulers, ScheduleTimeType } from 'core/scheduler-loader';
 import { ScheduleHelper } from 'helpers/schedules/schedule-helper';
 import { RoleList } from 'core/userRoles.gen';
 import { O } from 'helpers/utility';
+import frs from './../../services/frs-service';
 
 import licenseService from 'services/license';
 export const kioskLicense = '00261';
@@ -88,6 +89,39 @@ export async function makeScheduler(force: boolean = false) {
         end: new Date(8640000000000000)
     }, true)
     .subscribe( checkLicense );
+
+    ScheduleHelper.scheduleObservable({
+        type: ScheduleTimeType.Day,
+        start: new Date(1970, 0, 1, 0, 0, 0),
+        end: new Date(2138, 0, 1, 1, 0, 0)
+    }, true)
+    .subscribe( () => {
+
+        (async () => {
+            /// remove from FRS
+            /// x1) get all groups
+            /// x1.1) find visitor group. if no go 1.2)
+            /// 2) get all person
+            /// 2.1) find all in Visitor group and remove
+
+            /// 2)
+            let persons = await frs.getPersonList();
+            /// 2.1)
+            for (let person of persons) {
+                let groupid = person.groups.reduce((final, value) => {
+                    if (final) return final;
+                    if (value.name === 'Visitor') return value.group_id;
+                    return final;
+                }, undefined);
+
+                if (groupid) {
+                    await frs.deletePerson(person.person_id);
+                }
+            }
+
+        })();
+
+    });
 
 // /// Schedule - PreRegistrationComplete
 // scheduler.register(new Schedulers({

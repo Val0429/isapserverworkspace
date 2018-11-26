@@ -70,6 +70,113 @@ export class FRSService {
             });
         });
     }
+    createGroup(name: string): Promise<GroupInfo> {
+        const url = this.makeUrl("creategroup");
+        return new Promise( async (resolve, reject) => {
+            await this.waitForLogin();
+            request({
+                url,
+                method: 'POST',
+                json: true,
+                body: { session_id: this.sessionId, name, group_info: { actions: [] } }
+            }, (err, res, body) => {
+                if (err) {
+                    console.log(`Create group failed. ${err}`);
+                    reject(err); return;
+                }
+                resolve(body);
+            });
+        });
+    }
+    createPerson(name: string, image: string): Promise<ResponsePersonInfo> {
+        const url = this.makeUrl("createperson");
+        return new Promise( async (resolve, reject) => {
+            await this.waitForLogin();
+            request({
+                url,
+                method: 'POST',
+                json: true,
+                body: {
+                    session_id: this.sessionId,
+                    person_info: {
+                        fullname: name
+                    },
+                    image
+                }
+            }, (err, res, body) => {
+                if (err) {
+                    console.log(`Create person failed. ${err}`);
+                    reject(err); return;
+                }
+                resolve(body);
+            });
+        });
+    }
+    applyGroupsToPerson(personId: string, groupId: string): Promise<any> {
+        const url = this.makeUrl("applypersontogroups");
+        return new Promise( async (resolve, reject) => {
+            await this.waitForLogin();
+            request({
+                url,
+                method: 'POST',
+                json: true,
+                body: {
+                    session_id: this.sessionId,
+                    person_id: personId,
+                    group_id_list: [ groupId ]
+                }
+            }, (err, res, body) => {
+                if (err) {
+                    console.log(`Apply groups to person failed. ${err}`);
+                    reject(err); return;
+                }
+                resolve(body);
+            });
+        });
+    }
+    getPersonList(): Promise<PersonInfo[]> {
+        const url = this.makeUrl("getpersonlist");
+        return new Promise( async (resolve, reject) => {
+            await this.waitForLogin();
+            request({
+                url,
+                method: 'POST',
+                json: true,
+                body: {
+                    session_id: this.sessionId,
+                    page_size: 999,
+                    skip_pages: 0
+                }
+            }, (err, res, body) => {
+                if (err) {
+                    console.log(`Get person list failed. ${err}`);
+                    reject(err); return;
+                }
+                resolve(body.person_list.persons);
+            });
+        });
+    }
+    deletePerson(personId: string): Promise<any> {
+        const url = this.makeUrl("deleteperson");
+        return new Promise( async (resolve, reject) => {
+            await this.waitForLogin();
+            request({
+                url,
+                method: 'POST',
+                json: true,
+                body: {
+                    session_id: this.sessionId,
+                    person_id: personId
+                }
+            }, (err, res, body) => {
+                if (err) {
+                    console.log(`Delete person failed, ${err}`);
+                    reject(err); return;
+                }
+                resolve(body);
+            });
+        });
+    }
     /////////////////////////////////////////
 
     /// private functions ///////////////////
@@ -152,4 +259,14 @@ export default new FRSService();
 interface GroupInfo {
     name: string;
     group_id: string;
+}
+interface ResponsePersonInfo {
+    person_id: string;
+}
+interface PersonInfo {
+    person_info: {
+        fullname: string;
+    },
+    person_id: string;
+    groups: GroupInfo[];
 }

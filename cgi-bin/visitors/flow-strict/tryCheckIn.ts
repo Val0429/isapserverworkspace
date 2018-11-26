@@ -1,9 +1,11 @@
 import {
     express, Request, Response, Router,
     Parse, IRole, IUser, RoleList,
-    Action, Errors, Person, ParseObject,
-    Events, EventStrictTryCheckIn
+    Action, Errors, Person, ParseObject, FileHelper,
+    Events, EventStrictTryCheckIn, EventStrictCompareFace
 } from 'core/cgi-package';
+
+import frs from './../../../custom/services/frs-service';
 
 import { Pin } from 'services/pin-code/pin-code';
 import { Invitations, IInvitationDateAndPin } from './../../../custom/models/invitations';
@@ -37,15 +39,35 @@ export default new Action<Input, Output>({
     /// 1.1) find visitor group. if no go 1.2)
     /// 1.2) create visitor group
     /// 2) create person
-    /// 2.1) add person into group
+    /// 2.1) find last compare face
+    /// 2.2) create person
+    /// 2.3) add person into group
     
     /// 1)
-
-    /// remove from FRS
-    /// 1) get all groups
-    /// 1.1) find visitor group. if no go 1.2)
-    /// 2) get all person
-    /// 2.1) find all in Visitor group and remove
+    let groups = await frs.getGroupList();
+    /// 1.1)
+    let groupid: string = groups.reduce<string>( (final, value) => {
+        if (final) return final;
+        if (value.name === 'Visitor') return value.group_id;
+        return final;
+    }, undefined);
+    /// 1.2)
+    if (groupid === undefined) {
+        let res = await frs.createGroup("Visitor");
+        groupid = res.group_id;
+    }
+    /// 2)
+    /// 2.1)
+    let lastEvent: EventStrictCompareFace = await new Parse.Query(EventStrictCompareFace)
+        .equalTo("visitor", visitor)
+        .descending("createdAt")
+        .first();
+    if (!lastEvent) throw Errors.throw(Errors.CustomBadRequest, ["Should compare face first before check in."]);
+    /// 2.2)
+    let image = (await FileHelper.downloadParseFile( lastEvent.getValue("image") )).toString("base64");
+    let person = await frs.createPerson(visitorName, image);
+    /// 2.3)
+    await frs.applyGroupsToPerson(person.person_id, groupid);
 
     return ParseObject.toOutputJSON(invitation);
 });
