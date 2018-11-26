@@ -7,6 +7,7 @@ import {
 
 import { Pin } from 'services/pin-code/pin-code';
 import { Invitations, IInvitationDateAndPin } from './../../../custom/models/invitations';
+import { VisitorStatus } from './../../../custom/models/visitors';
 import { tryCheckInWithPinCode } from './__api__/core';
 
 export interface Input {
@@ -45,7 +46,8 @@ export default new Action<Input, Output>({
     await visitor.save({
         idcard: {
             name, birthdate, images, idnumber
-        }
+        },
+        status: VisitorStatus.Completed
     });
 
     saveEvent();
