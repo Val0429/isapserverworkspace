@@ -1,0 +1,1 @@
+npm run uninstall-windows-service
