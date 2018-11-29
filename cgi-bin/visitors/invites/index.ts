@@ -58,6 +58,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         visitor.setValue("status", VisitorStatus.Pending);
     }
 
+    /// modify touch date
+    let touchDate = data.inputType.dates.reduce( (final, date) => {
+        return final.valueOf() > date.end.valueOf() ? final : date.end;
+    }, new Date());
+    visitor.setValue("touchDate", touchDate);
+
     /// V2.0) Save
     await obj.save({ parent, cancelled, visitor }, { useMasterKey: true });
 
