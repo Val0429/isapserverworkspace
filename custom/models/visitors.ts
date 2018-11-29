@@ -22,5 +22,7 @@ export interface IVisitors {
     idcard?: IVisitorsIDCard;
     status?: VisitorStatus;
     company?: Companies;
+
+    touchDate?: Date;
 }
 @registerSubclass() export class Visitors extends ParseObject<IVisitors> {}

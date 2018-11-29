@@ -2,6 +2,7 @@ import { Config } from 'core/config.gen';
 import * as request from 'request';
 import { Observable, BehaviorSubject, Subject, Observer } from 'rxjs';
 import { Response } from '~express/lib/response';
+import { Errors } from 'core/errors.gen';
 
 
 export class FRSService {
@@ -152,6 +153,7 @@ export class FRSService {
                     console.log(`Get person list failed. ${err}`);
                     reject(err); return;
                 }
+                if (body.message === 'Internal Server Error.') { reject(body.message); return; }
                 resolve(body.person_list.persons);
             });
         });

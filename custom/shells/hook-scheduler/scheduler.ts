@@ -85,18 +85,18 @@ export async function makeScheduler(force: boolean = false) {
     ScheduleHelper.scheduleObservable({
         type: ScheduleTimeType.Minute,
         triggerInterval: 60*60*1000,
-        start: new Date(0),
-        end: new Date(8640000000000000)
+        start: new Date(1970, 0, 1, 0, 0, 0),
+        end: new Date(1970, 0, 1, 0, 1, 0)
     }, true)
     .subscribe( checkLicense );
 
     ScheduleHelper.scheduleObservable({
         type: ScheduleTimeType.Day,
+        triggerInterval: 24*60*60*1000,
         start: new Date(1970, 0, 1, 0, 0, 0),
-        end: new Date(2138, 0, 1, 1, 0, 0)
+        end: new Date(1970, 0, 1, 1, 0, 0)
     }, true)
-    .subscribe( () => {
-
+    .subscribe( (a) => {
         (async () => {
             /// remove from FRS
             /// x1) get all groups
@@ -105,7 +105,16 @@ export async function makeScheduler(force: boolean = false) {
             /// 2.1) find all in Visitor group and remove
 
             /// 2)
-            let persons = await frs.getPersonList();
+            let persons;
+            do {
+                try {
+                    persons = await frs.getPersonList();
+                    break;
+                } catch(e) {
+                    console.log(`FRS: ${e}`);
+                }
+            } while(1);
+
             /// 2.1)
             for (let person of persons) {
                 let groupid = person.groups.reduce((final, value) => {

@@ -3,9 +3,9 @@ import {
     Parse, IRole, IUser, RoleList, UserType,
     Action, Errors, Events,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
-    EventPreRegistrationComplete
+    EventPreRegistrationComplete, FileHelper
 } from 'core/cgi-package';
-
+import FD from 'services/face-detection';
 
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';
 import { Invitations } from './../../../custom/models/invitations';
@@ -51,10 +51,17 @@ type OutputU = Restful.OutputU<IVisitors>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
-    var { objectId } = data.inputType;
+    var { objectId, image } = data.inputType;
     var obj = await new Parse.Query(Visitors)
         .get(objectId);
     if (!obj || obj.getValue("status") === VisitorStatus.Completed) throw Errors.throw(Errors.CustomNotExists, [`Visitors <${objectId}> already registered or not exists.`]);
+
+    /// 2.0) check image valid
+    if (image) {
+        let result = await FD.detect( (await FileHelper.downloadParseFile(image)).toString("base64") );
+        if (result.faces !== 1) throw Errors.throw(Errors.CustomBadRequest, [`Image not valid: no faces or more than one face appear on image.`]);
+    }
+
     /// 2) Modify
     await obj.save({ ...data.inputType, status: VisitorStatus.Completed, objectId: undefined });
 
