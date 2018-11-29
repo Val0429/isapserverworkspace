@@ -28,8 +28,7 @@ Function ${UN}DoUninstall
     # "$SMPROGRAMS\uninstall.lnk"
 	# Delete "$SMPROGRAMS\${PRODUCT_NAME}"
 	SetOutPath $INSTDIR
-	# third, remove services
-	ExecWait '"net stop isap-vms-service" /s'
+	# third, remove services	
 	ExecWait '"uninstall.bat" /s'
 	
 	# now delete installed files
@@ -88,8 +87,12 @@ ShowInstDetails show
 ;Pages
 
   !insertmacro MUI_PAGE_LICENSE "License.txt"
-  ;!insertmacro MUI_PAGE_COMPONENTS 
+  !insertmacro MUI_PAGE_COMPONENTS 
   
+Section "Run npm start before installing service" SEC01
+	
+SectionEnd
+
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
   
@@ -119,10 +122,16 @@ Section
 	# source code
 	SetOutPath $INSTDIR
 	File /r *.bat
-	File /r ..\..\*
+	File /r /x .git /x .gitignore /x Release /x nsis ..\..\*.* 
 	
-	# run install script
+	# intall mongo
 	ExecWait '"install_mongo.bat" /s'
+	
+	${If} ${SectionIsSelected} ${SEC01}			
+		ExecWait '"start.bat"'
+	${EndIf}
+	
+	# install service
 	ExecWait '"install.bat" /s'
 	
 	;Store installation folder
@@ -133,9 +142,6 @@ Section
 	WriteRegStr HKLM "${ARP}" "URLInfoAbout" "${PRODUCT_URL}"
 	WriteRegStr HKLM "${ARP}" "DisplayVersion" "${PRODUCT_VERSION}"
 		
-	;Remove nsis files from installed folder
-	RMDir /r $INSTDIR\workspace\nsis
-	
 	 ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 	 IntFmt $0 "0x%08X" $0
 	 WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
