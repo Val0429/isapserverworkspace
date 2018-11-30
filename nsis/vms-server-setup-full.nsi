@@ -2,8 +2,9 @@
 !define PRODUCT_NAME "VMS Server"
 !define PRODUCT_VERSION "2.0.0"
 !define MONGO "mongodb-win32-x86_64-enterprise-windows-64-3.6.3-signed.msi"
-!define NODE "node-v8.11.3-x64.msi"
+!define NODE "node-v8.12.0-x64.msi"
 !define VCREDIST "vc_redist.x64.exe"
+!define NETFRAMEWORK "NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
 !define OUTPUT_NAME "vms-server-setup"  
 # define installation directory
 InstallDir "$TEMP\VMS\Temp"
@@ -25,8 +26,12 @@ AutoCloseWindow true
 
   ;!insertmacro MUI_PAGE_LICENSE "License.txt"
   !insertmacro MUI_PAGE_COMPONENTS
- 
-Section "NodeJs v8.11.3-x64" SEC01
+
+Section ".NET Framework 4.5.2" SEC00
+  
+SectionEnd 
+  
+Section "NodeJs v8.12.0-x64" SEC01
 
 SectionEnd 
   
@@ -68,6 +73,12 @@ Section
 	File "${OUTPUT_NAME}-v${PRODUCT_VERSION}.exe"
 
 	SetOutPath $INSTDIR\Prerequisites
+	
+	${If} ${SectionIsSelected} ${SEC00}	
+		File "Prerequisites\${NETFRAMEWORK}"
+		ExecWait "${NETFRAMEWORK}"
+	${EndIf}
+	
 	${If} ${SectionIsSelected} ${SEC01}		
 		File "Prerequisites\${NODE}"
 		ExecWait 'msiexec /i "${NODE}"'
