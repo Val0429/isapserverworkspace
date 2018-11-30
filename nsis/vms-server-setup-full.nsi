@@ -4,6 +4,7 @@
 !define MONGO "mongodb-win32-x86_64-enterprise-windows-64-3.6.3-signed.msi"
 !define NODE "node-v8.12.0-x64.msi"
 !define VCREDIST "vc_redist.x64.exe"
+!define VCREDIST2010 "vcredist_x64.exe"
 !define NETFRAMEWORK "NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
 !define OUTPUT_NAME "vms-server-setup"  
 # define installation directory
@@ -43,6 +44,9 @@ Section "MS Visual C++ Redist 2015 x64" SEC03
   
 SectionEnd 
 
+Section "MS Visual C++ Redist 2010 x64" SEC04
+  
+SectionEnd 
   
 ;Section "Install Mongo Db Service" SEC03
 
@@ -93,7 +97,10 @@ Section
 		File "Prerequisites\${VCREDIST}"
 		ExecWait "${VCREDIST}"
 	${EndIf}
-	
+	${If} ${SectionIsSelected} ${SEC04}	
+		File "Prerequisites\${VCREDIST2010}"
+		ExecWait "${VCREDIST2010}"
+	${EndIf}
 	;delete Prerequisites
 	RMDir /r $INSTDIR\Prerequisites
 	
