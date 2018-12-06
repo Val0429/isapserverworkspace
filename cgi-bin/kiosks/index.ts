@@ -30,10 +30,11 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let kioskCounts = await new Parse.Query(Parse.User)
         .equalTo("roles", kioskRole)
         .count();
-        console.log('!?!')
-        /// V1.2) Check license
+
+    /// V1.2) Check license
     let license = await licenseService.getLicense();
-    let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+    //let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+    let totalCounts = (license.summary[kioskLicense] || {} as any).totalCount || 0;
     if (kioskCounts >= totalCounts)
         throw Errors.throw(Errors.CustomBadRequest, [`License required to add more kiosks. Currently full: ${kioskCounts}/${totalCounts}`]);
     /// V1.3) After verify passed, set activated

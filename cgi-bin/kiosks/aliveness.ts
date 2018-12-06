@@ -19,7 +19,7 @@ export default new Action<Input>({
     socket.send( getAliveKiosk().map( data => data.instance ) );
     //socket.send(aliveKiosk);
     let subscription = sjRealtimeKiosk.subscribe( (kioskRealtime) => {
-        socket.send(kioskRealtime);
+        socket.send({ ...kioskRealtime, socket: undefined});
     });
 
     socket.io.on("close", () => {
