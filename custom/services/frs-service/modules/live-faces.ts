@@ -29,7 +29,7 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<
         /// init properties /////
         if (this.websocketInited === undefined) this.websocketInited = false;
         if (this.sjRecognizedUser === undefined) this.sjRecognizedUser = new Subject<RecognizedUser>();
-        if (this.sjUnRecognizedUser === undefined) this.sjRecognizedUser = new Subject<UnRecognizedUser>();
+        if (this.sjUnRecognizedUser === undefined) this.sjUnRecognizedUser = new Subject<UnRecognizedUser>();
         if (this.sjLiveStream === undefined) this.sjLiveStream = new Subject<RecognizedUser | UnRecognizedUser>();
         if (this.sjLiveHandledFace === undefined) this.sjLiveHandledFace = new Subject<RecognizedUser | UnRecognizedUser>();
         /////////////////////////
@@ -57,11 +57,11 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<
                     if (code) {
                         if (code === 200) return;
                         if (code === 401) {
-                            Log.Error("FRS Server", `Websocket message error, data: ${data}`);
+                            Log.Error("FRS Server", `Websocket message error, data: ${JSON.stringify(data)}`);
                             this.login();
                             return;
                         }
-                        Log.Error("FRS Server", `Websocket error, data: ${data}`);
+                        Log.Error("FRS Server", `Websocket error, data: ${JSON.stringify(data)}`);
                         return;
                     }
                     callback && callback(data);
@@ -89,9 +89,9 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<
             this.sjUnRecognizedUser.next({type: UserType.UnRecognized, ...data});
         });
 
-        // /// init main stream - to sjLiveStream
-        // Observable.merge(this.sjRecognizedUser, this.sjUnRecognizedUser)
-        //     .subscribe( this.sjLiveStream );
+        /// init main stream - to sjLiveStream
+        Observable.merge(this.sjRecognizedUser, this.sjUnRecognizedUser)
+            .subscribe( this.sjLiveStream );
         // this.sjLiveStream.pipe( filterFace(this.config) )
         //     .subscribe( this.sjLiveFace );
 
