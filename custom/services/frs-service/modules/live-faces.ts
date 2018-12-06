@@ -5,11 +5,8 @@ import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { RecognizedUser, UnRecognizedUser, UserType } from '../libs/core';
 import { client } from 'websocket';
 import { Log } from 'helpers/utility';
+//import { filterFace } from '../libs/filter-face';
 
-// export { sjRecognizedUser, sjUnRecognizedUser };
-
-// const targetScore = Config.fts.specialScoreForUnRecognizedFace;
-// const traceMilliSeconds = Config.fts.throttleKeepSameFaceSeconds * 1000;
 
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
@@ -27,7 +24,7 @@ declare module "workspace/custom/services/frs-service" {
 
 
 FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<void> {
-    let { ip, wsport } = this.config;
+    let { ip, wsport } = this.config.frs;
     return new Promise<void>( async (resolve) => {
         /// init properties /////
         if (this.websocketInited === undefined) this.websocketInited = false;
@@ -37,13 +34,12 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<
         if (this.sjLiveHandledFace === undefined) this.sjLiveHandledFace = new Subject<RecognizedUser | UnRecognizedUser>();
         /////////////////////////
 
-        function makeConnection(url: string, callback: (data: any) => void) {
+        let makeConnection = (url: string, callback: (data: any) => void) => {
             let cli = new client();
-            let me = this;
             let timer;
-            function reconnect() {
+            let reconnect = () => {
                 timer && clearTimeout(timer);
-                timer = setTimeout( () => makeConnection.call(me, url, callback), 1000 );
+                timer = setTimeout( () => makeConnection.call(this, url, callback), 1000 );
             }
 
             cli.on('connect', (connection) => {
@@ -62,7 +58,7 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<
                         if (code === 200) return;
                         if (code === 401) {
                             Log.Error("FRS Server", `Websocket message error, data: ${data}`);
-                            me.login();
+                            this.login();
                             return;
                         }
                         Log.Error("FRS Server", `Websocket error, data: ${data}`);
@@ -93,13 +89,18 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<
             this.sjUnRecognizedUser.next({type: UserType.UnRecognized, ...data});
         });
 
-        /// init main stream - to sjLiveStream
-        let subscription = Observable.merge(this.sjRecognizedUser, this.sjUnRecognizedUser)
-            .pipe( filterFace( async (compared) => {
-                await this.waitForLogin();
-                this.sjLiveHandledFace.next(compared);
-            }) )
-            .subscribe( this.sjLiveStream );
+        // /// init main stream - to sjLiveStream
+        // Observable.merge(this.sjRecognizedUser, this.sjUnRecognizedUser)
+        //     .subscribe( this.sjLiveStream );
+        // this.sjLiveStream.pipe( filterFace(this.config) )
+        //     .subscribe( this.sjLiveFace );
+
+        // let subscription = Observable.merge(this.sjRecognizedUser, this.sjUnRecognizedUser)
+        //     .pipe( filterFace(this.config, async (compared) => {
+        //         await this.waitForLogin();
+        //         this.sjLiveHandledFace.next(compared);
+        //     }) )
+        //     .subscribe( this.sjLiveStream );
 
         //     /// init main stream
         //     this.livestream = Observable.merge(sjRecognizedUser, sjUnRecognizedUser)

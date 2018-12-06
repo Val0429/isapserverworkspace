@@ -11,7 +11,7 @@ import { FRSService } from './custom/services/frs-service';
 
 let frs = new FRSService({
     frs: {
-        ip: '172.16.10.31',
+        ip: '172.16.10.88',
         port: 8088,
         wsport: 7077,
         account: "Admin",
@@ -19,9 +19,14 @@ let frs = new FRSService({
     }
 });
 import './custom/services/frs-service/modules/snapshot';
+import './custom/services/frs-service/modules/live-faces';
 (async () => {
-    console.log('???')
-    console.log('snapshot?', await frs.snapshot("123"))
+    // console.log('???')
+    // console.log('snapshot?', await frs.snapshot("123"))
+    frs.enableLiveFaces(true);
+    frs.sjLiveStream.subscribe( (face) => {
+        console.log('got face!', {...face, face_feature: undefined});
+    })
 })();
 
 // let frs2 = new FRSService({

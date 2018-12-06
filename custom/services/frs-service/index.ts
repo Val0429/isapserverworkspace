@@ -136,7 +136,7 @@ export class FRSService {
                     me.login();
                     return;
                 }
-                Log.Info("FRS Server", `Maintain session successfully.`);
+                Log.Info("FRS Server", `Maintain session successfully@${ip}:${port}.`);
                 resolve(true);
             });
 
