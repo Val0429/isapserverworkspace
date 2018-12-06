@@ -3,7 +3,7 @@ import {
     Parse, IRole, IUser, RoleList,
     Action, Errors,
 } from 'core/cgi-package';
-import { aliveKiosk, sjRealtimeKiosk } from './keepalive';
+import { getAliveKiosk, sjRealtimeKiosk } from './keepalive';
 
 export interface Input {
     sessionId: string;
@@ -16,7 +16,8 @@ export default new Action<Input>({
 .ws(async (data) => {
     let { user, socket } = data;
 
-    socket.send(aliveKiosk);
+    socket.send( getAliveKiosk().map( data => data.instance ) );
+    //socket.send(aliveKiosk);
     let subscription = sjRealtimeKiosk.subscribe( (kioskRealtime) => {
         socket.send(kioskRealtime);
     });

@@ -27,6 +27,7 @@ export default new Action<Input, Output>({
     var kioskRole = await new Parse.Query(Parse.Role)
         .equalTo("name", RoleList.Kiosk)
         .first();
+
     let testuser = await new Parse.Query(Parse.User)
         .notEqualTo("roles", kioskRole)
         .equalTo("username", data.inputType.username).first();

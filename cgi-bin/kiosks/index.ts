@@ -30,7 +30,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let kioskCounts = await new Parse.Query(Parse.User)
         .equalTo("roles", kioskRole)
         .count();
-    /// V1.2) Check license
+        console.log('!?!')
+        /// V1.2) Check license
     let license = await licenseService.getLicense();
     let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
     if (kioskCounts >= totalCounts)
