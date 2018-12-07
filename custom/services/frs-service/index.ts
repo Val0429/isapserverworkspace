@@ -48,24 +48,14 @@ export class FRSService {
     private sessionId: string;
     private sjLogined: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     private config: IFRSServiceConfig;
-    // /// face stream from two web sockets
-    // private obLiveStream: Observable<RecognizedUser | UnRecognizedUser>;
-    // /// calculated face from face stream (handled)
-    // private sjLiveHandledFace: Subject<RecognizedUser | UnRecognizedUser> = new Subject();
+    static initializer: ((this: FRSService) => void)[] = [];
 
     constructor(config: IFRSServiceConfig) {
+        /// initialize
+        FRSService.initializer.forEach( (init) => init.call(this) );
+
         this.config = config;
         this.login();
-
-        // (async () => {
-        //     /// init main stream
-        //     this.livestream = Observable.merge(sjRecognizedUser, sjUnRecognizedUser)
-        //         .pipe( filterFace( async (compared) => {
-        //             await this.waitForRecover();
-        //             await this.waitForLogin();
-        //             this.sjLiveFace.next(compared);
-        //         }) );
-        // })();
     }
 
     /// private helpers /////////////////////

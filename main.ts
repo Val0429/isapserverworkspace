@@ -7,7 +7,10 @@ import './custom/shells/index';
 // import 'services/pin-code/pin-code';
 
 import { Config } from 'core/config.gen';
+
 import { FRSService } from './custom/services/frs-service';
+import './custom/services/frs-service/modules/snapshot';
+import './custom/services/frs-service/modules/live-faces';
 
 let frs = new FRSService({
     frs: {
@@ -18,8 +21,6 @@ let frs = new FRSService({
         password: "123456"
     }
 });
-import './custom/services/frs-service/modules/snapshot';
-import './custom/services/frs-service/modules/live-faces';
 (async () => {
     // console.log('???')
     // console.log('snapshot?', await frs.snapshot("123"))

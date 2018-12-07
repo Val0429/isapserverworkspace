@@ -22,17 +22,20 @@ declare module "workspace/custom/services/frs-service" {
     }
 }
 
+//(FRSService.prototype as any).initializer.push(123);
+FRSService.initializer.push( function() {
+    /// init properties /////
+    this.websocketInited = false;
+    this.sjRecognizedUser = new Subject<RecognizedUser>();
+    this.sjUnRecognizedUser = new Subject<UnRecognizedUser>();
+    this.sjLiveStream = new Subject<RecognizedUser | UnRecognizedUser>();
+    this.sjLiveHandledFace = new Subject<RecognizedUser | UnRecognizedUser>();
+    /////////////////////////
+});
 
 FRSService.prototype.enableLiveFaces = async function(enable: boolean): Promise<void> {
     let { ip, wsport } = this.config.frs;
     return new Promise<void>( async (resolve) => {
-        /// init properties /////
-        if (this.websocketInited === undefined) this.websocketInited = false;
-        if (this.sjRecognizedUser === undefined) this.sjRecognizedUser = new Subject<RecognizedUser>();
-        if (this.sjUnRecognizedUser === undefined) this.sjUnRecognizedUser = new Subject<UnRecognizedUser>();
-        if (this.sjLiveStream === undefined) this.sjLiveStream = new Subject<RecognizedUser | UnRecognizedUser>();
-        if (this.sjLiveHandledFace === undefined) this.sjLiveHandledFace = new Subject<RecognizedUser | UnRecognizedUser>();
-        /////////////////////////
 
         let makeConnection = (url: string, callback: (data: any) => void) => {
             let cli = new client();
