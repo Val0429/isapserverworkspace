@@ -1,6 +1,7 @@
 import * as request from 'request';
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { Log } from 'helpers/utility';
+import { LogTitle, IFRSServiceConfig } from './libs/core';
 
 // import { Config } from 'core/config.gen';
 // import * as request from 'request';
@@ -32,30 +33,44 @@ import { Log } from 'helpers/utility';
 //     cameras?: string[];
 // }
 
-export interface IFRSServiceConfig {
-    frs: {
-        ip: string;
-        port: number;
-        wsport: number;
-        account: string;
-        password: string;
-        specialScoreForUnRecognizedFace?: number;
-        throttleKeepSameFaceSeconds?: number;
-    }
-}
+/**
+ * Submodules should take this into consideration:
+ * 1) sjLogined
+ * 2) sjStarted
+ * 3) config.debug
+ */
 
 export class FRSService {
     private sessionId: string;
+    /// started or not
+    private sjStarted: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+    /// login or not
     private sjLogined: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+    /// request for relogin
+    private sjRequestLogin: Subject<void> = new Subject<void>();
     private config: IFRSServiceConfig;
     static initializer: ((this: FRSService) => void)[] = [];
 
     constructor(config: IFRSServiceConfig) {
+        this.config = config;
         /// initialize
         FRSService.initializer.forEach( (init) => init.call(this) );
 
-        this.config = config;
+        this.sjRequestLogin.subscribe( () => {
+            this.login();
+        });
+    }
+
+    start() {
+        this.config.debug && Log.Info(LogTitle, "Started.");
+        this.sjStarted.next(true);
         this.login();
+    }
+
+    stop() {
+        this.sjStarted.next(false);
+        this.sjLogined.next(false);
+        this.config.debug && Log.Info(LogTitle, "Stopped.");
     }
 
     /// private helpers /////////////////////
@@ -64,24 +79,26 @@ export class FRSService {
         const urlbase: string = `http://${ip}:${port}/frs/cgi`;
         return `${urlbase}/${func}`;
     }
-    private waitForSubject(target: BehaviorSubject<boolean>): Promise<boolean> {
+    public waitForSubject(target: BehaviorSubject<boolean>): Promise<boolean> {
         return target.getValue() === true ? null :
             target.filter(val => val === true).first().toPromise();
     }
-    private waitForLogin() {
+    public waitForLogin() {
         return this.waitForSubject(this.sjLogined);
     }
     
     /// private functions ///////////////////
     /// prevent multiple login process
-    private loggingIn: boolean = false;
+    private sjLoggingIn: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     private maintainTimer: any = null;
     private login() {
+        if (this.sjStarted.getValue() === false) return;
         const url = this.makeUrl("login");
 
         let tryLogin = () => {
-            if (this.loggingIn === true) return;
-            this.loggingIn = true;
+            if (this.sjLoggingIn.getValue() === true || this.sjStarted.getValue() === false) return;
+            this.sjLogined.next(false);
+            this.sjLoggingIn.next(true);
 
             let { ip, port, account: username, password } = this.config.frs;
 
@@ -89,14 +106,15 @@ export class FRSService {
                 url, method: 'POST', json: true,
                 body: { username, password }
             }, (err, res, body) => {
-                this.loggingIn = false;
+                this.sjLoggingIn.next(false);
                 if (err || !body) {
-                    Log.Error("FRS Server", `Login failed@${ip}:${port}. Retry in 1 second.`);
-                    setTimeout(() => { tryLogin() }, 1000);
+                    let started = this.sjStarted.getValue();
+                    this.config.debug && Log.Error(LogTitle, `Login failed@${ip}:${port}. ${started ? "Retry in 1 second." : ""}`);
+                    started && setTimeout(() => { tryLogin() }, 1000);
                     return;
                 }
                 this.sjLogined.next(true);
-                Log.Info("FRS Server", `Login into Server@${ip}:${port}.`);
+                this.config.debug && Log.Info(LogTitle, `Login into Server@${ip}:${port}.`);
                 this.sessionId = body.session_id;
                 /// After login and got session_id, maintain session every 1 minute.
                 if (this.maintainTimer) clearInterval(this.maintainTimer);
@@ -110,6 +128,7 @@ export class FRSService {
     }
 
     private maintainSession(): Promise<boolean> {
+        if (this.sjStarted.getValue() === false) return;
         const url: string = this.makeUrl('maintainsession');
         var me = this;
         let { ip, port } = this.config.frs;
@@ -121,12 +140,12 @@ export class FRSService {
             }, (err, res, body) => {
                 if (!body || body.message === 'Unauthorized.') {
                     this.sjLogined.next(false);
-                    Log.Error("FRS Server", `Maintain session failed@${ip}:${port}.`);
+                    this.config.debug && Log.Error(LogTitle, `Maintain session failed@${ip}:${port}.`);
                     resolve(false);
                     me.login();
                     return;
                 }
-                Log.Info("FRS Server", `Maintain session successfully@${ip}:${port}.`);
+                this.config.debug && Log.Info(LogTitle, `Maintain session successfully@${ip}:${port}.`);
                 resolve(true);
             });
 

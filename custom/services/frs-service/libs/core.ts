@@ -1,3 +1,18 @@
+export const LogTitle = "FRS Server";
+
+export interface IFRSConfig {
+    ip: string;
+    port: number;
+    wsport: number;
+    account: string;
+    password: string;
+}
+
+export interface IFRSServiceConfig {
+    frs: IFRSConfig;
+    debug?: boolean;
+}
+
 export enum UserType {
     UnRecognized = 0,
     Recognized = 1,
