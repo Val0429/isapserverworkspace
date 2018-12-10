@@ -2,7 +2,7 @@ import { Response } from '~express/lib/response';
 import { FRSService } from './../index';
 import * as request from 'request';
 import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import { RecognizedUser, UnRecognizedUser, UserType, LogTitle, IFRSServiceConfig } from '../libs/core';
+import { RecognizedUser, UnRecognizedUser, UserType, LogTitle, IFRSServiceConfig, RequestLoginReason } from '../libs/core';
 import { client } from 'websocket';
 import { Log } from 'helpers/utility';
 //import { filterFace } from '../libs/filter-face';
@@ -109,7 +109,7 @@ class LiveFacesAdapter {
                         if (code === 200) return;
                         if (code === 401 || code === 423) {
                             this.config.debug && Log.Error(LogTitle, `Live Faces Websocket Message Error, data: ${JSON.stringify(data)}`);
-                            (this.frs as any).sjRequestLogin.next();
+                            (this.frs as any).sjRequestLogin.next(RequestLoginReason.SessionExpired);
                             return;
                         }
                         this.config.debug && Log.Error(LogTitle, `Live Faces Websocket Other Error, data: ${JSON.stringify(data)}`);

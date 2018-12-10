@@ -1,37 +1,7 @@
 import * as request from 'request';
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { Log } from 'helpers/utility';
-import { LogTitle, IFRSServiceConfig } from './libs/core';
-
-// import { Config } from 'core/config.gen';
-// import * as request from 'request';
-// import * as http from 'http';
-// import { client } from 'websocket';
-// import { Observable, BehaviorSubject, Subject, Observer } from 'rxjs';
-// import { Response } from '~express/lib/response';
-// import { promisify } from 'bluebird';
-// import { FaceFeatureCompare } from './../modules/face-feature-compare';
-// import { UserType, sjRecognizedUser, sjUnRecognizedUser, RecognizedUser, UnRecognizedUser } from './frs-service/core';
-// export * from './core';
-// import { filterFace } from './filter-face';
-// import { semaphore } from './semaphore';
-// import { Semaphore } from 'helpers/utility/semaphore';
-// import { Cameras } from './../models/cameras';
-// import { searchRecognizedFace } from './frs-service/search-recognized-face';
-// import { searchUnRecognizedFace } from './frs-service/search-unrecognized-face';
-// import { saveSnapshot } from './frs-service/save-snapshot';
-// import * as mongo from 'mongodb';
-
-// const collection: string = "FRSFaces";
-
-// const groups: string[] = Config.fts.groupInfo.map( (data) => data.name );
-
-// export interface FetchOptions {
-//     excludeFaceFeature?: boolean;
-//     name?: string;
-//     groups?: string[];
-//     cameras?: string[];
-// }
+import { LogTitle, IFRSServiceConfig, RequestLoginReason } from './libs/core';
 
 /**
  * Submodules should take this into consideration:
@@ -49,7 +19,7 @@ export class FRSService {
     /// login or not
     private sjLogined: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     /// request for relogin
-    private sjRequestLogin: Subject<void> = new Subject<void>();
+    private sjRequestLogin: Subject<RequestLoginReason> = new Subject<RequestLoginReason>();
     private config: IFRSServiceConfig;
     static initializer: ((this: FRSService) => void)[] = [];
 
@@ -58,7 +28,17 @@ export class FRSService {
         /// initialize
         FRSService.initializer.forEach( (init) => init.call(this) );
 
-        this.sjRequestLogin.subscribe( () => {
+        this.sjRequestLogin.subscribe( (reason) => {
+            if (this.config.debug) {
+                switch (reason) {
+                    case RequestLoginReason.SessionExpired:
+                        Log.Error(LogTitle, `Session expired. Mostly because of being logout (with account <${this.config.frs.account}>).`);
+                        break;
+                    default:
+                        Log.Error(LogTitle, "Request to login again. (Unknown Error)");
+                        break;
+                }
+            }
             this.login();
         });
     }

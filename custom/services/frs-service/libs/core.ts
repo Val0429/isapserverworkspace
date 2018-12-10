@@ -1,5 +1,9 @@
 export const LogTitle = "FRS Server";
 
+export enum RequestLoginReason {
+    SessionExpired
+}
+
 export interface IFRSConfig {
     ip: string;
     port: number;
