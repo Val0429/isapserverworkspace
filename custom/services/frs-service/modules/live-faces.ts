@@ -5,7 +5,7 @@ import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { RecognizedUser, UnRecognizedUser, UserType, LogTitle, IFRSServiceConfig, RequestLoginReason } from '../libs/core';
 import { client } from 'websocket';
 import { Log } from 'helpers/utility';
-//import { filterFace } from '../libs/filter-face';
+import { filterFace } from '../libs/filter-face';
 
 declare module "workspace/custom/services/frs-service/libs/core" {
     interface IFRSConfig {
@@ -16,25 +16,34 @@ declare module "workspace/custom/services/frs-service/libs/core" {
 
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
+        /// live recog & unrecog faces without filter
         sjLiveFacesEnabled: BehaviorSubject<boolean>;
+        /// live recog & unrecog faces with filter
+        sjHandleFacesEnabled: BehaviorSubject<boolean>;
+
         sjRecognizedUser: Subject<RecognizedUser>;
         sjUnRecognizedUser: Subject<UnRecognizedUser>;
         /// face stream from two web sockets
         sjLiveStream: Subject<RecognizedUser | UnRecognizedUser>;
         /// calculated face from face stream (handled)
         sjLiveHandledFace: Subject<RecognizedUser | UnRecognizedUser>;
+        /// recog & unrecog faces with filter, ready to save into DB
+        sjLiveHandledDBFace: Subject<RecognizedUser | UnRecognizedUser>;
         
         enableLiveFaces(enable: boolean): Promise<void>;
+        enableFilterFaces(enable: boolean): Promise<void>;
     }
 }
 
 FRSService.initializer.push( function() {
     /// init properties /////
     this.sjLiveFacesEnabled = new BehaviorSubject<boolean>(false);
+    this.sjHandleFacesEnabled = new BehaviorSubject<boolean>(false);
     this.sjRecognizedUser = new Subject<RecognizedUser>();
     this.sjUnRecognizedUser = new Subject<UnRecognizedUser>();
     this.sjLiveStream = new Subject<RecognizedUser | UnRecognizedUser>();
     this.sjLiveHandledFace = new Subject<RecognizedUser | UnRecognizedUser>();
+    this.sjLiveHandledDBFace = new Subject<RecognizedUser | UnRecognizedUser>();
     /////////////////////////
 });
 
@@ -50,6 +59,13 @@ FRSService.prototype.enableLiveFaces = async function(enable: boolean) {
     this.sjLiveFacesEnabled.filter( v => v === false )
         .first().toPromise()
         .then( () => lfa.stop() );
+}
+
+FRSService.prototype.enableFilterFaces = async function(enable: boolean) {
+    /// ignore same value
+    if (enable === this.sjHandleFacesEnabled.getValue()) return;
+    this.sjHandleFacesEnabled.next(enable);
+    this.sjHandledDBFacesEnabled.next(enable);
 }
 
 class LiveFacesAdapter {
@@ -145,6 +161,11 @@ class LiveFacesAdapter {
         /// init main stream - to sjLiveStream
         Observable.merge(this.frs.sjRecognizedUser, this.frs.sjUnRecognizedUser)
             .subscribe( this.frs.sjLiveStream );
+        this.frs.sjLiveStream.filter( () => this.frs.sjHandleFacesEnabled.getValue() === true )
+            .pipe( filterFace(this.config, (compared) => {
+                this.frs.sjLiveHandledFace.next(compared);
+            }) )
+            .subscribe( this.frs.sjLiveHandledDBFace );
         // this.sjLiveStream.pipe( filterFace(this.config) )
         //     .subscribe( this.sjLiveFace );
 

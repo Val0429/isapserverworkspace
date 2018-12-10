@@ -1,9 +1,8 @@
 import { Observable, Subject } from 'rxjs';
 import { Config } from 'core/config.gen';
 import { UserType, RecognizedUser, UnRecognizedUser } from './core';
-//import { FaceFeatureCompare } from './face-feature-compare-v8';
-let FaceFeatureCompare: any = () => {};
-import { IFRSServiceConfig } from './../index';
+import { FaceFeatureCompare } from './face-feature-compare-v8';
+import { IFRSServiceConfig } from './core';
 
 interface Indexing {
     [channel: string]: {
@@ -95,7 +94,6 @@ export function filterFace(config: IFRSServiceConfig, compareCallback: (face: Re
             source.switchMap( () => {
                 return Observable.timer(traceMilliSeconds)
             }).subscribe( () => resolveAll() );
-            console.log(123);
 
             let subscription = source.subscribe( (value: RecognizedUser | UnRecognizedUser) => {
                 /// 0) get keys, create default index
