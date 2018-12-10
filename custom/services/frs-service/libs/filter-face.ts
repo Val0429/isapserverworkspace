@@ -1,7 +1,7 @@
 import { Observable, Subject } from 'rxjs';
 import { Config } from 'core/config.gen';
 import { UserType, RecognizedUser, UnRecognizedUser } from './core';
-import { FaceFeatureCompare } from './face-feature-compare-v8';
+import { FaceFeatureCompare } from './face-feature-compare';
 import { IFRSServiceConfig } from './core';
 
 interface Indexing {

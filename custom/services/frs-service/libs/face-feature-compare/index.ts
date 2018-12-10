@@ -1,7 +1,11 @@
-var ffc = require('./featureCompareWin/build/Release/faceFeatureCompare')();
-// var faceFeatureCompare = require('./featureCompareLinux/build/Release/faceFeatureCompare')();
+let version = +process.version.match(/^v([0-9]+)/)[1];
 
-export namespace FaceFeatureCompare {
+var ffc = version >= 8 ?
+    require('./face-feature-compare-v8/featureCompareWin/build/Release/faceFeatureCompare') :
+    require('./face-feature-compare-v6/featureCompareWin/build/Release/faceFeatureCompare')()
+    ;
+
+    export namespace FaceFeatureCompare {
     function getScore(result): number {
         return JSON.parse(result).score;
     }

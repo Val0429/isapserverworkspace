@@ -65,7 +65,6 @@ FRSService.prototype.enableFilterFaces = async function(enable: boolean) {
     /// ignore same value
     if (enable === this.sjHandleFacesEnabled.getValue()) return;
     this.sjHandleFacesEnabled.next(enable);
-    this.sjHandledDBFacesEnabled.next(enable);
 }
 
 class LiveFacesAdapter {
