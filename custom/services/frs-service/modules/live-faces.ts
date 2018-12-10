@@ -83,7 +83,7 @@ class LiveFacesAdapter {
                 if (this.sjStarted.getValue() === false) return;
                 /// if trying to login (401 | 423 could be the case), hold on until login successful.
                 await this.frs.waitForLogin();
-                timer = setTimeout( () => makeConnection.call(this, url, callback), 1000 );
+                timer = setTimeout( () => makeConnection.call(this, url, callback) );
             }
 
             cli.on('connect', (connection) => {

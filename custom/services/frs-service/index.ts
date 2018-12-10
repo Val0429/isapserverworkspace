@@ -38,6 +38,8 @@ import { LogTitle, IFRSServiceConfig } from './libs/core';
  * 1) sjLogined
  * 2) sjStarted
  * 3) config.debug
+ * 4) when request failed do retry
+ * 5) timeout handle
  */
 
 export class FRSService {
@@ -138,7 +140,7 @@ export class FRSService {
                 url, method: 'POST', json: true,
                 body: { session_id: this.sessionId }
             }, (err, res, body) => {
-                if (!body || body.message === 'Unauthorized.') {
+                if (err || res.statusCode !== 200) {
                     this.sjLogined.next(false);
                     this.config.debug && Log.Error(LogTitle, `Maintain session failed@${ip}:${port}.`);
                     resolve(false);
