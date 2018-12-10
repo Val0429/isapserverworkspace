@@ -4,15 +4,6 @@ import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
 import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/services/frs-service/libs/core';
 
-/**
- * Submodules should take this into consideration:
- * 1) sjLogined
- * 2) sjStarted
- * 3) config.debug
- * 4) when request failed do retry
- * 5) timeout handle
- */
-
 type Base64String = string;
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
