@@ -5,31 +5,28 @@ import { retry } from 'helpers/utility/retry';
 import { RecognizedUser, UnRecognizedUser, RequestLoginReason, UserType } from 'workspace/custom/services/frs-service/libs/core';
 import { Subject, Observable, Observer } from 'rxjs';
 
-/**
- * Submodules should take this into consideration:
- * 1) sjLogined
- * 2) sjStarted
- * 3) config.debug
- * 4) when request failed do retry
- * 5) timeout handle
- */
-
 type Base64String = string;
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
-        searchRecords(starttime: Date, endtime: Date, pageSize?: number): Subject<RecognizedUser | UnRecognizedUser>;
+        searchRecords(starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
     }
 }
 
-FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pageSize: number = 20): Subject<RecognizedUser | UnRecognizedUser> {
+FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pageSize: number = 20, times: number = 10): Subject<RecognizedUser | UnRecognizedUser> {
     var sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
     const url: string = this.makeUrl('getverifyresultlist');
     const urlnon: string = this.makeUrl('getnonverifyresultlist');
 
     /// get raw data from FRS, merge all pages
-    function poll(starttime: number, endtime: number, url: string, page: number = 0): Observable<RecognizedUser[] | UnRecognizedUser[]> {
-        function doRequest(observer: Observer<any>, page: number = 0)  {
+    let poll = (starttime: number, endtime: number, url: string, page: number = 0): Observable<RecognizedUser[] | UnRecognizedUser[]> => {
+
+        let doRequest = async (observer: Observer<any>, page: number = 0) => {
+            return new Promise<void>( async (resolve, reject) => {
+
+            /// wait for login, to startup request
+            await this.waitForLogin();
+
             let bodyparam = { session_id: this.sessionId, start_time: starttime, end_time: endtime, page_size : pageSize, skip_pages: page };
             request({
                 url,
@@ -37,15 +34,13 @@ FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pa
                 json: true,
                 body: bodyparam
             }, (err, res, body) => {
-                // /// request failed, do again
-                // if (err || res.statusCode !== 200) {
-                //     reject(err || body.toString());
-                //     if (res.statusCode === 401) {
-                //         this.sjRequestLogin.next(RequestLoginReason.SessionExpired);
-                //         await this.waitForLogin();
-                //     }
-                //     return;
-                // }
+                /// request failed, do again
+                if (err || res.statusCode !== 200) {
+                    if (res.statusCode === 401) {
+                        this.sjRequestLogin.next(RequestLoginReason.SessionExpired);
+                    }
+                    return reject(err || body);
+                }
 
                 var result = (body.result || body.group_list || {});
                 var results = result.verify_results;
@@ -54,13 +49,30 @@ FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pa
                     return;
                 }
                 observer.next(results);
-                //doRequest.call(this, observer, result.page_index+1);
-                setTimeout( () => doRequest.call(this, observer, result.page_index+1), 50 );
-            });
-        }
 
+                // setTimeout( () => {
+
+                    retry<void>( async (resolve, reject) => {
+                        return doRequest(observer, result.page_index+1)
+                            .then(resolve)
+                            .catch(reject)
+                    }, times);
+
+                // }, 50);
+
+                resolve();
+            });
+
+            });
+
+        }
+    
         return Observable.create( (observer) => {
-            doRequest.call(this, observer);
+            retry<void>( async (resolve, reject) => {
+                return doRequest(observer)
+                    .then(resolve)
+                    .catch(reject);
+            }, times);
         }).share();
     }
 
@@ -70,7 +82,7 @@ FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pa
     var queue = [];
     
     /// finalize search result
-    async function queueHandler() {
+    let queueHandler = async () => {
         while (queue.length > 0) {
             sj.next(queue.shift());
         }
@@ -79,7 +91,7 @@ FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pa
             sj.complete();
     }
 
-    function prepareQueue(recognizeBase: boolean) {
+    let prepareQueue = (recognizeBase: boolean) => {
         var base = recognizeBase ? recog : unrecog;
         var ref = recognizeBase ? unrecog : recog;
         //if (base.data.length === 0) return;

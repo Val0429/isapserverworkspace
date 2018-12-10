@@ -15,7 +15,7 @@ FRSService.prototype.snapshot = async function(user: RecognizedUser | UnRecogniz
     return retry<string>( async (resolve, reject) => {
         await this.waitForLogin();
         let image = user.snapshot;
-        if (!image) throw "RecognizedUser or UnRecognizedUser should provide <snapshot>.";
+        if (!image) return reject("RecognizedUser or UnRecognizedUser should provide <snapshot>.");
         const url: string = this.makeUrl(`snapshot/session_id=${this.sessionId}&image=${image}`);
         request({ url, method: 'GET', encoding: null }, async (err, res, body) => {
             if (err || res.statusCode !== 200) {
