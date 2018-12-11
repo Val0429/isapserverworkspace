@@ -1,6 +1,6 @@
 {
   "name": "isap-fts-service",
-  "version": "2.01.02",
+  "version": "2.01.03",
   "config": {
     "displayname": "iSap FTS Service"
   },
