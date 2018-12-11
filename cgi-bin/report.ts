@@ -20,7 +20,7 @@ export interface Input {
 
 var action = new Action<Input>({
     loginRequired: false,
-    requiredParameters: ["time", "cameraName", "mp4"],
+    // requiredParameters: ["time", "cameraName", "mp4"],
     postSizeLimit: 1024*1024*500
 });
 
@@ -36,7 +36,7 @@ action.post( async (data) => {
     var filename = `${new Date().valueOf()}.mp4`;
     var mp4url = `http://${Config.evis.thisComputerInternalAccessIp}:${Config.core.port}/files/${filename}`;
     var mp4data = new Buffer(mp4, 'base64');
-    fs.writeFile(`${__dirname}/../custom/files/${filename}`, mp4data);
+    fs.writeFile(`${__dirname}/../custom/files/${filename}`, mp4data, null);
 
     var url = `http://${Config.evis.ip}:${Config.evis.port}/pushevents`;
     

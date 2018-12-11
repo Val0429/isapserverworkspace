@@ -17,7 +17,7 @@ export interface Input {
 
 var action = new Action<Input>({
     loginRequired: true,
-    requiredParameters: ["starttime", "endtime", "face"]
+    // requiredParameters: ["starttime", "endtime", "face"]
 });
 
 action.ws(async (data) => {

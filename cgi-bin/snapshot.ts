@@ -17,7 +17,7 @@ export interface Input {
 
 var action = new Action<Input>({
     loginRequired: false,
-    requiredParameters: ["image"]
+    // requiredParameters: ["image"]
 });
 
 action.get(async (data) => {
