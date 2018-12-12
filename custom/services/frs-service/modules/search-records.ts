@@ -12,7 +12,7 @@ declare module "workspace/custom/services/frs-service" {
     }
 }
 
-FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pageSize: number = 20, times: number = 10): Subject<RecognizedUser | UnRecognizedUser> {
+FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pageSize: number = 20, times: number = 0): Subject<RecognizedUser | UnRecognizedUser> {
     var sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
     const url: string = this.makeUrl('getverifyresultlist');

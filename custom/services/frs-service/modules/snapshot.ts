@@ -11,7 +11,7 @@ declare module "workspace/custom/services/frs-service" {
     }
 }
 
-FRSService.prototype.snapshot = async function(user: RecognizedUser | UnRecognizedUser, resp: Response = null, times = 10): Promise<string> {
+FRSService.prototype.snapshot = async function(user: RecognizedUser | UnRecognizedUser, resp: Response = null, times = 0): Promise<string> {
     return retry<string>( async (resolve, reject) => {
         await this.waitForLogin();
         let image = user.snapshot;
