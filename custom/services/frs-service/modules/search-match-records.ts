@@ -5,6 +5,8 @@ import { retry } from 'helpers/utility/retry';
 import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/services/frs-service/libs/core';
 import { Subject } from 'rxjs';
 
+import './search-records';
+
 /**
  * Submodules should take this into consideration:
  * 1) sjLogined
@@ -13,15 +15,16 @@ import { Subject } from 'rxjs';
  * 4) when request failed do retry
  * 5) timeout handle
  */
+// searchRecords(starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
 
 type Base64String = string;
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
-        searchFaces(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date): Subject<RecognizedUser | UnRecognizedUser>;
+        searchFaces(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
     }
 }
 
-FRSService.prototype.searchFaces = async function(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date): Subject<RecognizedUser | UnRecognizedUser> {
+FRSService.prototype.searchFaces = async function(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize: number = 20, times: number = 0): Subject<RecognizedUser | UnRecognizedUser> {
     let sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
     (async () => {
@@ -32,9 +35,10 @@ FRSService.prototype.searchFaces = async function(user: RecognizedUser | UnRecog
 
         /// 1) get back face_feature
         let faceFeature, faceBuffer;
-        let backs: any[] = await this.fetchAll(timestamp, timestamp)
-            .bufferCount(Number.MAX_SAFE_INTEGER)
-            .toPromise();
+
+        // let backs: any[] = await this.fetchAll(timestamp, timestamp)
+        //     .bufferCount(Number.MAX_SAFE_INTEGER)
+        //     .toPromise();
 
         /// 1.1) FRS record being deleted. try again within local db.
         if (backs === undefined) {
