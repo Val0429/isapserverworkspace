@@ -56,7 +56,7 @@ FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pa
                         return doRequest(observer, result.page_index+1)
                             .then(resolve)
                             .catch(reject)
-                    }, times);
+                    }, times, "FRSService.searchRecords");
 
                 // }, 50);
 
@@ -72,7 +72,7 @@ FRSService.prototype.searchRecords = function(starttime: Date, endtime: Date, pa
                 return doRequest(observer)
                     .then(resolve)
                     .catch(reject);
-            }, times);
+            }, times, "FRSService.searchRecords");
         }).share();
     }
 

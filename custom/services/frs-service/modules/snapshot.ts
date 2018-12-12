@@ -33,5 +33,5 @@ FRSService.prototype.snapshot = async function(user: RecognizedUser | UnRecogniz
             }
             return resolve(body);
         });
-    }, times );
+    }, times, "FRSService.snapshot" );
 }
