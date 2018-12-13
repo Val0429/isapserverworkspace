@@ -1,0 +1,16 @@
+{
+  "name": "isap-evis-service",
+  "version": "1.00.01",
+  "config": {
+    "displayname": "iSap EVIS Service"
+  },
+  "description": "iSap EVIS Service v1.00.01",
+
+  "scripts": {
+    "start": "npm start --prefix ./../",
+    "create-project": "git checkout --orphan"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
