@@ -7,7 +7,7 @@ var ffc = version >= 8 ?
 
     export namespace FaceFeatureCompare {
     function getScore(result): number {
-        return JSON.parse(result).score;
+        return +JSON.parse(result).score;
     }
 
     export function sync(buffer1, buffer2) {

@@ -1,14 +1,13 @@
 import { Observable, Subject } from 'rxjs';
-import { UserType, RecognizedUser, UnRecognizedUser } from './core';
-import { Config } from './../../../../core/config.gen';
+import { UserType, RecognizedUser, UnRecognizedUser, IFRSConfig } from './core';
 import { Semaphore } from 'helpers/utility/semaphore';
 
-export function searchRecognizedFace(face: RecognizedUser) {
+export function searchRecognizedFace(face: RecognizedUser, config: IFRSConfig) {
     let cache: (RecognizedUser | UnRecognizedUser)[] = [];
     let match: RecognizedUser = null;
     let matchStart: number;
     let matchEnd: number;
-    let possibleCompanionMilliSeconds: number = Config.fts.possibleCompanionDurationSeconds * 1000;
+    let possibleCompanionMilliSeconds: number = config.possibleCompanionDurationSeconds * 1000;
 
     return function(source): Observable<RecognizedUser | UnRecognizedUser> {
         return Observable.create( (subscriber) => {

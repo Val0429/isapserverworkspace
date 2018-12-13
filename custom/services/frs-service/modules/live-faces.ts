@@ -45,6 +45,11 @@ FRSService.initializer.push( function() {
     this.sjLiveHandledFace = new Subject<RecognizedUser | UnRecognizedUser>();
     this.sjLiveHandledDBFace = new Subject<RecognizedUser | UnRecognizedUser>();
     /////////////////////////
+
+    /// default config //////
+    (this as any).config.frs.specialScoreForUnRecognizedFace = (this as any).config.frs.specialScoreForUnRecognizedFace || 0.6;
+    (this as any).config.frs.throttleKeepSameFaceSeconds = (this as any).config.frs.throttleKeepSameFaceSeconds || 15;
+    /////////////////////////
 });
 
 FRSService.prototype.enableLiveFaces = async function(enable: boolean) {

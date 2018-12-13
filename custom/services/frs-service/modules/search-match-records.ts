@@ -2,10 +2,15 @@ import { Response } from '~express/lib/response';
 import { FRSService } from './../index';
 import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
-import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/services/frs-service/libs/core';
+import { semaphore } from './../libs/semaphore';
+import { LogTitle, RecognizedUser, UnRecognizedUser, RequestLoginReason, UserType } from 'workspace/custom/services/frs-service/libs/core';
 import { Subject } from 'rxjs';
+import { FaceFeatureCompare } from './../libs/face-feature-compare';
+import { searchRecognizedFace } from '../libs/search-recognized-face';
+import { searchUnRecognizedFace } from '../libs/search-unrecognized-face';
 
 import './search-records';
+import { Log } from 'helpers/utility';
 
 /**
  * Submodules should take this into consideration:
@@ -15,16 +20,28 @@ import './search-records';
  * 4) when request failed do retry
  * 5) timeout handle
  */
-// searchRecords(starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
 
-type Base64String = string;
-declare module "workspace/custom/services/frs-service" {
-    interface FRSService {
-        searchFaces(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
+declare module "workspace/custom/services/frs-service/libs/core" {
+    interface IFRSConfig {
+        specialScoreForUnRecognizedFace?: number;
+        possibleCompanionDurationSeconds?: number;
     }
 }
 
-FRSService.prototype.searchFaces = async function(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize: number = 20, times: number = 0): Subject<RecognizedUser | UnRecognizedUser> {
+declare module "workspace/custom/services/frs-service" {
+    interface FRSService {
+        searchMatchRecords(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
+    }
+}
+
+FRSService.initializer.push( function() {
+    /// default config //////
+    (this as any).config.frs.specialScoreForUnRecognizedFace = (this as any).config.frs.specialScoreForUnRecognizedFace || 0.6;
+    (this as any).config.frs.possibleCompanionDurationSeconds = (this as any).config.frs.possibleCompanionDurationSeconds || 15;
+    /////////////////////////
+});
+
+FRSService.prototype.searchMatchRecords = function(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize: number = 20, times: number = 0): Subject<RecognizedUser | UnRecognizedUser> {
     let sj = new Subject<RecognizedUser | UnRecognizedUser>();
 
     (async () => {
@@ -32,45 +49,47 @@ FRSService.prototype.searchFaces = async function(user: RecognizedUser | UnRecog
         let snapshot = user.snapshot;
         let regex = /^[^0-9]*([0-9]+)/;
         let timestamp = +snapshot.match(regex)[1];
+        let istarttime: number = starttime.valueOf();
+        let iendtime: number = endtime.valueOf();
 
         /// 1) get back face_feature
         let faceFeature, faceBuffer;
 
-        // let backs: any[] = await this.fetchAll(timestamp, timestamp)
-        //     .bufferCount(Number.MAX_SAFE_INTEGER)
-        //     .toPromise();
+        let backs: any[] = await this.searchRecords(timestamp-1000, timestamp+1000, pageSize, times)
+            .bufferCount(Number.MAX_SAFE_INTEGER)
+            .toPromise();
 
-        /// 1.1) FRS record being deleted. try again within local db.
-        if (backs === undefined) {
-            backs = await this.localFetchAll(face.timestamp, face.timestamp)
-                .bufferCount(Number.MAX_SAFE_INTEGER)
-                .toPromise();
-        }
         if (backs === undefined) backs = [];
 
-        for (var back of backs) {
+        for (let back of backs) {
             if (snapshot === back.snapshot) {
                 faceFeature = back.face_feature;
                 break;
             }
         }
+        if (!faceFeature) {
+            const errmsg = "<searchMatchRecords> given face not exists in FRS.";
+            this.config.debug && Log.Error(LogTitle, errmsg);
+            return sj.error(errmsg);
+        }
         faceBuffer = new Buffer(faceFeature, 'binary');
 
         /// 2)
         /// 2.1) adjust starttime / endtime with possible companion duration
-        let adjustStartTime = starttime - Config.fts.possibleCompanionDurationSeconds*1000;
-        let adjustEndTime = endtime + Config.fts.possibleCompanionDurationSeconds*1000;
-        this.localFetchAll(adjustStartTime, adjustEndTime, { excludeFaceFeature: face.type === UserType.Recognized ? true : false })
+        let adjustStartTime = istarttime - this.config.frs.possibleCompanionDurationSeconds*1000;
+        let adjustEndTime = iendtime + this.config.frs.possibleCompanionDurationSeconds*1000;
+        // this.localFetchAll(adjustStartTime, adjustEndTime, { excludeFaceFeature: user.type === UserType.Recognized ? true : false })
+        this.searchRecords(starttime, endtime, pageSize, times)
             .pipe( semaphore<RecognizedUser | UnRecognizedUser>(16, async (data) => {
-                if (face.type === UserType.UnRecognized && data.type === UserType.UnRecognized) {
-                    // //var buffer = new Buffer(data.face_feature, 'binary');
-                    let buffer = (data.face_feature as any).buffer;
-                     var score = await FaceFeatureCompare.async(faceBuffer, buffer);
+                if (user.type === UserType.UnRecognized && data.type === UserType.UnRecognized) {
+                    let buffer = new Buffer(data.face_feature, 'binary');
+                    //let buffer = (data.face_feature as any).buffer;
+                    var score = await FaceFeatureCompare.async(faceBuffer, buffer);
                     data.score = score;
                 }
                 return data;
             }) )
-            .pipe( face.type === UserType.Recognized ? searchRecognizedFace(face) : searchUnRecognizedFace(face) )
+            .pipe( user.type === UserType.Recognized ? searchRecognizedFace(user, this.config.frs) : searchUnRecognizedFace(user, this.config.frs) )
             .subscribe( async (data) => {
                 sj.next(data);
 
@@ -82,28 +101,3 @@ FRSService.prototype.searchFaces = async function(user: RecognizedUser | UnRecog
     
     return sj;    
 }
-
-// FRSService.prototype.snapshot = async function(user: RecognizedUser | UnRecognizedUser, resp: Response = null, times = 10): Promise<string> {
-//     return retry<string>( async (resolve, reject) => {
-//         await this.waitForLogin();
-//         let image = user.snapshot;
-//         if (!image) throw "RecognizedUser or UnRecognizedUser should provide <snapshot>.";
-//         const url: string = this.makeUrl(`snapshot/session_id=${this.sessionId}&image=${image}`);
-//         request({ url, method: 'GET', encoding: null }, async (err, res, body) => {
-//             if (err || res.statusCode !== 200) {
-//                 reject(err || body.toString());
-//                 if (res.statusCode === 401) {
-//                     this.sjRequestLogin.next(RequestLoginReason.SessionExpired);
-//                     await this.waitForLogin();
-//                 }
-//                 return;
-//             }
-//             if (resp !== null) {
-//                 resp.setHeader("content-type", res.headers["content-type"]);
-//                 resp.end(body, "binary");
-//                 return resolve();
-//             }
-//             return resolve(body);
-//         });
-//     }, times );
-// }
