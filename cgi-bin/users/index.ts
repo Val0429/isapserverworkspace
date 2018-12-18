@@ -1,6 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse } from 'core/cgi-package';
-import * as Core from './__api__/core';
+import { Permission } from '../../custom/helpers';
 import { IUserCustom } from '../../custom/models';
+import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../define/userRoles/userPermission.define';
 
 let action = new Action({
     loginRequired: true,
@@ -23,8 +24,8 @@ action.post(
             throw Errors.throw(Errors.ParametersRequired, ['username or password or realname']);
         }
 
-        let availableRoles: RoleList[] = Core.GetAvailableRoles(data.role, Core.permissionMapC);
-        Core.ValidateRoles(availableRoles, _input.roles);
+        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapC);
+        Permission.ValidateRoles(availableRoles, _input.roles);
 
         let roles: Parse.Role[] = [];
         for (let name of _input.roles) {
@@ -61,7 +62,7 @@ type OutputR = Parse.User[];
 
 action.get(
     async (data): Promise<OutputR> => {
-        let availableRoles: RoleList[] = Core.GetAvailableRoles(data.role, Core.permissionMapR);
+        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapR);
 
         let users: Parse.User[] = await new Parse.Query(Parse.User)
             .include('roles')
@@ -74,7 +75,7 @@ action.get(
             });
 
             try {
-                Core.ValidateRoles(availableRoles, roles);
+                Permission.ValidateRoles(availableRoles, roles);
                 return true;
             } catch {
                 return false;
@@ -113,8 +114,8 @@ action.delete(
             return value.getName();
         });
 
-        let availableRoles: RoleList[] = Core.GetAvailableRoles(data.role, Core.permissionMapD);
-        Core.ValidateRoles(availableRoles, roles);
+        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
+        Permission.ValidateRoles(availableRoles, roles);
 
         await user.destroy({ useMasterKey: true });
 
