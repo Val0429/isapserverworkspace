@@ -7,7 +7,7 @@ export interface ISchedule {
     type: RepeatType;
     timeRange: ITimeRange;
     endDate?: Date;
-    descript: string;
+    descript?: string;
 }
 
 @registerSubclass()

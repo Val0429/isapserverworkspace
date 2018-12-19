@@ -8,7 +8,7 @@ export * from './eventSchedule';
 export * from './incidentPackage';
 export * from './region';
 export * from './schedule';
-export * from './timerange';
+export * from './timeRange';
 export * from './userCustom';
 export * from './userFilter';
 export * from './userSchedule';

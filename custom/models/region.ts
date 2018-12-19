@@ -7,7 +7,7 @@ export interface IRegion {
     rgt: number;
     events?: IEventFilter[];
     investigators?: IUserFilter;
-    guards: IUserFilter[];
+    guards?: IUserFilter[];
 }
 
 @registerSubclass()

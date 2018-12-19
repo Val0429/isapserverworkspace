@@ -1,7 +1,7 @@
 import { registerSubclass, ParseObject } from './../../../helpers/parse-server/parse-helper';
 import { IEventList, IRegion } from './';
 import { IUser } from 'core/cgi-package';
-import { State } from '../enums/state';
+import { State } from '../enums';
 
 export interface IIncidentPackage {
     event: IEventList;
