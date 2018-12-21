@@ -7,39 +7,26 @@ import {
 import * as request from 'request';
 import { actions } from 'helpers/routers/router-loader';
 
-
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator]
 });
 
 /// CRUD start /////////////////////////////////
 /********************************
  * R: get object
  ********************************/
-interface PathObject {
-    [index: string]: {
-        input: string;
-        output: string;
-        loginRequired: boolean;
-    }
-}
-interface Output {
-    [path: string]: PathObject;
-}
-
-
 action.get( async (data) => {
-    let final: Output = {};
+    let final: Restful.ApisOutput = {};
 
     for (let action of actions) {
         let uri = action.uri;
         if (uri === '/apis') continue;
-        !final[uri] && (final[uri] = {});
-        let obj = final[uri];
+        // !final[uri] && (final[uri] = {});
+        let obj = {};
 
         for (let proto of action.list()) {
             let loginRequired: boolean = false;
+            let hasInputType: boolean = false;
             switch (proto) {
                 case 'All':
                 case 'Get':
@@ -49,6 +36,7 @@ action.get( async (data) => {
                     /// get configs
                     /// login required?
                     loginRequired = (action[`func${proto}Config`] || {}).loginRequired || ((action.config || {}).loginRequired);
+                    hasInputType = (action[`func${proto}Config`] || {}).inputType || ((action.config || {}).inputType) ? true : false;
 
                     let method = (proto === 'All' ? 'Get' : proto).toUpperCase();
 
@@ -65,6 +53,10 @@ action.get( async (data) => {
                     });
                     } catch(e) {
                         continue;
+                    }
+                    if (!hasInputType) {
+                        obj[proto] = { input: null, output: null, loginRequired };
+                        break;
                     }
 
                     /// extract input interface
@@ -101,28 +93,10 @@ action.get( async (data) => {
                     break;
             }
         }
+        if (Object.keys(obj).length !== 0 && obj.constructor === Object) final[uri] = obj;
     }
 
     return final;
-
-    // return actions.reduce( (final, action) => {
-    //     //return action.list()
-    //     let uri = action.uri;
-    //     !final[uri] && (final[uri] = {});
-    //     let obj = final[uri];
-
-    //     for () action.list()
-
-    //     //return action.uri
-    // }, {});
-
-
-    // /// 1) Make Query
-    // var query = new Parse.Query(Floors);
-    // /// 2) With Extra Filters
-    // query = Restful.Filter(query, data.inputType);
-    // /// 3) Output
-    // return Restful.Pagination(query, data.parameters);
 });
 /// CRUD end ///////////////////////////////////
 
