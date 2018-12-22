@@ -4,6 +4,8 @@ import { IPermissionMap } from '../../../define/userRoles/userPermission.define'
 export namespace Permission {
     /**
      * Get Available Roles
+     * @param currentUserRoles
+     * @param permissionMap
      */
     export function GetAvailableRoles(currentUserRoles: Parse.Role[], permissionMap: IPermissionMap): RoleList[] {
         let roles: string[] = currentUserRoles.map((value) => {
@@ -26,6 +28,8 @@ export namespace Permission {
 
     /**
      * Validate Roles
+     * @param availableRoles
+     * @param userRoles
      */
     export function ValidateRoles(availableRoles: RoleList[], userRoles: RoleList[]): void {
         let result: RoleList[] = userRoles.filter((value) => {
