@@ -119,6 +119,8 @@ export namespace Device {
 
             this._client = new Net.Socket();
 
+            this._client.setKeepAlive(true, 1);
+
             this._client.on('connect', this._OnConnect);
             this._client.on('close', this._OnClose);
 
@@ -142,37 +144,34 @@ export namespace Device {
                 throw Message.NotInitialization;
             }
 
-            if (!this._isConnected) {
-                await new Promise((resolve, reject) => {
-                    this._client.once('connect', (): void => resolve());
-                    this._client.connect(
-                        this._deviceConnect.port,
-                        this._deviceConnect.ip,
-                    );
-                });
-            }
+            await new Promise((resolve, reject) => {
+                this._client.once('connect', (): void => resolve());
+                this._client.connect(
+                    this._deviceConnect.port,
+                    this._deviceConnect.ip,
+                );
+            });
         }
 
         /**
          *
          */
         public async Disconnect(): Promise<void> {
-            if (this._isConnected) {
-                await new Promise((resolve, reject) => {
-                    this._client.once('close', (): void => resolve());
-                    this._client.end();
-                });
-            }
+            await new Promise((resolve, reject) => {
+                this._client.once('close', (): void => resolve());
+                this._client.end();
+            });
         }
 
         /**
          *
          * @param message
          */
-        public Write(message: string): void {
-            if (this._isConnected) {
+        public async Write(message: string): Promise<void> {
+            await new Promise((resolve, reject) => {
+                this._client.once('data', () => resolve());
                 this._client.write(`${message}${this._endChar}`, this._encoding);
-            }
+            });
         }
 
         /**

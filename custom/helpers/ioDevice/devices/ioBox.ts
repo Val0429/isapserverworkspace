@@ -34,17 +34,6 @@ export namespace IoBox {
 
         /**
          *
-         * @param message
-         */
-        public async Write(message: string): Promise<void> {
-            await new Promise((resolve, reject) => {
-                this._client.once('data', () => resolve());
-                super.Write(message);
-            });
-        }
-
-        /**
-         *
          * @param channel
          * @param status
          * @param delay
