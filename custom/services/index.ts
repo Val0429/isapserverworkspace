@@ -4,18 +4,14 @@ import { Device, Print, IoBox } from '../helpers';
 (async function() {
     try {
         let iobox: IoBox.Control = new IoBox.Control();
-        let info: Device.IInfo = {
-            id: 123123,
-            name: 'Io_Box_01',
-        };
-        let connect: Device.IConnect = {
-            ip: '172.16.11.226',
-            port: 12345,
-        };
+        let info: Device.IInfo = { id: 123123, name: 'Io_Box_01' };
+        let connect: Device.IConnect = { ip: '172.16.11.226', port: 12345 };
 
-        // iobox.OnConnect = () => {};
+        let stop$ = new Rx.Subject();
 
-        // iobox.OnClose = () => {};
+        iobox.OnConnect = () => {};
+
+        iobox.OnClose = () => {};
 
         iobox.OnData = (buffer: Buffer) => {
             let message: string = buffer
@@ -38,14 +34,17 @@ import { Device, Print, IoBox } from '../helpers';
             Print.MinLog(`${iobox.deviceConnect.ip}:${iobox.deviceConnect.port}: ${message}`);
         };
 
+        iobox.OnError = (e: Error) => {
+            stop$.error(e);
+        };
+
         iobox.Initialization(info, connect);
 
-        let count: number = 0;
+        await iobox.Connect();
 
+        let count: number = 0;
         Rx.Observable.interval(500)
-            .do(async () => {
-                await iobox.Connect();
-            })
+            .takeUntil(stop$)
             .skip(2)
             .subscribe({
                 next: async () => {
@@ -55,6 +54,9 @@ import { Device, Print, IoBox } from '../helpers';
                     await iobox.GetInputStatus(IoBox.InputChannel.ch1);
 
                     console.log();
+                },
+                error: async (e: Error) => {
+                    Print.MinLog(`${iobox.deviceConnect.ip}:${iobox.deviceConnect.port}: ${e.message}`, 'error');
                 },
             });
     } catch (e) {
