@@ -89,15 +89,17 @@ export class FRSService {
                 body: { username, password }
             }, (err, res, body) => {
                 this.sjLoggingIn.next(false);
-                if (err || !body) {
+                if (err || !body || body.message.indexOf("Unauthorized") >= 0) {
                     let started = this.sjStarted.getValue();
                     this.config.debug && Log.Error(LogTitle, `Login failed@${ip}:${port}. ${started ? "Retry in 1 second." : ""}`);
                     started && setTimeout(() => { tryLogin() }, 1000);
                     return;
                 }
-                this.sjLogined.next(true);
                 this.config.debug && Log.Info(LogTitle, `Login into Server@${ip}:${port}.`);
                 this.sessionId = body.session_id;
+
+                this.sjLogined.next(true);
+
                 /// After login and got session_id, maintain session every 1 minute.
                 if (this.maintainTimer) clearInterval(this.maintainTimer);
                 this.maintainTimer = setInterval( async () => {

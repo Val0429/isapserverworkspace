@@ -8,24 +8,24 @@ import './custom/shells/index';
 
 import { Config } from 'core/config.gen';
 
-// import { FRSService } from './custom/services/frs-service';
-// import './custom/services/frs-service/modules/snapshot';
-// import './custom/services/frs-service/modules/live-faces';
-// import './custom/services/frs-service/modules/search-records';
-// import { UnRecognizedUser } from 'workspace/custom/services/frs-service/libs/core';
-// import { Log } from 'helpers/utility';
+import { FRSService } from './custom/services/frs-service';
+import './custom/services/frs-service/modules/snapshot';
+import './custom/services/frs-service/modules/live-faces';
+import './custom/services/frs-service/modules/search-records';
+import { UnRecognizedUser } from 'workspace/custom/services/frs-service/libs/core';
+import { Log } from 'helpers/utility';
 
-// let frs = new FRSService({
-//     frs: {
-//         ip: '172.16.10.88',
-//         port: 8088,
-//         wsport: 7077,
-//         account: "Admin",
-//         password: "123456"
-//     },
-//     debug: true
-// });
-// frs.start();
+let frs = new FRSService({
+    frs: {
+        ip: '172.16.10.88',
+        port: 8088,
+        wsport: 7077,
+        account: "val",
+        password: "123456"
+    },
+    debug: true
+});
+frs.start();
 // frs.enableLiveFaces(true);
 // frs.sjLiveStream.subscribe( (face) => {
 //     console.log('got face!', {...face, face_feature: undefined});
@@ -34,12 +34,14 @@ import { Config } from 'core/config.gen';
 // frs.sjLiveHandledFace.subscribe( (face) => {
 //     console.log('got face!', {...face, face_feature: undefined});
 // });
-// let count = 0;
-// frs.searchRecords(new Date(2018, 11, 10, 0, 0, 0), new Date(2018,11,10,23,59,59), 1)
-//     .subscribe( (face) => {
-//         ///console.log('face', {...face, face_feature: undefined});
-//         console.log('face count', count++)
-//     })
+let count = 0;
+frs.searchRecords(new Date(2018, 11, 10, 0, 0, 0), new Date(2018,11,10,23,59,59))
+    /// Location Filter
+    // .filter( (v) =>  )
+    .subscribe( (face) => {
+        console.log('face', {...face, face_feature: undefined});
+        //console.log('face count', count++)
+    })
 
 
 
