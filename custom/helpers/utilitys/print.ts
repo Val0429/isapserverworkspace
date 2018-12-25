@@ -1,11 +1,8 @@
 export namespace Print {
-    /**
-     *
-     */
     const Reset = '\x1b[0m';
 
     /**
-     *
+     * Print font color
      */
     export enum FontColor {
         black = '\x1b[30m',
@@ -19,7 +16,7 @@ export namespace Print {
     }
 
     /**
-     *
+     * Print background color
      */
     export enum BackColor {
         black = '\x1b[40m',
@@ -33,7 +30,7 @@ export namespace Print {
     }
 
     /**
-     *
+     * Print format
      */
     export interface Format {
         message: any;
@@ -42,7 +39,7 @@ export namespace Print {
     }
 
     /**
-     *
+     * Print format message
      * @param messages
      */
     export function Message(...messages: Format[]): void {
@@ -60,7 +57,7 @@ export namespace Print {
     }
 
     /**
-     *
+     * Print Min's log
      * @param message
      */
     export function MinLog(message: any, mode?: 'message' | 'warning' | 'info' | 'error' | 'success'): void {
@@ -102,37 +99,5 @@ export namespace Print {
                 message: message,
             },
         );
-    }
-
-    /**
-     *
-     * @param data
-     */
-    export function JsonString(data: any): string {
-        try {
-            var cache = [];
-            let str: string = JSON.stringify(data, function(key, value) {
-                if (typeof value === 'object' && value !== null) {
-                    if (cache.indexOf(value) !== -1) {
-                        // Duplicate reference found
-                        try {
-                            // If this value does not reference a parent it can be deduped
-                            return JSON.parse(JSON.stringify(value));
-                        } catch (error) {
-                            // discard key if value cannot be deduped
-                            return;
-                        }
-                    }
-                    // Store value in our collection
-                    cache.push(value);
-                }
-                return value;
-            });
-            cache = null;
-
-            return str;
-        } catch (e) {
-            throw e;
-        }
     }
 }

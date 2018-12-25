@@ -1,2 +1,2 @@
 export * from './ioDevice';
-export * from './utility';
+export * from './utilitys';

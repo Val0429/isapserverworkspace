@@ -1,11 +1,14 @@
 export namespace Parser {
     /**
-     * Encoding of convert string to byte[] or byte[] to string
+     * Encoding of Buffer modules
      */
     export enum Encoding {
-        'utf8' = 'utf8',
         'ascii' = 'ascii',
+        'utf8' = 'utf8',
+        'utf16le' = 'utf16le',
+        'ucs2' = 'ucs2',
         'base64' = 'base64',
+        'latin1' = 'latin1',
         'binary' = 'binary',
         'hex' = 'hex',
     }
@@ -84,11 +87,30 @@ export namespace Parser {
     }
 
     /**
-     * Convert string to byte array and use nodejs's Buffer format
-     * @param message
-     * @param encoding
+     * Convert json object to json string when have type error: "Converting circular structure to JSON"
+     * @param data
      */
-    export function Str2Buffer(message: string, encoding: Encoding = Encoding.utf8): Buffer {
-        return Buffer.from(message, encoding);
+    export function JsonString(data: any): string {
+        var cache = [];
+        let str: string = JSON.stringify(data, function(key, value) {
+            if (typeof value === 'object' && value !== null) {
+                if (cache.indexOf(value) !== -1) {
+                    // Duplicate reference found
+                    try {
+                        // If this value does not reference a parent it can be deduped
+                        return JSON.parse(JSON.stringify(value));
+                    } catch (error) {
+                        // discard key if value cannot be deduped
+                        return;
+                    }
+                }
+                // Store value in our collection
+                cache.push(value);
+            }
+            return value;
+        });
+        cache = null;
+
+        return str;
     }
 }
