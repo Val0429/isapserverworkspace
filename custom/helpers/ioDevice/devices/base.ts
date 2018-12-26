@@ -18,30 +18,9 @@ export namespace Device {
     /**
      *
      */
-    export enum Family {
-        IPv4 = '4',
-        IPv6 = '6',
-    }
-
-    /**
-     *
-     */
-    export interface IConnect {
-        ip: string;
-        port: number;
-        protocol?: 'tcp' | 'udp';
-        keepAlive?: number;
-        family?: Family;
-    }
-
-    /**
-     *
-     */
     export interface IInfo {
         id: number;
         name: string;
-        di?: number;
-        do?: number;
     }
 
     /**
@@ -50,96 +29,122 @@ export namespace Device {
     export class Control {
         protected _client: Net.Socket | Dgram.Socket;
 
-        protected _encoding: Parser.Encoding;
-        protected _endChar: string;
-        protected _connect: IConnect;
-        protected _info: IInfo;
-        protected _isInitializated: boolean;
-        protected _aliveCount: number;
-        protected _isTcp: boolean;
-
-        protected _OnData = () => {
-            this._aliveCount = 0;
-        };
+        /**
+         * Device Ip
+         */
+        protected _ip: string;
+        public get ip(): string {
+            return this._ip;
+        }
+        public set ip(value: string) {
+            this._ip = value;
+        }
 
         /**
-         * Get encoding
+         * Device Port
          */
-        public get encoding() {
+        protected _port: number;
+        public get port(): number {
+            return this._port;
+        }
+        public set port(value: number) {
+            this._port = value;
+        }
+
+        /**
+         * Device info
+         */
+        protected _info: IInfo;
+        public get info(): IInfo {
+            return JSON.parse(JSON.stringify(this._info));
+        }
+        public set info(value: IInfo) {
+            this._info = value;
+        }
+
+        /**
+         * Connect protocol
+         */
+        protected _protocol: 'tcp' | 'udp' = 'tcp';
+        public get protocol(): 'tcp' | 'udp' {
+            return this._protocol;
+        }
+        public set protocol(value: 'tcp' | 'udp') {
+            this._protocol = value;
+        }
+
+        /**
+         * Message encoding
+         */
+        protected _encoding: Parser.Encoding = Parser.Encoding.utf8;
+        public get encoding(): Parser.Encoding {
             return this._encoding;
         }
 
         /**
-         * Get end char
+         * Message start char
          */
-        public get endChar() {
+        protected _startChar: string = '';
+        public get startChar(): string {
+            return this._startChar;
+        }
+
+        /**
+         * Message end char
+         */
+        protected _endChar: string = '';
+        public get endChar(): string {
             return this._endChar;
         }
 
         /**
-         * Get connect data
+         * Initialization flag
          */
-        public get connect() {
-            return JSON.parse(JSON.stringify(this._connect));
+        protected _isInitialization: boolean = false;
+        public get isInitialization(): boolean {
+            return this._isInitialization;
         }
 
         /**
-         * Get info data
+         * Use keep alive mode
          */
-        public get info() {
-            return JSON.parse(JSON.stringify(this._info));
+        protected _keepAlive: boolean = true;
+
+        /**
+         * Keep alive count limit
+         */
+        protected _keepAliveLimit: number = 10;
+        public get keepAliveLimit(): number {
+            return this._keepAliveLimit;
+        }
+        public set keepAliveLimit(value: number) {
+            this._keepAliveLimit = value;
         }
 
         /**
-         * Get isInitializated flag
+         * Keep alive count
          */
-        public get isInitializated() {
-            return this._isInitializated;
-        }
+        protected _keepAliveCount: number = 0;
 
         /**
-         *
-         */
-        constructor() {
-            this._encoding = Parser.Encoding.utf8;
-            this._endChar = '';
-            this._isInitializated = false;
-            this._aliveCount = 0;
-            this._isTcp = false;
-        }
-
-        /**
-         * initialization device
+         * Initialization device
+         * @param ip
+         * @param port
          * @param info
-         * @param connect
          */
-        public Initialization(info: IInfo, connect: IConnect): void {
-            this._isInitializated = false;
+        public Initialization(): void {
+            this._isInitialization = false;
+            this._keepAliveCount = 0;
 
-            if (!Regex.IsIp(connect.ip)) {
+            if (this._ip === null || this._ip === undefined || !Regex.IsIp(this._ip)) {
                 throw Message.SettingIpError;
             }
-            if (!Regex.IsNum(connect.port.toString()) || connect.port < 1 || connect.port > 65535) {
+
+            if (this._port === null || this._port === undefined || !Regex.IsNum(this._port.toString()) || this._port < 1 || this._port > 65535) {
                 throw Message.SettingPortError;
             }
-            if (info.name === '') {
-                throw Message.SettingNameError;
-            }
 
-            if (connect.protocol === null || connect.protocol === undefined) {
-                connect.protocol = 'tcp';
-            }
-            if (connect.keepAlive === null || connect.keepAlive === undefined) {
-                connect.keepAlive = 10;
-            }
-
-            this._info = info;
-            this._connect = connect;
-
-            this._isTcp = this._connect.protocol === 'tcp';
-            this._aliveCount = 0;
-
-            if (this._isTcp) {
+            if (this._protocol === 'tcp') {
                 (<Net.Socket>this._client) = new Net.Socket();
 
                 (<Net.Socket>this._client).on('data', this._OnData);
@@ -159,27 +164,27 @@ export namespace Device {
                 (<Dgram.Socket>this._client).on('close', this.OnClose);
             }
 
-            this._isInitializated = true;
+            this._isInitialization = true;
         }
 
         /**
          * Connect device
          */
         public async Connect(): Promise<void> {
-            if (!this._isInitializated) {
+            if (!this._isInitialization) {
                 throw Message.DeviceNotInitialization;
             }
 
             await new Promise((resolve, reject) => {
                 try {
-                    if (this._isTcp) {
+                    if (this._protocol === 'tcp') {
                         (<Net.Socket>this._client).once('connect', (): void => resolve());
                         (<Net.Socket>this._client).connect(
-                            this._connect.port,
-                            this._connect.ip,
+                            this._port,
+                            this._ip,
                         );
                     } else {
-                        this.Initialization(this._info, this._connect);
+                        this.Initialization();
                         resolve();
                     }
                 } catch (e) {
@@ -192,9 +197,13 @@ export namespace Device {
          * Desconnect device
          */
         public async Disconnect(): Promise<void> {
+            if (!this._isInitialization) {
+                throw Message.DeviceNotInitialization;
+            }
+
             await new Promise((resolve, reject) => {
                 try {
-                    if (this._isTcp) {
+                    if (this._protocol === 'tcp') {
                         (<Net.Socket>this._client).once('close', (): void => resolve());
                         (<Net.Socket>this._client).end();
                     } else {
@@ -212,20 +221,34 @@ export namespace Device {
          * @param message
          */
         public async Write(message: string): Promise<void> {
-            let buffer: Buffer = Buffer.from(`${message}${this._endChar}`, this._encoding);
+            if (!this._isInitialization) {
+                throw Message.DeviceNotInitialization;
+            }
+
+            let buffer: Buffer = Buffer.from(`${this._startChar}${message}${this._endChar}`, this._encoding);
 
             await new Promise((resolve, reject) => {
                 try {
-                    if (this._aliveCount++ > this._connect.keepAlive) {
-                        throw new Error(Message.DeviceDead);
-                    }
+                    if (this._keepAlive) {
+                        if (this._keepAliveCount++ > this._keepAliveLimit) {
+                            throw new Error(Device.Message.DeviceDead);
+                        }
 
-                    if (this._isTcp) {
-                        (<Net.Socket>this._client).once('data', () => resolve());
-                        (<Net.Socket>this._client).write(buffer);
+                        if (this._protocol === 'tcp') {
+                            (<Net.Socket>this._client).once('data', () => resolve());
+                            (<Net.Socket>this._client).write(buffer);
+                        } else {
+                            (<Dgram.Socket>this._client).once('message', () => resolve());
+                            (<Dgram.Socket>this._client).send(buffer, this._port, this._ip);
+                        }
                     } else {
-                        (<Dgram.Socket>this._client).once('message', () => resolve());
-                        (<Dgram.Socket>this._client).send(buffer, this._connect.port, this._connect.ip);
+                        if (this._protocol === 'tcp') {
+                            (<Net.Socket>this._client).write(buffer);
+                            resolve();
+                        } else {
+                            (<Dgram.Socket>this._client).send(buffer, this._port, this._ip);
+                            resolve();
+                        }
                     }
                 } catch (e) {
                     this.EmitError(e);
@@ -238,7 +261,7 @@ export namespace Device {
          * @param e
          */
         protected EmitError(e: Error) {
-            if (this._isTcp) {
+            if (this._protocol === 'tcp') {
                 (<Net.Socket>this._client).emit('error', e);
             } else {
                 (<Dgram.Socket>this._client).emit('error', e);
@@ -249,7 +272,14 @@ export namespace Device {
          * Event "Connect" | "listening"
          */
         public OnConnect = (): void => {
-            Print.MinLog(`${this._connect.ip}:${this._connect.port}: Connect`, 'warning');
+            Print.MinLog(`${this._ip}:${this._port}: Connect`, 'warning');
+        };
+
+        /**
+         * Event "Data" | "Message"
+         */
+        protected _OnData = () => {
+            this._keepAliveCount = 0;
         };
 
         /**
@@ -261,7 +291,7 @@ export namespace Device {
                 .toString(this._encoding)
                 .replace(/\n/g, ',')
                 .replace(/,$/, '');
-            Print.MinLog(`${this._connect.ip}:${this._connect.port}: ${message}`, 'message');
+            Print.MinLog(`${this._ip}:${this._port}: ${message}`, 'message');
         };
 
         /**
@@ -269,14 +299,14 @@ export namespace Device {
          * @param e
          */
         public OnError = (e: Error): void => {
-            Print.MinLog(`${this._connect.ip}:${this._connect.port}: Error ${e.message}`, 'error');
+            Print.MinLog(`${this._ip}:${this._port}: ${e.message}`, 'error');
         };
 
         /**
          * Event "Close"
          */
         public OnClose = (): void => {
-            Print.MinLog(`${this._connect.ip}:${this._connect.port}: Close`, 'warning');
+            Print.MinLog(`${this._ip}:${this._port}: Close`, 'warning');
         };
     }
 }

@@ -1,5 +1,5 @@
 import { Device } from './base';
-import { Parser, Print } from '../..';
+import { Parser } from '../..';
 
 export namespace IoBox {
     /**
@@ -64,13 +64,14 @@ export namespace IoBox {
 }
 
 // import * as Rx from 'rxjs';
-// import { Device, Print, IoBox, Parser, DateTime, Utility } from '../helpers';
+// import { Print, IoBox, DateTime } from '../helpers';
 
 // (async function () {
 //     try {
 //         let iobox: IoBox.Control = new IoBox.Control();
-//         let info: Device.IInfo = { id: 123123, name: 'IoBox_01' };
-//         let connect: Device.IConnect = { ip: '172.16.11.226', port: 12345, protocol: 'udp' };
+//         iobox.ip = '192.168.1.98';
+//         iobox.port = 12345;
+//         iobox.info = { id: 123123, name: 'IoBox_01' };
 
 //         let stop$ = new Rx.Subject();
 
@@ -103,18 +104,18 @@ export namespace IoBox {
 //             stop$.next();
 //             Print.MinLog(`${DateTime.DateTime2String(new Date(), 'HH:mm:ss')}, ${iobox.info.name}, ${e.message}`, 'error');
 
-//             Control(iobox, info, connect, stop$);
+//             iobox.Initialization();
+//             Control(iobox, stop$);
 //         };
 
-//         // Control(iobox, info, connect, stop$);
+//         iobox.Initialization();
+//         Control(iobox, stop$);
 //     } catch (e) {
 //         Print.MinLog(e, 'error');
 //     }
 // })();
 
-// async function Control(iobox: IoBox.Control, info: Device.IInfo, connect: Device.IConnect, stop$: Rx.Subject<{}>): Promise<void> {
-//     iobox.Initialization(info, connect);
-
+// async function Control(iobox: IoBox.Control, stop$: Rx.Subject<{}>): Promise<void> {
 //     await iobox.Connect();
 
 //     let count: number = 0;
