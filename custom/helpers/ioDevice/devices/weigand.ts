@@ -66,10 +66,6 @@ export namespace Weigand {
 
 //         weigand.Initialization();
 
-//         // await weigand.Connect();
-
-//         // await device.Write(Utility.PadLeft('83645'.toString(), '0', 10));
-
 //         Control(weigand, stop$);
 //     } catch (e) {
 //         Print.MinLog(e, 'error');
