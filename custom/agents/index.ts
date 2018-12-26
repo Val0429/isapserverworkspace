@@ -3,3 +3,4 @@
  * this file is auto created. whatever you insert into this file will be overwritten.
  */
 export * from './frs-agent/index';
+export * from './windows-agent/index';

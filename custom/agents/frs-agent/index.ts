@@ -6,6 +6,7 @@ import { Subject, Observable } from 'rxjs';
 import { FRSService } from 'workspace/custom/services/frs-service';
 import 'workspace/custom/services/frs-service/modules/live-faces';
 import 'workspace/custom/services/frs-service/modules/search-records';
+import { Log } from 'helpers/utility';
 
 interface IEnableLiveFaces {
     enable: boolean;
@@ -30,11 +31,11 @@ export class FRSAgent extends Agent.Base<IFRSServiceConfig> {
         this.frs = new FRSService(config);
     }
 
-    public Start() {
+    protected doStart() {
         this.frs.start();
     }
 
-    public Stop() {
+    protected doStop() {
         this.frs.stop();
     }
 
@@ -48,9 +49,16 @@ export class FRSAgent extends Agent.Base<IFRSServiceConfig> {
     }
 
     @Agent.Function({
-        
+        inputType: "ISearchRecords",
+        description: "Search faces"
     })
     public SearchRecords(config: ISearchRecords): Observable<RecognizedUser | UnRecognizedUser> {
-        return this.frs.searchRecords(config.starttime, config.endtime, undefined, 10).asObservable();
+        config.starttime = new Date(config.starttime);
+        config.endtime = new Date(config.endtime);
+        Log.Info("FRSAgent", "Search face started.");
+        let count = 0;
+        return this.frs.searchRecords(config.starttime, config.endtime, undefined, 10).asObservable()
+            .do( (face) => Log.Info("FRSAgent", `Got face, count: ${++count}`) );
     }
 }
+
