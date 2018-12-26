@@ -31,6 +31,7 @@ export namespace IoBox {
     export class Control extends Device.Control {
         protected _encoding: Parser.Encoding = Parser.Encoding.ascii;
         protected _endChar: string = '\n';
+        protected _keepAlive: boolean = true;
 
         /**
          * Set output status
@@ -38,7 +39,7 @@ export namespace IoBox {
          * @param status
          * @param delay
          */
-        public async SetOutputStatus(channel: OutputChannel, status: Status, delay?: number): Promise<any> {
+        public async SetOutputStatus(channel: OutputChannel, status: Status, delay?: number): Promise<void> {
             let command: string = `AT+STACH${channel}=${status}${delay === null || delay === undefined ? '' : `,${delay}`}`;
             await this.Write(command);
         }
@@ -47,7 +48,7 @@ export namespace IoBox {
          * Get output status
          * @param channel
          */
-        public async GetOutputStatus(channel: OutputChannel): Promise<any> {
+        public async GetOutputStatus(channel: OutputChannel): Promise<void> {
             let command: string = `AT+STACH${channel}=?`;
             await this.Write(command);
         }
@@ -56,7 +57,7 @@ export namespace IoBox {
          * Get input status
          * @param channel
          */
-        public async GetInputStatus(channel: InputChannel): Promise<any> {
+        public async GetInputStatus(channel: InputChannel): Promise<void> {
             let command: string = `AT+OCCH${channel}=?`;
             await this.Write(command);
         }

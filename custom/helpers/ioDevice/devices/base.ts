@@ -108,7 +108,7 @@ export namespace Device {
         /**
          * Use keep alive mode
          */
-        protected _keepAlive: boolean = true;
+        protected _keepAlive: boolean = false;
 
         /**
          * Keep alive count limit
@@ -128,9 +128,6 @@ export namespace Device {
 
         /**
          * Initialization device
-         * @param ip
-         * @param port
-         * @param info
          */
         public Initialization(): void {
             this._isInitialization = false;
@@ -257,10 +254,10 @@ export namespace Device {
         }
 
         /**
-         *
+         * Emit error
          * @param e
          */
-        protected EmitError(e: Error) {
+        protected EmitError(e: Error): void {
             if (this._protocol === 'tcp') {
                 (<Net.Socket>this._client).emit('error', e);
             } else {
@@ -278,7 +275,7 @@ export namespace Device {
         /**
          * Event "Data" | "Message"
          */
-        protected _OnData = () => {
+        protected _OnData = (): void => {
             this._keepAliveCount = 0;
         };
 

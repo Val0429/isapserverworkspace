@@ -17,7 +17,6 @@ export namespace Weigand {
      */
     export class Control extends Device.Control {
         protected _startChar: string = '\x02';
-        protected _keepAlive: boolean = false;
 
         protected _protocol: 'udp' = 'udp';
         public set protocol(value: 'udp') {
@@ -28,7 +27,7 @@ export namespace Weigand {
          * Write card
          * @param channel
          */
-        public async WriteCard(card: string, max: MaxCardNumber = MaxCardNumber.WG26): Promise<any> {
+        public async WriteCard(card: string, max: MaxCardNumber = MaxCardNumber.WG26): Promise<void> {
             this._endChar = endCharFormat.replace(/{Max}/g, max);
             let command: string = Utility.PadLeft(card, '0', 10);
             await this.Write(command);
