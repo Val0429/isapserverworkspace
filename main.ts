@@ -41,38 +41,38 @@ import { mouseEvents } from './cgi-bin/test/report';
 // })();
 
 
-(async () => {
-    let agent = new WindowsAgent(null, {
-        name: new ObjectID().str,
-        agent: await new Parse.Query(Parse.User).equalTo("username", "Admin").first()
-    });
-    await agent.Start().toPromise();
+// (async () => {
+//     let agent = new WindowsAgent(null, {
+//         name: new ObjectID().str,
+//         agent: await new Parse.Query(Parse.User).equalTo("username", "Admin").first()
+//     });
+//     await agent.Start().toPromise();
 
-    // /// List Directory
-    // agent.ListDirectory({
-    //     path: `C:\\`
-    // }).subscribe( (data) => {
-    //     console.log('paths', data);
-    // });
+//     // /// List Directory
+//     // agent.ListDirectory({
+//     //     path: `C:\\`
+//     // }).subscribe( (data) => {
+//     //     console.log('paths', data);
+//     // });
 
-    // /// Download File
-    // console.time('start download')
-    // agent.Download({
-    //     path: `C:\\123.jpg`
-    // }).subscribe( (data) => {
-    //     fs.writeFile(`D:\\tmp\\test${p.extname(data.path)}`, Buffer.from(data.data, 'base64'), () => {});
-    //     console.timeEnd('start download')
-    // });
+//     // /// Download File
+//     // console.time('start download')
+//     // agent.Download({
+//     //     path: `C:\\123.jpg`
+//     // }).subscribe( (data) => {
+//     //     fs.writeFile(`D:\\tmp\\test${p.extname(data.path)}`, Buffer.from(data.data, 'base64'), () => {});
+//     //     console.timeEnd('start download')
+//     // });
 
-    agent.Desktop({interval: 300})
-        .subscribe( (image) => {
-            screenShots.next(image);
-        });
-    mouseEvents.subscribe( async (config) => {
-        await agent.TeamViewer(config).toPromise();
-    });
+//     agent.Desktop({interval: 300})
+//         .subscribe( (image) => {
+//             screenShots.next(image);
+//         });
+//     mouseEvents.subscribe( async (config) => {
+//         await agent.TeamViewer(config).toPromise();
+//     });
 
-})();
+// })();
 
 
 
