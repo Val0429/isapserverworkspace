@@ -19,7 +19,7 @@ export namespace DateTime {
     export function DateTime2String(dateTime: Date, format: Format | string): string {
         let regex: RegExp = Utility.Array2RegExp(_formats);
 
-        let formats: string[] = format.match(regex);
+        let formats: string[] = format.match(regex) === null ? [] : (format.match(regex) as string[]);
         let spaces: string[] = format.split(regex);
 
         let year: number = dateTime.getFullYear();
@@ -32,8 +32,8 @@ export namespace DateTime {
         let offset: number = dateTime.getTimezoneOffset() + 30;
 
         let dateStr: string = '';
-        for (let i: number = 0; i < formats.length; i++) {
-            switch (formats[i]) {
+        for (let i: number = 0; i < spaces.length; i++) {
+            switch (formats[i - 1]) {
                 case 'dddd':
                     dateStr += _days[day + 7];
                     break;
@@ -102,7 +102,7 @@ export namespace DateTime {
                     break;
             }
 
-            dateStr += spaces[i + 1];
+            dateStr += spaces[i];
         }
 
         return dateStr;
