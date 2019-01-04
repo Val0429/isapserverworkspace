@@ -6,11 +6,10 @@ var userRoles: Config[] = [
             realname: string;
             permission?: number;
             imei?: string;
-            regions?: IRegion[];
             creator?: Parse.User;
             isDisable?: boolean;
         `,
-        ['IRegion'],
+        [],
     ],
     [
         10,
@@ -19,11 +18,10 @@ var userRoles: Config[] = [
             realname: string;
             permission?: number;
             imei?: string;
-            regions?: IRegion[];
             creator?: Parse.User;
             isDisable?: boolean;
         `,
-        ['IRegion'],
+        [],
     ],
     [
         20,
@@ -32,11 +30,10 @@ var userRoles: Config[] = [
             realname: string;
             permission?: number;
             imei?: string;
-            regions?: IRegion[];
             creator?: Parse.User;
             isDisable?: boolean;
         `,
-        ['IRegion'],
+        [],
     ],
     [
         30,
@@ -45,11 +42,10 @@ var userRoles: Config[] = [
             realname: string;
             permission?: number;
             imei?: string;
-            regions?: IRegion[];
             creator?: Parse.User;
             isDisable?: boolean;
         `,
-        ['IRegion'],
+        [],
     ],
     [
         40,
@@ -58,11 +54,10 @@ var userRoles: Config[] = [
             realname: string;
             permission?: number;
             imei?: string;
-            regions?: IRegion[];
             creator?: Parse.User;
             isDisable?: boolean;
         `,
-        ['IRegion'],
+        [],
     ],
     [
         50,
@@ -71,11 +66,10 @@ var userRoles: Config[] = [
             realname: string;
             permission?: number;
             imei?: string;
-            regions?: IRegion[];
             creator?: Parse.User;
             isDisable?: boolean;
         `,
-        ['IRegion'],
+        [],
     ],
 ];
 

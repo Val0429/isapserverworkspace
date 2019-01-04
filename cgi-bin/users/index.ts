@@ -20,9 +20,6 @@ action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
-        if (_input.username == '' || _input.password == '' || _input.data.realname == '') {
-            throw Errors.throw(Errors.ParametersRequired, ['username or password or realname']);
-        }
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapC);
         Permission.ValidateRoles(availableRoles, _input.roles);

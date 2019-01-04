@@ -1,10 +1,10 @@
 {
-  "name": "isap-evis-service",
+  "name": "isap-min-service",
   "version": "1.00.01",
   "config": {
-    "displayname": "iSap EVIS Service"
+    "displayname": "iSap Min Service"
   },
-  "description": "iSap EVIS Service v1.00.01",
+  "description": "iSap Min Service v1.00.01",
 
   "scripts": {
     "start": "npm start --prefix ./../",
