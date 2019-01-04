@@ -1,4 +1,5 @@
 import { Agent } from 'models/agents';
+var os = require('os');
 
 import { IFRSServiceConfig, RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service/libs/core';
 import { Subject, Observable, Observer } from 'rxjs';
@@ -49,6 +50,18 @@ export class WindowsAgent extends Agent.Base<any> {
                 observer.next(files);
                 observer.complete();
             });
+        });
+    }
+
+    @Agent.Function({
+        inputType: "any",
+        description: "Free memory."
+    })    
+    public FreeMemory(): Observable<number> {
+        return Observable.create( (observer: Observer<number>) => {
+            setInterval( () => {
+                observer.next(os.freemem());
+            }, 1000);
         });
     }
 

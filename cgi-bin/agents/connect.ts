@@ -4,7 +4,8 @@ import {
     Action, Errors,
 } from 'core/cgi-package';
 import { Socket } from 'helpers/sockets/socket-helper';
-import { sharedAgentJob } from 'models/agents';
+import { Agent } from 'models/agents';
+const sharedAgentJob = Agent.Job.sharedInstance();
 
 export default new Action({
     loginRequired: true
