@@ -19,7 +19,7 @@ export namespace DateTime {
     export function DateTime2String(dateTime: Date, format: Format | string): string {
         let regex: RegExp = Utility.Array2RegExp(_formats);
 
-        let formats: string[] = format.match(regex) === null ? [] : (format.match(regex) as string[]);
+        let formats: string[] = format.match(regex) || [];
         let spaces: string[] = format.split(regex);
 
         let year: number = dateTime.getFullYear();
