@@ -1,9 +1,31 @@
-import { Device } from './base';
+import { IoDevice } from './base';
 import { Utility } from '../utilitys';
 
-export namespace Weigand {
-    const endCharFormat = '\r\n{Max}\x03';
+/**
+ *
+ */
+export class Weigand extends IoDevice {
+    protected _endCharFormat = '\r\n{Max}\x03';
 
+    protected _startChar: string = '\x02';
+
+    protected _protocol: 'udp' = 'udp';
+    public set protocol(value: 'udp') {
+        this._protocol = value;
+    }
+
+    /**
+     * Write card
+     * @param channel
+     */
+    public async WriteCard(card: string, max: Weigand.MaxCardNumber = Weigand.MaxCardNumber.WG26): Promise<void> {
+        this._endChar = this._endCharFormat.replace(/{Max}/g, max);
+        let command: string = Utility.PadLeft(card, '0', 10);
+        await this.Write(command);
+    }
+}
+
+export namespace Weigand {
     /**
      *
      */
@@ -11,36 +33,14 @@ export namespace Weigand {
         WG26 = '\x1a',
         WG34 = '\x22',
     }
-
-    /**
-     *
-     */
-    export class Control extends Device.Control {
-        protected _startChar: string = '\x02';
-
-        protected _protocol: 'udp' = 'udp';
-        public set protocol(value: 'udp') {
-            this._protocol = value;
-        }
-
-        /**
-         * Write card
-         * @param channel
-         */
-        public async WriteCard(card: string, max: MaxCardNumber = MaxCardNumber.WG26): Promise<void> {
-            this._endChar = endCharFormat.replace(/{Max}/g, max);
-            let command: string = Utility.PadLeft(card, '0', 10);
-            await this.Write(command);
-        }
-    }
 }
 
 // import * as Rx from 'rxjs';
 // import { Print, Weigand, DateTime } from '../helpers';
 
-// (async function () {
+// (async function() {
 //     try {
-//         let weigand: Weigand.Control = new Weigand.Control();
+//         let weigand: Weigand = new Weigand();
 //         weigand.ip = '172.16.11.230';
 //         weigand.port = 3000;
 //         weigand.info = { id: 123123, name: 'Weigand_01' };
@@ -72,7 +72,7 @@ export namespace Weigand {
 //     }
 // })();
 
-// async function Control(device: Weigand.Control, stop$: Rx.Subject<{}>): Promise<void> {
+// async function Control(device: Weigand, stop$: Rx.Subject<{}>): Promise<void> {
 //     await device.Connect();
 
 //     let count: number = 12345678;

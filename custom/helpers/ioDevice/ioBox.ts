@@ -1,5 +1,43 @@
-import { Device } from './base';
+import { IoDevice } from './base';
 import { Parser } from '..';
+
+/**
+ *
+ */
+export class IoBox extends IoDevice {
+    protected _encoding: Parser.Encoding = Parser.Encoding.ascii;
+    protected _endChar: string = '\n';
+    protected _keepAlive: boolean = true;
+
+    /**
+     * Set output status
+     * @param channel
+     * @param status
+     * @param delay
+     */
+    public async SetOutputStatus(channel: IoBox.OutputChannel, status: IoBox.Status, delay?: number): Promise<void> {
+        let command: string = `AT+STACH${channel}=${status}${delay === null || delay === undefined ? '' : `,${delay}`}`;
+        await this.Write(command);
+    }
+
+    /**
+     * Get output status
+     * @param channel
+     */
+    public async GetOutputStatus(channel: IoBox.OutputChannel): Promise<void> {
+        let command: string = `AT+STACH${channel}=?`;
+        await this.Write(command);
+    }
+
+    /**
+     * Get input status
+     * @param channel
+     */
+    public async GetInputStatus(channel: IoBox.InputChannel): Promise<void> {
+        let command: string = `AT+OCCH${channel}=?`;
+        await this.Write(command);
+    }
+}
 
 export namespace IoBox {
     /**
@@ -24,52 +62,14 @@ export namespace IoBox {
     export enum InputChannel {
         ch1 = '1',
     }
-
-    /**
-     *
-     */
-    export class Control extends Device.Control {
-        protected _encoding: Parser.Encoding = Parser.Encoding.ascii;
-        protected _endChar: string = '\n';
-        protected _keepAlive: boolean = true;
-
-        /**
-         * Set output status
-         * @param channel
-         * @param status
-         * @param delay
-         */
-        public async SetOutputStatus(channel: OutputChannel, status: Status, delay?: number): Promise<void> {
-            let command: string = `AT+STACH${channel}=${status}${delay === null || delay === undefined ? '' : `,${delay}`}`;
-            await this.Write(command);
-        }
-
-        /**
-         * Get output status
-         * @param channel
-         */
-        public async GetOutputStatus(channel: OutputChannel): Promise<void> {
-            let command: string = `AT+STACH${channel}=?`;
-            await this.Write(command);
-        }
-
-        /**
-         * Get input status
-         * @param channel
-         */
-        public async GetInputStatus(channel: InputChannel): Promise<void> {
-            let command: string = `AT+OCCH${channel}=?`;
-            await this.Write(command);
-        }
-    }
 }
 
 // import * as Rx from 'rxjs';
 // import { Print, IoBox, DateTime } from '../helpers';
 
-// (async function () {
+// (async function() {
 //     try {
-//         let iobox: IoBox.Control = new IoBox.Control();
+//         let iobox: IoBox = new IoBox();
 //         iobox.ip = '192.168.1.98';
 //         iobox.port = 12345;
 //         iobox.info = { id: 123123, name: 'IoBox_01' };
@@ -116,7 +116,7 @@ export namespace IoBox {
 //     }
 // })();
 
-// async function Control(iobox: IoBox.Control, stop$: Rx.Subject<{}>): Promise<void> {
+// async function Control(iobox: IoBox, stop$: Rx.Subject<{}>): Promise<void> {
 //     await iobox.Connect();
 
 //     let count: number = 0;
