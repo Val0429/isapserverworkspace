@@ -1,6 +1,6 @@
 import * as Net from 'net';
 import * as Dgram from 'dgram';
-import { Regex, Print, Parser } from '../..';
+import { Regex, Print, Parser } from '..';
 
 export namespace Device {
     /**

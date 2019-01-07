@@ -1,5 +1,5 @@
 import { Device } from './base';
-import { Utility } from '../../utilitys';
+import { Utility } from '../utilitys';
 
 export namespace Weigand {
     const endCharFormat = '\r\n{Max}\x03';

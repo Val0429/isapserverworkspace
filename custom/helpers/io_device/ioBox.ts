@@ -1,5 +1,5 @@
 import { Device } from './base';
-import { Parser } from '../..';
+import { Parser } from '..';
 
 export namespace IoBox {
     /**
