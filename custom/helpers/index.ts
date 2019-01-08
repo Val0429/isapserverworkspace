@@ -1,3 +1,4 @@
 export * from './demographic';
-export * from './io_device';
+export * from './humanDetect';
+export * from './ioDevice';
 export * from './utilitys';

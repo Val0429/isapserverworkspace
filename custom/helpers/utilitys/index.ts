@@ -1,5 +1,7 @@
+export * from './cms';
 export * from './datetime';
 export * from './encoder';
+export * from './file';
 export * from './parser';
 export * from './permission';
 export * from './print';
