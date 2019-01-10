@@ -26,7 +26,7 @@ interface ISearchRecords {
 })
 export class FRSAgent extends Agent.Base<IFRSServiceConfig> {
     private frs: FRSService;
-    constructor(config: IFRSServiceConfig, remote?: Agent.IRemoteAgent) {
+    constructor(config: IFRSServiceConfig, remote?: Agent.IRemoteAgentTask) {
         super(config, remote);
         this.frs = new FRSService(config);
     }

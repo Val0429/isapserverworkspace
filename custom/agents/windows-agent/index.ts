@@ -8,6 +8,15 @@ import * as fs from 'fs';
 const screenshot = require('screenshot-desktop');
 import { doClick, doRightClick, doDoubleClick } from './lib/libmouseclick';
 import { Log } from 'helpers/utility';
+import { Binary } from 'bson';
+
+interface IOutputFreeMemory {
+    value: number;
+}
+
+interface IOutputFreeMemory2 {
+    value: Buffer;
+}
 
 interface IListDirectory {
     path: string;
@@ -27,6 +36,17 @@ interface IMouseEvent {
 interface IDesktop {
     interval: number;
 }
+interface IOutputDesktop {
+    image: Buffer;
+}
+
+interface Test1 {
+    type: "Person" | "Group";
+    change: "create" | "modify" | "delete";
+}
+interface Test2 {
+
+}
 
 @Agent.Register({
     name: "Windows Agent",
@@ -44,7 +64,7 @@ export class WindowsAgent extends Agent.Base<any> {
         description: "List Windows machine's directory."
     })
     public ListDirectory(config: IListDirectory): Observable<string[]> {
-        return Observable.create( (observer: Observer<any>) => {
+        return new Observable( (observer: Observer<any>) => {
             fs.readdir(config.path, (err, files) => {
                 if (err) return observer.error(err);
                 observer.next(files);
@@ -55,12 +75,32 @@ export class WindowsAgent extends Agent.Base<any> {
 
     @Agent.Function({
         inputType: "any",
+        outputType: "IOutputFreeMemory",
         description: "Free memory."
     })    
-    public FreeMemory(): Observable<number> {
-        return Observable.create( (observer: Observer<number>) => {
-            setInterval( () => {
-                observer.next(os.freemem());
+    public FreeMemory(): Observable<IOutputFreeMemory> {
+        return this.makeObservable<IOutputFreeMemory>((observer, isStopped) => {
+            let timer = setInterval( () => {
+                observer.next({
+                    value: os.freemem()
+                });
+                isStopped() && clearInterval(timer);
+            }, 1000);
+        });
+    }
+
+    @Agent.Function({
+        inputType: "any",
+        outputType: "IOutputFreeMemory2",
+        description: "Free memory."
+    })    
+    public FreeMemory2(): Observable<IOutputFreeMemory2> {
+        return this.makeObservable<IOutputFreeMemory2>((observer, isStopped) => {
+            let timer = setInterval( () => {
+                observer.next({
+                    value: new Buffer(os.freemem()+"", "utf8")
+                });
+                isStopped() && clearInterval(timer);
             }, 1000);
         });
     }
@@ -70,7 +110,7 @@ export class WindowsAgent extends Agent.Base<any> {
         description: "Download file."
     })
     public Download(config: IListDirectory): Observable<IOutputDownload> {
-        return Observable.create( (observer: Observer<IOutputDownload>) => {
+        return new Observable( (observer: Observer<IOutputDownload>) => {
             let data = fs.readFileSync(config.path).toString('base64');
             observer.next({
                 path: config.path,
@@ -81,19 +121,21 @@ export class WindowsAgent extends Agent.Base<any> {
     }
 
     @Agent.Function({
-        inputType: "any",
+        inputType: "IDesktop",
+        outputType: "IOutputDesktop",
         description: "Stream desktop image back."
     })
-    public Desktop(config: IDesktop): Observable<string> {
+    public Desktop(config: IDesktop): Observable<IOutputDesktop> {
         config.interval = config.interval || 300;
-        return Observable.create( (observer: Observer<string>) => {
+        return new Observable( (observer: Observer<IOutputDesktop>) => {
             setInterval( () => {
                 let token = `take snapshot ${new Date().valueOf()}`;
                 console.time(token)
-                screenshot().then((img) => {
+                screenshot().then((image) => {
                     console.timeEnd(token);
-                    console.log('length', img.length);
-                    observer.next(img.toString('base64'));
+                    console.log('length', image.length);
+                    //observer.next(img.toString('base64'));
+                    observer.next({ image });
                 });
             }, config.interval);
             // observer.complete();
@@ -105,7 +147,7 @@ export class WindowsAgent extends Agent.Base<any> {
         description: "Send mouse event."
     })
     public TeamViewer(config: IMouseEvent): Observable<void> {
-        return Observable.create( (observer: Observer<void>) => {
+        return new Observable( (observer: Observer<void>) => {
             switch (config.type) {
                 case "left":
                     Log.Info("TeamViewer", `Single Click on (${config.x}, ${config.y})`);

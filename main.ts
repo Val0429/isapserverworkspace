@@ -4,25 +4,83 @@ import { app } from 'core/main.gen';
 // import './custom/shells/create-index';
 import './custom/shells/auto-index';
 
-// import { Agent } from 'models/agents';
-import './custom/agents';
-import * as p from 'path';
-import * as fs from 'fs';
-import { screenShots } from './cgi-bin/test/screen';
 
-import * as shortid from 'models/agents/libs/shortid'
+
 
 import { Agent } from 'models/agents';
+import './custom/agents';
+import { WindowsAgent } from './custom/agents';
+import { Observable } from 'rxjs';
+import { ParseObject } from 'core/cgi-package';
+// import * as p from 'path';
+// import * as fs from 'fs';
+// import { screenShots } from './cgi-bin/test/screen';
 
-console.log('agents?', JSON.stringify(Agent.getAllAgentDescriptors(), null, 2) );
-import { FRSAgent } from './custom/agents/frs-agent';
-import { WindowsAgent } from './custom/agents/windows-agent';
-import { Restful } from 'helpers/cgi-helpers/core';
-import { mouseEvents } from './cgi-bin/test/report';
-import { FacebookUtils } from 'parse';
+// import { FRSAgent } from './custom/agents/frs-agent';
+// import { WindowsAgent } from './custom/agents/windows-agent';
 
-import { ObjectID } from 'mongodb';
+console.log('agents?', JSON.stringify(Agent.RegistrationDelegator.getAllAgentTaskDescriptors(), null, 2) );
 
+// import { Restful } from 'helpers/cgi-helpers/core';
+// import { mouseEvents } from './cgi-bin/test/report';
+// import { FacebookUtils } from 'parse';
+
+// import { ObjectID } from 'mongodb';
+
+// let ob1 = new Observable( (observer) => {
+//     console.log('init...')
+//     setInterval( () => observer.next(new Date()), 1000 );
+// })
+// .finally( () => console.log('finally?!'))
+// .share();
+
+// let sup1 = ob1.subscribe( (data) => console.log('got', data));
+// let sup2 = ob1.subscribe( (data) => console.log('got', data));
+// setTimeout( () => {
+//     sup1.unsubscribe();
+//     sup2.unsubscribe();
+// }, 2000);
+
+Agent.SocketManager.sharedInstance().sjCheckedIn
+    .filter( (v) => v.get("username") === "Admin" )
+    // .first()
+    .subscribe( async (user) => {
+        let frs = new WindowsAgent(null, {
+            user
+        });
+        await frs.Start().toPromise();
+        // let subscription = frs.FreeMemory()
+        //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
+        //         console.log("Error", e);
+        //         subscription.unsubscribe();
+        //     } );
+        // setTimeout( () => {
+        //     subscription.unsubscribe();
+        // }, 5000 );
+
+        //let subscription = frs.FreeMemory2()
+        //let ob = frs.FreeMemory2()
+        let subscription = (frs as any)["FreeMemory"](null, {
+            filter: { type: "FilterJSONata", data: { ata: "$number(value)%20=0?{'value': value}:null" } },
+        })
+            .subscribe( (free) => console.log('free memory: ', free), (e) => {
+                console.log("Error", e);
+                subscription.unsubscribe();
+            } );
+
+        // let ob = frs.FreeMemory2();
+        // // (frs as any)["FreeMemory"](null, {
+        // //     filter: { type: "FilterJSONata", data: { ata: "$number(value)%2=0?{'value': value}:null" } }
+        // // })
+        // let sub1 = ob.subscribe( (free) => console.log('free memory: ', free), (e) => {
+        //         console.log("Error", e);
+        //         sub1.unsubscribe();
+        //     } );
+        // let sub2 = ob.subscribe( (free) => {
+        //     sub2.unsubscribe();
+        // }, e => null);
+
+    });
 
 // Agent.Job.sharedInstance().sjCheckIn
 //     .filter( (v) => v.user.get("username") === "Admin")
