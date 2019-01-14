@@ -122,7 +122,7 @@ Section
 	# source code
 	SetOutPath $INSTDIR
 	File /r *.bat
-	File /r /x .git /x .gitignore /x Release /x nsis ..\..\*.* 
+	File /r /x .git /x .gitignore /x nsis ..\..\*.* 
 	
 	# intall mongo
 	ExecWait '"install_mongo.bat" /s'
