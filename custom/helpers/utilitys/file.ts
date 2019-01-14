@@ -34,15 +34,29 @@ export namespace File {
     }
 
     /**
-     * Save file
+     * Write file
      * @param filename
      * @param data
      */
-    export function SaveFile(filename: string, data: any): void {
+    export function WriteFile(filename: string, data: any): void {
         try {
             let realpath: string = RealPath(filename);
 
             Fs.writeFileSync(realpath, data);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Read file
+     * @param filename
+     */
+    export function ReadFile(filename: string): Buffer {
+        try {
+            let buffer: Buffer = Fs.readFileSync(filename);
+
+            return buffer;
         } catch (e) {
             throw e;
         }
