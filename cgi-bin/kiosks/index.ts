@@ -126,7 +126,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         .get(objectId);
     if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
     /// V1.1) activated cannot change
-    if (data.inputType.data && data.inputType.data.activated !== undefined)
+    if (data.inputType.data)
         (data.inputType.data as any).activated = user.attributes.data.activated;
 
     /// 2.0) Prepare params to feed in
