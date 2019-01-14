@@ -80,12 +80,10 @@ export class WindowsAgent extends Agent.Base<any> {
     })    
     public FreeMemory(): Observable<IOutputFreeMemory> {
         return this.makeObservable<IOutputFreeMemory>((observer, isStopped) => {
-            let timer = setInterval( () => {
-                observer.next({
-                    value: os.freemem()
-                });
-                isStopped() && clearInterval(timer);
-            }, 1000);
+            observer.next({
+                value: os.freemem()
+            });
+            observer.complete();
         });
     }
 

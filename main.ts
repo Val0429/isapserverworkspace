@@ -12,6 +12,7 @@ import './custom/agents';
 import { WindowsAgent } from './custom/agents';
 import { Observable } from 'rxjs';
 import { ParseObject } from 'core/cgi-package';
+import { FunctionRemote } from 'models/agents/libs';
 // import * as p from 'path';
 // import * as fs from 'fs';
 // import { screenShots } from './cgi-bin/test/screen';
@@ -41,14 +42,37 @@ console.log('agents?', JSON.stringify(Agent.RegistrationDelegator.getAllAgentTas
 //     sup2.unsubscribe();
 // }, 2000);
 
+
 Agent.SocketManager.sharedInstance().sjCheckedIn
     .filter( (v) => v.get("username") === "Admin" )
     // .first()
     .subscribe( async (user) => {
-        let frs = new WindowsAgent(null, {
-            user
-        });
-        await frs.Start().toPromise();
+        // let frs = new WindowsAgent(null, {
+        //     user,
+        //     syncDB: false
+        // });
+        // await frs.Start().toPromise();
+
+        // let tt = FunctionRemote(frs.FreeMemory, frs)(null, {
+        //     filter: {
+        //         type: "FilterFunction",
+        //         data: {
+        //             ata: "return value.value % 1 === 0 ? true : false"
+        //         }
+        //     } as any,
+        //     scheduler: {
+        //         type: "SchedulerInterval",
+        //         data: {
+        //             initialDelayMs: 1000,
+        //             periodMs: 1000
+        //         }
+        //     },
+        // });
+        // tt.subscribe( (free) => console.log('free memory: ', free), (e) => {
+        //         console.log("Error", e);
+        //     } );
+
+
         // let subscription = frs.FreeMemory()
         //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
         //         console.log("Error", e);
@@ -58,15 +82,36 @@ Agent.SocketManager.sharedInstance().sjCheckedIn
         //     subscription.unsubscribe();
         // }, 5000 );
 
-        //let subscription = frs.FreeMemory2()
-        //let ob = frs.FreeMemory2()
-        let subscription = (frs as any)["FreeMemory"](null, {
-            filter: { type: "FilterJSONata", data: { ata: "$number(value)%20=0?{'value': value}:null" } },
-        })
-            .subscribe( (free) => console.log('free memory: ', free), (e) => {
-                console.log("Error", e);
-                subscription.unsubscribe();
-            } );
+        // let subscription = FunctionRemote(frs.FreeMemory, frs)(null, {
+        //     filter: { type: "FilterJSONata", data: {
+        //         ata: "$number(value)%20=0?{'value': value}:null"
+        //     } }
+        // })
+        //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
+        //         console.log("Error", e);
+        //         subscription.unsubscribe();
+        //     } );
+
+        // let subscription = FunctionRemote(frs.FreeMemory, frs)(null, {
+        //     filter: {
+        //         type: "FilterFunction",
+        //         data: {
+        //             func: "return value.value % 1 === 0 ? true : false"
+        //         }
+        //     },
+        //     scheduler: {
+        //         type: "SchedulerInterval",
+        //         data: {
+        //             initialDelayMs: 1000,
+        //             periodMs: 3000
+        //         }
+        //     }
+        // })
+        //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
+        //         console.log("Error", e);
+        //         subscription.unsubscribe();
+        //     } );
+
 
         // let ob = frs.FreeMemory2();
         // // (frs as any)["FreeMemory"](null, {
