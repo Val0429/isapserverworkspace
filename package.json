@@ -5,12 +5,13 @@
     "displayname": "iSap Min Service"
   },
   "description": "iSap Min Service v1.00.01",
-
   "scripts": {
     "start": "npm start --prefix ./../",
     "create-project": "git checkout --orphan"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "canvas": "^2.2.0"
+  }
 }
