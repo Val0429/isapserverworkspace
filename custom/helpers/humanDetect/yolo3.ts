@@ -1,5 +1,6 @@
 import { execFile } from 'child_process';
 import { HumanDetect } from './';
+import { File } from '../utilitys';
 
 export class Yolo3 {
     /**
@@ -71,6 +72,8 @@ export class Yolo3 {
         if (file === null || file === undefined || file === '') {
             throw HumanDetect.Message.SettingInputFileError;
         }
+
+        file = File.RealPath(file);
 
         let options: string[] = ['detector', 'test', './data/openimages.data', './cfg/yolov3-openimages.cfg', './weights/yolov3-openimages.weights', '-ext_output', '-i', '0', '-thresh', String(this._score), file];
         if (!isShow) {
