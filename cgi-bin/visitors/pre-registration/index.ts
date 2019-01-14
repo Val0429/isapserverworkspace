@@ -29,15 +29,28 @@ type OutputR = Restful.OutputR<IVisitors>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var { objectId } = data.inputType;
-    var query = new Parse.Query(Visitors)
+    var visitor = await new Parse.Query(Visitors)
         .equalTo("objectId", objectId)
-        .equalTo("status", VisitorStatus.Pending);
+        .equalTo("status", VisitorStatus.Pending)
+        .first();
 
-    if (await query.count() === 0) {
+    if (!visitor) {
         throw Errors.throw(Errors.CustomBadRequest, [`Visitor <${objectId}> already registered or not exists.`]);
     }
 
+    /// V1.1) Check Invitation status
+    let invitation = await new Parse.Query(Invitations)
+        .equalTo("visitor", visitor)
+        .equalTo("cancelled", false)
+        .first();
+    if (!invitation) {
+        throw Errors.throw(Errors.CustomBadRequest, [`Visitor <${objectId}> may not exists or invitation being cancelled.`]);
+    }
+
     /// 2) With Extra Filters
+    var query = new Parse.Query(Visitors)
+        .equalTo("objectId", objectId)
+        .equalTo("status", VisitorStatus.Pending);
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters, filter);
