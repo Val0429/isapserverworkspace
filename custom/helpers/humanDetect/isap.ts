@@ -86,18 +86,16 @@ export class ISapHD {
                     },
                     (error, response, body) => {
                         if (error) {
-                            reject(error);
-                        }
-
-                        if (response.statusCode !== 200) {
-                            reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                            return reject(error);
+                        } else if (response.statusCode !== 200) {
+                            return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
                         }
 
                         resolve(body);
                     },
                 );
             } catch (e) {
-                reject(e);
+                return reject(e);
             }
         }).catch((e) => {
             throw e;

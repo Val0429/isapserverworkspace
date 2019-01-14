@@ -80,13 +80,13 @@ export class Yolo3 {
             try {
                 execFile(this._filename, options, { cwd: this._path }, (error, stdout) => {
                     if (error) {
-                        reject(error);
+                        return reject(error);
                     }
 
                     resolve(stdout);
                 });
             } catch (e) {
-                reject(e);
+                return reject(e);
             }
         }).catch((e) => {
             throw e;
