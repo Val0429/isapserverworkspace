@@ -20,8 +20,8 @@ action.post<Input>({
     inputType: "Input"
 }, async (data) => {
     let result = await new ScheduleActionEmail().do({
-        subject: "test subject",
-        body: "test body",
+        subject: "test subject from VMS",
+        body: "test body from VMS",
         to: [data.inputType.email]
     });
 

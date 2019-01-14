@@ -21,7 +21,7 @@ action.post<Input>({
 }, async (data) => {
     let result = await new ScheduleActionSMS().do({
         phone: data.inputType.phone,
-        message: "test message",
+        message: "test message from VMS",
         comPort: Config.sms.comPort,
         timeout: Config.sms.timeout
     });

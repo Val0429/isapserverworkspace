@@ -23,7 +23,7 @@ action.post<Input>({
         // message: "test message",
     let result = await new ScheduleActionSGSMS().do({
         from: 'iSap Corporation',
-        message: "test message",
+        message: "test message from VMS",
         phone: data.inputType.phone,
         username: Config.sgsms.username,
         password: Config.sgsms.password
