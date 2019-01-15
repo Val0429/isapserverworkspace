@@ -1,11 +1,17 @@
 import * as Canvas from 'canvas';
 
 export namespace Draw {
+    /**
+     *
+     */
     export interface ISize {
         width: number;
         height: number;
     }
 
+    /**
+     *
+     */
     export interface IRect extends ISize {
         x: number;
         y: number;
@@ -14,15 +20,16 @@ export namespace Draw {
         isFill: boolean;
     }
 
-    export async function ImageSize(buffer: Buffer): Promise<ISize> {
+    /**
+     *
+     * @param buffer
+     */
+    async function LoadImage(buffer: Buffer): Promise<Canvas.Image> {
         try {
-            let size: ISize = await new Promise<ISize>((resolve, reject) => {
+            let size: Canvas.Image = await new Promise<Canvas.Image>((resolve, reject) => {
                 let image: Canvas.Image = new Canvas.Image();
                 image.onload = () => {
-                    resolve({
-                        width: image.width,
-                        height: image.height,
-                    });
+                    resolve(image);
                 };
                 image.onerror = (e) => {
                     return reject(e);
@@ -38,10 +45,49 @@ export namespace Draw {
         }
     }
 
-    export function Rectangle(size: ISize, rects: IRect[]): Buffer {
+    /**
+     *
+     * @param buffer
+     */
+    export async function ImageSize(buffer: Buffer): Promise<ISize> {
         try {
-            let canvas = Canvas.createCanvas(size.width, size.height);
+            let image: Canvas.Image = await LoadImage(buffer);
+
+            let size: ISize = {
+                width: image.width,
+                height: image.height,
+            };
+
+            return size;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     *
+     * @param rects
+     * @param size
+     * @param buffer
+     */
+    export async function Rectangle(rects: IRect[], size: ISize): Promise<Buffer>;
+    export async function Rectangle(rects: IRect[], buffer: Buffer): Promise<Buffer>;
+    export async function Rectangle(rects: IRect[], source: ISize | Buffer): Promise<Buffer> {
+        try {
+            let canvas = Canvas.createCanvas();
             let ctx = canvas.getContext('2d');
+
+            if (source instanceof Buffer) {
+                let image: Canvas.Image = await LoadImage(source);
+
+                canvas.width = image.width;
+                canvas.height = image.height;
+
+                ctx.drawImage(image, 0, 0);
+            } else {
+                canvas.width = source.width;
+                canvas.height = source.height;
+            }
 
             for (let rect of rects) {
                 ctx.beginPath();
@@ -57,7 +103,34 @@ export namespace Draw {
                 }
             }
 
-            return canvas.toBuffer();
+            if (source instanceof Buffer) {
+                return canvas.toBuffer('image/jpeg', { quality: 1 });
+            } else {
+                return canvas.toBuffer();
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     *
+     * @param buffer
+     * @param size
+     */
+    export async function Resize(buffer: Buffer, size: ISize, quality: number = 1): Promise<Buffer> {
+        try {
+            let canvas = Canvas.createCanvas();
+            let ctx = canvas.getContext('2d');
+
+            let image: Canvas.Image = await LoadImage(buffer);
+
+            canvas.width = size.width;
+            canvas.height = size.height;
+
+            ctx.drawImage(image, 0, 0, size.width, size.height);
+
+            return canvas.toBuffer('image/jpeg', { quality: quality });
         } catch (e) {
             throw e;
         }
