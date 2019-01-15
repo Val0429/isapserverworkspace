@@ -14,11 +14,21 @@ export interface IIsap {
     isEnable: boolean;
 }
 
+export interface IOutput {
+    width: number;
+    height: number;
+    lineWidth: number;
+    color: string;
+    isFill: boolean;
+    quality: number;
+}
+
 export interface Config {
     intervalSecond: number;
     cameraSources: ICameraSource[];
     yolo: IYolo;
     isap: IIsap;
+    output: IOutput;
 }
 
 let config: Config = {
@@ -30,7 +40,7 @@ let config: Config = {
         },
     ],
     yolo: {
-        path: 'C:/Users/Min.Hsieh/Desktop/yolo3',
+        path: './workspace/custom/assets/yolo3',
         filename: 'darknet.exe',
         target_score: 0.2,
         isEnable: true,
@@ -39,7 +49,15 @@ let config: Config = {
         ip: '172.16.10.159',
         port: 8000,
         target_score: 0.25,
-        isEnable: true,
+        isEnable: false,
+    },
+    output: {
+        width: 1280,
+        height: 720,
+        lineWidth: 13,
+        color: 'red',
+        isFill: false,
+        quality: 0.5,
     },
 };
 export default config;

@@ -1,10 +1,10 @@
 import { Config } from 'core/config.gen';
-import { Print, HumanDetect, Yolo3, ISapHD, DateTime, File, Cms } from '../helpers';
-import { Observable, Subject } from 'rxjs';
+import { Print, HumanDetect, Yolo3, ISapHD, File, Cms, Draw } from '../helpers';
+import * as Rx from 'rxjs';
 import { IHumanDetection, HumanDetection } from '../models';
 
 (async function() {
-    let hd: Subject<{}> = new Subject();
+    let hd: Rx.Subject<{}> = new Rx.Subject();
 
     Config.humanDetection.cameraSources.forEach((value1, index1, array1) => {
         value1.channel.forEach((value2, index2, array2) => {
@@ -18,15 +18,12 @@ import { IHumanDetection, HumanDetection } from '../models';
                         let path: string = File.RealPath('./workspace/custom/assets/snapshots');
                         File.CreateFolder(path);
 
-                        let filename: string = File.RealPath(`${path}/${value1.nvr}_${value2}_${snapshot.date.getTime()}.png`);
-                        File.SaveFile(filename, snapshot.buffer);
-
                         let _humanDetection: IHumanDetection = {
                             source: '',
                             nvr: value1.nvr,
                             channel: value2,
                             score: 0,
-                            filename: filename,
+                            filename: '',
                             locations: [],
                             date: snapshot.date,
                         };
@@ -34,11 +31,13 @@ import { IHumanDetection, HumanDetection } from '../models';
                         let tasks: Promise<any>[] = [];
 
                         if (Config.humanDetection.yolo.isEnable) {
-                            tasks.push(YoloAnalysis(filename, _humanDetection));
+                            let filename: string = File.RealPath(`${path}/Yolo3_${value1.nvr}_${value2}_${snapshot.date.getTime()}.png`);
+                            tasks.push(YoloAnalysis(snapshot.buffer, filename, _humanDetection));
                         }
 
                         if (Config.humanDetection.isap.isEnable) {
-                            tasks.push(ISapAnalysis(snapshot.buffer, _humanDetection));
+                            let filename: string = File.RealPath(`${path}/ISap_${value1.nvr}_${value2}_${snapshot.date.getTime()}.png`);
+                            tasks.push(ISapAnalysis(snapshot.buffer, filename, _humanDetection));
                         }
 
                         await Promise.all(tasks).catch((e) => {
@@ -52,14 +51,18 @@ import { IHumanDetection, HumanDetection } from '../models';
         });
     });
 
-    Observable.interval(Config.humanDetection.intervalSecond * 1000).subscribe({
-        next: (x) => {
-            hd.next();
-        },
-    });
+    Rx.Observable.interval(Config.humanDetection.intervalSecond * 1000)
+        .startWith(0)
+        .subscribe({
+            next: (x) => {
+                hd.next();
+            },
+        });
 })();
 
-async function YoloAnalysis(filename: string, _humanDetection?: IHumanDetection): Promise<void> {
+async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: IHumanDetection): Promise<HumanDetect.ILocation[]> {
+    File.WriteFile(filename, buffer);
+
     let yolo3: Yolo3 = new Yolo3();
     yolo3.path = Config.humanDetection.yolo.path;
     yolo3.filename = Config.humanDetection.yolo.filename;
@@ -74,6 +77,7 @@ async function YoloAnalysis(filename: string, _humanDetection?: IHumanDetection)
     if (_humanDetection !== null && _humanDetection !== undefined) {
         _humanDetection.source = 'Yolo3';
         _humanDetection.score = yolo3.score;
+        _humanDetection.filename = filename;
         _humanDetection.locations = result;
 
         let humanDetection: HumanDetection = new HumanDetection();
@@ -81,9 +85,14 @@ async function YoloAnalysis(filename: string, _humanDetection?: IHumanDetection)
             throw e;
         });
     }
+
+    buffer = await SaveImage(buffer, result);
+    File.WriteFile(filename, buffer);
+
+    return result;
 }
 
-async function ISapAnalysis(buffer: Buffer, _humanDetection?: IHumanDetection): Promise<void> {
+async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: IHumanDetection): Promise<HumanDetect.ILocation[]> {
     let isapHD: ISapHD = new ISapHD();
     isapHD.ip = Config.humanDetection.isap.ip;
     isapHD.port = Config.humanDetection.isap.port;
@@ -98,6 +107,7 @@ async function ISapAnalysis(buffer: Buffer, _humanDetection?: IHumanDetection): 
     if (_humanDetection !== null && _humanDetection !== undefined) {
         _humanDetection.source = 'ISap';
         _humanDetection.score = isapHD.score;
+        _humanDetection.filename = filename;
         _humanDetection.locations = result;
 
         let humanDetection: HumanDetection = new HumanDetection();
@@ -105,4 +115,39 @@ async function ISapAnalysis(buffer: Buffer, _humanDetection?: IHumanDetection): 
             throw e;
         });
     }
+
+    buffer = await SaveImage(buffer, result);
+    File.WriteFile(filename, buffer);
+
+    return result;
+}
+
+async function SaveImage(buffer: Buffer, result: HumanDetect.ILocation[]): Promise<Buffer> {
+    let rects: Draw.IRect[] = result.map((value, index, array) => {
+        return {
+            x: value.x,
+            y: value.y,
+            width: value.width,
+            height: value.height,
+            color: Config.humanDetection.output.color,
+            lineWidth: Config.humanDetection.output.lineWidth,
+            isFill: Config.humanDetection.output.isFill,
+        };
+    });
+
+    buffer = await Draw.Rectangle(rects, buffer).catch((e) => {
+        throw e;
+    });
+    buffer = await Draw.Resize(
+        buffer,
+        {
+            width: Config.humanDetection.output.width,
+            height: Config.humanDetection.output.height,
+        },
+        Config.humanDetection.output.quality,
+    ).catch((e) => {
+        throw e;
+    });
+
+    return buffer;
 }
