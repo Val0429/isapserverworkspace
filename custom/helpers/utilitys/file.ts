@@ -3,6 +3,11 @@ import * as Path from 'path';
 
 export namespace File {
     /**
+     * Assets path
+     */
+    export const assetsPath: string = RealPath('./workspace/custom/assets');
+
+    /**
      * Get real path
      * @param file
      */
@@ -54,11 +59,26 @@ export namespace File {
      */
     export function ReadFile(filename: string): Buffer {
         try {
-            let buffer: Buffer = Fs.readFileSync(filename);
+            let realpath: string = RealPath(filename);
+            let buffer: Buffer = Fs.readFileSync(realpath);
 
             return buffer;
         } catch (e) {
             throw e;
         }
+    }
+
+    /**
+     * File path to url
+     * @param filename
+     */
+    export function Path2Url(filename: string): string {
+        let realpath: string = RealPath(filename);
+        realpath = realpath
+            .replace(assetsPath, '')
+            .replace(/\\/g, '/')
+            .replace(/^\//, '');
+
+        return realpath;
     }
 }
