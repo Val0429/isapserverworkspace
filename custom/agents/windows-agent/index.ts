@@ -119,25 +119,29 @@ export class WindowsAgent extends Agent.Base<any> {
     }
 
     @Agent.Function({
-        inputType: "IDesktop",
         outputType: "IOutputDesktop",
         description: "Stream desktop image back."
     })
-    public Desktop(config: IDesktop): Observable<IOutputDesktop> {
-        config.interval = config.interval || 300;
-        return new Observable( (observer: Observer<IOutputDesktop>) => {
-            setInterval( () => {
-                let token = `take snapshot ${new Date().valueOf()}`;
-                console.time(token)
-                screenshot().then((image) => {
-                    console.timeEnd(token);
-                    console.log('length', image.length);
-                    //observer.next(img.toString('base64'));
-                    observer.next({ image });
-                });
-            }, config.interval);
-            // observer.complete();
+    public Desktop(): Observable<IOutputDesktop> {
+        return this.makeObservable( (observer, isStopped) => {
+            screenshot().then( (image) => {
+                observer.next({ image });
+                observer.complete();
+            });
         });
+        // return new Observable( (observer: Observer<IOutputDesktop>) => {
+        //     setInterval( () => {
+        //         let token = `take snapshot ${new Date().valueOf()}`;
+        //         console.time(token)
+        //         screenshot().then((image) => {
+        //             console.timeEnd(token);
+        //             console.log('length', image.length);
+        //             //observer.next(img.toString('base64'));
+        //             observer.next({ image });
+        //         });
+        //     }, config.interval);
+        //     // observer.complete();
+        // });
     }
 
     @Agent.Function({

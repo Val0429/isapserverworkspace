@@ -12,7 +12,7 @@ import './custom/agents';
 import { WindowsAgent } from './custom/agents';
 import { Observable } from 'rxjs';
 import { ParseObject } from 'core/cgi-package';
-import { FunctionRemote } from 'models/agents/libs';
+import { FunctionRemote, idGenerate } from 'models/agents/libs';
 // import * as p from 'path';
 // import * as fs from 'fs';
 // import { screenShots } from './cgi-bin/test/screen';
@@ -22,25 +22,56 @@ import { FunctionRemote } from 'models/agents/libs';
 
 console.log('agents?', JSON.stringify(Agent.RegistrationDelegator.getAllAgentTaskDescriptors(), null, 2) );
 
-// import { Restful } from 'helpers/cgi-helpers/core';
-// import { mouseEvents } from './cgi-bin/test/report';
-// import { FacebookUtils } from 'parse';
 
-// import { ObjectID } from 'mongodb';
+// (async () => {
+//     let user = await new Parse.Query(Parse.User)
+//         .equalTo("username", "Admin")
+//         .first();
 
-// let ob1 = new Observable( (observer) => {
-//     console.log('init...')
-//     setInterval( () => observer.next(new Date()), 1000 );
-// })
-// .finally( () => console.log('finally?!'))
-// .share();
+//     let frs = new WindowsAgent(null, {
+//         objectKey: "tEFebUdgn",
+//         user,
+//         syncDB: true
+//     });
 
-// let sup1 = ob1.subscribe( (data) => console.log('got', data));
-// let sup2 = ob1.subscribe( (data) => console.log('got', data));
-// setTimeout( () => {
-//     sup1.unsubscribe();
-//     sup2.unsubscribe();
-// }, 2000);
+//     try {
+//         await frs.Start().toPromise();
+//     } catch(e) {}
+
+//     let tt = FunctionRemote(frs.FreeMemory, frs)(null, {
+//         requestKey: "09x3FxQZSY",
+//         filter: {
+//             type: "FilterFunction",
+//             data: {
+//                 func: "return value.value % 1 === 0 ? true : false"
+//             }
+//         },
+//         scheduler: {
+//             type: "SchedulerInterval",
+//             data: {
+//                 initialDelayMs: 1000,
+//                 periodMs: 1000
+//             }
+//         },
+//         dataKeeping: {
+//             durationSeconds: 60
+//         }
+//     });
+//     let subscription = tt.subscribe( (free) => console.log('free memory: ', free), (e) => {
+//             console.log("Error", e);
+//         }, () => console.log('complete!') );
+
+//     setTimeout( () => {
+//         console.log('tick!');
+//         subscription.unsubscribe();
+//         setTimeout( () => {
+//             console.log('tick2!');
+//             frs.Dispose().toPromise();
+//         }, 5000)
+//     }, 5000);
+
+// })();
+
 
 
 Agent.SocketManager.sharedInstance().sjCheckedIn
@@ -49,50 +80,13 @@ Agent.SocketManager.sharedInstance().sjCheckedIn
     .subscribe( async (user) => {
         // let frs = new WindowsAgent(null, {
         //     user,
+        //     objectKey: "tEFebUdgn",
         //     syncDB: false
         // });
         // await frs.Start().toPromise();
 
         // let tt = FunctionRemote(frs.FreeMemory, frs)(null, {
-        //     filter: {
-        //         type: "FilterFunction",
-        //         data: {
-        //             ata: "return value.value % 1 === 0 ? true : false"
-        //         }
-        //     } as any,
-        //     scheduler: {
-        //         type: "SchedulerInterval",
-        //         data: {
-        //             initialDelayMs: 1000,
-        //             periodMs: 1000
-        //         }
-        //     },
-        // });
-        // tt.subscribe( (free) => console.log('free memory: ', free), (e) => {
-        //         console.log("Error", e);
-        //     } );
-
-
-        // let subscription = frs.FreeMemory()
-        //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
-        //         console.log("Error", e);
-        //         subscription.unsubscribe();
-        //     } );
-        // setTimeout( () => {
-        //     subscription.unsubscribe();
-        // }, 5000 );
-
-        // let subscription = FunctionRemote(frs.FreeMemory, frs)(null, {
-        //     filter: { type: "FilterJSONata", data: {
-        //         ata: "$number(value)%20=0?{'value': value}:null"
-        //     } }
-        // })
-        //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
-        //         console.log("Error", e);
-        //         subscription.unsubscribe();
-        //     } );
-
-        // let subscription = FunctionRemote(frs.FreeMemory, frs)(null, {
+        //     requestKey: "09x3FxQZSY",
         //     filter: {
         //         type: "FilterFunction",
         //         data: {
@@ -103,27 +97,82 @@ Agent.SocketManager.sharedInstance().sjCheckedIn
         //         type: "SchedulerInterval",
         //         data: {
         //             initialDelayMs: 1000,
-        //             periodMs: 3000
+        //             periodMs: 1000
         //         }
+        //     },
+        //     dataKeeping: {
+        //         durationSeconds: 60
         //     }
-        // })
-        //     .subscribe( (free) => console.log('free memory: ', free), (e) => {
+        // });
+        // tt.subscribe( (free) => console.log('free memory: ', free), (e) => {
         //         console.log("Error", e);
-        //         subscription.unsubscribe();
         //     } );
 
 
-        // let ob = frs.FreeMemory2();
-        // // (frs as any)["FreeMemory"](null, {
-        // //     filter: { type: "FilterJSONata", data: { ata: "$number(value)%2=0?{'value': value}:null" } }
-        // // })
-        // let sub1 = ob.subscribe( (free) => console.log('free memory: ', free), (e) => {
+        // let frs = new WindowsAgent(null, {
+        //     user,
+        //     objectKey: "tEFebUdgn",
+        //     syncDB: false
+        // });
+        // await frs.Start().toPromise();
+
+        // let tt = FunctionRemote(frs.Desktop, frs)(null, {
+        //     requestKey: "09x3FxQZSY2",
+        //     // filter: {
+        //     //     type: "FilterFunction",
+        //     //     data: {
+        //     //         func: "return value.value % 1 === 0 ? true : false"
+        //     //     }
+        //     // },
+        //     scheduler: {
+        //         type: "SchedulerInterval",
+        //         data: {
+        //             initialDelayMs: 1000,
+        //             periodMs: 1000
+        //         }
+        //     },
+        //     // dataKeeping: {
+        //     //     durationSeconds: 60
+        //     // }
+        // });
+        // tt.subscribe( (image) => console.log('image: ', image.image.length), (e) => {
         //         console.log("Error", e);
-        //         sub1.unsubscribe();
         //     } );
-        // let sub2 = ob.subscribe( (free) => {
-        //     sub2.unsubscribe();
-        // }, e => null);
+        
+
+    let frs = new WindowsAgent(null, {
+        objectKey: "tEFebUdgn",
+        user,
+        syncDB: false
+    });
+
+    try {
+        await frs.Start().toPromise();
+    } catch(e) {}
+
+    let tt = FunctionRemote(frs.FreeMemory, frs)(null, {
+        requestKey: "09x3FxQZSY",
+        filter: {
+            type: "FilterFunction",
+            data: {
+                func: "return value.value % 1 === 0 ? true : false"
+            }
+        },
+        scheduler: {
+            type: "SchedulerInterval",
+            data: {
+                initialDelayMs: 1,
+                periodMs: 1
+            }
+        },
+        dataKeeping: {
+            durationSeconds: 60
+        }
+    });
+    let subscription = tt.subscribe( (free) => console.log('free memory: ', free), (e) => {
+            console.log("Error", e);
+        }, () => console.log('complete!') );
+
 
     });
 
