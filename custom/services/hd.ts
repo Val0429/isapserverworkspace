@@ -3,19 +3,21 @@ import { Print, HumanDetect, Yolo3, ISapHD, File, Cms, Draw } from '../helpers';
 import * as Rx from 'rxjs';
 import { IHumanDetection, HumanDetection } from '../models';
 
+export const pulling: Rx.Subject<{}> = new Rx.Subject();
+
 (async function() {
-    let hd: Rx.Subject<{}> = new Rx.Subject();
+    let hd: Rx.Subject<Date> = new Rx.Subject<Date>();
 
     Config.humanDetection.cameraSources.forEach((value1, index1, array1) => {
         value1.channel.forEach((value2, index2, array2) => {
             hd.subscribe({
-                next: async () => {
+                next: async (now: Date) => {
                     try {
                         let snapshot = await Cms.GetSnapshot(Config.cms, value1.nvr, value2).catch((e) => {
                             throw e;
                         });
 
-                        let path: string = File.RealPath('./workspace/custom/assets/snapshots');
+                        let path: string = `${File.assetsPath}/snapshots`;
                         File.CreateFolder(path);
 
                         let _humanDetection: IHumanDetection = {
@@ -23,26 +25,28 @@ import { IHumanDetection, HumanDetection } from '../models';
                             nvr: value1.nvr,
                             channel: value2,
                             score: 0,
-                            filename: '',
+                            src: '',
                             locations: [],
-                            date: snapshot.date,
+                            date: now,
                         };
 
                         let tasks: Promise<any>[] = [];
 
                         if (Config.humanDetection.yolo.isEnable) {
-                            let filename: string = File.RealPath(`${path}/Yolo3_${value1.nvr}_${value2}_${snapshot.date.getTime()}.png`);
+                            let filename: string = `${path}/Yolo3_${value1.nvr}_${value2}_${now.getTime()}.png`;
                             tasks.push(YoloAnalysis(snapshot.buffer, filename, _humanDetection));
                         }
 
                         if (Config.humanDetection.isap.isEnable) {
-                            let filename: string = File.RealPath(`${path}/ISap_${value1.nvr}_${value2}_${snapshot.date.getTime()}.png`);
+                            let filename: string = `${path}/ISap_${value1.nvr}_${value2}_${now.getTime()}.png`;
                             tasks.push(ISapAnalysis(snapshot.buffer, filename, _humanDetection));
                         }
 
                         await Promise.all(tasks).catch((e) => {
                             throw e;
                         });
+
+                        pulling.next();
                     } catch (e) {
                         Print.MinLog(e, 'error');
                     }
@@ -55,7 +59,8 @@ import { IHumanDetection, HumanDetection } from '../models';
         .startWith(0)
         .subscribe({
             next: (x) => {
-                hd.next();
+                let now: Date = new Date(new Date().setMilliseconds(0));
+                hd.next(now);
             },
         });
 })();
@@ -77,11 +82,11 @@ async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     if (_humanDetection !== null && _humanDetection !== undefined) {
         _humanDetection.source = 'Yolo3';
         _humanDetection.score = yolo3.score;
-        _humanDetection.filename = filename;
+        _humanDetection.src = File.Path2Url(filename);
         _humanDetection.locations = result;
 
         let humanDetection: HumanDetection = new HumanDetection();
-        await humanDetection.save(_humanDetection, { useMasterKey: true }).fail((e) => {
+        await humanDetection.save(_humanDetection, { useMasterKey: true }).catch((e) => {
             throw e;
         });
     }
@@ -107,11 +112,11 @@ async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     if (_humanDetection !== null && _humanDetection !== undefined) {
         _humanDetection.source = 'ISap';
         _humanDetection.score = isapHD.score;
-        _humanDetection.filename = filename;
+        _humanDetection.src = File.Path2Url(filename);
         _humanDetection.locations = result;
 
         let humanDetection: HumanDetection = new HumanDetection();
-        await humanDetection.save(_humanDetection, { useMasterKey: true }).fail((e) => {
+        await humanDetection.save(_humanDetection, { useMasterKey: true }).catch((e) => {
             throw e;
         });
     }

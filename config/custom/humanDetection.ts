@@ -1,4 +1,7 @@
-import { ICameraSource } from '../../custom/models';
+export interface ICameraSource {
+    nvr: number;
+    channel: number[];
+}
 
 export interface IYolo {
     path: string;
@@ -32,7 +35,7 @@ export interface Config {
 }
 
 let config: Config = {
-    intervalSecond: 300,
+    intervalSecond: 60,
     cameraSources: [
         {
             nvr: 1,

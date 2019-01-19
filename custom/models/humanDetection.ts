@@ -6,7 +6,7 @@ export interface IHumanDetection {
     nvr: number;
     channel: number;
     score: number;
-    filename: string;
+    src: string;
     locations: HumanDetect.ILocation[];
     date: Date;
 }
