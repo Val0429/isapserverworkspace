@@ -35,7 +35,7 @@ export interface Config {
 }
 
 let config: Config = {
-    intervalSecond: 60,
+    intervalSecond: 300,
     cameraSources: [
         {
             nvr: 1,

@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse, Socket } from 'core/cgi-package';
-import { HumanDetection, IRequest, IResponse } from '../../custom/models';
+import { HumanDetection, IRequest, IResponse, IWs } from '../../custom/models';
 import { pulling } from '../../custom/services/hd';
 
 let action = new Action({
@@ -28,8 +28,9 @@ action.get(
  */
 action.ws(async (data) => {
     let _socket: Socket = data.socket;
-
     let _type: any = '';
+
+    let isLive: boolean = true;
 
     pulling.subscribe({
         next: async () => {
@@ -37,15 +38,27 @@ action.ws(async (data) => {
                 type: _type,
             };
 
-            _socket.send(await GetGroup(chart));
+            if (isLive) {
+                _socket.send(await GetGroup(chart));
+            }
         },
     });
 
     _socket.io.on('message', async (data) => {
-        let chart: IRequest.IHumanDetection.IChartR = JSON.parse(data);
+        let _input: IWs<any> = JSON.parse(data);
 
-        _type = chart.type;
-        _socket.send(await GetGroup(chart));
+        console.log(data);
+
+        if (_input.type === 'mode') {
+            let _content: boolean = _input.content;
+
+            isLive = _content;
+        } else if (_input.type === 'search') {
+            let _content: IRequest.IHumanDetection.IChartR = _input.content;
+
+            _type = _content.type;
+            _socket.send(await GetGroup(_content));
+        }
     });
 });
 
@@ -55,10 +68,10 @@ action.ws(async (data) => {
  */
 async function GetGroup(input: IRequest.IHumanDetection.IChartR) {
     let _count: number = input.count || 10;
-    let _date: Date = input.date || new Date();
+    let _date: Date = new Date(input.date || new Date());
 
     let humanDetections: HumanDetection[] = await new Parse.Query(HumanDetection)
-        .lessThanOrEqualTo('date', new Date(_date))
+        .lessThanOrEqualTo('date', _date)
         .equalTo('source', input.type)
         .descending('date')
         .limit(_count * 3)

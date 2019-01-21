@@ -6,3 +6,4 @@ export * from './humanDetection';
 export * from './request/index';
 export * from './response/index';
 export * from './userCustom';
+export * from './ws';
