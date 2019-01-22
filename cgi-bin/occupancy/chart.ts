@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse, Socket } from 'core/cgi-package';
-import { Persons, IRequest, IResponse, IWs } from '../../custom/models';
+import { Humans, IRequest, IResponse, IWs } from '../../custom/models';
 import * as Rx from 'rxjs';
 import { Config } from 'core/config.gen';
 
@@ -71,7 +71,7 @@ async function GetGroup(input: IRequest.IOccupancy.IChartR): Promise<IResponse.I
     let _count: number = input.count || 10;
     let _date: Date = new Date(input.date || new Date());
 
-    let persons: Persons[] = await new Parse.Query(Persons)
+    let humanss: Humans[] = await new Parse.Query(Humans)
         .lessThanOrEqualTo('date', _date)
         .equalTo('source', input.type)
         .descending('date')
@@ -79,8 +79,8 @@ async function GetGroup(input: IRequest.IOccupancy.IChartR): Promise<IResponse.I
         .find();
 
     let dates: Date[] = [];
-    for (let i: number = 0; i < persons.length; i++) {
-        let date: Date = persons[i].getValue('date');
+    for (let i: number = 0; i < humanss.length; i++) {
+        let date: Date = humanss[i].getValue('date');
 
         if (dates.map(Number).indexOf(date.getTime()) < 0) {
             dates.push(date);
@@ -107,7 +107,7 @@ async function GetGroup(input: IRequest.IOccupancy.IChartR): Promise<IResponse.I
     dates.length = _count;
     dates = dates.reverse();
 
-    let groups: IResponse.IOccupancy.IChartR[] = persons.reduce<IResponse.IOccupancy.IChartR[]>((previousValue, currentValue, currentIndex, array) => {
+    let groups: IResponse.IOccupancy.IChartR[] = humanss.reduce<IResponse.IOccupancy.IChartR[]>((previousValue, currentValue, currentIndex, array) => {
         let name: string = `Camera_${currentValue.getValue('nvr')}_${currentValue.getValue('channel')}`;
 
         let names: string[] = previousValue.map((value, index, array) => {
@@ -189,7 +189,7 @@ async function GetGroup(input: IRequest.IOccupancy.IChartR): Promise<IResponse.I
  * Get last date
  */
 async function GetLastDate(): Promise<Date> {
-    let last: Persons[] = await new Parse.Query(Persons)
+    let last: Humans[] = await new Parse.Query(Humans)
         .ascending('date')
         .limit(1)
         .find();

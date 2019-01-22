@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse } from 'core/cgi-package';
-import { Persons, IRequest, IResponse } from '../../custom/models';
+import { Humans, IRequest, IResponse } from '../../custom/models';
 
 let action = new Action({
     loginRequired: false,
@@ -22,17 +22,17 @@ action.get(
         let _count: number = _input.count || 100;
         let _page: number = _input.page || 1;
 
-        let total: number = await new Parse.Query(Persons).count();
+        let total: number = await new Parse.Query(Humans).count();
 
-        let query: Parse.Query<Persons> = new Parse.Query(Persons);
+        let query: Parse.Query<Humans> = new Parse.Query(Humans);
         if (_input.type !== null && _input.type !== undefined) {
             query.equalTo('source', _input.type);
         }
         query.skip(_count * (_page - 1)).limit(_count);
 
-        let persons: Persons[] = await query.find();
+        let humanss: Humans[] = await query.find();
 
-        let datas: IResponse.IOccupancy.IData[] = persons.map((value, index, array) => {
+        let datas: IResponse.IOccupancy.IData[] = humanss.map((value, index, array) => {
             return {
                 objectId: value.id,
                 name: `Camera_${value.getValue('nvr')}_${value.getValue('channel')}`,

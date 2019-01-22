@@ -46,13 +46,13 @@ let config: Config = {
         path: './workspace/custom/assets/yolo3',
         filename: 'darknet.exe',
         target_score: 0.2,
-        isEnable: false,
+        isEnable: true,
     },
     isap: {
         ip: '172.16.10.159',
         port: 8000,
         target_score: 0.25,
-        isEnable: true,
+        isEnable: false,
     },
     output: {
         width: 1280,
