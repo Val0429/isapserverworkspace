@@ -1,8 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse, Socket } from 'core/cgi-package';
-import { HumanDetection, IRequest, IResponse, IWs } from '../../custom/models';
+import { Persons, IRequest, IResponse, IWs } from '../../custom/models';
 import * as Rx from 'rxjs';
 import { Config } from 'core/config.gen';
-import { Print } from 'workspace/custom/helpers';
 
 export const pulling: Rx.Subject<{}> = new Rx.Subject();
 
@@ -16,9 +15,9 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IHumanDetection.IChartR;
+type InputR = IRequest.IOccupancy.IChartR;
 
-type OutputR = IResponse.IHumanDetection.IChartR[];
+type OutputR = IResponse.IOccupancy.IChartR[];
 
 action.get(
     { inputType: 'InputR' },
@@ -38,7 +37,7 @@ action.ws(async (data) => {
 
     pulling.subscribe({
         next: async () => {
-            let chart: IRequest.IHumanDetection.IChartR = {
+            let chart: IRequest.IOccupancy.IChartR = {
                 type: _type,
             };
 
@@ -56,7 +55,7 @@ action.ws(async (data) => {
 
             isLive = _content;
         } else if (_input.type === 'search') {
-            let _content: IRequest.IHumanDetection.IChartR = _input.content;
+            let _content: IRequest.IOccupancy.IChartR = _input.content;
 
             _type = _content.type;
             _socket.send(await GetGroup(_content));
@@ -68,11 +67,11 @@ action.ws(async (data) => {
  * Get group data
  * @param input
  */
-async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IResponse.IHumanDetection.IChartR[]> {
+async function GetGroup(input: IRequest.IOccupancy.IChartR): Promise<IResponse.IOccupancy.IChartR[]> {
     let _count: number = input.count || 10;
     let _date: Date = new Date(input.date || new Date());
 
-    let humanDetections: HumanDetection[] = await new Parse.Query(HumanDetection)
+    let persons: Persons[] = await new Parse.Query(Persons)
         .lessThanOrEqualTo('date', _date)
         .equalTo('source', input.type)
         .descending('date')
@@ -80,8 +79,8 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IRespo
         .find();
 
     let dates: Date[] = [];
-    for (let i: number = 0; i < humanDetections.length; i++) {
-        let date: Date = humanDetections[i].getValue('date');
+    for (let i: number = 0; i < persons.length; i++) {
+        let date: Date = persons[i].getValue('date');
 
         if (dates.map(Number).indexOf(date.getTime()) < 0) {
             dates.push(date);
@@ -108,14 +107,14 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IRespo
     dates.length = _count;
     dates = dates.reverse();
 
-    let groups: IResponse.IHumanDetection.IChartR[] = humanDetections.reduce<IResponse.IHumanDetection.IChartR[]>((previousValue, currentValue, currentIndex, array) => {
+    let groups: IResponse.IOccupancy.IChartR[] = persons.reduce<IResponse.IOccupancy.IChartR[]>((previousValue, currentValue, currentIndex, array) => {
         let name: string = `Camera_${currentValue.getValue('nvr')}_${currentValue.getValue('channel')}`;
 
         let names: string[] = previousValue.map((value, index, array) => {
             return value.name;
         });
 
-        let data: IResponse.IHumanDetection.IData = {
+        let data: IResponse.IOccupancy.IData = {
             objectId: currentValue.id,
             count: currentValue.getValue('locations').length,
             source: currentValue.getValue('source'),
@@ -137,7 +136,7 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IRespo
         return previousValue;
     }, []);
 
-    let output: IResponse.IHumanDetection.IChartR[] = groups.map((value, index, array) => {
+    let outputs: IResponse.IOccupancy.IChartR[] = groups.map((value, index, array) => {
         return {
             name: value.name,
             date: value.date,
@@ -146,7 +145,7 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IRespo
     });
 
     for (let i: number = 0; i < dates.length; i++) {
-        output = output.map((value, index, array) => {
+        outputs = outputs.map((value, index, array) => {
             let data = groups[index].datas.find((value, index, array) => {
                 return dates[i] !== undefined && value.date.getTime() === dates[i].getTime();
             });
@@ -163,8 +162,8 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IRespo
         });
     }
 
-    if (output.length === 0) {
-        output.push({
+    if (outputs.length === 0) {
+        outputs.push({
             name: '',
             date: new Date(_date),
             datas: dates.map((value, index, array) => {
@@ -179,18 +178,18 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IRespo
         });
     }
 
-    output = output.sort((a, b) => {
+    outputs = outputs.sort((a, b) => {
         return a.name > b.name ? 1 : -1;
     });
 
-    return output;
+    return outputs;
 }
 
 /**
  * Get last date
  */
 async function GetLastDate(): Promise<Date> {
-    let last: HumanDetection[] = await new Parse.Query(HumanDetection)
+    let last: Persons[] = await new Parse.Query(Persons)
         .ascending('date')
         .limit(1)
         .find();

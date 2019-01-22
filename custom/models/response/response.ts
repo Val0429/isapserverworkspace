@@ -1,6 +1,6 @@
-import * as IHumanDetection from './humanDetection';
+import * as IOccupancy from './occupancy';
 
-export { IHumanDetection };
+export { IOccupancy };
 
 export interface IDataList<T> {
     total: number;

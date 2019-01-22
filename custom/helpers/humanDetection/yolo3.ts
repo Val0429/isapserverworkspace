@@ -1,5 +1,5 @@
 import { execFile } from 'child_process';
-import { HumanDetect } from './';
+import { HumanDetection } from './';
 import { File } from '../utilitys';
 
 export class Yolo3 {
@@ -51,11 +51,11 @@ export class Yolo3 {
         this._isInitialization = false;
 
         if (this._path === null || this._path === undefined) {
-            throw HumanDetect.Message.SettingAppPathError;
+            throw HumanDetection.Message.SettingAppPathError;
         }
 
         if (this._filename === null || this._filename === undefined || this._filename === '') {
-            throw HumanDetect.Message.SettingAppFileError;
+            throw HumanDetection.Message.SettingAppFileError;
         }
 
         this._isInitialization = true;
@@ -64,13 +64,13 @@ export class Yolo3 {
     /**
      * Do human detection analysis
      */
-    public async Analysis(file: string, isShow: boolean = false): Promise<HumanDetect.ILocation[]> {
+    public async Analysis(file: string, isShow: boolean = false): Promise<HumanDetection.ILocation[]> {
         if (!this._isInitialization) {
-            throw HumanDetect.Message.NotInitialization;
+            throw HumanDetection.Message.NotInitialization;
         }
 
         if (file === null || file === undefined || file === '') {
-            throw HumanDetect.Message.SettingInputFileError;
+            throw HumanDetection.Message.SettingInputFileError;
         }
 
         file = File.RealPath(file);
@@ -96,20 +96,14 @@ export class Yolo3 {
         });
 
         let results: string[] = result.split(/\r\n/g);
-        let hds: HumanDetect.ILocation[] = results
+        let hds: HumanDetection.ILocation[] = results
             .filter((value, index, array) => {
                 return value && value.indexOf('Person') >= 0;
             })
-            .map<HumanDetect.ILocation>((value, index, array) => {
+            .map<HumanDetection.ILocation>((value, index, array) => {
                 let str: string[] = value.match(/[0-9]+/g);
 
-                return {
-                    score: Math.round(parseFloat(str[0])) / 100,
-                    x: parseFloat(str[1]),
-                    y: parseFloat(str[2]),
-                    width: parseFloat(str[3]),
-                    height: parseFloat(str[4]),
-                };
+                return { score: Math.round(parseFloat(str[0])) / 100, x: parseFloat(str[1]), y: parseFloat(str[2]), width: parseFloat(str[3]), height: parseFloat(str[4]) };
             });
 
         return hds;

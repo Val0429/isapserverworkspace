@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse } from 'core/cgi-package';
-import { HumanDetection, IRequest, IResponse } from '../../custom/models';
+import { Persons, IRequest, IResponse } from '../../custom/models';
 
 let action = new Action({
     loginRequired: false,
@@ -11,9 +11,9 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IHumanDetection.IIndexR & IRequest.IDataList;
+type InputR = IRequest.IOccupancy.IIndexR & IRequest.IDataList;
 
-type OutputR = IResponse.IDataList<IResponse.IHumanDetection.IData[]>;
+type OutputR = IResponse.IDataList<IResponse.IOccupancy.IData[]>;
 
 action.get(
     { inputType: 'InputR' },
@@ -22,17 +22,17 @@ action.get(
         let _count: number = _input.count || 100;
         let _page: number = _input.page || 1;
 
-        let total: number = await new Parse.Query(HumanDetection).count();
+        let total: number = await new Parse.Query(Persons).count();
 
-        let query: Parse.Query<HumanDetection> = new Parse.Query(HumanDetection);
+        let query: Parse.Query<Persons> = new Parse.Query(Persons);
         if (_input.type !== null && _input.type !== undefined) {
             query.equalTo('source', _input.type);
         }
         query.skip(_count * (_page - 1)).limit(_count);
 
-        let humanDetections: HumanDetection[] = await query.find();
+        let persons: Persons[] = await query.find();
 
-        let content: IResponse.IHumanDetection.IData[] = humanDetections.map((value, index, array) => {
+        let datas: IResponse.IOccupancy.IData[] = persons.map((value, index, array) => {
             return {
                 objectId: value.id,
                 name: `Camera_${value.getValue('nvr')}_${value.getValue('channel')}`,
@@ -47,7 +47,7 @@ action.get(
             total: total,
             page: _page,
             count: _count,
-            content: content,
+            content: datas,
         };
     },
 );

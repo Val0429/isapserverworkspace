@@ -1,5 +1,5 @@
 import * as HttpClient from 'request';
-import { HumanDetect } from './';
+import { HumanDetection } from './';
 import { Regex, Parser } from '../../helpers';
 
 export class ISapHD {
@@ -51,11 +51,11 @@ export class ISapHD {
         this._isInitialization = false;
 
         if (this._ip === null || this._ip === undefined || !Regex.IsIp(this._ip)) {
-            throw HumanDetect.Message.SettingIpError;
+            throw HumanDetection.Message.SettingIpError;
         }
 
         if (this._port === null || this._port === undefined || !Regex.IsNum(this._port.toString()) || this._port < 1 || this._port > 65535) {
-            throw HumanDetect.Message.SettingPortError;
+            throw HumanDetection.Message.SettingPortError;
         }
 
         this._isInitialization = true;
@@ -64,9 +64,9 @@ export class ISapHD {
     /**
      * Do human detection analysis
      */
-    public async Analysis(image: Buffer): Promise<HumanDetect.ILocation[]> {
+    public async Analysis(image: Buffer): Promise<HumanDetection.ILocation[]> {
         if (!this._isInitialization) {
-            throw HumanDetect.Message.NotInitialization;
+            throw HumanDetection.Message.NotInitialization;
         }
 
         let url: string = `http://${this._ip}:${this._port}/classification/human`;
@@ -105,14 +105,8 @@ export class ISapHD {
             throw result.messsage;
         }
 
-        let hds: HumanDetect.ILocation[] = result.data.human_locations.map<HumanDetect.ILocation>((value, index, array) => {
-            return {
-                score: Math.round(value.score * 100) / 100,
-                x: value.rectangle.x1,
-                y: value.rectangle.y1,
-                width: Math.abs(value.rectangle.x1 - value.rectangle.x2),
-                height: Math.abs(value.rectangle.y1 - value.rectangle.y2),
-            };
+        let hds: HumanDetection.ILocation[] = result.data.human_locations.map<HumanDetection.ILocation>((value, index, array) => {
+            return { score: Math.round(value.score * 100) / 100, x: value.rectangle.x1, y: value.rectangle.y1, width: Math.abs(value.rectangle.x1 - value.rectangle.x2), height: Math.abs(value.rectangle.y1 - value.rectangle.y2) };
         });
 
         return hds;

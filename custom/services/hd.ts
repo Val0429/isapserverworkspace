@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
-import { Print, HumanDetect, Yolo3, ISapHD, File, Cms, Draw } from '../helpers';
+import { Print, HumanDetection, Yolo3, ISapHD, File, Cms, Draw } from '../helpers';
 import * as Rx from 'rxjs';
-import { IHumanDetection, HumanDetection } from '../models';
+import { IPersons, Persons } from '../models';
 import { pulling } from '../../cgi-bin/humanDetection/chart';
 
 (async function() {
@@ -19,7 +19,7 @@ import { pulling } from '../../cgi-bin/humanDetection/chart';
                         let path: string = `${File.assetsPath}/snapshots`;
                         File.CreateFolder(path);
 
-                        let _humanDetection: IHumanDetection = {
+                        let _humanDetection: IPersons = {
                             source: '',
                             nvr: value1.nvr,
                             channel: value2,
@@ -64,7 +64,7 @@ import { pulling } from '../../cgi-bin/humanDetection/chart';
         });
 })();
 
-async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: IHumanDetection): Promise<HumanDetect.ILocation[]> {
+async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: IPersons): Promise<HumanDetection.ILocation[]> {
     File.WriteFile(filename, buffer);
 
     let yolo3: Yolo3 = new Yolo3();
@@ -74,7 +74,7 @@ async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
 
     yolo3.Initialization();
 
-    let result: HumanDetect.ILocation[] = await yolo3.Analysis(filename).catch((e) => {
+    let result: HumanDetection.ILocation[] = await yolo3.Analysis(filename).catch((e) => {
         throw e;
     });
 
@@ -84,7 +84,7 @@ async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
         _humanDetection.src = File.Path2Url(filename);
         _humanDetection.locations = result;
 
-        let humanDetection: HumanDetection = new HumanDetection();
+        let humanDetection: Persons = new Persons();
         await humanDetection.save(_humanDetection, { useMasterKey: true }).catch((e) => {
             throw e;
         });
@@ -96,7 +96,7 @@ async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     return result;
 }
 
-async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: IHumanDetection): Promise<HumanDetect.ILocation[]> {
+async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: IPersons): Promise<HumanDetection.ILocation[]> {
     let isapHD: ISapHD = new ISapHD();
     isapHD.ip = Config.humanDetection.isap.ip;
     isapHD.port = Config.humanDetection.isap.port;
@@ -104,7 +104,7 @@ async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
 
     isapHD.Initialization();
 
-    let result: HumanDetect.ILocation[] = await isapHD.Analysis(buffer).catch((e) => {
+    let result: HumanDetection.ILocation[] = await isapHD.Analysis(buffer).catch((e) => {
         throw e;
     });
 
@@ -114,7 +114,7 @@ async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
         _humanDetection.src = File.Path2Url(filename);
         _humanDetection.locations = result;
 
-        let humanDetection: HumanDetection = new HumanDetection();
+        let humanDetection: Persons = new Persons();
         await humanDetection.save(_humanDetection, { useMasterKey: true }).catch((e) => {
             throw e;
         });
@@ -126,7 +126,7 @@ async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     return result;
 }
 
-async function SaveImage(buffer: Buffer, result: HumanDetect.ILocation[]): Promise<Buffer> {
+async function SaveImage(buffer: Buffer, result: HumanDetection.ILocation[]): Promise<Buffer> {
     let rects: Draw.IRect[] = result.map((value, index, array) => {
         return {
             x: value.x,

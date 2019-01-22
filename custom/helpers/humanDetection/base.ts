@@ -1,4 +1,4 @@
-export namespace HumanDetect {
+export namespace HumanDetection {
     /**
      *
      */
