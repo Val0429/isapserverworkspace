@@ -2,8 +2,7 @@ import { Config } from 'core/config.gen';
 import { Print, HumanDetect, Yolo3, ISapHD, File, Cms, Draw } from '../helpers';
 import * as Rx from 'rxjs';
 import { IHumanDetection, HumanDetection } from '../models';
-
-export const pulling: Rx.Subject<{}> = new Rx.Subject();
+import { pulling } from '../../cgi-bin/humanDetection/chart';
 
 (async function() {
     let hd: Rx.Subject<Date> = new Rx.Subject<Date>();

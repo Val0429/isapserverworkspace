@@ -9,5 +9,6 @@ export interface IData {
 
 export interface IChartR {
     name: string;
+    date: Date;
     datas: IData[];
 }

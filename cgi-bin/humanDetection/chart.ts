@@ -1,6 +1,10 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse, Socket } from 'core/cgi-package';
 import { HumanDetection, IRequest, IResponse, IWs } from '../../custom/models';
-import { pulling } from '../../custom/services/hd';
+import * as Rx from 'rxjs';
+import { Config } from 'core/config.gen';
+import { Print } from 'workspace/custom/helpers';
+
+export const pulling: Rx.Subject<{}> = new Rx.Subject();
 
 let action = new Action({
     loginRequired: false,
@@ -47,8 +51,6 @@ action.ws(async (data) => {
     _socket.io.on('message', async (data) => {
         let _input: IWs<any> = JSON.parse(data);
 
-        console.log(data);
-
         if (_input.type === 'mode') {
             let _content: boolean = _input.content;
 
@@ -66,7 +68,7 @@ action.ws(async (data) => {
  * Get group data
  * @param input
  */
-async function GetGroup(input: IRequest.IHumanDetection.IChartR) {
+async function GetGroup(input: IRequest.IHumanDetection.IChartR): Promise<IResponse.IHumanDetection.IChartR[]> {
     let _count: number = input.count || 10;
     let _date: Date = new Date(input.date || new Date());
 
@@ -86,8 +88,21 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR) {
         }
     }
 
+    let last: Date = await GetLastDate();
+    if (last !== undefined && _date > last) {
+        while (true) {
+            let date: Date = new Date(new Date(dates[0]).setSeconds(dates[0].getSeconds() + Config.humanDetection.intervalSecond));
+            if (date > _date) {
+                break;
+            }
+
+            dates.unshift(date);
+        }
+    }
+
     for (let i: number = dates.length; i < _count; i++) {
-        dates.push(undefined);
+        let date: Date = i === 0 ? new Date(_date) : new Date(new Date(dates[i - 1]).setSeconds(dates[i - 1].getSeconds() - Config.humanDetection.intervalSecond));
+        dates.push(date);
     }
 
     dates.length = _count;
@@ -112,6 +127,7 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR) {
         if (index < 0) {
             previousValue.push({
                 name: name,
+                date: new Date(_date),
                 datas: [data],
             });
         } else {
@@ -124,18 +140,42 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR) {
     let output: IResponse.IHumanDetection.IChartR[] = groups.map((value, index, array) => {
         return {
             name: value.name,
+            date: value.date,
             datas: [],
         };
     });
 
     for (let i: number = 0; i < dates.length; i++) {
         output = output.map((value, index, array) => {
-            value.datas.push(
-                groups[index].datas.find((value, index, array) => {
-                    return dates[i] !== undefined && value.date.getTime() === dates[i].getTime();
-                }),
-            );
+            let data = groups[index].datas.find((value, index, array) => {
+                return dates[i] !== undefined && value.date.getTime() === dates[i].getTime();
+            });
+            data = data || {
+                objectId: '',
+                count: 0,
+                source: input.type,
+                src: '',
+                date: dates[i],
+            };
+
+            value.datas.push(data);
             return value;
+        });
+    }
+
+    if (output.length === 0) {
+        output.push({
+            name: '',
+            date: new Date(_date),
+            datas: dates.map((value, index, array) => {
+                return {
+                    objectId: '',
+                    count: 0,
+                    source: input.type,
+                    src: '',
+                    date: value,
+                };
+            }),
         });
     }
 
@@ -144,4 +184,20 @@ async function GetGroup(input: IRequest.IHumanDetection.IChartR) {
     });
 
     return output;
+}
+
+/**
+ * Get last date
+ */
+async function GetLastDate(): Promise<Date> {
+    let last: HumanDetection[] = await new Parse.Query(HumanDetection)
+        .ascending('date')
+        .limit(1)
+        .find();
+    let lastDate: Date = undefined;
+    if (last.length > 0) {
+        lastDate = last[0].getValue('date');
+    }
+
+    return lastDate;
 }
