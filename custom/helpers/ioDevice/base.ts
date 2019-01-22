@@ -196,12 +196,19 @@ export class IoDevice {
      * Write message to device
      * @param message
      */
-    public async Write(message: string): Promise<void> {
+    public async Write(buffer: Buffer): Promise<void>;
+    public async Write(message: string): Promise<void>;
+    public async Write(data: Buffer | string): Promise<void> {
         if (!this._isInitialization) {
             throw IoDevice.Message.DeviceNotInitialization;
         }
 
-        let buffer: Buffer = Buffer.from(`${this._startChar}${message}${this._endChar}`, this._encoding);
+        let buffer: Buffer;
+        if (typeof data === 'string') {
+            buffer = Buffer.from(`${this._startChar}${data}${this._endChar}`, this._encoding);
+        } else {
+            buffer = Buffer.concat([Buffer.from(this._startChar), data, Buffer.from(this._endChar)]);
+        }
 
         await new Promise((resolve, reject) => {
             try {
