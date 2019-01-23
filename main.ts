@@ -143,7 +143,7 @@ Agent.SocketManager.sharedInstance().sjCheckedIn
     let frs = new WindowsAgent(null, {
         objectKey: "tEFebUdgn",
         user,
-        syncDB: false
+        syncDB: true
     });
 
     try {
@@ -165,9 +165,10 @@ Agent.SocketManager.sharedInstance().sjCheckedIn
                 periodMs: 1
             }
         },
+        outputEvent: true,
         dataKeeping: {
-            durationSeconds: 60
-        }
+            durationSeconds: 600
+        },
     });
     let subscription = tt.subscribe( (free) => console.log('free memory: ', free), (e) => {
             console.log("Error", e);
