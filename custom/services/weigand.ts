@@ -29,7 +29,11 @@ import { Print, Weigand, DateTime } from '../helpers';
 
         weigand.Initialization();
 
-        await weigand.Write35BitCard(469, 83645, 21);
+        setTimeout(async () => {
+            await weigand.Write35BitCard(469, 83737, 21);
+            await weigand.Write35BitCard(469, 83645, 21);
+            await weigand.Write35BitCard(469, 72247, 21);
+        }, 100);
 
         // let card: number = 12345678;
         // await weigand.WriteCard(card, Weigand.MaxCardNumber.WG26);

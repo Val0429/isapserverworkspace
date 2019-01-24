@@ -41,14 +41,14 @@ export class Weigand extends IoDevice {
             .map(Number);
 
         let p2: number = cards.reduce((previousValue, currentValue, currentIndex, array) => {
-            return previousValue + (p2s.indexOf(currentIndex + 2) > 0 ? currentValue : 0);
+            return previousValue + (p2s.indexOf(currentIndex + 2) >= 0 ? currentValue : 0);
         });
         p2 = p2 % 2 === 1 ? 1 : 0;
 
         let p1: number = cards.reduce((previousValue, currentValue, currentIndex, array) => {
-            return (currentIndex === 1 ? 0 : previousValue) + (p1s.indexOf(currentIndex + 2) > 0 ? currentValue : 0);
+            return previousValue + (p1s.indexOf(currentIndex + 2) >= 0 ? currentValue : 0);
         });
-        p1 = (p1 + p2) % 2 === 1 ? 0 : 1;
+        p1 = (p1 + p2 - cards[0]) % 2 === 1 ? 0 : 1;
 
         let p3: number = cards.reduce((previousValue, currentValue, currentIndex, array) => {
             return previousValue + currentValue;
