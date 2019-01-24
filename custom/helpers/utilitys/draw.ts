@@ -12,9 +12,15 @@ export namespace Draw {
     /**
      *
      */
-    export interface IRect extends ISize {
+    export interface ILocation extends ISize {
         x: number;
         y: number;
+    }
+
+    /**
+     *
+     */
+    export interface IRect extends ILocation {
         color: string;
         lineWidth: number;
         isFill: boolean;

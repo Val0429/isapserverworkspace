@@ -106,7 +106,13 @@ export class ISapHD {
         }
 
         let hds: HumanDetection.ILocation[] = result.data.human_locations.map<HumanDetection.ILocation>((value, index, array) => {
-            return { score: Math.round(value.score * 100) / 100, x: value.rectangle.x1, y: value.rectangle.y1, width: Math.abs(value.rectangle.x1 - value.rectangle.x2), height: Math.abs(value.rectangle.y1 - value.rectangle.y2) };
+            return {
+                score: Math.round(value.score * 100) / 100,
+                x: value.rectangle.x1,
+                y: value.rectangle.y1,
+                width: Math.abs(value.rectangle.x1 - value.rectangle.x2),
+                height: Math.abs(value.rectangle.y1 - value.rectangle.y2),
+            };
         });
 
         return hds;

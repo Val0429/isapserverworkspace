@@ -1,13 +1,11 @@
+import { Draw } from '../';
+
 export namespace HumanDetection {
     /**
      *
      */
-    export interface ILocation {
+    export interface ILocation extends Draw.ILocation {
         score: number;
-        x: number;
-        y: number;
-        width: number;
-        height: number;
     }
 
     /**

@@ -103,7 +103,13 @@ export class Yolo3 {
             .map<HumanDetection.ILocation>((value, index, array) => {
                 let str: string[] = value.match(/[0-9]+/g);
 
-                return { score: Math.round(parseFloat(str[0])) / 100, x: parseFloat(str[1]), y: parseFloat(str[2]), width: parseFloat(str[3]), height: parseFloat(str[4]) };
+                return {
+                    score: Math.round(parseFloat(str[0])) / 100,
+                    x: parseFloat(str[1]),
+                    y: parseFloat(str[2]),
+                    width: parseFloat(str[3]),
+                    height: parseFloat(str[4]),
+                };
             });
 
         return hds;
