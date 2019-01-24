@@ -18,6 +18,7 @@ export interface IIsap {
 }
 
 export interface IOutput {
+    path: string;
     width: number;
     height: number;
     lineWidth: number;
@@ -39,7 +40,7 @@ let config: Config = {
     cameraSources: [
         {
             nvr: 1,
-            channel: [1, 2],
+            channel: [11, 12, 13],
         },
     ],
     yolo: {
@@ -55,6 +56,7 @@ let config: Config = {
         isEnable: false,
     },
     output: {
+        path: 'humanDetection',
         width: 1280,
         height: 720,
         lineWidth: 13,

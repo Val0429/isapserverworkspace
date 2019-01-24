@@ -16,7 +16,7 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
                             throw e;
                         });
 
-                        let path: string = `${File.assetsPath}/snapshots`;
+                        let path: string = `${File.assetsPath}/${Config.humanDetection.output.path}`;
                         File.CreateFolder(path);
 
                         let humans: IHumans = {
@@ -32,13 +32,13 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
                         let tasks: Promise<any>[] = [];
 
                         if (Config.humanDetection.yolo.isEnable) {
-                            let filename: string = `${path}/Yolo3_${value1.nvr}_${value2}_${now.getTime()}.png`;
-                            tasks.push(YoloAnalysis(snapshot.buffer, filename, humans));
+                            let filename: string = `Yolo3_${value1.nvr}_${value2}_${now.getTime()}.png`;
+                            tasks.push(YoloAnalysis(snapshot.buffer, path, filename, humans));
                         }
 
                         if (Config.humanDetection.isap.isEnable) {
-                            let filename: string = `${path}/ISap_${value1.nvr}_${value2}_${now.getTime()}.png`;
-                            tasks.push(ISapAnalysis(snapshot.buffer, filename, humans));
+                            let filename: string = `ISap_${value1.nvr}_${value2}_${now.getTime()}.png`;
+                            tasks.push(ISapAnalysis(snapshot.buffer, path, filename, humans));
                         }
 
                         await Promise.all(tasks).catch((e) => {
@@ -64,8 +64,8 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
         });
 })();
 
-async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: IHumans): Promise<HumanDetection.ILocation[]> {
-    File.WriteFile(filename, buffer);
+async function YoloAnalysis(buffer: Buffer, path: string, filename: string, _humanDetection?: IHumans): Promise<HumanDetection.ILocation[]> {
+    File.WriteFile(`${path}/${filename}`, buffer);
 
     let yolo3: Yolo3 = new Yolo3();
     yolo3.path = Config.humanDetection.yolo.path;
@@ -74,14 +74,14 @@ async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
 
     yolo3.Initialization();
 
-    let result: HumanDetection.ILocation[] = await yolo3.Analysis(filename).catch((e) => {
+    let result: HumanDetection.ILocation[] = await yolo3.Analysis(`${path}/${filename}`).catch((e) => {
         throw e;
     });
 
     if (_humanDetection !== null && _humanDetection !== undefined) {
         _humanDetection.source = 'Yolo3';
         _humanDetection.score = yolo3.score;
-        _humanDetection.src = File.Path2Url(filename);
+        _humanDetection.src = filename;
         _humanDetection.locations = result;
 
         let humanDetection: Humans = new Humans();
@@ -91,12 +91,12 @@ async function YoloAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     }
 
     buffer = await SaveImage(buffer, result);
-    File.WriteFile(filename, buffer);
+    File.WriteFile(`${path}/${filename}`, buffer);
 
     return result;
 }
 
-async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: IHumans): Promise<HumanDetection.ILocation[]> {
+async function ISapAnalysis(buffer: Buffer, path: string, filename: string, _humanDetection?: IHumans): Promise<HumanDetection.ILocation[]> {
     let isapHD: ISapHD = new ISapHD();
     isapHD.ip = Config.humanDetection.isap.ip;
     isapHD.port = Config.humanDetection.isap.port;
@@ -111,7 +111,7 @@ async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     if (_humanDetection !== null && _humanDetection !== undefined) {
         _humanDetection.source = 'ISap';
         _humanDetection.score = isapHD.score;
-        _humanDetection.src = File.Path2Url(filename);
+        _humanDetection.src = filename;
         _humanDetection.locations = result;
 
         let humanDetection: Humans = new Humans();
@@ -121,7 +121,7 @@ async function ISapAnalysis(buffer: Buffer, filename: string, _humanDetection?: 
     }
 
     buffer = await SaveImage(buffer, result);
-    File.WriteFile(filename, buffer);
+    File.WriteFile(`${path}/${filename}`, buffer);
 
     return result;
 }

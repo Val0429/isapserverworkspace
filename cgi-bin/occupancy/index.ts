@@ -1,4 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse } from 'core/cgi-package';
+import { Config } from 'core/config.gen';
 import { Humans, IRequest, IResponse } from '../../custom/models';
 
 let action = new Action({
@@ -38,7 +39,7 @@ action.get(
                 name: `Camera_${value.getValue('nvr')}_${value.getValue('channel')}`,
                 count: value.getValue('locations').length,
                 source: value.getValue('source'),
-                src: value.getValue('src'),
+                src: `${Config.humanDetection.output.path}/${value.getValue('src')}`,
                 date: value.getValue('date'),
             };
         });

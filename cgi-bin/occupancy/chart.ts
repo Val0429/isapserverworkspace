@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Parse, Socket } from 'core/cgi-package';
+import { Config } from 'core/config.gen';
 import { Humans, IRequest, IResponse, IWs } from '../../custom/models';
 import * as Rx from 'rxjs';
-import { Config } from 'core/config.gen';
 
 export const pulling: Rx.Subject<{}> = new Rx.Subject();
 
@@ -118,7 +118,7 @@ async function GetGroup(input: IRequest.IOccupancy.IChartR): Promise<IResponse.I
             objectId: currentValue.id,
             count: currentValue.getValue('locations').length,
             source: currentValue.getValue('source'),
-            src: currentValue.getValue('src'),
+            src: `${Config.humanDetection.output.path}/${currentValue.getValue('src')}`,
             date: currentValue.getValue('date'),
         };
 

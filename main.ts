@@ -8,7 +8,8 @@ import './custom/shells/index';
 // import './custom/services/hd';
 // import './custom/services/weigand';
 
-app.use('/snapshots', express.static('workspace/custom/assets/snapshots'));
+app.use(`/${Config.humanDetection.output.path}`, express.static(`workspace/custom/assets/${Config.humanDetection.output.path}`));
+app.use(`/${Config.demographic.output.path}`, express.static(`workspace/custom/assets/${Config.demographic.output.path}`));
 
 setTimeout(() => {
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: '- Local:  ' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });
