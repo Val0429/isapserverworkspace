@@ -1,3 +1,5 @@
+import * as Os from 'os';
+
 export namespace Utility {
     /**
      * String pad left some char
@@ -26,5 +28,41 @@ export namespace Utility {
         regex = regex.replace(/\|$/, '');
 
         return new RegExp(regex, 'g');
+    }
+
+    /**
+     * Interface with ip
+     */
+    export interface IIp {
+        name: string;
+        family: string;
+        ip: string;
+    }
+
+    /**
+     * Get ip list
+     */
+    export function GetIp(): IIp[] {
+        let ifaces = Os.networkInterfaces();
+
+        let ips: IIp[] = new Array<IIp>()
+            .concat(
+                ...Object.keys(ifaces).map((ifname) => {
+                    return ifaces[ifname].map((iface) => {
+                        if ('IPv4' === iface.family && iface.internal === false) {
+                            return {
+                                name: ifname,
+                                family: iface.family,
+                                ip: iface.address,
+                            };
+                        }
+                    });
+                }),
+            )
+            .filter((value, index, array) => {
+                return value !== undefined;
+            });
+
+        return ips;
     }
 }
