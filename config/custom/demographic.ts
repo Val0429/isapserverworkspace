@@ -3,11 +3,6 @@ export interface ICameraSource {
     channel: number[];
 }
 
-export interface IAzure {
-    key: string;
-    isEnable: boolean;
-}
-
 export interface IIsap {
     ip: string;
     port: number;
@@ -20,28 +15,25 @@ export interface IOutput {
 }
 
 export interface Config {
+    intervalSecond: number;
     cameraSources: ICameraSource[];
-    azure: IAzure;
     isap: IIsap;
     output: IOutput;
 }
 
 let config: Config = {
+    intervalSecond: 1,
     cameraSources: [
         {
             nvr: 7,
             channel: [18, 19],
         },
     ],
-    azure: {
-        key: '',
-        isEnable: true,
-    },
     isap: {
         ip: '172.16.10.159',
-        port: 8000,
-        margin: 0.25,
-        isEnable: false,
+        port: 8008,
+        margin: 0.9,
+        isEnable: true,
     },
     output: {
         path: 'demographic',
