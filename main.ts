@@ -2,9 +2,12 @@ import * as express from 'express';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
 import { Print, Utility } from './custom/helpers';
+
 import './custom/schedulers/index';
 import './custom/shells/index';
-// import './custom/services/demo';
+
+import './custom/services/demo';
+// import './custom/services/frs';
 // import './custom/services/hd';
 // import './custom/services/weigand';
 
@@ -18,4 +21,4 @@ setTimeout(() => {
     if (ips.length > 0) {
         Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: '- Network:' }, { message: `http://${ips[0].ip}:${Config.core.port}`, color: Print.FontColor.cyan });
     }
-}, 30);
+}, 10);

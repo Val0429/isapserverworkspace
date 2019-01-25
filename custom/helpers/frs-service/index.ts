@@ -2,6 +2,9 @@ import * as request from 'request';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Log } from 'helpers/utility';
 import { LogTitle, IFRSServiceConfig, RequestLoginReason } from './libs/core';
+import * as FRSCore from './libs/core';
+
+export { FRSCore };
 
 /**
  * Submodules should take this into consideration:

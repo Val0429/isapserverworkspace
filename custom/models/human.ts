@@ -1,6 +1,17 @@
 import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
 
-export interface IHuman {}
+export interface IHuman {
+    source: string;
+    nvr: number;
+    channel: number;
+    camera: string;
+    faceId: string;
+    name: string;
+    src: string;
+    date: Date;
+    age: number;
+    gender: string;
+}
 
 @registerSubclass()
-export class human extends ParseObject<IHuman> {}
+export class Human extends ParseObject<IHuman> {}

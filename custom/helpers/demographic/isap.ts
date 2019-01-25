@@ -106,8 +106,6 @@ export class ISapDemo {
             throw result.message;
         }
 
-        Print.MinLog(JSON.stringify(result));
-
         let feature: ISapDemo.IFeature = {
             age: result.age,
             gender: result.gender,

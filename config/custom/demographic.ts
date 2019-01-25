@@ -16,6 +16,7 @@ export interface IOutput {
 
 export interface Config {
     intervalSecond: number;
+    source: 'frs' | 'cms';
     cameraSources: ICameraSource[];
     isap: IIsap;
     output: IOutput;
@@ -23,6 +24,7 @@ export interface Config {
 
 let config: Config = {
     intervalSecond: 1,
+    source: 'frs',
     cameraSources: [
         {
             nvr: 7,
