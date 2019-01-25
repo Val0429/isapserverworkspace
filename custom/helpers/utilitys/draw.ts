@@ -1,4 +1,5 @@
 import * as Canvas from 'canvas';
+import { Print } from './print';
 
 export namespace Draw {
     /**
@@ -137,6 +138,29 @@ export namespace Draw {
             ctx.drawImage(image, 0, 0, size.width, size.height);
 
             return canvas.toBuffer('image/jpeg', { quality: quality });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    export async function CutImage(locations: ILocation[], buffer: Buffer, quality: number = 1): Promise<Buffer[]> {
+        try {
+            let buffers: Buffer[] = [];
+            let canvas = Canvas.createCanvas();
+            let ctx = canvas.getContext('2d');
+
+            let image: Canvas.Image = await LoadImage(buffer);
+
+            locations.forEach((value, index, array) => {
+                canvas.width = value.width;
+                canvas.height = value.height;
+
+                ctx.drawImage(image, value.x, value.y, value.width, value.height, 0, 0, value.width, value.height);
+
+                buffers.push(canvas.toBuffer('image/jpeg', { quality: quality }));
+            });
+
+            return buffers;
         } catch (e) {
             throw e;
         }
