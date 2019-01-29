@@ -1,9 +1,8 @@
 import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
 
 export interface IHuman {
+    analyst: string;
     source: string;
-    nvr: number;
-    channel: number;
     camera: string;
     faceId: string;
     name: string;

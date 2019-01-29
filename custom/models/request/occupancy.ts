@@ -1,9 +1,10 @@
 export interface IIndexR {
-    type?: 'Yolo3' | 'ISap';
+    analyst?: 'ISap' | 'Yolo3';
 }
 
 export interface IChartR {
-    type: 'Yolo3' | 'ISap';
+    analyst: 'ISap' | 'Yolo3';
+    frequency: 'none' | 'month' | 'day' | 'hour';
     date?: Date;
     count?: number;
 }

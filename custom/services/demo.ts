@@ -1,5 +1,5 @@
 import { Config } from 'core/config.gen';
-import { Print, Cms, Face, Draw, File, DateTime, ISapDemo, FRSService, FRSCore, Parser } from '../helpers';
+import { Print, Cms, Face, Draw, File, Utility, ISapDemo, FRSService, FRSCore, Parser } from '../helpers';
 import * as Rx from 'rxjs';
 import { IHuman, Human } from '../models';
 
@@ -43,15 +43,16 @@ function CMS(): void {
                             throw e;
                         });
 
+                        let camera: string = `Camera_${Utility.PadLeft(value1.nvr.toString(), '0', 2)}_${Utility.PadLeft(value2.toString(), '0', 2)}`;
+
                         let human: IHuman = {
-                            source: '',
-                            nvr: value1.nvr,
-                            channel: value2,
-                            camera: '',
+                            analyst: '',
+                            source: 'cms',
+                            camera: camera,
+                            faceId: '',
+                            name: 'unknown',
                             src: '',
                             date: now,
-                            name: '',
-                            faceId: '',
                             age: 0,
                             gender: '',
                         };
@@ -60,7 +61,7 @@ function CMS(): void {
 
                         buffers.forEach((buffer, index, array) => {
                             if (Config.demographic.isap.isEnable) {
-                                let filename: string = `ISap_${value1.nvr}_${value2}_${index}_${now.getTime()}.png`;
+                                let filename: string = `ISap_${camera}_${now.getTime()}_${index}.png`;
                                 tasks.push(ISapAnalysis(buffer, path, filename, human));
                             }
                         });
@@ -116,6 +117,11 @@ function FRS(): void {
         let faceId: string = face.verify_face_id;
         let name: string = '';
 
+        let image: string = await frs.snapshot(face).catch((e) => {
+            throw e;
+        });
+        let buffer: Buffer = Buffer.from(image, Parser.Encoding.base64);
+
         if (face.type === FRSCore.UserType.Recognized) {
             name = face.person_info.fullname;
         } else if (face.type === FRSCore.UserType.UnRecognized) {
@@ -123,14 +129,13 @@ function FRS(): void {
         }
 
         let human: IHuman = {
-            source: '',
-            nvr: 0,
-            channel: 0,
+            analyst: '',
+            source: 'frs',
             camera: camera,
+            faceId: faceId,
+            name: name,
             src: '',
             date: now,
-            name: name,
-            faceId: faceId,
             age: 0,
             gender: '',
         };
@@ -139,8 +144,6 @@ function FRS(): void {
 
         if (Config.demographic.isap.isEnable) {
             let filename: string = `ISap_${camera}_${now.getTime()}.png`;
-            let image: string = await frs.snapshot(face);
-            let buffer: Buffer = Buffer.from(image, Parser.Encoding.base64);
 
             tasks.push(ISapAnalysis(buffer, path, filename, human));
         }
@@ -165,7 +168,7 @@ async function ISapAnalysis(buffer: Buffer, path: string, filename: string, _hum
         });
 
         if (_human !== null && _human !== undefined) {
-            _human.source = 'ISap';
+            _human.analyst = 'ISap';
             _human.src = filename;
             _human.age = result.age;
             _human.gender = result.gender.toLowerCase();

@@ -1,15 +1,24 @@
 import { Config } from 'core/config.gen';
-import { Print, HumanDetection, Yolo3, ISapHD, File, Cms, Draw } from '../helpers';
+import { Print, HumanDetection, Yolo3, ISapHD, File, Cms, Draw, Utility } from '../helpers';
 import * as Rx from 'rxjs';
 import { IHumans, Humans } from '../models';
-import { pulling } from '../../cgi-bin/occupancy/chart';
+import { pulling$ } from '../../cgi-bin/occupancy/chart';
 
 (async function() {
-    let hd: Rx.Subject<Date> = new Rx.Subject<Date>();
+    let hd$: Rx.Subject<Date> = new Rx.Subject<Date>();
+
+    let success$: Rx.Subject<{}> = new Rx.Subject();
+    let next$: Rx.Subject<{}> = new Rx.Subject();
+
+    let cameraCount: number = [].concat(
+        ...Config.humanDetection.cameraSources.map((value, index, array) => {
+            return value.channel;
+        }),
+    ).length;
 
     Config.humanDetection.cameraSources.forEach((value1, index1, array1) => {
         value1.channel.forEach((value2, index2, array2) => {
-            hd.subscribe({
+            hd$.subscribe({
                 next: async (now: Date) => {
                     try {
                         let snapshot = await Cms.GetSnapshot(Config.cms, value1.nvr, value2).catch((e) => {
@@ -19,10 +28,12 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
                         let path: string = `${File.assetsPath}/${Config.humanDetection.output.path}`;
                         File.CreateFolder(path);
 
+                        let camera: string = `Camera_${Utility.PadLeft(value1.nvr.toString(), '0', 2)}_${Utility.PadLeft(value2.toString(), '0', 2)}`;
+
                         let humans: IHumans = {
-                            source: '',
-                            nvr: value1.nvr,
-                            channel: value2,
+                            analyst: '',
+                            source: 'cms',
+                            camera: camera,
                             score: 0,
                             src: '',
                             locations: [],
@@ -32,12 +43,12 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
                         let tasks: Promise<any>[] = [];
 
                         if (Config.humanDetection.yolo.isEnable) {
-                            let filename: string = `Yolo3_${value1.nvr}_${value2}_${now.getTime()}.png`;
+                            let filename: string = `Yolo3_${camera}_${now.getTime()}.png`;
                             tasks.push(YoloAnalysis(snapshot.buffer, path, filename, humans));
                         }
 
                         if (Config.humanDetection.isap.isEnable) {
-                            let filename: string = `ISap_${value1.nvr}_${value2}_${now.getTime()}.png`;
+                            let filename: string = `ISap_${camera}_${now.getTime()}.png`;
                             tasks.push(ISapAnalysis(snapshot.buffer, path, filename, humans));
                         }
 
@@ -45,7 +56,7 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
                             throw e;
                         });
 
-                        pulling.next();
+                        success$.next();
                     } catch (e) {
                         Print.MinLog(e, 'error');
                     }
@@ -54,12 +65,20 @@ import { pulling } from '../../cgi-bin/occupancy/chart';
         });
     });
 
+    success$.bufferCount(cameraCount).subscribe({
+        next: () => {
+            pulling$.next();
+            next$.next();
+        },
+    });
+
     Rx.Observable.interval(Config.humanDetection.intervalSecond * 1000)
         .startWith(0)
+        .zip(next$.startWith(0))
         .subscribe({
             next: (x) => {
                 let now: Date = new Date(new Date().setMilliseconds(0));
-                hd.next(now);
+                hd$.next(now);
             },
         });
 })();
@@ -79,7 +98,7 @@ async function YoloAnalysis(buffer: Buffer, path: string, filename: string, _hum
     });
 
     if (_humanDetection !== null && _humanDetection !== undefined) {
-        _humanDetection.source = 'Yolo3';
+        _humanDetection.analyst = 'Yolo3';
         _humanDetection.score = yolo3.score;
         _humanDetection.src = filename;
         _humanDetection.locations = result;
@@ -90,7 +109,9 @@ async function YoloAnalysis(buffer: Buffer, path: string, filename: string, _hum
         });
     }
 
-    buffer = await SaveImage(buffer, result);
+    buffer = await SaveImage(buffer, result).catch((e) => {
+        throw e;
+    });
     File.WriteFile(`${path}/${filename}`, buffer);
 
     return result;
@@ -109,7 +130,7 @@ async function ISapAnalysis(buffer: Buffer, path: string, filename: string, _hum
     });
 
     if (_humanDetection !== null && _humanDetection !== undefined) {
-        _humanDetection.source = 'ISap';
+        _humanDetection.analyst = 'ISap';
         _humanDetection.score = isapHD.score;
         _humanDetection.src = filename;
         _humanDetection.locations = result;
@@ -120,7 +141,9 @@ async function ISapAnalysis(buffer: Buffer, path: string, filename: string, _hum
         });
     }
 
-    buffer = await SaveImage(buffer, result);
+    buffer = await SaveImage(buffer, result).catch((e) => {
+        throw e;
+    });
     File.WriteFile(`${path}/${filename}`, buffer);
 
     return result;

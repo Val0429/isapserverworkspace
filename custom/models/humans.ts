@@ -2,9 +2,9 @@ import { registerSubclass, ParseObject } from '../../../helpers/parse-server/par
 import { HumanDetection } from '../helpers';
 
 export interface IHumans {
+    analyst: string;
     source: string;
-    nvr: number;
-    channel: number;
+    camera: string;
     score: number;
     src: string;
     locations: HumanDetection.ILocation[];
