@@ -16,12 +16,12 @@ var events: Config[] = [
     /// 3000 for Visitor ///////////////////////
     /// 3600 - Register
     ["3601", "TryRegister"],
-    ["3602", "PickFloor", `
-        /**
-         * Floors object pick by Person.
-         */
-        floor: Floors;
-    `, ["Floors"]],
+    // ["3602", "PickFloor", `
+    //     /**
+    //      * Floors object pick by Person.
+    //      */
+    //     floor: Floors;
+    // `, ["Floors"]],
     ["3603", "ScanIDCard", `
         /**
          * Extracted info from ID Card.
