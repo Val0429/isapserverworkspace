@@ -16,7 +16,7 @@ export namespace DateTime {
      * @param dateTime
      * @param format
      */
-    export function DateTime2String(dateTime: Date, format: Format | string): string {
+    export function DateTime2String(dateTime: Date, format: Format | string = Format.default): string {
         let regex: RegExp = Utility.Array2RegExp(_formats);
 
         let formats: string[] = format.match(regex) || [];

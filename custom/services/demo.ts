@@ -1,17 +1,44 @@
 import { Config } from 'core/config.gen';
 import { Print, Cms, Face, Draw, File, Utility, ISapDemo, FRSService, FRSCore, Parser } from '../helpers';
 import * as Rx from 'rxjs';
-import { IHuman, Human } from '../models';
+import { IHuman, Human, IHumanSummary, HumanSummary } from '../models';
 
 (async function() {
+    let save$: Rx.Subject<IHuman> = SaveQueue();
+
     if (Config.demographic.source === 'cms') {
-        CMS();
+        CMS(save$);
     } else {
-        FRS();
+        FRS(save$);
     }
 })();
 
-function CMS(): void {
+/**
+ *
+ */
+function SaveQueue(): Rx.Subject<IHuman> {
+    let save$: Rx.Subject<IHuman> = new Rx.Subject();
+    let next$: Rx.Subject<{}> = new Rx.Subject();
+
+    save$
+        .zip(next$.startWith(0))
+        .map((x) => {
+            return x[0];
+        })
+        .subscribe({
+            next: async (x) => {
+                await Save(x);
+                next$.next();
+            },
+        });
+
+    return save$;
+}
+
+/**
+ *
+ */
+function CMS(save$: Rx.Subject<IHuman>): void {
     let demo$: Rx.Subject<Date> = new Rx.Subject<Date>();
 
     let success$: Rx.Subject<{}> = new Rx.Subject();
@@ -62,7 +89,7 @@ function CMS(): void {
                         buffers.forEach((buffer, index, array) => {
                             if (Config.demographic.isap.isEnable) {
                                 let filename: string = `ISap_${camera}_${now.getTime()}_${index}.png`;
-                                tasks.push(ISapAnalysis(buffer, path, filename, human));
+                                tasks.push(ISapAnalysis(save$, buffer, path, filename, human));
                             }
                         });
 
@@ -96,7 +123,10 @@ function CMS(): void {
         });
 }
 
-function FRS(): void {
+/**
+ *
+ */
+function FRS(save$: Rx.Subject<IHuman>): void {
     let path: string = `${File.assetsPath}/${Config.demographic.output.path}`;
     File.CreateFolder(path);
 
@@ -145,7 +175,7 @@ function FRS(): void {
         if (Config.demographic.isap.isEnable) {
             let filename: string = `ISap_${camera}_${now.getTime()}.png`;
 
-            tasks.push(ISapAnalysis(buffer, path, filename, human));
+            tasks.push(ISapAnalysis(save$, buffer, path, filename, human));
         }
 
         await Promise.all(tasks).catch((e) => {
@@ -154,7 +184,14 @@ function FRS(): void {
     });
 }
 
-async function ISapAnalysis(buffer: Buffer, path: string, filename: string, _human?: IHuman): Promise<ISapDemo.IFeature> {
+/**
+ *
+ * @param buffer
+ * @param path
+ * @param filename
+ * @param human
+ */
+async function ISapAnalysis(save$: Rx.Subject<IHuman>, buffer: Buffer, path: string, filename: string, human?: IHuman): Promise<ISapDemo.IFeature> {
     let isap: ISapDemo = new ISapDemo();
     isap.ip = Config.demographic.isap.ip;
     isap.port = Config.demographic.isap.port;
@@ -167,20 +204,112 @@ async function ISapAnalysis(buffer: Buffer, path: string, filename: string, _hum
             throw e;
         });
 
-        if (_human !== null && _human !== undefined) {
-            _human.analyst = 'ISap';
-            _human.src = filename;
-            _human.age = result.age;
-            _human.gender = result.gender.toLowerCase();
+        if (human !== null && human !== undefined) {
+            human.analyst = 'ISap';
+            human.src = filename;
+            human.age = result.age;
+            human.gender = result.gender;
 
-            let human: Human = new Human();
-            await human.save(_human, { useMasterKey: true }).catch((e) => {
-                throw e;
-            });
+            save$.next(human);
         }
 
         File.WriteFile(`${path}/${filename}`, buffer);
 
         return result;
     } catch (e) {}
+}
+
+/**
+ *
+ * @param _humans
+ */
+async function Save(_human: IHuman): Promise<void> {
+    try {
+        let tasks: Promise<any>[] = [];
+
+        tasks.push(SaveHuman(_human));
+        tasks.push(SaveHumanSummary(_human, 'month'));
+        tasks.push(SaveHumanSummary(_human, 'day'));
+        tasks.push(SaveHumanSummary(_human, 'hour'));
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ *
+ * @param _humans
+ */
+async function SaveHuman(_human: IHuman): Promise<void> {
+    try {
+        let human: Human = new Human();
+        await human.save(_human, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ *
+ * @param _humans
+ * @param type
+ */
+async function SaveHumanSummary(_human: IHuman, type: 'month' | 'day' | 'hour'): Promise<void> {
+    try {
+        let date: Date = new Date(_human.date);
+        if (type === 'month') {
+            date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
+        } else if (type === 'day') {
+            date = new Date(date.setHours(0, 0, 0, 0));
+        } else if (type === 'hour') {
+            date = new Date(date.setMinutes(0, 0, 0));
+        }
+
+        let humanSummary: HumanSummary = await new Parse.Query(HumanSummary)
+            .equalTo('analyst', _human.analyst)
+            .equalTo('source', _human.source)
+            .equalTo('camera', _human.camera)
+            .equalTo('type', type)
+            .equalTo('date', date)
+            .first()
+            .catch((e) => {
+                throw e;
+            });
+
+        if (humanSummary === null || humanSummary === undefined) {
+            let _humanSummary: IHumanSummary = {
+                analyst: _human.analyst,
+                source: _human.source,
+                camera: _human.camera,
+                type: type,
+                date: date,
+                total: 1,
+                male: _human.gender === 'male' ? 1 : 0,
+                ages: [_human.age],
+            };
+
+            humanSummary = new HumanSummary();
+            await humanSummary.save(_humanSummary, { useMasterKey: true }).catch((e) => {
+                throw e;
+            });
+        } else {
+            let data = {
+                total: humanSummary.getValue('total') + 1,
+                male: humanSummary.getValue('male') + (_human.gender === 'male' ? 1 : 0),
+                ages: humanSummary.getValue('ages').concat(_human.age),
+            };
+
+            await humanSummary.save(data, { useMasterKey: true }).catch((e) => {
+                throw e;
+            });
+        }
+    } catch (e) {
+        throw e;
+    }
 }

@@ -65,53 +65,57 @@ export class Yolo3 {
      * Do human detection analysis
      */
     public async Analysis(file: string, isShow: boolean = false): Promise<HumanDetection.ILocation[]> {
-        if (!this._isInitialization) {
-            throw HumanDetection.Message.NotInitialization;
-        }
-
-        if (file === null || file === undefined || file === '') {
-            throw HumanDetection.Message.SettingInputFileError;
-        }
-
-        file = File.RealPath(file);
-
-        let options: string[] = ['detector', 'test', './data/openimages.data', './cfg/yolov3-openimages.cfg', './weights/yolov3-openimages.weights', '-ext_output', '-i', '0', '-thresh', String(this._score), file];
-        if (!isShow) {
-            options.push('-dont_show');
-        }
-        let result: string = await new Promise<string>((resolve, reject) => {
-            try {
-                execFile(this._filename, options, { cwd: this._path }, (error, stdout) => {
-                    if (error) {
-                        return reject(error);
-                    }
-
-                    resolve(stdout);
-                });
-            } catch (e) {
-                return reject(e);
+        try {
+            if (!this._isInitialization) {
+                throw HumanDetection.Message.NotInitialization;
             }
-        }).catch((e) => {
-            throw e;
-        });
 
-        let results: string[] = result.split(/\r\n/g);
-        let hds: HumanDetection.ILocation[] = results
-            .filter((value, index, array) => {
-                return value && value.indexOf('Person') >= 0;
-            })
-            .map<HumanDetection.ILocation>((value, index, array) => {
-                let str: string[] = value.match(/[0-9]+/g);
+            if (file === null || file === undefined || file === '') {
+                throw HumanDetection.Message.SettingInputFileError;
+            }
 
-                return {
-                    score: Math.round(parseFloat(str[0])) / 100,
-                    x: parseFloat(str[1]),
-                    y: parseFloat(str[2]),
-                    width: parseFloat(str[3]),
-                    height: parseFloat(str[4]),
-                };
+            file = File.RealPath(file);
+
+            let options: string[] = ['detector', 'test', './data/openimages.data', './cfg/yolov3-openimages.cfg', './weights/yolov3-openimages.weights', '-ext_output', '-i', '0', '-thresh', String(this._score), file];
+            if (!isShow) {
+                options.push('-dont_show');
+            }
+            let result: string = await new Promise<string>((resolve, reject) => {
+                try {
+                    execFile(this._filename, options, { cwd: this._path }, (error, stdout) => {
+                        if (error) {
+                            return reject(error);
+                        }
+
+                        resolve(stdout);
+                    });
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
             });
 
-        return hds;
+            let results: string[] = result.split(/\r\n/g);
+            let hds: HumanDetection.ILocation[] = results
+                .filter((value, index, array) => {
+                    return value && value.indexOf('Person') >= 0;
+                })
+                .map<HumanDetection.ILocation>((value, index, array) => {
+                    let str: string[] = value.match(/[0-9]+/g);
+
+                    return {
+                        score: Math.round(parseFloat(str[0])) / 100,
+                        x: parseFloat(str[1]),
+                        y: parseFloat(str[2]),
+                        width: parseFloat(str[3]),
+                        height: parseFloat(str[4]),
+                    };
+                });
+
+            return hds;
+        } catch (e) {
+            throw e;
+        }
     }
 }

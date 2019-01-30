@@ -6,9 +6,9 @@ import { Print, Utility } from './custom/helpers';
 import './custom/schedulers/index';
 import './custom/shells/index';
 
-import './custom/services/demo';
+// import './custom/services/demo';
 // import './custom/services/frs';
-import './custom/services/hd';
+// import './custom/services/hd';
 // import './custom/services/weigand';
 
 app.use(`/${Config.humanDetection.output.path}`, express.static(`workspace/custom/assets/${Config.humanDetection.output.path}`));

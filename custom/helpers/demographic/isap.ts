@@ -66,52 +66,56 @@ export class ISapDemo {
      * Do demographic analysis
      */
     public async Analysis(image: Buffer): Promise<ISapDemo.IFeature> {
-        if (!this._isInitialization) {
-            throw Demographic.Message.NotInitialization;
-        }
-
-        let url: string = `http://${this._ip}:${this._port}/demographic/ageGender`;
-
-        let result: ISapDemo.IResponse = await new Promise<ISapDemo.IResponse>((resolve, reject) => {
-            try {
-                HttpClient(
-                    {
-                        url: url,
-                        method: 'post',
-                        encoding: null,
-                        json: true,
-                        body: {
-                            face_image64: image.toString(Parser.Encoding.base64),
-                            margin: this._margin,
-                        },
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
+        try {
+            if (!this._isInitialization) {
+                throw Demographic.Message.NotInitialization;
             }
-        }).catch((e) => {
+
+            let url: string = `http://${this._ip}:${this._port}/demographic/ageGender`;
+
+            let result: ISapDemo.IResponse = await new Promise<ISapDemo.IResponse>((resolve, reject) => {
+                try {
+                    HttpClient(
+                        {
+                            url: url,
+                            method: 'post',
+                            encoding: null,
+                            json: true,
+                            body: {
+                                face_image64: image.toString(Parser.Encoding.base64),
+                                margin: this._margin,
+                            },
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                            }
+
+                            resolve(body);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            if (result.message.toLowerCase() !== 'ok') {
+                throw result.message;
+            }
+
+            let feature: ISapDemo.IFeature = {
+                age: result.age,
+                gender: result.gender.toLowerCase(),
+            };
+
+            return feature;
+        } catch (e) {
             throw e;
-        });
-
-        if (result.message.toLowerCase() !== 'ok') {
-            throw result.message;
         }
-
-        let feature: ISapDemo.IFeature = {
-            age: result.age,
-            gender: result.gender,
-        };
-
-        return feature;
     }
 }
 

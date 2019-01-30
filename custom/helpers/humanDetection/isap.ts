@@ -65,57 +65,61 @@ export class ISapHD {
      * Do human detection analysis
      */
     public async Analysis(image: Buffer): Promise<HumanDetection.ILocation[]> {
-        if (!this._isInitialization) {
-            throw HumanDetection.Message.NotInitialization;
-        }
-
-        let url: string = `http://${this._ip}:${this._port}/classification/human`;
-
-        let result: ISapHD.IResponse = await new Promise<ISapHD.IResponse>((resolve, reject) => {
-            try {
-                HttpClient(
-                    {
-                        url: url,
-                        method: 'post',
-                        encoding: null,
-                        json: true,
-                        body: {
-                            image64: image.toString(Parser.Encoding.base64),
-                            target_score: this._score,
-                        },
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
+        try {
+            if (!this._isInitialization) {
+                throw HumanDetection.Message.NotInitialization;
             }
-        }).catch((e) => {
+
+            let url: string = `http://${this._ip}:${this._port}/classification/human`;
+
+            let result: ISapHD.IResponse = await new Promise<ISapHD.IResponse>((resolve, reject) => {
+                try {
+                    HttpClient(
+                        {
+                            url: url,
+                            method: 'post',
+                            encoding: null,
+                            json: true,
+                            body: {
+                                image64: image.toString(Parser.Encoding.base64),
+                                target_score: this._score,
+                            },
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                            }
+
+                            resolve(body);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            if (result.messsage.toLowerCase() !== 'ok') {
+                throw result.messsage;
+            }
+
+            let hds: HumanDetection.ILocation[] = result.data.human_locations.map<HumanDetection.ILocation>((value, index, array) => {
+                return {
+                    score: Math.round(value.score * 100) / 100,
+                    x: value.rectangle.x1,
+                    y: value.rectangle.y1,
+                    width: Math.abs(value.rectangle.x1 - value.rectangle.x2),
+                    height: Math.abs(value.rectangle.y1 - value.rectangle.y2),
+                };
+            });
+
+            return hds;
+        } catch (e) {
             throw e;
-        });
-
-        if (result.messsage.toLowerCase() !== 'ok') {
-            throw result.messsage;
         }
-
-        let hds: HumanDetection.ILocation[] = result.data.human_locations.map<HumanDetection.ILocation>((value, index, array) => {
-            return {
-                score: Math.round(value.score * 100) / 100,
-                x: value.rectangle.x1,
-                y: value.rectangle.y1,
-                width: Math.abs(value.rectangle.x1 - value.rectangle.x2),
-                height: Math.abs(value.rectangle.y1 - value.rectangle.y2),
-            };
-        });
-
-        return hds;
     }
 }
 
