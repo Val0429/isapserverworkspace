@@ -2,7 +2,7 @@ import { Config } from 'core/config.gen';
 import { Print, HumanDetection, Yolo3, ISapHD, File, Cms, Draw, Utility, DateTime } from '../helpers';
 import * as Rx from 'rxjs';
 import { IHumans, Humans, IHumansSummary, HumansSummary } from '../models';
-import { pulling$ } from '../../cgi-bin/occupancy/chart';
+import { pulling$ } from '../../cgi-bin/occupancy';
 
 (async function() {
     let save$: Rx.Subject<IHumans> = SaveQueue();
@@ -291,11 +291,9 @@ async function SaveHumansSummary(_humans: IHumans, type: 'month' | 'day' | 'hour
                 throw e;
             });
         } else {
-            let data = {
-                total: humansSummary.getValue('total') + _humans.locations.length,
-            };
+            humansSummary.setValue('total', humansSummary.getValue('total') + _humans.locations.length);
 
-            await humansSummary.save(data, { useMasterKey: true }).catch((e) => {
+            await humansSummary.save({ useMasterKey: true }).catch((e) => {
                 throw e;
             });
         }

@@ -1,14 +1,32 @@
 export interface IData {
     objectId: string;
     analyst: string;
-    camera?: string;
-    count: number;
-    src: string;
     date: Date;
 }
 
-export interface IChartR {
+export interface IIndexR extends IData {
+    camera: string;
+    count: number;
+    src: string;
+}
+
+export interface IGroupR_Data extends IData {
+    count: number;
+    src: string;
+}
+
+export interface IGroupR {
     camera: string;
     date: Date;
-    datas: IData[];
+    datas: IGroupR_Data[];
+}
+
+export interface ISummaryR_Data extends IData {
+    total: number;
+}
+
+export interface ISummaryR {
+    camera: string;
+    date: Date;
+    datas: ISummaryR_Data[];
 }

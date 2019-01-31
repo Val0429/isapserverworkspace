@@ -2,9 +2,12 @@ export interface IIndexR {
     analyst?: 'ISap' | 'Yolo3';
 }
 
-export interface IChartR {
+export interface IGroupR {
     analyst: 'ISap' | 'Yolo3';
-    frequency: 'none' | 'month' | 'day' | 'hour';
     date?: Date;
     count?: number;
+}
+
+export interface ISummaryR extends IGroupR {
+    type: 'month' | 'day' | 'hour';
 }

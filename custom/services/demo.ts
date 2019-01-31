@@ -299,13 +299,11 @@ async function SaveHumanSummary(_human: IHuman, type: 'month' | 'day' | 'hour'):
                 throw e;
             });
         } else {
-            let data = {
-                total: humanSummary.getValue('total') + 1,
-                male: humanSummary.getValue('male') + (_human.gender === 'male' ? 1 : 0),
-                ages: humanSummary.getValue('ages').concat(_human.age),
-            };
+            humanSummary.setValue('total', humanSummary.getValue('total') + 1);
+            humanSummary.setValue('male', humanSummary.getValue('male') + (_human.gender === 'male' ? 1 : 0));
+            humanSummary.setValue('ages', humanSummary.getValue('ages').concat(_human.age));
 
-            await humanSummary.save(data, { useMasterKey: true }).catch((e) => {
+            await humanSummary.save({ useMasterKey: true }).catch((e) => {
                 throw e;
             });
         }
