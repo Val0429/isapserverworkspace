@@ -1,6 +1,7 @@
+import * as IFaceCount from './faceCount';
 import * as IOccupancy from './occupancy';
 
-export { IOccupancy };
+export { IFaceCount, IOccupancy };
 
 export interface IDataList {
     page?: number;

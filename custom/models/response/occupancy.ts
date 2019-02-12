@@ -28,5 +28,6 @@ export interface ISummaryR_Data extends IData {
 export interface ISummaryR {
     camera: string;
     date: Date;
+    type: string;
     datas: ISummaryR_Data[];
 }

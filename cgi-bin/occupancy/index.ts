@@ -25,12 +25,12 @@ action.get(
         let _count: number = _input.count || 100;
         let _page: number = _input.page || 1;
 
-        let total: number = await GetTotalCount(Humans);
-
         let query: Parse.Query<Humans> = new Parse.Query(Humans);
         if (_input.analyst !== null && _input.analyst !== undefined) {
             query.equalTo('analyst', _input.analyst);
         }
+
+        let total: number = await query.count();
 
         query.skip(_count * (_page - 1)).limit(_count);
 
@@ -146,21 +146,6 @@ export async function GetLastDate<T extends Function>(table: T): Promise<Date> {
         }
 
         return lastDate;
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Get total count
- */
-export async function GetTotalCount<T extends Function>(table: T): Promise<number> {
-    try {
-        let total: number = await new Parse.Query(table.name).count().catch((e) => {
-            throw e;
-        });
-
-        return total;
     } catch (e) {
         throw e;
     }
@@ -405,6 +390,7 @@ export async function GetSummary(input: IRequest.IOccupancy.ISummaryR): Promise<
                 previousValue.push({
                     camera: currentValue.getValue('camera'),
                     date: new Date(_date),
+                    type: input.type,
                     datas: [data],
                 });
             } else {
@@ -418,6 +404,7 @@ export async function GetSummary(input: IRequest.IOccupancy.ISummaryR): Promise<
             return {
                 camera: value.camera,
                 date: value.date,
+                type: value.type,
                 datas: [],
             };
         });
@@ -443,6 +430,7 @@ export async function GetSummary(input: IRequest.IOccupancy.ISummaryR): Promise<
             outputs.push({
                 camera: '',
                 date: new Date(_date),
+                type: input.type,
                 datas: dates.map((value, index, array) => {
                     return {
                         objectId: '',
