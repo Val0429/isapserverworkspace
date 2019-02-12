@@ -1,14 +1,14 @@
 import { Utility } from './';
 
 export namespace DateTime {
-    const _formats: string[] = ['dddd', 'ddd', 'dd', 'd', 'hh', 'h', 'HH', 'H', 'mm', 'm', 'MMMM', 'MMM', 'MM', 'M', 'ss', 's', 'tt', 'TT', 'yyyy', 'yy', 'zz', 'z'];
+    const _formats: string[] = ['dddd', 'ddd', 'DD', 'D', 'hh', 'h', 'HH', 'H', 'mm', 'm', 'MMMM', 'MMM', 'MM', 'M', 'ss', 's', 'A', 'a', 'YYYY', 'YY', 'ZZ', 'Z'];
 
     const _days: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const _months: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const _timeNames: string[] = ['am', 'pm', 'AM', 'PM'];
 
     export enum Format {
-        'default' = 'yyyy/MM/dd HH:mm:ss',
+        'default' = 'YYYY/MM/DD HH:mm:ss',
     }
 
     /**
@@ -40,10 +40,10 @@ export namespace DateTime {
                 case 'ddd':
                     dateStr += _days[day];
                     break;
-                case 'dd':
+                case 'DD':
                     dateStr += Utility.PadLeft(date.toString(), '0', 2);
                     break;
-                case 'd':
+                case 'D':
                     dateStr += date.toString();
                     break;
                 case 'hh':
@@ -82,22 +82,22 @@ export namespace DateTime {
                 case 's':
                     dateStr += second.toString();
                     break;
-                case 'tt':
-                    dateStr += hour < 12 ? _timeNames[0] : _timeNames[1];
-                    break;
-                case 'TT':
+                case 'A':
                     dateStr += hour < 12 ? _timeNames[2] : _timeNames[3];
                     break;
-                case 'yyyy':
+                case 'a':
+                    dateStr += hour < 12 ? _timeNames[0] : _timeNames[1];
+                    break;
+                case 'YYYY':
                     dateStr += year.toString();
                     break;
-                case 'yy':
+                case 'YY':
                     dateStr += year.toString().slice(2);
                     break;
-                case 'zz':
+                case 'ZZ':
                     dateStr += (offset > 0 ? '-' : '+') + Utility.PadLeft((Math.floor(Math.abs(offset) / 60) * 100 + (Math.abs(offset) % 60)).toString(), '0', 4);
                     break;
-                case 'z':
+                case 'Z':
                     dateStr += `${offset > 0 ? '-' : '+'}${Math.abs(offset / 60).toString()}`;
                     break;
             }
@@ -106,5 +106,81 @@ export namespace DateTime {
         }
 
         return dateStr;
+    }
+
+    /**
+     * Convert string to date
+     * @param str
+     * @param format
+     */
+    export function String2DateTime(str: string, format: Format | string): Date {
+        let regex: RegExp = Utility.Array2RegExp(_formats);
+
+        let formats: string[] = format.match(regex) || [];
+        let strs: string[] = formats.map((value, index, array) => {
+            return str.substr(format.indexOf(value), value === 'A' || value === 'a' ? 2 : value.length);
+        });
+
+        let year: number = 0;
+        let month: number = 0;
+        let day: number = 0;
+        let hour: number = 0;
+        let minute: number = 0;
+        let second: number = 0;
+
+        for (let i: number = 0; i < formats.length; i++) {
+            switch (formats[i]) {
+                case 'dddd':
+                    day = _days.indexOf(strs[i]) - 7;
+                    break;
+                case 'ddd':
+                    day = _days.indexOf(strs[i]);
+                    break;
+                case 'DD':
+                case 'D':
+                    day = parseInt(strs[i]);
+                    break;
+                case 'hh':
+                case 'h':
+                    hour = parseInt(strs[i]) + (strs.indexOf('PM') > -1 || strs.indexOf('pm') > -1 ? 12 : 0);
+                    break;
+                case 'HH':
+                case 'H':
+                    hour = parseInt(strs[i]);
+                    break;
+                case 'mm':
+                case 'm':
+                    minute = parseInt(strs[i]);
+                    break;
+                case 'MMMM':
+                    month = _months.indexOf(strs[i]) - 7;
+                    break;
+                case 'MMM':
+                    month = _months.indexOf(strs[i]);
+                    break;
+                case 'MM':
+                case 'M':
+                    month = parseInt(strs[i]) - 1;
+                    break;
+                case 'ss':
+                case 's':
+                    second = parseInt(strs[i]);
+                    break;
+                case 'A':
+                case 'a':
+                    break;
+                case 'YYYY':
+                    year = parseInt(strs[i]);
+                    break;
+                case 'YY':
+                    year = parseInt(`20${strs[i]}`);
+                    break;
+                case 'ZZ':
+                case 'Z':
+                    break;
+            }
+        }
+
+        return new Date(year, month, day, hour, minute, second);
     }
 }
