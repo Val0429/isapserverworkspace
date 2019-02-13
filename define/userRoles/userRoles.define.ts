@@ -47,30 +47,6 @@ var userRoles: Config[] = [
         `,
         [],
     ],
-    [
-        40,
-        'Investigator',
-        `
-            realname: string;
-            permission?: number;
-            imei?: string;
-            creator?: Parse.User;
-            isDisable?: boolean;
-        `,
-        [],
-    ],
-    [
-        50,
-        'Edge',
-        `
-            realname: string;
-            permission?: number;
-            imei?: string;
-            creator?: Parse.User;
-            isDisable?: boolean;
-        `,
-        [],
-    ],
 ];
 
 export default userRoles;
