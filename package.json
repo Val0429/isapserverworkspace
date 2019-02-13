@@ -1,10 +1,10 @@
 {
-    "name": "isap-min-service",
+    "name": "isap-printer-service",
     "version": "1.00.01",
     "config": {
-        "displayname": "iSap Min Service"
+        "displayname": "iSap Printer Service"
     },
-    "description": "iSap Min Service v1.00.01",
+    "description": "iSap Printer Service v1.00.01",
     "scripts": {
         "start": "npm start --prefix ./../",
         "create-project": "git checkout --orphan"
