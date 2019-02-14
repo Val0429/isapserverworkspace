@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Parse, IConfig, Config } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, IConfig, Config } from 'core/cgi-package';
 import { wsDefPath, wsCustomPath } from 'shells/config.shell';
 import * as Path from 'path';
 import * as Fs from 'fs';
