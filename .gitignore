@@ -2,5 +2,6 @@
 custom/files/
 custom/web/
 custom/license/license.xml
-custom/assets/
 node_modules/
+
+yolo3/

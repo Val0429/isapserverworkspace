@@ -26,7 +26,8 @@ action.get(
         tsc.ip = Config.printer.ip;
         tsc.dllPath = File.RealPath(Config.printer.dllPath);
         tsc.Initialization();
-        await tsc.PrintFetSticker(_input.visitor, _input.respondent, _input.location, _input.date);
+
+        await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _input.locationName, _input.date);
 
         return '';
     },
