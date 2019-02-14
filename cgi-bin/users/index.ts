@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Parse } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { Permission } from '../../custom/helpers';
 import { IUserCustom } from '../../custom/models';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../define/userRoles/userPermission.define';

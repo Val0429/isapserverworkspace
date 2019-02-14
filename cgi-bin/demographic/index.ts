@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Parse } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 
 let action = new Action({
     loginRequired: false,
