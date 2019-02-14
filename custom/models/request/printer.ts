@@ -1,6 +1,6 @@
 export interface ITsc_ttp247R {
-    visitor: string;
-    respondent: string;
-    location: string;
-    date?: string;
+    visitorName: string;
+    respondentName: string;
+    date: string;
+    locationName: string;
 }
