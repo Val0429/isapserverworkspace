@@ -12,13 +12,13 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IFaceCount.IGroupR;
+type InputR = IRequest.IFaceCount.ISummaryR;
 
-type OutputR = IResponse.IFaceCount.IGroupR[];
+type OutputR = IResponse.IFaceCount.ISummaryR[];
 
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
-        return await FaceCount.GetGroup(data.inputType);
+        return await FaceCount.GetSummary(data.inputType);
     },
 );

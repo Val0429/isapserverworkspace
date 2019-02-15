@@ -2,6 +2,7 @@ import { Config } from 'core/config.gen';
 import { Print, Cms, Face, Draw, File, Utility, ISapDemo, FRSService, FRSCore, Parser } from '../helpers';
 import * as Rx from 'rxjs';
 import { IHuman, Human, IHumanSummary, HumanSummary } from '../models';
+import { pulling$ } from '../../cgi-bin/faceCount';
 
 (async function() {
     let save$: Rx.Subject<IHuman> = SaveQueue();
@@ -28,6 +29,7 @@ function SaveQueue(): Rx.Subject<IHuman> {
         .subscribe({
             next: async (x) => {
                 await Save(x);
+                pulling$.next();
                 next$.next();
             },
         });
@@ -212,6 +214,8 @@ async function ISapAnalysis(save$: Rx.Subject<IHuman>, buffer: Buffer, path: str
 
             save$.next(human);
         }
+
+        buffer = await Draw.Resize2Square(buffer, Config.demographic.output.size, Config.demographic.output.level);
 
         File.WriteFile(`${path}/${filename}`, buffer);
 

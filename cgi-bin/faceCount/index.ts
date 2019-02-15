@@ -80,13 +80,13 @@ action.ws(async (data) => {
             if (_isLive) {
                 if (_type === 'none') {
                     _socket.send({
-                        type: 'searchGroup',
-                        content: await GetGroup({
+                        type: 'searchSummary',
+                        content: await GetSummary({
                             analyst: _analyst,
                             type: _type,
                             count: _count,
                         }),
-                    } as IWs<IResponse.IFaceCount.IGroupR[]>);
+                    } as IWs<IResponse.IFaceCount.ISummaryR[]>);
                 }
             }
         },
@@ -99,8 +99,8 @@ action.ws(async (data) => {
             let _content: boolean = _input.content;
 
             _isLive = _content;
-        } else if (_input.type === 'searchGroup') {
-            let _content: IRequest.IFaceCount.IGroupR = _input.content;
+        } else if (_input.type === 'searchSummary') {
+            let _content: IRequest.IFaceCount.ISummaryR = _input.content;
 
             _analyst = _content.analyst;
             _count = _content.count;
@@ -108,8 +108,8 @@ action.ws(async (data) => {
 
             _socket.send({
                 type: _input.type,
-                content: await GetGroup(_content),
-            } as IWs<IResponse.IFaceCount.IGroupR[]>);
+                content: await GetSummary(_content),
+            } as IWs<IResponse.IFaceCount.ISummaryR[]>);
         }
     });
 });
@@ -118,7 +118,7 @@ action.ws(async (data) => {
  * Get summary data
  * @param input
  */
-export async function GetGroup(input: IRequest.IFaceCount.IGroupR): Promise<IResponse.IFaceCount.IGroupR[]> {
+export async function GetSummary(input: IRequest.IFaceCount.ISummaryR): Promise<IResponse.IFaceCount.ISummaryR[]> {
     try {
         let _count: number = input.count || 10;
         let _date: Date = new Date(input.date || new Date());
@@ -137,10 +137,10 @@ export async function GetGroup(input: IRequest.IFaceCount.IGroupR): Promise<IRes
         }
 
         let humanSummarys: HumanSummary[] = await new Parse.Query(HumanSummary)
-            .lessThanOrEqualTo('date', _date)
-            .greaterThanOrEqualTo('date', min)
             .equalTo('analyst', input.analyst)
             .equalTo('type', input.type)
+            .lessThanOrEqualTo('date', _date)
+            .greaterThan('date', min)
             .descending('date')
             .limit(limit)
             .find()
@@ -148,14 +148,14 @@ export async function GetGroup(input: IRequest.IFaceCount.IGroupR): Promise<IRes
                 throw e;
             });
 
-        let dates: Date[] = await Occupancy.GenerateDates(_date, humanSummarys, _count, input.type);
+        let dates: Date[] = await Occupancy.GenerateDates(_date, _count, input.type);
 
-        let groups: IResponse.IFaceCount.IGroupR[] = humanSummarys.reduce<IResponse.IFaceCount.IGroupR[]>((previousValue, currentValue, currentIndex, array) => {
+        let summarys: IResponse.IFaceCount.ISummaryR[] = humanSummarys.reduce<IResponse.IFaceCount.ISummaryR[]>((previousValue, currentValue, currentIndex, array) => {
             let cameras: string[] = previousValue.map((value, index, array) => {
                 return value.camera;
             });
 
-            let data: IResponse.IFaceCount.IGroupR_Data = {
+            let data: IResponse.IFaceCount.ISummaryR_Data = {
                 objectId: currentValue.id,
                 total: currentValue.getValue('total'),
                 analyst: currentValue.getValue('analyst'),
@@ -177,31 +177,24 @@ export async function GetGroup(input: IRequest.IFaceCount.IGroupR): Promise<IRes
             return previousValue;
         }, []);
 
-        let outputs: IResponse.IFaceCount.IGroupR[] = groups.map((value, index, array) => {
+        let outputs: IResponse.IOccupancy.ISummaryR[] = summarys.map((value, index, array) => {
             return {
                 camera: value.camera,
                 date: value.date,
                 type: value.type,
-                datas: [],
+                datas: dates.map((value1, index1, array1) => {
+                    let datas: IResponse.IOccupancy.ISummaryR_Data[] = value.datas.filter((value2, index2, array2) => {
+                        return value2.date.getTime() === value1.getTime();
+                    });
+                    return {
+                        objectId: datas.length > 0 ? datas[0].objectId : '',
+                        total: datas.length > 0 ? datas[0].total : 0,
+                        analyst: input.analyst,
+                        date: value1,
+                    };
+                }),
             };
         });
-
-        for (let i: number = 0; i < dates.length; i++) {
-            outputs = outputs.map((value, index, array) => {
-                let data = groups[index].datas.find((value, index, array) => {
-                    return dates[i] !== undefined && value.date.getTime() === dates[i].getTime();
-                });
-                data = data || {
-                    objectId: '',
-                    total: 0,
-                    analyst: input.analyst,
-                    date: dates[i],
-                };
-
-                value.datas.push(data);
-                return value;
-            });
-        }
 
         if (outputs.length === 0) {
             outputs.push({

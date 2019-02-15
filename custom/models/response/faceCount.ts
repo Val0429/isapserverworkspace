@@ -10,11 +10,11 @@ export interface IIndexR extends IData {
     camera: string;
 }
 
-export interface IGroupR_Data extends IData {}
+export interface ISummaryR_Data extends IData {}
 
-export interface IGroupR {
+export interface ISummaryR {
     camera: string;
     date: Date;
     type: string;
-    datas: IGroupR_Data[];
+    datas: ISummaryR_Data[];
 }

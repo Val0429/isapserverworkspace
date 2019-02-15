@@ -59,7 +59,15 @@ function CMS(save$: Rx.Subject<IHumans>): void {
 
                         let camera: string = `Camera_${Utility.PadLeft(value1.nvr.toString(), '0', 2)}_${Utility.PadLeft(value2.toString(), '0', 2)}`;
 
-                        let humans: IHumans = { analyst: '', source: 'cms', camera: camera, score: 0, src: '', locations: [], date: now };
+                        let humans: IHumans = {
+                            analyst: '',
+                            source: 'cms',
+                            camera: camera,
+                            score: 0,
+                            src: '',
+                            locations: [],
+                            date: now,
+                        };
 
                         let tasks: Promise<any>[] = [];
 
@@ -93,15 +101,21 @@ function CMS(save$: Rx.Subject<IHumans>): void {
         },
     });
 
-    Rx.Observable.interval(Config.humanDetection.intervalSecond * 1000)
-        .startWith(0)
-        .zip(next$.startWith(0))
-        .subscribe({
-            next: (x) => {
-                let now: Date = new Date(new Date().setMilliseconds(0));
-                hd$.next(now);
-            },
-        });
+    let now: Date = new Date();
+    let target: Date = new Date(new Date(new Date(now).setMinutes(Math.ceil((now.getMinutes() + 1) / 5) * 5)).setSeconds(0, 0));
+    let delay: number = target.getTime() - now.getTime();
+
+    setTimeout(() => {
+        Rx.Observable.interval(Config.humanDetection.intervalSecond * 1000)
+            .startWith(0)
+            .zip(next$.startWith(0))
+            .subscribe({
+                next: (x) => {
+                    let now: Date = new Date(new Date().setSeconds(0, 0));
+                    hd$.next(now);
+                },
+            });
+    }, delay);
 }
 
 /**

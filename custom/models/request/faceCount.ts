@@ -3,7 +3,7 @@ export interface IIndexR {
     type?: 'month' | 'day' | 'hour';
 }
 
-export interface IGroupR {
+export interface ISummaryR {
     analyst: 'ISap';
     type: 'month' | 'day' | 'hour';
     date?: Date;

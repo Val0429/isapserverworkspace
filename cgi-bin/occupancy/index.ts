@@ -140,10 +140,8 @@ export async function GetLastDate<T extends Function>(table: T): Promise<Date> {
             .catch((e) => {
                 throw e;
             });
-        let lastDate: Date = undefined;
-        if (last !== undefined || last !== null) {
-            lastDate = last.get('date');
-        }
+
+        let lastDate: Date = last === undefined || last === null ? new Date() : last.get('date');
 
         return lastDate;
     } catch (e) {
@@ -167,63 +165,43 @@ export async function GetCameraCount<T extends Function>(table: T): Promise<numb
 /**
  * Generate dates
  * @param now
- * @param datas
  * @param count
  * @param type
  */
-export async function GenerateDates<T extends Parse.Object>(now: Date, datas: T[], count: number, type?: 'month' | 'day' | 'hour'): Promise<Date[]> {
+export function GenerateDates(now: Date, count: number, type?: 'month' | 'day' | 'hour'): Date[] {
     try {
+        if (type === null || type === undefined) {
+            now = new Date(new Date(new Date(now).setMinutes(Math.floor(now.getMinutes() / 5) * 5)).setSeconds(0, 0));
+        }
+
         let dates: Date[] = [];
-        for (let i: number = 0; i < datas.length; i++) {
-            let date: Date = datas[i].get('date');
-
-            if (dates.map(Number).indexOf(date.getTime()) < 0) {
-                dates.push(date);
-            }
-        }
-
-        let last: Date = type === null || type === undefined ? await GetLastDate(Humans) : await GetLastDate(HumansSummary);
-        if (last !== undefined && now > last) {
-            while (true) {
-                let date: Date = new Date(new Date(dates[0] || new Date()));
-                if (type === null || type === undefined) {
-                    date = new Date(date.setSeconds(date.getSeconds() + Config.humanDetection.intervalSecond));
-                } else if (type === 'month') {
-                    date = new Date(date.setMonth(date.getMonth() + 1));
-                } else if (type === 'day') {
-                    date = new Date(date.setDate(date.getDate() + 1));
-                } else if (type === 'hour') {
-                    date = new Date(date.setHours(date.getHours() + 1));
-                }
-
-                if (date > now) {
-                    break;
-                }
-
-                dates.unshift(date);
-            }
-        }
-
-        for (let i: number = dates.length; i < count; i++) {
-            let date: Date = i === 0 ? new Date(now) : new Date(dates[i - 1]);
+        for (let i: number = 0; i < count; i++) {
+            let date: Date = new Date(i === 0 ? now : dates[0]);
 
             if (i !== 0) {
-                if (type === null || type === undefined) {
-                    date = new Date(date.setSeconds(date.getSeconds() - Config.humanDetection.intervalSecond));
-                } else if (type === 'month') {
+                if (type === 'month') {
                     date = new Date(date.setMonth(date.getMonth() - 1));
                 } else if (type === 'day') {
                     date = new Date(date.setDate(date.getDate() - 1));
                 } else if (type === 'hour') {
                     date = new Date(date.setHours(date.getHours() - 1));
+                } else {
+                    date = new Date(date.setSeconds(date.getSeconds() - Config.humanDetection.intervalSecond));
                 }
             }
 
-            dates.push(date);
-        }
+            if (type === 'month') {
+                date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
+            } else if (type === 'day') {
+                date = new Date(date.setHours(0, 0, 0, 0));
+            } else if (type === 'hour') {
+                date = new Date(date.setMinutes(0, 0, 0));
+            } else {
+                date = new Date(date.setSeconds(0, 0));
+            }
 
-        dates.length = count;
-        dates = dates.reverse();
+            dates.unshift(date);
+        }
 
         return dates;
     } catch (e) {
@@ -246,9 +224,9 @@ export async function GetGroup(input: IRequest.IOccupancy.IGroupR): Promise<IRes
         let min: Date = new Date(new Date(_date).setSeconds(_date.getSeconds() - _count * Config.humanDetection.intervalSecond));
 
         let humanss: Humans[] = await new Parse.Query(Humans)
-            .lessThanOrEqualTo('date', _date)
-            .greaterThanOrEqualTo('date', min)
             .equalTo('analyst', input.analyst)
+            .lessThanOrEqualTo('date', _date)
+            .greaterThan('date', min)
             .descending('date')
             .limit(limit)
             .find()
@@ -256,7 +234,7 @@ export async function GetGroup(input: IRequest.IOccupancy.IGroupR): Promise<IRes
                 throw e;
             });
 
-        let dates: Date[] = await GenerateDates(_date, humanss, _count);
+        let dates: Date[] = await GenerateDates(_date, _count);
 
         let groups: IResponse.IOccupancy.IGroupR[] = humanss.reduce<IResponse.IOccupancy.IGroupR[]>((previousValue, currentValue, currentIndex, array) => {
             let cameras: string[] = previousValue.map((value, index, array) => {
@@ -289,27 +267,20 @@ export async function GetGroup(input: IRequest.IOccupancy.IGroupR): Promise<IRes
             return {
                 camera: value.camera,
                 date: value.date,
-                datas: [],
+                datas: dates.map((value1, index1, array1) => {
+                    let datas: IResponse.IOccupancy.IGroupR_Data[] = value.datas.filter((value2, index2, array2) => {
+                        return value2.date.getTime() === value1.getTime();
+                    });
+                    return {
+                        objectId: datas.length > 0 ? datas[0].objectId : '',
+                        count: datas.length > 0 ? datas[0].count : 0,
+                        analyst: input.analyst,
+                        src: datas.length > 0 ? datas[0].src : '',
+                        date: value1,
+                    };
+                }),
             };
         });
-
-        for (let i: number = 0; i < dates.length; i++) {
-            outputs = outputs.map((value, index, array) => {
-                let data = groups[index].datas.find((value, index, array) => {
-                    return dates[i] !== undefined && value.date.getTime() === dates[i].getTime();
-                });
-                data = data || {
-                    objectId: '',
-                    count: 0,
-                    analyst: input.analyst,
-                    src: '',
-                    date: dates[i],
-                };
-
-                value.datas.push(data);
-                return value;
-            });
-        }
 
         if (outputs.length === 0) {
             outputs.push({
@@ -360,10 +331,10 @@ export async function GetSummary(input: IRequest.IOccupancy.ISummaryR): Promise<
         }
 
         let humansSummarys: HumansSummary[] = await new Parse.Query(HumansSummary)
-            .lessThanOrEqualTo('date', _date)
-            .greaterThanOrEqualTo('date', min)
             .equalTo('analyst', input.analyst)
             .equalTo('type', input.type)
+            .lessThanOrEqualTo('date', _date)
+            .greaterThan('date', min)
             .descending('date')
             .limit(limit)
             .find()
@@ -371,7 +342,7 @@ export async function GetSummary(input: IRequest.IOccupancy.ISummaryR): Promise<
                 throw e;
             });
 
-        let dates: Date[] = await GenerateDates(_date, humansSummarys, _count, input.type);
+        let dates: Date[] = GenerateDates(_date, _count, input.type);
 
         let summarys: IResponse.IOccupancy.ISummaryR[] = humansSummarys.reduce<IResponse.IOccupancy.ISummaryR[]>((previousValue, currentValue, currentIndex, array) => {
             let cameras: string[] = previousValue.map((value, index, array) => {
@@ -405,26 +376,19 @@ export async function GetSummary(input: IRequest.IOccupancy.ISummaryR): Promise<
                 camera: value.camera,
                 date: value.date,
                 type: value.type,
-                datas: [],
+                datas: dates.map((value1, index1, array1) => {
+                    let datas: IResponse.IOccupancy.ISummaryR_Data[] = value.datas.filter((value2, index2, array2) => {
+                        return value2.date.getTime() === value1.getTime();
+                    });
+                    return {
+                        objectId: datas.length > 0 ? datas[0].objectId : '',
+                        total: datas.length > 0 ? datas[0].total : 0,
+                        analyst: input.analyst,
+                        date: value1,
+                    };
+                }),
             };
         });
-
-        for (let i: number = 0; i < dates.length; i++) {
-            outputs = outputs.map((value, index, array) => {
-                let data = summarys[index].datas.find((value, index, array) => {
-                    return dates[i] !== undefined && value.date.getTime() === dates[i].getTime();
-                });
-                data = data || {
-                    objectId: '',
-                    total: 0,
-                    analyst: input.analyst,
-                    date: dates[i],
-                };
-
-                value.datas.push(data);
-                return value;
-            });
-        }
 
         if (outputs.length === 0) {
             outputs.push({
