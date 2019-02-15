@@ -12,6 +12,8 @@ export interface IIsap {
 
 export interface IOutput {
     path: string;
+    size: number;
+    level: number;
 }
 
 export interface Config {
@@ -39,6 +41,8 @@ let config: Config = {
     },
     output: {
         path: 'demographic',
+        size: 200,
+        level: 9,
     },
 };
 export default config;

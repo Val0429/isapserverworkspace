@@ -143,6 +143,41 @@ export namespace Draw {
         }
     }
 
+    /**
+     * Resize to square
+     * @param buffer
+     * @param size
+     * @param level
+     */
+    export async function Resize2Square(buffer: Buffer, size: number, level: number = 0): Promise<Buffer> {
+        try {
+            let canvas = Canvas.createCanvas();
+            let ctx = canvas.getContext('2d');
+
+            let image: Canvas.Image = await LoadImage(buffer);
+
+            canvas.width = size;
+            canvas.height = size;
+
+            let width: number = image.width > image.height ? size : (image.width * size) / image.height;
+            let height: number = image.height > image.width ? size : (image.height * size) / image.width;
+            let x: number = image.width > image.height ? 0 : (size - width) / 2;
+            let y: number = image.height > image.width ? 0 : (size - height) / 2;
+
+            ctx.drawImage(image, x, y, width, height);
+
+            return canvas.toBuffer('image/png', { compressionLevel: level });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Cut image
+     * @param locations
+     * @param buffer
+     * @param quality
+     */
     export async function CutImage(locations: ILocation[], buffer: Buffer, quality: number = 1): Promise<Buffer[]> {
         try {
             let buffers: Buffer[] = [];
