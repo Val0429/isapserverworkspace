@@ -8,66 +8,11 @@ import { Tree } from 'models/nodes/tree';
 import { pickObject } from 'helpers/utility/pick-object';
 import { Permission } from 'models/nodes/permission';
 import { Log, Level } from 'helpers/utility';
+import { Schedule, EScheduleUnitRepeatType, EScheduleUnitRepeatEndType, ISchedule, EScheduleUnitRepeatMonthType } from 'models/nodes/schedule';
 
 // import './custom/schedulers/index';
 // import './custom/shells/create-index';
 // import './custom/shells/auto-index';
-
-/// Calendar Start
-enum ECalendarUnitRepeatType {
-    NoRepeat = 0x0000,
-    Day = 0x1000,
-    WeekDay = 0x1500,
-    Week = 0x2000,
-    Month = 0x3000,
-    Year = 0x10000,
-}
-
-enum ECalendarUnitRepeatEndType {
-    NoStop = 1,
-    Date = 2,
-    TotalTimes = 3
-}
-
-interface ICalendarUnitRepeat {
-    type: ECalendarUnitRepeatType;
-    /// 重複類別: 天週月年
-    repeatIntervalType: ECalendarUnitRepeatType;
-    /// 重複間隔
-    repeatIntervalValue: number;
-    /// 重複資料
-    /// Day: never;
-    /// Week: number[];
-    /// Month: By this Day | By this Weekday
-    /// Year: never;
-    repeatIntervalData: any;
-
-    /// 結束時間類別
-    repeatEndType: ECalendarUnitRepeatEndType;
-    /// 結束時間 Date of Stop, or Number or Times
-    repeatEndValue: any;
-}
-
-interface ICalendarUnit {
-    beginDate: Date;
-    endDate: Date;
-    fullDay: boolean;
-
-    repeat: ICalendarUnitRepeat;
-    /// 計算出來的結束時間
-    repeatEndDate: Date;
-}
-
-interface ICalendar<Who, Where, What = string, How = string, Others = never> {
-    who: Who;
-    when: ICalendarUnit;
-    where: Where;
-    what?: What;
-    how?: How;
-
-    data?: Others;
-}
-export class Calendar<T extends ICalendar<any, any, any>> extends ParseObject<T> {}
 
 /// make person
 interface IPerson {
@@ -89,6 +34,8 @@ interface IRegion {
 }
 @registerSubclass({memoryCache: true, container: true}) export class Region extends Tree<IRegion> {}
 
+@registerSubclass({memoryCache: true}) export class RegionPersonSchedule extends Schedule.Of(Person, Region) {}
+
 /// make permission
 interface IRegionPermission {
     all?: boolean;
@@ -97,7 +44,13 @@ interface IRegionPermission {
     delete?: boolean;
 }
 @registerSubclass({memoryCache: true}) export class RegionPermission extends Permission.Of(Region).With<IRegionPermission>().On(Person, Group) {}
-let pp = new RegionPermission();
+
+class test1 extends ParseObject<any> {}
+class test2 extends test1 {}
+console.log('instanceof?', test1 instanceof ParseObject);
+console.log('instanceof?', test2 instanceof ParseObject);
+
+//@registerSubclass({memoryCache: true}) export class RegionPermission extends Permission.Of(Region).With<IRegionPermission>().On(RegionPersonSchedule, Person, Group) {}
 
 (async () => {
 
@@ -134,10 +87,6 @@ let pp = new RegionPermission();
     // // console.timeEnd('time for permission verify')
 
 })();
-
-/// make calendar relationship between region & person
-type IRegionPersonCalendar = ICalendar<Person, Region>;
-@registerSubclass({memoryCache: true}) export class RegionPersonCalendar extends Calendar<IRegionPersonCalendar> {}
 
 (async () => {
 
@@ -182,6 +131,31 @@ type IRegionPersonCalendar = ICalendar<Person, Region>;
             groot.addLeaf({ name: "Normal VIP" });
         }
 
+        let PersonMin = await new Parse.Query(Person)
+            .equalTo("name", "Min")
+            .first();
+        let RegionTaipei = await new Parse.Query(Region)
+            .equalTo("name", "Taipei")
+            .first();
+        // /// 每周日一重複的整天事件
+        // let rps = new RegionPersonSchedule({
+        //     who: PersonMin,
+        //     where: RegionTaipei,
+        //     when: {
+        //         beginDate: new Date(2019, 4, 12, 16, 0, 0),
+        //         endDate: new Date(2019, 4, 12, 17, 0, 0),
+        //         fullDay: false,
+        //         repeat: {
+        //             type: EScheduleUnitRepeatType.Year,
+        //             value: 1,
+        //             data: EScheduleUnitRepeatMonthType.ByWeekday,
+        //             endType: EScheduleUnitRepeatEndType.NoStop
+        //         }
+        //     }
+        // });
+        // await rps.save();
+        let cal = await RegionPersonSchedule.buildCalendar(PersonMin, { start: new Date(2018, 11, 29, 0,0,0,0), end: new Date(2030,1,5,0,0,0,0) });
+        console.log('Cal!', cal.matchTime(new Date(2019,4,12,16,30,0)));
 
     } catch(e) { console.log('catched', JSON.stringify(e)) }
 
