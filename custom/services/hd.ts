@@ -307,7 +307,7 @@ async function SaveHumansSummary(_humans: IHumans, type: 'month' | 'day' | 'hour
         } else {
             humansSummary.setValue('total', humansSummary.getValue('total') + _humans.locations.length);
 
-            await humansSummary.save({ useMasterKey: true }).catch((e) => {
+            await humansSummary.save(null, { useMasterKey: true }).catch((e) => {
                 throw e;
             });
         }

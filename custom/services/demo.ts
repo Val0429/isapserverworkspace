@@ -231,10 +231,11 @@ async function Save(_human: IHuman): Promise<void> {
     try {
         let tasks: Promise<any>[] = [];
 
-        tasks.push(SaveHuman(_human));
-        tasks.push(SaveHumanSummary(_human, 'month'));
-        tasks.push(SaveHumanSummary(_human, 'day'));
-        tasks.push(SaveHumanSummary(_human, 'hour'));
+        let human: Human = await SaveHuman(_human);
+
+        tasks.push(SaveHumanSummary(human, _human, 'month'));
+        tasks.push(SaveHumanSummary(human, _human, 'day'));
+        tasks.push(SaveHumanSummary(human, _human, 'hour'));
 
         await Promise.all(tasks).catch((e) => {
             throw e;
@@ -248,12 +249,14 @@ async function Save(_human: IHuman): Promise<void> {
  *
  * @param _humans
  */
-async function SaveHuman(_human: IHuman): Promise<void> {
+async function SaveHuman(_human: IHuman): Promise<Human> {
     try {
         let human: Human = new Human();
         await human.save(_human, { useMasterKey: true }).catch((e) => {
             throw e;
         });
+
+        return human;
     } catch (e) {
         throw e;
     }
@@ -264,7 +267,7 @@ async function SaveHuman(_human: IHuman): Promise<void> {
  * @param _humans
  * @param type
  */
-async function SaveHumanSummary(_human: IHuman, type: 'month' | 'day' | 'hour'): Promise<void> {
+async function SaveHumanSummary(human: Human, _human: IHuman, type: 'month' | 'day' | 'hour'): Promise<void> {
     try {
         let date: Date = new Date(_human.date);
         if (type === 'month') {
@@ -295,7 +298,7 @@ async function SaveHumanSummary(_human: IHuman, type: 'month' | 'day' | 'hour'):
                 date: date,
                 total: 1,
                 male: _human.gender === 'male' ? 1 : 0,
-                ages: [_human.age],
+                humans: [human],
             };
 
             humanSummary = new HumanSummary();
@@ -305,9 +308,9 @@ async function SaveHumanSummary(_human: IHuman, type: 'month' | 'day' | 'hour'):
         } else {
             humanSummary.setValue('total', humanSummary.getValue('total') + 1);
             humanSummary.setValue('male', humanSummary.getValue('male') + (_human.gender === 'male' ? 1 : 0));
-            humanSummary.setValue('ages', humanSummary.getValue('ages').concat(_human.age));
+            humanSummary.setValue('humans', humanSummary.getValue('humans').concat(human));
 
-            await humanSummary.save({ useMasterKey: true }).catch((e) => {
+            await humanSummary.save(null, { useMasterKey: true }).catch((e) => {
                 throw e;
             });
         }
