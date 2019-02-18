@@ -5,3 +5,6 @@ custom/license/license.xml
 node_modules/
 
 yolo3/
+*.jpg
+*.jpeg
+*.png
