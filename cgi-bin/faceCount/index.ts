@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Human } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { Config } from 'core/config.gen';
 import { HumanSummary, IRequest, IResponse, IWs } from '../../custom/models';
 import { Print, DateTime } from 'workspace/custom/helpers';
@@ -11,56 +11,6 @@ let action = new Action({
 });
 
 export default action;
-
-/**
- * Action Read
- */
-type InputR = IRequest.IFaceCount.IIndexR & IRequest.IDataList;
-
-type OutputR = IResponse.IDataList<IResponse.IFaceCount.IIndexR[]>;
-
-action.get(
-    { inputType: 'InputR' },
-    async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
-        let _count: number = _input.count || 100;
-        let _page: number = _input.page || 1;
-
-        let query: Parse.Query<HumanSummary> = new Parse.Query(HumanSummary);
-        if (_input.analyst !== null && _input.analyst !== undefined) {
-            query.equalTo('analyst', _input.analyst);
-        }
-        if (_input.type !== null && _input.type !== undefined) {
-            query.equalTo('type', _input.type);
-        }
-
-        let total: number = await query.count();
-
-        query.skip(_count * (_page - 1)).limit(_count);
-
-        let humanSummarys: HumanSummary[] = await query.find().catch((e) => {
-            throw e;
-        });
-
-        let datas: IResponse.IFaceCount.IIndexR[] = humanSummarys.map((value, index, array) => {
-            return {
-                objectId: value.id,
-                analyst: value.getValue('analyst'),
-                date: value.getValue('date'),
-                total: value.getValue('total'),
-                camera: value.getValue('camera'),
-                type: value.getValue('type'),
-            };
-        });
-
-        return {
-            total: total,
-            page: _page,
-            count: _count,
-            content: datas,
-        };
-    },
-);
 
 /**
  * Action WebSocket
@@ -177,13 +127,13 @@ export async function GetSummary(input: IRequest.IFaceCount.ISummaryR): Promise<
             return previousValue;
         }, []);
 
-        let outputs: IResponse.IOccupancy.ISummaryR[] = summarys.map((value, index, array) => {
+        let outputs: IResponse.IFaceCount.ISummaryR[] = summarys.map((value, index, array) => {
             return {
                 camera: value.camera,
                 date: value.date,
                 type: value.type,
                 datas: dates.map((value1, index1, array1) => {
-                    let datas: IResponse.IOccupancy.ISummaryR_Data[] = value.datas.filter((value2, index2, array2) => {
+                    let datas: IResponse.IFaceCount.ISummaryR_Data[] = value.datas.filter((value2, index2, array2) => {
                         return value2.date.getTime() === value1.getTime();
                     });
                     return {
