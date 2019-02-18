@@ -1,7 +1,8 @@
+import * as IDemographic from './demographic';
 import * as IFaceCount from './faceCount';
 import * as IOccupancy from './occupancy';
 
-export { IFaceCount, IOccupancy };
+export { IDemographic, IFaceCount, IOccupancy };
 
 export interface IDataList<T> {
     total: number;

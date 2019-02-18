@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
+import { Human } from './human';
 
 export interface IHumanSummary {
     analyst: string;
@@ -8,7 +9,7 @@ export interface IHumanSummary {
     date: Date;
     total: number;
     male: number;
-    ages: number[];
+    humans: Human[];
 }
 
 @registerSubclass()
