@@ -19,6 +19,8 @@ export interface IOutput {
 export interface Config {
     intervalSecond: number;
     source: 'frs' | 'cms';
+    channels: string[];
+    ageRange: string;
     cameraSources: ICameraSource[];
     isap: IIsap;
     output: IOutput;
@@ -27,6 +29,8 @@ export interface Config {
 let config: Config = {
     intervalSecond: 1,
     source: 'frs',
+    channels: ['Camera_01_01'],
+    ageRange: '0-20-20-20',
     cameraSources: [
         {
             nvr: 7,

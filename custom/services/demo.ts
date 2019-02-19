@@ -149,6 +149,10 @@ function FRS(save$: Rx.Subject<IHuman>): void {
         let faceId: string = face.verify_face_id;
         let name: string = '';
 
+        if (Config.demographic.channels.indexOf(camera) < 0) {
+            return;
+        }
+
         let image: string = await frs.snapshot(face).catch((e) => {
             throw e;
         });

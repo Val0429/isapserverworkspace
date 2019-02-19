@@ -3,6 +3,7 @@ export interface IHuman {
     src: string;
     age: number;
     gender: string;
+    date: Date;
 }
 
 export interface IData {
@@ -16,12 +17,16 @@ export interface IData {
 export interface IIndexR extends IData {
     type: string;
     camera: string;
+    humans: IHuman[];
 }
 
-export interface ISummaryR_Data extends IData {}
+export interface ISummaryR_Data extends IData {
+    humans: IHuman[];
+}
 
 export interface ISummaryR {
     camera: string;
+    range: string;
     date: Date;
     type: string;
     datas: ISummaryR_Data[];

@@ -101,30 +101,92 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
 
         let dates: Date[] = await Occupancy.GenerateDates(_date, _count, input.type);
 
+        let ageRange: string = Config.demographic.ageRange;
+        let ageRanges: string[] = ageRange.split('-').reduce((prev, curr, index, array) => {
+            if (index !== 0) {
+                curr = (parseInt(curr) + parseInt(prev[index - 1])).toString();
+                prev[index - 1] = `${prev[index - 1]}-${curr}`;
+            }
+
+            prev.push(curr);
+
+            return prev;
+        }, []);
+        ageRanges[ageRanges.length - 1] = `${ageRanges[ageRanges.length - 1]}以上`;
+
         let summarys: IResponse.IDemographic.ISummaryR[] = humanSummarys.reduce<IResponse.IDemographic.ISummaryR[]>((previousValue, currentValue, currentIndex, array) => {
-            let cameras: string[] = previousValue.map((value, index, array) => {
-                return value.camera;
+            let humans: IResponse.IDemographic.IHuman[] = currentValue.getValue('humans').map((value, index, array) => {
+                return {
+                    name: value.getValue('name'),
+                    src: `${Config.demographic.output.path}/${value.getValue('src')}`,
+                    gender: value.getValue('gender'),
+                    age: value.getValue('age'),
+                    date: value.getValue('date'),
+                };
             });
 
-            let data: IResponse.IDemographic.ISummaryR_Data = {
-                objectId: currentValue.id,
-                total: currentValue.getValue('total'),
-                analyst: currentValue.getValue('analyst'),
-                date: currentValue.getValue('date'),
-                male: currentValue.getValue('male'),
-            };
+            let humanss: { range: string; humans: IResponse.IDemographic.IHuman[] }[] = humans.reduce((previousValue, currentValue, currentIndex, array) => {
+                let range: string =
+                    ageRanges.find((value, index, array) => {
+                        let ranges = value.split('-').map(Number);
+                        return ranges[0] < currentValue.age && currentValue.age <= ranges[1];
+                    }) || ageRanges[ageRanges.length - 1];
 
-            let index: number = cameras.indexOf(currentValue.getValue('camera'));
-            if (index < 0) {
-                previousValue.push({
-                    camera: currentValue.getValue('camera'),
-                    date: new Date(_date),
-                    type: input.type,
-                    datas: [data],
+                let ranges: string[] = previousValue.map((value, index, array) => {
+                    return value.range;
                 });
-            } else {
-                previousValue[index].datas.push(data);
-            }
+
+                let key: number = ranges.indexOf(range);
+                if (key < 0) {
+                    previousValue.push({
+                        range: range,
+                        humans: [currentValue],
+                    });
+                } else {
+                    previousValue[key].humans.push(currentValue);
+                }
+
+                return previousValue;
+            }, []);
+
+            humanss.sort((a, b) => {
+                return a.range > b.range ? 1 : -1;
+            });
+
+            let types: string[] = [].concat(
+                previousValue.map((value, index, array) => {
+                    return ageRanges.map((value1, index1, array1) => {
+                        return `${value.camera}-${value1}`;
+                    });
+                }),
+            );
+
+            humanss.forEach((value, index, array) => {
+                let key: number = types.indexOf(`${currentValue.getValue('camera')}-${value.range}`);
+
+                let data: IResponse.IDemographic.ISummaryR_Data = {
+                    objectId: currentValue.id,
+                    analyst: currentValue.getValue('analyst'),
+                    date: currentValue.getValue('date'),
+                    total: value.humans.length,
+                    male: value.humans.filter((value1, index1, array1) => {
+                        return value1.gender === 'male';
+                    }).length,
+                    humans: value.humans,
+                };
+
+                if (key < 0) {
+                    previousValue.push({
+                        camera: currentValue.getValue('camera'),
+                        range: value.range,
+                        date: new Date(_date),
+                        type: input.type,
+                        datas: [data],
+                    });
+                } else {
+                    previousValue[key].datas.push(data);
+                }
+            });
 
             return previousValue;
         }, []);
@@ -132,6 +194,7 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
         let outputs: IResponse.IDemographic.ISummaryR[] = summarys.map((value, index, array) => {
             return {
                 camera: value.camera,
+                range: value.range,
                 date: value.date,
                 type: value.type,
                 datas: dates.map((value1, index1, array1) => {
@@ -144,6 +207,7 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
                         analyst: input.analyst,
                         date: value1,
                         male: datas.length > 0 ? datas[0].male : 0,
+                        humans: datas.length > 0 ? datas[0].humans : [],
                     };
                 }),
             };
@@ -152,6 +216,7 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
         if (outputs.length === 0) {
             outputs.push({
                 camera: '',
+                range: '',
                 date: new Date(_date),
                 type: input.type,
                 datas: dates.map((value, index, array) => {
@@ -161,6 +226,7 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
                         analyst: input.analyst,
                         date: value,
                         male: 0,
+                        humans: [],
                     };
                 }),
             });
