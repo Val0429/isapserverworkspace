@@ -1,14 +1,4 @@
-var personRoles: Config[] = [
-    [0, "VIP", `
-        /**
-         * VIP Role.
-         */
-    `],
-
-    [1, "General"],
-
-    [2, "Blacklist"],
-];
+let personRoles: Config[] = [];
 
 export default personRoles;
 

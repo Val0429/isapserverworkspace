@@ -1,13 +1,7 @@
-var userRoles: Config[] = [
-    [0, "Administrator"],
+import * as Enum from '../../custom/enums';
 
-    [1, "ManagementCommitee"],
-
-    [2, "Resident"],
-
-    [99, "SystemAdministrator"]
-];
+let userRoles: Config[] = [[0, 'SystemAdministrator'], [1, 'Administrator'], [10, 'Chairman'], [11, 'DeputyChairman'], [12, 'FinanceCommittee'], [13, 'DirectorGeneral'], [14, 'Guard'], [30, 'Resident']];
 
 export default userRoles;
 
-export type Config = [number, string, string] | [number, string];
+export type Config = [number, string];
