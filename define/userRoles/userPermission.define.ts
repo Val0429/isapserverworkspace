@@ -20,11 +20,11 @@ export interface IPermissionMap {
 export const permissionMapC: IPermissionMap = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
-    [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+    [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.DeputyChairman]: [RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.FinanceCommittee]: [],
-    [RoleList.DirectorGeneral]: [],
-    [RoleList.Guard]: [],
+    [RoleList.DirectorGeneral]: [RoleList.Resident],
+    [RoleList.Guard]: [RoleList.Resident],
     [RoleList.Resident]: [],
 };
 
@@ -50,10 +50,10 @@ export const permissionMapU: IPermissionMap = {
     [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.DeputyChairman]: [RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
-    [RoleList.FinanceCommittee]: [RoleList.FinanceCommittee],
-    [RoleList.DirectorGeneral]: [RoleList.DirectorGeneral],
-    [RoleList.Guard]: [RoleList.Guard],
-    [RoleList.Resident]: [RoleList.Resident],
+    [RoleList.FinanceCommittee]: [],
+    [RoleList.DirectorGeneral]: [],
+    [RoleList.Guard]: [],
+    [RoleList.Resident]: [],
 };
 
 /**
@@ -62,10 +62,10 @@ export const permissionMapU: IPermissionMap = {
 export const permissionMapD: IPermissionMap = {
     [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
-    [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+    [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.DeputyChairman]: [RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
-    [RoleList.FinanceCommittee]: [RoleList.FinanceCommittee],
-    [RoleList.DirectorGeneral]: [RoleList.DirectorGeneral],
-    [RoleList.Guard]: [RoleList.Guard],
-    [RoleList.Resident]: [RoleList.Resident],
+    [RoleList.FinanceCommittee]: [],
+    [RoleList.DirectorGeneral]: [RoleList.Resident],
+    [RoleList.Guard]: [],
+    [RoleList.Resident]: [],
 };

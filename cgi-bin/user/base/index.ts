@@ -27,7 +27,7 @@ action.post(
         let user: Parse.User = await CreateUser(_input, availableRoles);
 
         return {
-            objectId: user.id,
+            userId: user.id,
         };
     },
 );
@@ -75,7 +75,7 @@ action.get(
             count: _count,
             content: users.map((value, index, array) => {
                 return {
-                    objectId: value.id,
+                    userId: value.id,
                     account: value.getUsername(),
                     roles: value.get('roles').map((value, index, array) => {
                         return Object.keys(RoleList).find((value1, index1, array1) => {
@@ -104,7 +104,7 @@ action.delete(
 
         let user: Parse.User = await new Parse.Query(Parse.User)
             .include('roles')
-            .get(_input.objectId)
+            .get(_input.userId)
             .catch((e) => {
                 throw e;
             });

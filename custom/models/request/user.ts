@@ -1,4 +1,5 @@
 import { RoleList } from 'core/cgi-package';
+import * as Enum from '../../enums';
 
 interface IUser {
     account: string;
@@ -10,7 +11,7 @@ export interface IBaseIndexC extends IUser {
 }
 
 export interface IBaseIndexD {
-    objectId: string;
+    userId: string;
 }
 
 export interface IBaseLogin {
@@ -27,12 +28,18 @@ export interface ICommitteeIndexC extends IUser {
 }
 
 export interface ICommitteeIndexU {
-    objectId: string;
+    userId: string;
     passwordPrevious?: string;
     passwordCurrent?: string;
     adjustReason: string;
 }
 
 export interface ICommitteeIndexD {
-    objectIds: string[];
+    userIds: string[];
+}
+
+export interface IResidentIndexC {
+    address: string;
+    pointTotal: number;
+    character: Enum.ResidentCharacter;
 }

@@ -6,7 +6,7 @@ import * as Base from '../base';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral, RoleList.FinanceCommittee, RoleList.Guard],
+    permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
 });
 
 export default action;
@@ -16,7 +16,7 @@ export default action;
  */
 type InputC = IRequest.IUser.ICommitteeIndexC;
 
-type OutputC = IResponse.IUser.ICommitteeIndexC;
+type OutputC = IResponse.IUser.IBaseIndexC;
 
 action.post(
     { inputType: 'InputC' },
@@ -47,7 +47,7 @@ action.post(
         });
 
         return {
-            objectId: user.id,
+            userId: user.id,
         };
     },
 );
@@ -95,7 +95,7 @@ action.get(
             count: _count,
             content: committee.map((value, index, array) => {
                 return {
-                    objectId: value.getValue('user').id,
+                    userId: value.getValue('user').id,
                     account: value.getValue('user').getUsername(),
                     roles: value
                         .getValue('user')
@@ -128,7 +128,7 @@ action.put(
 
         let user: Parse.User = await new Parse.Query(Parse.User)
             .include('roles')
-            .get(_input.objectId)
+            .get(_input.userId)
             .catch((e) => {
                 throw e;
             });
@@ -179,11 +179,11 @@ action.delete(
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
 
-        _input.objectIds = _input.objectIds.filter((value, index, array) => {
+        _input.userIds = _input.userIds.filter((value, index, array) => {
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _input.objectIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _input.userIds.map((value, index, array) => {
             return new Parse.Query(Parse.User).include('roles').get(value);
         });
         let users: Parse.User[] = await Promise.all(tasks).catch((e) => {
@@ -202,7 +202,7 @@ action.delete(
             });
         }
 
-        tasks = _input.objectIds.map((value, index, array) => {
+        tasks = _input.userIds.map((value, index, array) => {
             let user: Parse.User = new Parse.User();
             user.id = value;
             return new Parse.Query(CharacterCommittee).equalTo('user', user).find();
