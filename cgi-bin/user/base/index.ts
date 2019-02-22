@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse } from '../../custom/models';
-import { Permission, Print } from '../../custom/helpers';
-import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../define/userRoles/userPermission.define';
+import { IRequest, IResponse } from '../../../custom/models';
+import { Permission, Print } from '../../../custom/helpers';
+import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
 
 let action = new Action({
     loginRequired: true,
@@ -13,9 +13,9 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.IUser.IIndexC;
+type InputC = IRequest.IUser.IBaseIndexC;
 
-type OutputC = IResponse.IUser.IIndexC;
+type OutputC = IResponse.IUser.IBaseIndexC;
 
 action.post(
     { inputType: 'InputC' },
@@ -23,35 +23,8 @@ action.post(
         let _input: InputC = data.inputType;
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapC);
-        Permission.ValidateRoles(availableRoles, _input.roles);
 
-        let tasks: Promise<any>[] = _input.roles.map((value, index, array) => {
-            return new Parse.Query(Parse.Role).equalTo('name', value).first();
-        });
-        let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
-            throw e;
-        });
-
-        let _user: IUser = {
-            username: _input.account,
-            password: _input.password,
-            roles: _input.roles,
-            data: {},
-        };
-        let user: Parse.User = new Parse.User();
-        user = await user
-            .signUp(
-                {
-                    ..._user,
-                    roles: roles,
-                },
-                {
-                    useMasterKey: true,
-                },
-            )
-            .catch((e) => {
-                throw Errors.throw(Errors.CustomBadRequest, [e]);
-            });
+        let user: Parse.User = await CreateUser(_input, availableRoles);
 
         return {
             objectId: user.id,
@@ -64,7 +37,7 @@ action.post(
  */
 type InputR = IRequest.IDataList;
 
-type OutputR = IResponse.IDataList<IResponse.IUser.IIndexR[]>;
+type OutputR = IResponse.IDataList<IResponse.IUser.IBaseIndexR[]>;
 
 action.get(
     { inputType: 'InputR' },
@@ -84,12 +57,17 @@ action.get(
 
         let query: Parse.Query<Parse.User> = new Parse.Query(Parse.User).notContainedIn('roles', roles).include('roles');
 
-        let total: number = await query.count();
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
 
         let users: Parse.User[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
-            .find();
+            .find()
+            .catch((e) => {
+                throw e;
+            });
 
         return {
             total: total,
@@ -113,7 +91,7 @@ action.get(
 /**
  * Action Delete
  */
-type InputD = IRequest.IUser.IIndexD;
+type InputD = IRequest.IUser.IBaseIndexD;
 
 type OutputD = string;
 
@@ -121,27 +99,69 @@ action.delete(
     { inputType: 'InputD' },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
-        if (_input.objectId == '') {
-            throw Errors.throw(Errors.ParametersRequired, ['objectId']);
-        }
 
-        let user: Parse.User = await new Parse.Query(Parse.User).include('roles').get(_input.objectId);
-        if (!user) {
-            throw Errors.throw(Errors.CustomNotExists, [`User <${_input.objectId}> not exists.`]);
-        }
-        if (user.id == data.user.id) {
-            throw Errors.throw(Errors.CustomBadRequest, ['Can not delete self.']);
-        }
+        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
+
+        let user: Parse.User = await new Parse.Query(Parse.User)
+            .include('roles')
+            .get(_input.objectId)
+            .catch((e) => {
+                throw e;
+            });
 
         let roles: RoleList[] = user.attributes.roles.map((value) => {
             return value.getName();
         });
 
-        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
         Permission.ValidateRoles(availableRoles, roles);
 
-        await user.destroy({ useMasterKey: true });
+        await user.destroy({ useMasterKey: true }).catch((e) => {
+            throw e;
+        });
 
         return '';
     },
 );
+
+/**
+ * Create user
+ * @param input
+ * @param availableRoles
+ */
+export async function CreateUser(input: InputC, availableRoles: RoleList[]): Promise<Parse.User> {
+    try {
+        Permission.ValidateRoles(availableRoles, input.roles);
+
+        let tasks: Promise<any>[] = input.roles.map((value, index, array) => {
+            return new Parse.Query(Parse.Role).equalTo('name', value).first();
+        });
+        let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        let _user: IUser = {
+            username: input.account,
+            password: input.password,
+            roles: input.roles,
+            data: {},
+        };
+        let user: Parse.User = new Parse.User();
+        user = await user
+            .signUp(
+                {
+                    ..._user,
+                    roles: roles,
+                },
+                {
+                    useMasterKey: true,
+                },
+            )
+            .catch((e) => {
+                throw Errors.throw(Errors.CustomBadRequest, [e]);
+            });
+
+        return user;
+    } catch (e) {
+        throw e;
+    }
+}

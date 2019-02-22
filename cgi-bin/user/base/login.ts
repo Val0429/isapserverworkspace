@@ -1,5 +1,5 @@
 import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList } from 'core/cgi-package';
-import { IRequest, IResponse } from '../../custom/models';
+import { IRequest, IResponse } from '../../../custom/models';
 
 let action = new Action({
     loginRequired: false,
@@ -11,20 +11,27 @@ export default action;
 /**
  * Action Login
  */
-type Input = IRequest.IUser.ILogin;
-type Output = IResponse.IUser.ILogin;
+type Input = IRequest.IUser.IBaseLogin;
+type Output = IResponse.IUser.IBaseLogin;
 
 action.post(
     { inputType: 'Input' },
     async (data): Promise<Output> => {
         let _input: Input = data.inputType;
 
-        let user = await UserHelper.login(_input);
+        let user = await UserHelper.login({
+            username: _input.account,
+            password: _input.password,
+        }).catch((e) => {
+            throw e;
+        });
 
         let event: EventLogin = new EventLogin({
             owner: user.user,
         });
-        await Events.save(event);
+        await Events.save(event).catch((e) => {
+            throw e;
+        });
 
         return {
             sessionId: user.sessionId,

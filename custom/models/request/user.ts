@@ -1,20 +1,38 @@
 import { RoleList } from 'core/cgi-package';
 
-export interface IIndexC {
+interface IUser {
     account: string;
     password: string;
+}
+
+export interface IBaseIndexC extends IUser {
     roles: RoleList[];
 }
 
-export interface IIndexD {
+export interface IBaseIndexD {
     objectId: string;
 }
 
-export interface ILogin {
-    username: string;
+export interface IBaseLogin {
+    account: string;
     password: string;
 }
 
-export interface ILogout {
+export interface IBaseLogout {
     sessionId: string;
+}
+
+export interface ICommitteeIndexC extends IUser {
+    roles: (RoleList.Chairman | RoleList.DeputyChairman | RoleList.DirectorGeneral | RoleList.FinanceCommittee | RoleList.Guard)[];
+}
+
+export interface ICommitteeIndexU {
+    objectId: string;
+    passwordPrevious?: string;
+    passwordCurrent?: string;
+    adjustReason: string;
+}
+
+export interface ICommitteeIndexD {
+    objectIds: string[];
 }
