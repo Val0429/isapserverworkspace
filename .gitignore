@@ -1,2 +1,4 @@
 .vscode/
 custom/web/
+
+node_modules

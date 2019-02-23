@@ -11,5 +11,8 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "canvas": "^2.3.1",
+    "jsbarcode": "^3.11.0"
+  }
 }
