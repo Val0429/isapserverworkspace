@@ -16,6 +16,11 @@ export interface ICharacterResident {
     address: string;
 
     /**
+     * 住戶管理費
+     */
+    manageCost: number;
+
+    /**
      * 每月點數
      */
     pointTotal: number;

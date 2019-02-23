@@ -23,6 +23,12 @@ export interface IBaseLogout {
     sessionId: string;
 }
 
+export interface IBasePasswordU {
+    userId?: string;
+    previous: string;
+    current: string;
+}
+
 export interface ICommitteeIndexC extends IUser {
     roles: (RoleList.Chairman | RoleList.DeputyChairman | RoleList.DirectorGeneral | RoleList.FinanceCommittee | RoleList.Guard)[];
 }
@@ -40,6 +46,37 @@ export interface ICommitteeIndexD {
 
 export interface IResidentIndexC {
     address: string;
+    parkingId?: string;
+    manageCost: number;
     pointTotal: number;
     character: Enum.ResidentCharacter;
+}
+
+export interface IResidentInfoIndexC extends IUser {
+    barcode: string;
+    name: string;
+    gender: Enum.Gender;
+    birthday: Date;
+    phone?: string;
+    lineId?: string;
+    email?: string;
+    education?: string;
+    career?: string;
+}
+
+export interface IResidentInfoIndexR {
+    redsidentId?: string;
+}
+
+export interface IResidentInfoIndexU {
+    userId: string;
+    phone: string;
+    lineId: string;
+    email: string;
+    education: string;
+    career: string;
+}
+
+export interface IResidentInfoIndexD {
+    userIds: string[];
 }

@@ -82,6 +82,8 @@ action.get(
         });
 
         let committee: CharacterCommittee[] = await new Parse.Query(CharacterCommittee)
+            .skip((_page - 1) * _count)
+            .limit(_count)
             .include('user')
             .include('user.roles')
             .find()

@@ -27,11 +27,6 @@ export interface ICharacterResidentInfo {
     gender: Enum.Gender;
 
     /**
-     * 年齡
-     */
-    age: number;
-
-    /**
      * 生日
      */
     birthday: Date;
