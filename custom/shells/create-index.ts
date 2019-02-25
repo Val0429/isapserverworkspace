@@ -72,6 +72,21 @@ Config.mongodb.enable &&
             user.set('roles', roles);
             await user.save(null, { useMasterKey: true });
 
+            user = new Parse.User();
+            await user.save({
+                username: 'AA123',
+                password: 'AA123',
+            });
+            roles = [];
+            for (name of [RoleList.Chairman]) {
+                role = await new Parse.Query(Parse.Role).equalTo('name', name).first();
+                role.getUsers().add(user);
+                await role.save(null, { useMasterKey: true });
+                roles.push(role);
+            }
+            user.set('roles', roles);
+            await user.save(null, { useMasterKey: true });
+
             console.log('Default User created.');
         }
         ////////////////////////////
