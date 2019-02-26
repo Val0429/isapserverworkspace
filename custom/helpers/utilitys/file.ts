@@ -1,5 +1,6 @@
 import * as Fs from 'fs';
 import * as Path from 'path';
+import { Parser } from './';
 
 export namespace File {
     /**
@@ -48,6 +49,26 @@ export namespace File {
             let realpath: string = RealPath(filename);
 
             Fs.writeFileSync(realpath, data);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Write base64 image to file
+     * @param filename
+     * @param image
+     */
+    export function WriteBase64Image(filename: string, image: string) {
+        try {
+            let realpath: string = RealPath(filename);
+
+            let regex = /data:image\/.*;base64, */;
+            image = image.replace(regex, '');
+
+            let buffer: Buffer = Buffer.from(image, Parser.Encoding.base64);
+
+            WriteFile(realpath, buffer);
         } catch (e) {
             throw e;
         }
