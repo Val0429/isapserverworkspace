@@ -6,3 +6,7 @@ export interface IIndexC {
 export interface IIndexD {
     parkingIds: string[];
 }
+
+export interface IAll {
+    status: 'all' | 'used' | 'unused';
+}

@@ -9,3 +9,9 @@ export interface IIndexR {
     address: string;
     phone: string;
 }
+
+export interface IAll {
+    parkingId: string;
+    parkingName: string;
+    cost: number;
+}
