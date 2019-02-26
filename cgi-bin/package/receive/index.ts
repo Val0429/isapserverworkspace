@@ -110,7 +110,7 @@ action.get(
                     address: value.getValue('resident').getValue('address'),
                     sender: value.getValue('sender'),
                     receiver: value.getValue('receiver'),
-                    barcode: Draw.Barcode(value.getValue('barcode'), 0.5, 25).toString(Parser.Encoding.base64),
+                    barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(value.getValue('barcode'), 0.5, 25).toString(Parser.Encoding.base64)),
                     status: value.getValue('status'),
                     memo: value.getValue('memo'),
                     notificateCount: value.getValue('notificateCount'),

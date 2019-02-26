@@ -19,6 +19,6 @@ type OutputR = string;
 action.get(
     '/:message',
     async (data): Promise<OutputR> => {
-        return Draw.Barcode(data.parameters.message, 0.5, 25).toString(Parser.Encoding.base64);
+        return Parser.Base64Str2HtmlSrc(Draw.Barcode(data.parameters.message, 0.5, 25).toString(Parser.Encoding.base64));
     },
 );
