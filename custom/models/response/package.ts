@@ -4,8 +4,7 @@ export interface IReceiveIndexC {
     packageReceiveId: string;
 }
 
-export interface IReceiveIndexR {
-    packageReceiveId: string;
+export interface IReceiveIndexBase {
     residentId: string;
     date: Date;
     address: string;
@@ -16,4 +15,16 @@ export interface IReceiveIndexR {
     memo: string;
     notificateCount: number;
     adjustReason: string;
+}
+
+export interface IReceiveIndexR extends IReceiveIndexBase {
+    packageReceiveId: string;
+}
+
+export interface IReturnIndexC {
+    packageReturnId: string;
+}
+
+export interface IReturnIndexR extends IReceiveIndexBase {
+    packageReturnId: string;
 }
