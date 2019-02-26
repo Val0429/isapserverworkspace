@@ -21,6 +21,11 @@ export interface IGas {
     date: Date;
 
     /**
+     * 截止日
+     */
+    deadline: Date;
+
+    /**
      * 度數
      */
     degree: number;
