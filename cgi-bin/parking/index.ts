@@ -125,8 +125,13 @@ action.delete(
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _parkingIds: string[] = [].concat(data.parameters.parkingIds);
 
-        let tasks: Promise<any>[] = _input.parkingIds.map((value, index, array) => {
+        _parkingIds = _parkingIds.filter((value, index, array) => {
+            return array.indexOf(value) === index;
+        });
+
+        let tasks: Promise<any>[] = _parkingIds.map((value, index, array) => {
             return new Parse.Query(Parking).get(value);
         });
         let parkings: Parking[] = await Promise.all(tasks).catch((e) => {

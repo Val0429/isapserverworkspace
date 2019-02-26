@@ -191,9 +191,10 @@ action.delete(
     { inputType: 'InputD' },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userIds: string[] = [].concat(data.parameters.userIds);
 
         let tasks: Promise<any>[] = [].concat(
-            ..._input.userIds.map((value, index, array) => {
+            ..._userIds.map((value, index, array) => {
                 let user: Parse.User = new Parse.User();
                 user.id = value;
 

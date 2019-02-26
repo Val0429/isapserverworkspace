@@ -42,7 +42,7 @@ export interface ICommitteeIndexU {
 }
 
 export interface ICommitteeIndexD {
-    userIds: string[];
+    userIds: string | string[];
 }
 
 export interface IResidentIndexC {
@@ -79,5 +79,5 @@ export interface IResidentInfoIndexU {
 }
 
 export interface IResidentInfoIndexD {
-    userIds: string[];
+    userIds: string | string[];
 }

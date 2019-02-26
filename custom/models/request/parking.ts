@@ -4,7 +4,7 @@ export interface IIndexC {
 }
 
 export interface IIndexD {
-    parkingIds: string[];
+    parkingIds: string | string[];
 }
 
 export interface IAll {

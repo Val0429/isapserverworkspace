@@ -180,14 +180,15 @@ action.delete(
     { inputType: 'InputD' },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userIds: string[] = [].concat(data.parameters.userIds);
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
 
-        _input.userIds = _input.userIds.filter((value, index, array) => {
+        _userIds = _userIds.filter((value, index, array) => {
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _input.userIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _userIds.map((value, index, array) => {
             return new Parse.Query(Parse.User).include('roles').get(value);
         });
         let users: Parse.User[] = await Promise.all(tasks).catch((e) => {
@@ -206,7 +207,7 @@ action.delete(
             });
         }
 
-        tasks = _input.userIds.map((value, index, array) => {
+        tasks = _userIds.map((value, index, array) => {
             let user: Parse.User = new Parse.User();
             user.id = value;
             return new Parse.Query(CharacterCommittee).equalTo('user', user).find();
