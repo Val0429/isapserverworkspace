@@ -98,7 +98,7 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         } else if (_input.status === 'overdue') {
             let deadline: Date = new Date(new Date().setHours(0, 0, 0, 0));
-            query.greaterThan('status', Enum.ReceiveStatus.unreceived).lessThan('deadline', deadline);
+            query.equalTo('status', Enum.ReceiveStatus.unreceived).lessThan('deadline', deadline);
         }
 
         let total: number = await query.count().catch((e) => {
