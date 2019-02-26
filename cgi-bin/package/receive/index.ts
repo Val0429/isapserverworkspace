@@ -35,24 +35,24 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let receive: PackageReceive = new PackageReceive();
+        let packageReceive: PackageReceive = new PackageReceive();
 
-        receive.setValue('creator', data.user);
-        receive.setValue('resident', resident);
-        receive.setValue('sender', _input.sender);
-        receive.setValue('receiver', _input.receiver);
-        receive.setValue('barcode', _input.barcode);
-        receive.setValue('status', Enum.ReceiveStatus.unreceived);
-        receive.setValue('memo', _input.memo);
-        receive.setValue('notificateCount', 0);
-        receive.setValue('adjustReason', '');
+        packageReceive.setValue('creator', data.user);
+        packageReceive.setValue('resident', resident);
+        packageReceive.setValue('sender', _input.sender);
+        packageReceive.setValue('receiver', _input.receiver);
+        packageReceive.setValue('barcode', _input.barcode);
+        packageReceive.setValue('status', Enum.ReceiveStatus.unreceived);
+        packageReceive.setValue('memo', _input.memo);
+        packageReceive.setValue('notificateCount', 0);
+        packageReceive.setValue('adjustReason', '');
 
-        await receive.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 
         return {
-            packageReceiveId: receive.id,
+            packageReceiveId: packageReceive.id,
         };
     },
 );
@@ -89,7 +89,7 @@ action.get(
             throw e;
         });
 
-        let receives: PackageReceive[] = await query
+        let packageReceives: PackageReceive[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -102,7 +102,7 @@ action.get(
             total: total,
             page: _page,
             count: _count,
-            content: receives.map((value, index, array) => {
+            content: packageReceives.map((value, index, array) => {
                 return {
                     packageReceiveId: value.id,
                     residentId: value.getValue('resident').id,
@@ -143,20 +143,20 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let receive: PackageReceive = await new Parse.Query(PackageReceive).get(_input.packageReceiveId).catch((e) => {
+        let packageReceive: PackageReceive = await new Parse.Query(PackageReceive).get(_input.packageReceiveId).catch((e) => {
             throw e;
         });
-        if (!receive) {
+        if (!packageReceive) {
             throw Errors.throw(Errors.CustomBadRequest, ['receive not found']);
         }
 
-        receive.setValue('resident', resident);
-        receive.setValue('sender', _input.sender);
-        receive.setValue('receiver', _input.receiver);
-        receive.setValue('memo', _input.memo);
-        receive.setValue('adjustReason', _input.adjustReason);
+        packageReceive.setValue('resident', resident);
+        packageReceive.setValue('sender', _input.sender);
+        packageReceive.setValue('receiver', _input.receiver);
+        packageReceive.setValue('memo', _input.memo);
+        packageReceive.setValue('adjustReason', _input.adjustReason);
 
-        await receive.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 
