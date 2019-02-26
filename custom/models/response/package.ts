@@ -10,7 +10,6 @@ export interface IReceiveIndexBase {
     address: string;
     sender: string;
     receiver: string;
-    barcode: string;
     status: Enum.ReceiveStatus;
     memo: string;
     notificateCount: number;
@@ -18,6 +17,7 @@ export interface IReceiveIndexBase {
 }
 
 export interface IReceiveIndexR extends IReceiveIndexBase {
+    barcode: string;
     packageReceiveId: string;
 }
 
@@ -26,5 +26,16 @@ export interface IReturnIndexC {
 }
 
 export interface IReturnIndexR extends IReceiveIndexBase {
+    barcode: string;
     packageReturnId: string;
+}
+
+export interface IPostingIndexC {
+    packagePostingId: string;
+}
+
+export interface IPostingIndexR extends IReceiveIndexBase {
+    packagePostingId: string;
+    packageSrc: string;
+    senderSrc: string;
 }

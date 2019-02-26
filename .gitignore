@@ -1,4 +1,6 @@
 .vscode/
 custom/web/
 
+custom/assets/images/
+
 node_modules

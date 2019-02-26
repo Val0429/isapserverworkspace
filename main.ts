@@ -1,9 +1,15 @@
+import * as express from 'express';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
-import { Print, Utility } from './custom/helpers';
+import { Print, Utility, File } from './custom/helpers';
 
 import './custom/shells/create-index';
 import './custom/shells/auto-index';
+
+let path: string = `${File.assetsPath}/images`;
+File.CreateFolder(path);
+
+app.use('/images', express.static('workspace/custom/assets/images'));
 
 setTimeout(() => {
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: '- Local:  ' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });

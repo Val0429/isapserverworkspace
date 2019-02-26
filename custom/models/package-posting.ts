@@ -1,10 +1,10 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IPackageReceive } from '.';
+import { IPackageBase } from '.';
 
 /**
  * 寄放物品
  */
-export interface IPackagePosting extends IPackageReceive {
+export interface IPackagePosting extends IPackageBase {
     /**
      * 寄件人照片
      */
