@@ -17,11 +17,6 @@ export interface IPackageReceive {
     resident: CharacterResident;
 
     /**
-     * 地址
-     */
-    address: string;
-
-    /**
      * 寄件人
      */
     sender: string;
