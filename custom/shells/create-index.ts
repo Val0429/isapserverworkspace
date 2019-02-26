@@ -2,6 +2,7 @@ import { serverReady } from 'core/pending-tasks';
 import { Config } from 'core/config.gen';
 import { RoleList } from 'core/userRoles.gen';
 import { createIndex } from 'helpers/parse-server/parse-helper';
+import { CharacterCommittee } from '../models';
 
 Config.mongodb.enable &&
     (async () => {
@@ -42,6 +43,7 @@ Config.mongodb.enable &&
         /// Create default users
         let user = await new Parse.Query(Parse.User).first();
         if (!user) {
+            //
             user = new Parse.User();
             await user.save({
                 username: 'SysAdmin',
@@ -57,6 +59,7 @@ Config.mongodb.enable &&
             user.set('roles', roles);
             await user.save(null, { useMasterKey: true });
 
+            //
             user = new Parse.User();
             await user.save({
                 username: 'Admin',
@@ -72,6 +75,7 @@ Config.mongodb.enable &&
             user.set('roles', roles);
             await user.save(null, { useMasterKey: true });
 
+            //
             user = new Parse.User();
             await user.save({
                 username: 'AA123',
@@ -86,6 +90,14 @@ Config.mongodb.enable &&
             }
             user.set('roles', roles);
             await user.save(null, { useMasterKey: true });
+
+            let committee: CharacterCommittee = new CharacterCommittee();
+            committee.setValue('name', 'AA123');
+            committee.setValue('user', user);
+            committee.setValue('permission', '');
+            committee.setValue('adjustReason', '');
+
+            await committee.save(null, { useMasterKey: true });
 
             console.log('Default User created.');
         }

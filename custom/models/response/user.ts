@@ -20,6 +20,7 @@ export interface IBaseLogin {
 
 export interface ICommitteeIndexR extends IBaseIndexR {
     adjustReason: string;
+    name: string;
 }
 
 export interface IResidentIndexC {

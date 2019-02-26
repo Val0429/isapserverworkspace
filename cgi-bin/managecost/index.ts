@@ -150,7 +150,7 @@ action.get(
                     address: value.getValue('resident').getValue('address'),
                     isParking: parkingCounts[index] > 0,
                     deadline: value.getValue('deadline'),
-                    chargerName: chargers[index] ? chargers[index].id : '',
+                    chargerName: chargers[index] ? chargers[index].getValue('name') : '',
                     status: value.getValue('status'),
                     total: value.getValue('total'),
                     balance: value.getValue('balance'),

@@ -15,6 +15,11 @@ export interface ICharacterCommittee {
     user: Parse.User;
 
     /**
+     *  姓名
+     */
+    name: string;
+
+    /**
      * 權限
      */
     permission: string;

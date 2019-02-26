@@ -30,6 +30,7 @@ export interface IBasePasswordU {
 }
 
 export interface ICommitteeIndexC extends IUser {
+    name: string;
     roles: (RoleList.Chairman | RoleList.DeputyChairman | RoleList.DirectorGeneral | RoleList.FinanceCommittee | RoleList.Guard)[];
 }
 

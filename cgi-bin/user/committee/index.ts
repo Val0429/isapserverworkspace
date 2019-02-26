@@ -41,6 +41,7 @@ action.post(
         committee.setValue('user', user);
         committee.setValue('permission', '');
         committee.setValue('adjustReason', '');
+        committee.setValue('name', _input.name);
 
         await committee.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -107,6 +108,7 @@ action.get(
                                 return value.get('name') === RoleList[value1];
                             });
                         }),
+                    name: value.getValue('name'),
                     adjustReason: value.getValue('adjustReason'),
                 };
             }),
