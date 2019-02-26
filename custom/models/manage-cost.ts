@@ -37,9 +37,14 @@ export interface IManageCost {
     total: number;
 
     /**
-     * 已繳金額
+     * 剩餘金額
      */
     balance: number;
+
+    /**
+     * 收費人
+     */
+    charger: Parse.User;
 }
 
 @registerSubclass()
