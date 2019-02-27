@@ -46,7 +46,6 @@ action.post(
         reservation.setValue('creator', data.user);
         reservation.setValue('article', publicArticle);
         reservation.setValue('resident', resident);
-        reservation.setValue('type', publicArticle.getValue('type'));
         reservation.setValue('lendCount', _input.lendCount);
         reservation.setValue('replyDate', undefined);
         reservation.setValue('status', Enum.ReceiveStatus.unreceived);
@@ -91,8 +90,11 @@ action.get(
             .greaterThanOrEqualTo('createdAt', start)
             .lessThan('createdAt', end)
             .include('article');
-        if (_input.type) {
-            query.equalTo('type', _input.type);
+        if (_input.publicArticleId) {
+            let article: PublicArticle = new PublicArticle();
+            article.id = _input.publicArticleId;
+
+            query.equalTo('article', article);
         }
         if (_input.status === 'received') {
             query.equalTo('status', Enum.ReceiveStatus.received);
@@ -134,7 +136,7 @@ action.get(
                     reservationId: value.id,
                     articleId: value.getValue('article').id,
                     articleName: value.getValue('article').getValue('name'),
-                    articleType: value.getValue('type'),
+                    articleType: value.getValue('article').getValue('name'),
                     articleLessCount: value.getValue('article').getValue('adjustCount') - value.getValue('article').getValue('lendCount'),
                     residentId: value.getValue('resident').id,
                     residentname: residentInfos[index] ? residentInfos[index].getValue('name') : '',

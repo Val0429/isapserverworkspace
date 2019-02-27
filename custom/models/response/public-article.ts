@@ -16,6 +16,12 @@ export interface IIndexR {
     lendCount: number;
 }
 
+export interface IAll {
+    publicArticleId: string;
+    name: string;
+    lessCount: number;
+}
+
 export interface IReservationC {
     reservationId: string;
 }

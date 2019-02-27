@@ -22,11 +22,6 @@ export interface IPublicArticleReservation {
     resident: CharacterResident;
 
     /**
-     * 種類
-     */
-    type: string;
-
-    /**
      * 借出數量
      */
     lendCount: number;
