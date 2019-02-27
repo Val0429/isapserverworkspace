@@ -12,7 +12,7 @@ export default action;
  */
 type InputC = IRequest.IGas.IIndexC;
 
-type OutputC = string;
+type OutputC = Date;
 
 action.post(
     {
@@ -65,7 +65,7 @@ action.post(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );
 
@@ -134,7 +134,7 @@ action.get(
  */
 type InputU = IRequest.IGas.IIndexU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     {
@@ -161,6 +161,6 @@ action.put(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

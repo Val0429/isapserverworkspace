@@ -93,7 +93,7 @@ action.get(
  */
 type InputD = IRequest.IUser.IBaseIndexD;
 
-type OutputD = string;
+type OutputD = Date;
 
 action.delete(
     { inputType: 'InputD' },
@@ -119,7 +119,7 @@ action.delete(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );
 

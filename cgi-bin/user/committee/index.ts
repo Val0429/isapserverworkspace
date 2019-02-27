@@ -121,7 +121,7 @@ action.get(
  */
 type InputU = IRequest.IUser.ICommitteeIndexU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     { inputType: 'InputU' },
@@ -165,7 +165,7 @@ action.put(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );
 
@@ -174,7 +174,7 @@ action.put(
  */
 type InputD = IRequest.IUser.ICommitteeIndexD;
 
-type OutputD = string;
+type OutputD = Date;
 
 action.delete(
     { inputType: 'InputD' },
@@ -224,6 +224,6 @@ action.delete(
             }
         }
 
-        return '';
+        return new Date();
     },
 );

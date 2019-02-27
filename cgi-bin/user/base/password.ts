@@ -13,7 +13,7 @@ export default action;
  */
 type InputU = IRequest.IUser.IBasePasswordU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     { inputType: 'InputU' },
@@ -34,6 +34,6 @@ action.put(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

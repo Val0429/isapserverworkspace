@@ -116,7 +116,7 @@ action.get(
  */
 type InputD = IRequest.IParking.IIndexD;
 
-type OutputD = string;
+type OutputD = Date;
 
 action.delete(
     {
@@ -145,6 +145,6 @@ action.delete(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

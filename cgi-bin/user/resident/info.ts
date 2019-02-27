@@ -150,7 +150,7 @@ action.get(
  */
 type InputU = IRequest.IUser.IResidentInfoIndexU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     { inputType: 'InputR', loginRequired: true, permission: [RoleList.Resident] },
@@ -176,7 +176,7 @@ action.put(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );
 
@@ -185,7 +185,7 @@ action.put(
  */
 type InputD = IRequest.IUser.IResidentInfoIndexD;
 
-type OutputD = string;
+type OutputD = Date;
 
 action.delete(
     { inputType: 'InputD' },
@@ -212,6 +212,6 @@ action.delete(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

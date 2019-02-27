@@ -13,7 +13,7 @@ export default action;
  */
 type InputU = IRequest.IPackage.IPostingResidentReceive;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     {
@@ -46,6 +46,6 @@ action.put(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

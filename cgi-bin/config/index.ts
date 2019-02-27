@@ -46,7 +46,7 @@ action.get(
  */
 type InputU = IRequest.IConfig.IIndexU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     { inputType: 'InputU' },
@@ -60,7 +60,7 @@ action.put(
             Config[key] = { ...Config[key], ..._input.data[key] };
         }
 
-        return '';
+        return new Date();
     },
 );
 

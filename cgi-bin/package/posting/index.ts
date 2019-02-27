@@ -78,7 +78,7 @@ action.get(
  */
 type InputU = IRequest.IPackage.IPostingIndexU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     {
@@ -112,6 +112,6 @@ action.put(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

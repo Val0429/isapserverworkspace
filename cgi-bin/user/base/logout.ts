@@ -12,7 +12,7 @@ export default action;
  * Action Logout
  */
 type Input = IRequest.IUser.IBaseLogout;
-type Output = string;
+type Output = Date;
 
 action.post(
     { inputType: 'Input' },
@@ -30,6 +30,6 @@ action.post(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );

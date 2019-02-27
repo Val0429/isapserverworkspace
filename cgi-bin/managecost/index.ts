@@ -13,7 +13,7 @@ export default action;
  */
 type InputC = IRequest.IManageCost.IIndexC;
 
-type OutputC = string;
+type OutputC = Date;
 
 action.post(
     {
@@ -68,7 +68,7 @@ action.post(
             throw e;
         });
 
-        return '';
+        return new Date();
     },
 );
 
