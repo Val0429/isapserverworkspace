@@ -1,4 +1,9 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { IDateRange } from './';
+
+export interface IDayRange extends IDateRange {
+    days: string[];
+}
 
 /**
  * 公共設施
@@ -27,12 +32,12 @@ export interface IPublicFacility {
     /**
      * 開放時間
      */
-    openDates: Date[];
+    openDates: IDayRange[];
 
     /**
      * 維護時間
      */
-    maintenanceDates: Date[];
+    maintenanceDates: IDayRange[];
 
     /**
      * 設施照片

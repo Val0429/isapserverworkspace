@@ -1,6 +1,11 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import { CharacterResident, PublicFacility } from './';
 
+export interface IDateRange {
+    start: Date;
+    end: Date;
+}
+
 /**
  * 公共設施預約
  */
@@ -28,7 +33,7 @@ export interface IPublicFacilityReservation {
     /**
      * 預約時段
      */
-    reservationDates: Date[];
+    reservationDates: IDateRange;
 }
 
 @registerSubclass()
