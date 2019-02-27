@@ -1,11 +1,11 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, Config,
+    IRole, IUser, RoleList, Config,
     Action, Errors, Person, ParseObject, FileHelper,
     Events, EventStrictCompareFace, IEventStrictCompareFace
 } from 'core/cgi-package';
 
-import { Pin } from 'services/pin-code/pin-code';
+import { Pin } from 'services/pin-code';
 import { Invitations, IInvitationDateAndPin } from './../../../custom/models/invitations';
 import { tryCheckInWithPinCode } from './__api__/core';
 import FRS from './../../../custom/services/frs-service';

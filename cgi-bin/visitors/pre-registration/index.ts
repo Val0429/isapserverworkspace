@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, UserType,
+    IRole, IUser, RoleList, UserType,
     Action, Errors, Events,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
     EventPreRegistrationComplete, FileHelper

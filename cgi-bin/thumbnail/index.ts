@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, ParseObject,
+    IRole, IUser, RoleList, ParseObject,
     Action, Errors,
 } from 'core/cgi-package';
 import * as request from 'request';

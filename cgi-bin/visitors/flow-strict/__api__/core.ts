@@ -1,9 +1,9 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList,
+    IRole, IUser, RoleList,
     Errors,
 } from 'core/cgi-package';
-import { Pin } from 'services/pin-code/pin-code';
+import { Pin } from 'services/pin-code';
 import { Invitations, IInvitationDateAndPin } from './../../../../custom/models/invitations';
 import { Companies } from './../../../../custom/models/companies';
 import { Visitors } from './../../../../custom/models/visitors';

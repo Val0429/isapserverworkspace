@@ -1,6 +1,6 @@
 import { DynamicLoader } from 'helpers/dynamic-loader/dynamic-loader';
 import { ScheduleTemplateBase, ScheduleActionSMS } from 'models/schedulers/schedulers.base';
-import { Pin } from 'services/pin-code/pin-code';
+import { Pin } from 'services/pin-code';
 
 
 export interface IInputScheduleTemplateSMS_PreRegistrationComplete {

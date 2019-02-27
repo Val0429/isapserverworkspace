@@ -3,7 +3,7 @@ import { registerSubclass, ParseObject } from './../../../helpers/parse-server/p
 import { Visitors } from './visitors';
 
 import { Purposes } from './../../custom/models/purposes';
-import { Pin } from 'services/pin-code/pin-code';
+import { Pin } from 'services/pin-code';
 
 export interface IInvitationNotify {
     visitor: {
@@ -11,6 +11,7 @@ export interface IInvitationNotify {
         phone: boolean;
     }
 }
+
 
 export interface IInvitationDateAndPin {
     start: Date;

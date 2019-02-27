@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, IUserKioskData,
+    IRole, IUser, RoleList, IUserKioskData,
     Action, Errors,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
@@ -34,7 +34,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 type InputR = Restful.InputR<IFloors>;
 type OutputR = Restful.OutputR<IFloors>;
 
-import pinCode from 'services/pin-code/pin-code';
+import pinCode from 'services/pin-code';
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query

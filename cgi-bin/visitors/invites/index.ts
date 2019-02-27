@@ -1,12 +1,12 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, UserType,
+    IRole, IUser, RoleList, UserType,
     Action, Errors, Config,
     EventInvitationComplete, Events,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 
-import PinCode from 'services/pin-code/pin-code';
+import PinCode from 'services/pin-code';
 import { Invitations, IInvitations } from './../../../custom/models/invitations';
 import { Purposes } from './../../../custom/models/purposes';
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';

@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, EventSubjects,
+    IRole, IUser, RoleList, EventSubjects,
     Action, Errors, EventStrictCompleteCheckIn,
 } from 'core/cgi-package';
 import { Observable } from 'rxjs';
