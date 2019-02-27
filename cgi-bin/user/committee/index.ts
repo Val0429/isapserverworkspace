@@ -82,7 +82,7 @@ action.get(
             throw e;
         });
 
-        let committee: CharacterCommittee[] = await new Parse.Query(CharacterCommittee)
+        let committees: CharacterCommittee[] = await new Parse.Query(CharacterCommittee)
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('user')
@@ -96,7 +96,7 @@ action.get(
             total: total,
             page: _page,
             count: _count,
-            content: committee.map((value, index, array) => {
+            content: committees.map((value, index, array) => {
                 return {
                     userId: value.getValue('user').id,
                     account: value.getValue('user').getUsername(),
@@ -182,11 +182,11 @@ action.delete(
         let _input: InputD = data.inputType;
         let _userIds: string[] = [].concat(data.parameters.userIds);
 
-        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
-
         _userIds = _userIds.filter((value, index, array) => {
             return array.indexOf(value) === index;
         });
+
+        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
 
         let tasks: Promise<any>[] = _userIds.map((value, index, array) => {
             return new Parse.Query(Parse.User).include('roles').get(value);
@@ -194,18 +194,6 @@ action.delete(
         let users: Parse.User[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
-
-        for (let i: number = 0; i < users.length; i++) {
-            let roles: RoleList[] = users[i].attributes.roles.map((value) => {
-                return value.getName();
-            });
-
-            Permission.ValidateRoles(availableRoles, roles);
-
-            await users[i].destroy({ useMasterKey: true }).catch((e) => {
-                throw e;
-            });
-        }
 
         tasks = _userIds.map((value, index, array) => {
             let user: Parse.User = new Parse.User();
@@ -216,13 +204,35 @@ action.delete(
             throw e;
         });
 
+        tasks = [];
+
+        for (let i: number = 0; i < users.length; i++) {
+            let roles: RoleList[] = users[i].attributes.roles.map((value) => {
+                return value.getName();
+            });
+
+            Permission.ValidateRoles(availableRoles, roles);
+
+            tasks.push(
+                users[i].destroy({ useMasterKey: true }).catch((e) => {
+                    throw e;
+                }),
+            );
+        }
+
         for (let i: number = 0; i < committeess.length; i++) {
             for (let j: number = 0; j < committeess[i].length; j++) {
-                await committeess[i][j].destroy({ useMasterKey: true }).catch((e) => {
-                    throw e;
-                });
+                tasks.push(
+                    committeess[i][j].destroy({ useMasterKey: true }).catch((e) => {
+                        throw e;
+                    }),
+                );
             }
         }
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
 
         return new Date();
     },
