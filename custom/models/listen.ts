@@ -49,7 +49,7 @@ export interface IListen {
     /**
      * 附件
      */
-    attachmentSrcs: string[];
+    attachmentSrc: string;
 }
 
 @registerSubclass()
