@@ -39,6 +39,11 @@ export interface IResidentIndexR {
     barcode: string;
 }
 
+export interface IResidentAll {
+    redsidentId: string;
+    address: string;
+}
+
 export interface IResidentInfoIndexC {
     userId: string;
 }
