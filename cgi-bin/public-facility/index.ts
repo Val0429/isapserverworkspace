@@ -55,7 +55,7 @@ action.post(
         });
 
         let facilitySrc: string = `images/${publicFacility.id}_facility_${publicFacility.createdAt.getTime()}.png`;
-        File.WriteBase64Image(`${File.assetsPath}/${facilitySrc}`, _input.facilityImage);
+        File.WriteBase64File(`${File.assetsPath}/${facilitySrc}`, _input.facilityImage);
 
         publicFacility.setValue('facilitySrc', facilitySrc);
 
@@ -166,7 +166,7 @@ action.put(
 
         if (_input.facilityImage) {
             let facilitySrc: string = `images/${publicFacility.id}_facility_${publicFacility.createdAt.getTime()}.png`;
-            File.WriteBase64Image(`${File.assetsPath}/${facilitySrc}`, _input.facilityImage);
+            File.WriteBase64File(`${File.assetsPath}/${facilitySrc}`, _input.facilityImage);
 
             publicFacility.setValue('facilitySrc', facilitySrc);
         }

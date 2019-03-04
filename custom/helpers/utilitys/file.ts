@@ -55,18 +55,18 @@ export namespace File {
     }
 
     /**
-     * Write base64 image to file
+     * Write base64 data to file
      * @param filename
      * @param image
      */
-    export function WriteBase64Image(filename: string, image: string) {
+    export function WriteBase64File(filename: string, data: string) {
         try {
             let realpath: string = RealPath(filename);
 
-            let regex = /data:image\/.*;base64, */;
-            image = image.replace(regex, '');
+            let regex = /data:.*;base64, */;
+            data = data.replace(regex, '');
 
-            let buffer: Buffer = Buffer.from(image, Parser.Encoding.base64);
+            let buffer: Buffer = Buffer.from(data, Parser.Encoding.base64);
 
             WriteFile(realpath, buffer);
         } catch (e) {

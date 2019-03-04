@@ -51,10 +51,10 @@ action.post(
         });
 
         let packageSrc: string = `images/${packagePosting.id}_package_${packagePosting.createdAt.getTime()}.png`;
-        File.WriteBase64Image(`${File.assetsPath}/${packageSrc}`, _input.packageImage);
+        File.WriteBase64File(`${File.assetsPath}/${packageSrc}`, _input.packageImage);
 
         let senderSrc: string = `images/${packagePosting.id}_sender_${packagePosting.createdAt.getTime()}.png`;
-        File.WriteBase64Image(`${File.assetsPath}/${senderSrc}`, _input.senderImage);
+        File.WriteBase64File(`${File.assetsPath}/${senderSrc}`, _input.senderImage);
 
         packagePosting.setValue('packageSrc', packageSrc);
         packagePosting.setValue('senderSrc', senderSrc);

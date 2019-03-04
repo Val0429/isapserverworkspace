@@ -54,7 +54,7 @@ action.post(
         });
 
         let packageSrc: string = `images/${packagePosting.id}_package_${packagePosting.createdAt.getTime()}.png`;
-        File.WriteBase64Image(`${File.assetsPath}/${packageSrc}`, _input.packageImage);
+        File.WriteBase64File(`${File.assetsPath}/${packageSrc}`, _input.packageImage);
 
         packagePosting.setValue('packageSrc', packageSrc);
 

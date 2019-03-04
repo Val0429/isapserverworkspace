@@ -36,7 +36,7 @@ action.put(
         }
 
         let receiverSrc: string = `images/${packagePosting.id}_receiver_${packagePosting.createdAt.getTime()}.png`;
-        File.WriteBase64Image(`${File.assetsPath}/${receiverSrc}`, _input.receiverImage);
+        File.WriteBase64File(`${File.assetsPath}/${receiverSrc}`, _input.receiverImage);
 
         packagePosting.setValue('status', Enum.ReceiveStatus.received);
         packagePosting.setValue('memo', _input.memo);

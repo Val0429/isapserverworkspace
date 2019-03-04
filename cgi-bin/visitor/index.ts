@@ -47,7 +47,7 @@ action.post(
         });
 
         let visitorSrc: string = `images/${visitor.id}_visitor_${visitor.createdAt.getTime()}.png`;
-        File.WriteBase64Image(`${File.assetsPath}/${visitorSrc}`, _input.visitorImage);
+        File.WriteBase64File(`${File.assetsPath}/${visitorSrc}`, _input.visitorImage);
 
         visitor.setValue('visitorSrc', visitorSrc);
 
