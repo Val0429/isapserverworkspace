@@ -167,6 +167,10 @@ action.delete(
             throw e;
         });
 
+        visitors.forEach((value, index, array) => {
+            File.DeleteFile(`${File.assetsPath}/${value.getValue('visitorSrc')}`);
+        });
+
         return new Date();
     },
 );

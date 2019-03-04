@@ -213,6 +213,10 @@ action.delete(
             throw e;
         });
 
+        publicFacilitys.forEach((value, index, array) => {
+            File.DeleteFile(`${File.assetsPath}/${value.getValue('facilitySrc')}`);
+        });
+
         return new Date();
     },
 );
