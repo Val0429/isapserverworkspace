@@ -27,7 +27,7 @@ export interface IPublicNotify {
     /**
      * 附件
      */
-    attachmentSrcs: string[];
+    attachmentSrc: string;
 }
 
 @registerSubclass()
