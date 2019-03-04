@@ -37,14 +37,16 @@ action.post(
             throw e;
         });
 
-        let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${_input.extension}`;
-        File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
+        if (_input.attachment && _input.extension) {
+            let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${_input.extension}`;
+            File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
 
-        publicNotify.setValue('attachmentSrc', attachmentSrc);
+            publicNotify.setValue('attachmentSrc', attachmentSrc);
 
-        await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
-        });
+            await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
+                throw e;
+            });
+        }
 
         return {
             publicNotifyId: publicNotify.id,
@@ -148,7 +150,6 @@ action.put(
         });
 
         if (_input.attachment && _input.extension) {
-            console.log(123);
             let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${_input.extension}`;
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
         }
