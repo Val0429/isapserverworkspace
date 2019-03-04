@@ -193,7 +193,9 @@ action.delete(
         });
 
         publicNotifys.forEach((value, index, array) => {
-            File.DeleteFile(`${File.assetsPath}/${value.getValue('attachmentSrc')}`);
+            if (value.getValue('attachmentSrc') && value.getValue('attachmentSrc') !== '') {
+                File.DeleteFile(`${File.assetsPath}/${value.getValue('attachmentSrc')}`);
+            }
         });
 
         return new Date();
