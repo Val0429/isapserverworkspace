@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { IDateRange } from './';
 
 /**
  * 行事曆
@@ -12,7 +13,7 @@ export interface IPublicCalendar {
     /**
      * 公告時間
      */
-    date: Date;
+    date: IDateRange;
 
     /**
      * 主旨
