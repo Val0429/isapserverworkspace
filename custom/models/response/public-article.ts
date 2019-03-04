@@ -37,6 +37,7 @@ export interface IReservationR {
     residentAddress: string;
     lendCount: number;
     lendDate: Date;
+    replierName: string;
     replyDate: Date;
     status: Enum.ReceiveStatus;
 }

@@ -32,6 +32,11 @@ export interface IPublicArticleReservation {
     replyDate: Date;
 
     /**
+     * 回復人
+     */
+    replier: Parse.User;
+
+    /**
      * 狀態
      */
     status: Enum.ReceiveStatus;

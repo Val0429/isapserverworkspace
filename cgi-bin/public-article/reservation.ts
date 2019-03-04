@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 import { Print } from '../../custom/helpers';
 
@@ -110,6 +110,7 @@ action.get(
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
+            .include('replier')
             .find()
             .catch((e) => {
                 throw e;
@@ -124,6 +125,18 @@ action.get(
                 });
         });
         let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        tasks = reservations.map((value, index, array) => {
+            return new Parse.Query(CharacterCommittee)
+                .equalTo('user', value.getValue('replier'))
+                .first()
+                .catch((e) => {
+                    throw e;
+                });
+        });
+        let repliers: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -143,6 +156,7 @@ action.get(
                     residentAddress: value.getValue('resident').getValue('address'),
                     lendCount: value.getValue('lendCount'),
                     lendDate: value.createdAt,
+                    replierName: repliers[index] ? repliers[index].getValue('name') : '',
                     replyDate: value.getValue('replyDate'),
                     status: value.getValue('status'),
                 };
@@ -175,11 +189,15 @@ action.put(
         if (!reservation) {
             throw Errors.throw(Errors.CustomBadRequest, ['reservation not found']);
         }
+        if (reservation.getValue('status') === Enum.ReceiveStatus.received) {
+            throw Errors.throw(Errors.CustomBadRequest, ['received']);
+        }
         if (reservation.getValue('lendCount') < _input.count) {
             throw Errors.throw(Errors.CustomBadRequest, ['count error']);
         }
 
         reservation.setValue('lendCount', reservation.getValue('lendCount') - _input.count);
+        reservation.setValue('replier', data.user);
         reservation.setValue('replyDate', new Date());
         reservation.setValue('status', reservation.getValue('lendCount') === 0 ? Enum.ReceiveStatus.received : Enum.ReceiveStatus.unreceived);
         reservation.getValue('article').setValue('lendCount', reservation.getValue('article').getValue('lendCount') - _input.count);
