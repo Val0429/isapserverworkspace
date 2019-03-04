@@ -2,8 +2,8 @@ import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper
 import * as Enum from '../enums';
 import { CharacterResident } from './';
 
-interface IOption {
-    name: string;
+interface IVoteOption {
+    option: string;
     resident: CharacterResident[];
 }
 
@@ -39,7 +39,7 @@ export interface IVote {
     /**
      * 選項
      */
-    options: IOption[];
+    options: IVoteOption[];
 
     /**
      * 狀態

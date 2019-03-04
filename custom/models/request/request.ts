@@ -10,8 +10,9 @@ import * as IPublicNotify from './public-notify';
 import * as IPackage from './package';
 import * as IUser from './user';
 import * as IVisitor from './visitor';
+import * as IVote from './vote';
 
-export { IConfig, IGas, IListen, IManageCost, IParking, IPublicArticle, IPublicCalendar, IPublicFacility, IPublicNotify, IPackage, IUser, IVisitor };
+export { IConfig, IGas, IListen, IManageCost, IParking, IPublicArticle, IPublicCalendar, IPublicFacility, IPublicNotify, IPackage, IUser, IVisitor, IVote };
 
 export interface IDataList {
     page?: number;
