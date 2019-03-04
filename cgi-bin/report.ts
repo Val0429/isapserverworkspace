@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList,
+    IRole, IUser, RoleList,
     Action, Errors, Config,
 } from 'core/cgi-package';
 import { FileHelper } from 'helpers/parse-server/file-helper';
