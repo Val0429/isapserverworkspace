@@ -2,5 +2,6 @@
 custom/web/
 
 custom/assets/images/
+custom/assets/files/
 
 node_modules
