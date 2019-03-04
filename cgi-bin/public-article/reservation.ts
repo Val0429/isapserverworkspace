@@ -136,7 +136,7 @@ action.get(
                     reservationId: value.id,
                     articleId: value.getValue('article').id,
                     articleName: value.getValue('article').getValue('name'),
-                    articleType: value.getValue('article').getValue('name'),
+                    articleType: value.getValue('article').getValue('type'),
                     articleLessCount: value.getValue('article').getValue('adjustCount') - value.getValue('article').getValue('lendCount'),
                     residentId: value.getValue('resident').id,
                     residentname: residentInfos[index] ? residentInfos[index].getValue('name') : '',
