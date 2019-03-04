@@ -90,6 +90,20 @@ export namespace File {
     }
 
     /**
+     * Delete file
+     * @param filename
+     */
+    export function DeleteFile(filename: string): void {
+        try {
+            let realpath: string = RealPath(filename);
+
+            Fs.unlinkSync(realpath);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * File path to url
      * @param filename
      */
