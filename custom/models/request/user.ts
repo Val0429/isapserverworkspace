@@ -66,7 +66,7 @@ export interface IResidentInfoIndexC extends IUser {
 }
 
 export interface IResidentInfoIndexR {
-    redsidentId?: string;
+    redsidentId: string;
 }
 
 export interface IResidentInfoIndexU {

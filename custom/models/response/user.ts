@@ -60,3 +60,9 @@ export interface IResidentInfoIndexR {
     education: string;
     career: string;
 }
+
+export interface IResidentLogin extends IResidentInfoIndexR {
+    sessionId: string;
+    residentId: string;
+    barcode: string;
+}

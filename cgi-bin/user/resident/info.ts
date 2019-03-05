@@ -13,7 +13,11 @@ type InputC = IRequest.IUser.IResidentInfoIndexC;
 type OutputC = IResponse.IUser.IResidentInfoIndexC;
 
 action.post(
-    { inputType: 'InputC', loginRequired: false },
+    {
+        inputType: 'InputC',
+        loginRequired: false,
+        permission: [],
+    },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
@@ -80,68 +84,47 @@ action.post(
  */
 type InputR = IRequest.IUser.IResidentInfoIndexR;
 
-type OutputR = IResponse.IUser.IResidentInfoIndexR | IResponse.IUser.IResidentInfoIndexR[];
+type OutputR = IResponse.IUser.IResidentInfoIndexR[];
 
 action.get(
-    { inputType: 'InputR', loginRequired: true, permission: [] },
+    {
+        inputType: 'InputR',
+        loginRequired: true,
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+    },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
 
-        if (_input.redsidentId) {
-            let roles: RoleList[] = data.role.map((value, index, array) => {
-                return value.get('name');
-            });
-            if (roles.indexOf(RoleList.Resident) > -1) {
-                throw Errors.throw(Errors.PermissionDenied);
-            }
-
-            let resident: CharacterResident = new CharacterResident();
-            resident.id = _input.redsidentId;
-
-            let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
-                .equalTo('resident', resident)
-                .find()
-                .catch((e) => {
-                    throw e;
-                });
-
-            return residentInfos.map((value, index, array) => {
-                return {
-                    userId: value.getValue('user').id,
-                    name: value.getValue('name'),
-                    gender: value.getValue('gender'),
-                    birthday: value.getValue('birthday'),
-                    phone: value.getValue('phone'),
-                    lineId: value.getValue('lineId'),
-                    email: value.getValue('email'),
-                    education: value.getValue('education'),
-                    career: value.getValue('career'),
-                };
-            });
-        } else {
-            let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
-                .equalTo('user', data.user)
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
-
-            if (!residentInfo) {
-                throw Errors.throw(Errors.CustomBadRequest, ['user not found']);
-            }
-
-            return {
-                userId: residentInfo.getValue('user').id,
-                name: residentInfo.getValue('name'),
-                gender: residentInfo.getValue('gender'),
-                birthday: residentInfo.getValue('birthday'),
-                phone: residentInfo.getValue('phone'),
-                lineId: residentInfo.getValue('lineId'),
-                email: residentInfo.getValue('email'),
-                education: residentInfo.getValue('education'),
-                career: residentInfo.getValue('career'),
-            };
+        let roles: RoleList[] = data.role.map((value, index, array) => {
+            return value.get('name');
+        });
+        if (roles.indexOf(RoleList.Resident) > -1) {
+            throw Errors.throw(Errors.PermissionDenied);
         }
+
+        let resident: CharacterResident = new CharacterResident();
+        resident.id = _input.redsidentId;
+
+        let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
+            .equalTo('resident', resident)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        return residentInfos.map((value, index, array) => {
+            return {
+                userId: value.getValue('user').id,
+                name: value.getValue('name'),
+                gender: value.getValue('gender'),
+                birthday: value.getValue('birthday'),
+                phone: value.getValue('phone'),
+                lineId: value.getValue('lineId'),
+                email: value.getValue('email'),
+                education: value.getValue('education'),
+                career: value.getValue('career'),
+            };
+        });
     },
 );
 
@@ -153,7 +136,11 @@ type InputU = IRequest.IUser.IResidentInfoIndexU;
 type OutputU = Date;
 
 action.put(
-    { inputType: 'InputR', loginRequired: true, permission: [RoleList.Resident] },
+    {
+        inputType: 'InputR',
+        loginRequired: true,
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Resident],
+    },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
 
@@ -188,7 +175,11 @@ type InputD = IRequest.IUser.IResidentInfoIndexD;
 type OutputD = Date;
 
 action.delete(
-    { inputType: 'InputD' },
+    {
+        inputType: 'InputD',
+        loginRequired: true,
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DirectorGeneral],
+    },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
         let _userIds: string[] = [].concat(data.parameters.userIds);
