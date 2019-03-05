@@ -14,7 +14,7 @@ export interface IReceiveIndexC extends IReceiveIndexBase {
 export interface IReceiveIndexR {
     start?: Date;
     end?: Date;
-    status?: Enum.ReceiveStatus;
+    status: 'all' | 'received' | 'unreceived';
 }
 
 export interface IReceiveIndexU extends IReceiveIndexBase {

@@ -9,6 +9,7 @@ export interface IIndexR {
     deadline: Date;
     chargerName: string;
     status: Enum.ReceiveStatus;
-    total: number;
+    parkingCost: number;
+    manageCost: number;
     balance: number;
 }

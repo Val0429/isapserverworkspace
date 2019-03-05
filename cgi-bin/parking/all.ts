@@ -3,7 +3,6 @@ import { IRequest, IResponse, Parking } from '../../custom/models';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
 });
 
 export default action;

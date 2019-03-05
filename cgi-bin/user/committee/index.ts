@@ -213,20 +213,12 @@ action.delete(
 
             Permission.ValidateRoles(availableRoles, roles);
 
-            tasks.push(
-                users[i].destroy({ useMasterKey: true }).catch((e) => {
-                    throw e;
-                }),
-            );
+            tasks.push(users[i].destroy({ useMasterKey: true }));
         }
 
         for (let i: number = 0; i < committeess.length; i++) {
             for (let j: number = 0; j < committeess[i].length; j++) {
-                tasks.push(
-                    committeess[i][j].destroy({ useMasterKey: true }).catch((e) => {
-                        throw e;
-                    }),
-                );
+                tasks.push(committeess[i][j].destroy({ useMasterKey: true }));
             }
         }
 

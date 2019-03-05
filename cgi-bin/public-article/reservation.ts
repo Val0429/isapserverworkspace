@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo, MessageResident } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 import { Print } from '../../custom/helpers';
 
@@ -60,6 +60,15 @@ action.post(
             throw e;
         });
 
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', reservation.getValue('resident'));
+        message.setValue('publicArticleReservation', reservation);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
         return {
             reservationId: reservation.id,
         };
@@ -117,24 +126,14 @@ action.get(
             });
 
         let tasks: Promise<any>[] = reservations.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo)
-                .equalTo('resident', value.getValue('resident'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterResidentInfo).equalTo('resident', value.getValue('resident')).first();
         });
         let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
         tasks = reservations.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee)
-                .equalTo('user', value.getValue('replier'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('replier')).first();
         });
         let repliers: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;

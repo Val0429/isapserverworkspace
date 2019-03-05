@@ -19,6 +19,7 @@ export interface IIndexR {
 export interface IAll {
     publicArticleId: string;
     name: string;
+    type: string;
     lessCount: number;
 }
 

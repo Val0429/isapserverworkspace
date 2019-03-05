@@ -78,12 +78,7 @@ action.get(
             });
 
         let tasks: Promise<any>[] = publicArticlea.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee)
-                .equalTo('user', value.getValue('adjuster'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('adjuster')).first();
         });
         let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;

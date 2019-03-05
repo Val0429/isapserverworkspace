@@ -1,5 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, PackagePosting } from '../../../custom/models';
+import { IRequest, IResponse, CharacterResident, PackagePosting, MessageResident } from '../../../custom/models';
+import * as Enum from '../../../custom/enums';
 import { Draw, Parser, Print } from 'workspace/custom/helpers';
 
 let action = new Action({
@@ -11,7 +12,7 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IPackage.IReceiveIndexR & IRequest.IDataList;
+type InputR = IRequest.IDataList & IRequest.IPackage.IReceiveIndexR;
 
 type OutputR = IResponse.IDataList<IResponse.IPackage.IPostingIndexR[]>;
 
@@ -26,14 +27,16 @@ action.get(
         let _count: number = _input.count || 10;
 
         let query: Parse.Query<PackagePosting> = new Parse.Query(PackagePosting);
-        if (_input.status !== null && _input.status !== undefined) {
-            query.equalTo('status', _input.status);
-        }
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+        }
+        if (_input.status === 'received') {
+            query.equalTo('status', Enum.ReceiveStatus.received);
+        } else if (_input.status === 'unreceived') {
+            query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -95,20 +98,29 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packageposting: PackagePosting = await new Parse.Query(PackagePosting).get(_input.packagePostingId).catch((e) => {
+        let packagePosting: PackagePosting = await new Parse.Query(PackagePosting).get(_input.packagePostingId).catch((e) => {
             throw e;
         });
-        if (!packageposting) {
+        if (!packagePosting) {
             throw Errors.throw(Errors.CustomBadRequest, ['return not found']);
         }
 
-        packageposting.setValue('resident', resident);
-        packageposting.setValue('sender', _input.sender);
-        packageposting.setValue('receiver', _input.receiver);
-        packageposting.setValue('memo', _input.memo);
-        packageposting.setValue('adjustReason', _input.adjustReason);
+        packagePosting.setValue('resident', resident);
+        packagePosting.setValue('sender', _input.sender);
+        packagePosting.setValue('receiver', _input.receiver);
+        packagePosting.setValue('memo', _input.memo);
+        packagePosting.setValue('adjustReason', _input.adjustReason);
 
-        await packageposting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', packagePosting.getValue('resident'));
+        message.setValue('packagePosting', packagePosting);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 

@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor } from '../../custom/models';
+import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor, MessageResident } from '../../custom/models';
 import { File } from '../../custom/helpers';
 
 let action = new Action({
@@ -55,6 +55,15 @@ action.post(
             throw e;
         });
 
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', resident);
+        message.setValue('visitor', visitor);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
         return {
             visitorId: visitor.id,
         };
@@ -80,7 +89,7 @@ action.get(
 
         let query: Parse.Query<Visitor> = new Parse.Query(Visitor);
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
@@ -100,12 +109,7 @@ action.get(
             });
 
         let tasks: Promise<any>[] = visitors.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo)
-                .equalTo('resident', value.getValue('resident'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterResidentInfo).equalTo('resident', value.getValue('resident')).first();
         });
         let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;

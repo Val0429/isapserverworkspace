@@ -2,6 +2,23 @@ import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper
 import * as Enum from '../enums';
 import { CharacterResident } from './';
 
+interface IReply {
+    /**
+     * 回復人
+     */
+    replier: Parse.User;
+
+    /**
+     * 內容
+     */
+    content: string;
+
+    /**
+     * 日期
+     */
+    date: Date;
+}
+
 /**
  * 聯絡管委會
  */
@@ -27,19 +44,9 @@ export interface IListen {
     content: string;
 
     /**
-     * 回復人
+     * 回復
      */
-    replier: Parse.User;
-
-    /**
-     * 回復內容
-     */
-    replyContent: string;
-
-    /**
-     * 回復日期
-     */
-    replyDate: Date;
+    replys: IReply[];
 
     /**
      * 狀態

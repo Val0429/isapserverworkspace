@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicCalendar } from '../../custom/models';
+import { IRequest, IResponse, PublicCalendar, MessageResident, CharacterResident } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
@@ -38,6 +38,31 @@ action.post(
             throw e;
         });
 
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value);
+            message.setValue('publicCalendar', publicCalendar);
+
+            return message.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
         return {
             publicCalendarId: publicCalendar.id,
         };
@@ -47,9 +72,9 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList & IRequest.IPublicCalendar.IIndexR;
+type InputR = IRequest.IPublicCalendar.IIndexR;
 
-type OutputR = IResponse.IDataList<IResponse.IPublicCalendar.IIndexR[]>;
+type OutputR = IResponse.IPublicCalendar.IIndexR[];
 
 action.get(
     {
@@ -58,15 +83,13 @@ action.get(
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
-        let _page: number = _input.page || 1;
-        let _count: number = _input.count || 10;
 
         let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar);
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('date.start', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
-            query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+            query.lessThan('date.end', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
         }
 
         let total: number = await query.count().catch((e) => {
@@ -74,26 +97,20 @@ action.get(
         });
 
         let publicCalendars: PublicCalendar[] = await query
-            .skip((_page - 1) * _count)
-            .limit(_count)
+            .limit(_input.count ? _input.count : total)
             .find()
             .catch((e) => {
                 throw e;
             });
 
-        return {
-            total: total,
-            page: _page,
-            count: _count,
-            content: publicCalendars.map((value, index, array) => {
-                return {
-                    publicCalendarId: value.id,
-                    date: value.getValue('date'),
-                    title: value.getValue('title'),
-                    content: value.getValue('content'),
-                };
-            }),
-        };
+        return publicCalendars.map((value, index, array) => {
+            return {
+                publicCalendarId: value.id,
+                date: value.getValue('date'),
+                title: value.getValue('title'),
+                content: value.getValue('content'),
+            };
+        });
     },
 );
 
@@ -124,6 +141,31 @@ action.put(
         publicCalendar.setValue('content', _input.content);
 
         await publicCalendar.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value);
+            message.setValue('publicCalendar', publicCalendar);
+
+            return message.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

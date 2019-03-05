@@ -38,6 +38,7 @@ action.get(
             return {
                 redsidentId: value.id,
                 address: value.getValue('address'),
+                barcode: value.getValue('barcode'),
             };
         });
     },

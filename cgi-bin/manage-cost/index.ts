@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, ManageCost, Parking, CharacterCommittee } from '../../custom/models';
+import { IRequest, IResponse, CharacterResident, ManageCost, Parking, CharacterCommittee, MessageResident } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -25,13 +25,16 @@ action.post(
         let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
         let _deadline: Date = new Date(new Date(_input.deadline).setHours(0, 0, 0, 0));
 
+        if (_input.date.getTime() > _input.deadline.getTime()) {
+            throw Errors.throw(Errors.CustomBadRequest, ['date error']);
+        }
+
         let manageCostCount: number = await new Parse.Query(ManageCost)
             .equalTo('date', _date)
             .count()
             .catch((e) => {
                 throw e;
             });
-
         if (manageCostCount > 0) {
             throw Errors.throw(Errors.CustomBadRequest, ['date presence']);
         }
@@ -49,19 +52,48 @@ action.post(
             });
 
         let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            return new Parse.Query(Parking).equalTo('resident', value).find();
+        });
+        let parkings: Parking[][] = await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        let manageCosts: ManageCost[] = [];
+
+        tasks = residents.map((value, index, array) => {
             let manageCost: ManageCost = new ManageCost();
+
+            let parkingCost: number = parkings[index]
+                ? parkings[index].reduce((prev, curr, index, array) => {
+                      return prev + curr.getValue('cost');
+                  }, 0)
+                : 0;
 
             manageCost.setValue('creator', data.user);
             manageCost.setValue('resident', value);
             manageCost.setValue('date', _date);
             manageCost.setValue('deadline', _deadline);
             manageCost.setValue('status', Enum.ReceiveStatus.unreceived);
-            manageCost.setValue('total', value.getValue('manageCost'));
-            manageCost.setValue('balance', value.getValue('manageCost'));
+            manageCost.setValue('parkingCost', parkingCost);
+            manageCost.setValue('manageCost', value.getValue('manageCost'));
+            manageCost.setValue('balance', manageCost.getValue('manageCost') + manageCost.getValue('parkingCost'));
 
-            return manageCost.save(null, { useMasterKey: true }).catch((e) => {
-                throw e;
-            });
+            manageCosts.push(manageCost);
+
+            return manageCost.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        tasks = manageCosts.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value.getValue('resident'));
+            message.setValue('manageCost', value);
+
+            return message.save(null, { useMasterKey: true });
         });
 
         await Promise.all(tasks).catch((e) => {
@@ -88,10 +120,13 @@ action.get(
         let _input: InputR = data.inputType;
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
-        let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
 
-        let query: Parse.Query<ManageCost> = new Parse.Query(ManageCost).equalTo('date', _date);
+        let query: Parse.Query<ManageCost> = new Parse.Query(ManageCost);
 
+        if (_input.date) {
+            let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
+            query.equalTo('date', _date);
+        }
         if (_input.status === 'received') {
             query.equalTo('status', Enum.ReceiveStatus.received);
         } else if (_input.status === 'unreceived') {
@@ -115,24 +150,14 @@ action.get(
             });
 
         let tasks: Promise<any>[] = manageCosts.map((value, index, array) => {
-            return new Parse.Query(Parking)
-                .equalTo('resident', value.getValue('resident'))
-                .count()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(Parking).equalTo('resident', value.getValue('resident')).count();
         });
         let parkingCounts: number[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
         tasks = manageCosts.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee)
-                .equalTo('user', value.getValue('charger'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('charger')).first();
         });
         let chargers: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
@@ -152,7 +177,8 @@ action.get(
                     deadline: value.getValue('deadline'),
                     chargerName: chargers[index] ? chargers[index].getValue('name') : '',
                     status: value.getValue('status'),
-                    total: value.getValue('total'),
+                    parkingCost: value.getValue('parkingCost'),
+                    manageCost: value.getValue('manageCost'),
                     balance: value.getValue('balance'),
                 };
             }),

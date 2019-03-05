@@ -38,6 +38,7 @@ action.get(
             return {
                 publicArticleId: value.id,
                 name: value.getValue('name'),
+                type: value.getValue('type'),
                 lessCount: value.getValue('adjustCount') - value.getValue('lendCount'),
             };
         });

@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterCommittee, CharacterResident, Listen } from '../../custom/models';
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
@@ -36,9 +36,7 @@ action.post(
         listen.setValue('resident', resident);
         listen.setValue('title', _input.title);
         listen.setValue('content', _input.content);
-        listen.setValue('replier', undefined);
-        listen.setValue('replyContent', undefined);
-        listen.setValue('replyDate', undefined);
+        listen.setValue('replys', []);
         listen.setValue('status', Enum.ReceiveStatus.unreceived);
         listen.setValue('attachmentSrc', '');
 
@@ -82,7 +80,7 @@ action.get(
 
         let query: Parse.Query<Listen> = new Parse.Query(Listen);
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
@@ -107,14 +105,13 @@ action.get(
                 throw e;
             });
 
-        let tasks: Promise<any>[] = listens.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee)
-                .equalTo('user', value.getValue('replier'))
-                .first()
-                .catch((e) => {
-                    throw e;
+        let tasks: Promise<any>[] = [].concat(
+            ...listens.map((value, index, array) => {
+                return value.getValue('replys').map((value1, index1, array1) => {
+                    return new Parse.Query(CharacterCommittee).equalTo('user', value1.replier).first();
                 });
-        });
+            }),
+        );
         let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
@@ -131,62 +128,70 @@ action.get(
                     date: value.createdAt,
                     title: value.getValue('title'),
                     content: value.getValue('content'),
-                    replyId: value.getValue('replier') ? value.getValue('replier').id : '',
-                    replyName: committees[index] ? committees[index].getValue('name') : '',
-                    replyContent: value.getValue('replyContent'),
-                    replyDate: value.getValue('replyDate'),
                     status: value.getValue('status'),
                     attachmentSrc: value.getValue('attachmentSrc'),
+                    replys: value.getValue('replys').map((value1, index1, array1) => {
+                        return {
+                            id: value1.replier.id,
+                            name: committees
+                                .find((value2, index2, array2) => {
+                                    return value2.getValue('user').id === value1.replier.id;
+                                })
+                                .getValue('name'),
+                            content: value1.content,
+                            date: value1.date,
+                        };
+                    }),
                 };
             }),
         };
     },
 );
 
-/**
- * Action update
- */
-type InputU = IRequest.IListen.IIndexU;
+// /**
+//  * Action update
+//  */
+// type InputU = IRequest.IListen.IIndexU;
 
-type OutputU = Date;
+// type OutputU = Date;
 
-action.put(
-    {
-        inputType: 'InputU',
-        postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
-    },
-    async (data): Promise<OutputU> => {
-        let _input: InputU = data.inputType;
+// action.put(
+//     {
+//         inputType: 'InputU',
+//         postSizeLimit: 10000000,
+//         permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
+//     },
+//     async (data): Promise<OutputU> => {
+//         let _input: InputU = data.inputType;
 
-        let listen: Listen = await new Parse.Query(Listen).get(_input.listenId).catch((e) => {
-            throw e;
-        });
-        if (!listen) {
-            throw Errors.throw(Errors.CustomBadRequest, ['listen not found']);
-        }
+//         let listen: Listen = await new Parse.Query(Listen).get(_input.listenId).catch((e) => {
+//             throw e;
+//         });
+//         if (!listen) {
+//             throw Errors.throw(Errors.CustomBadRequest, ['listen not found']);
+//         }
 
-        listen.setValue('title', _input.title);
-        listen.setValue('content', _input.content);
-        listen.setValue('replyContent', _input.replyContent);
+//         listen.setValue('title', _input.title);
+//         listen.setValue('content', _input.content);
+//         listen.setValue('replyContent', _input.replyContent);
 
-        if (listen.getValue('status') === Enum.ReceiveStatus.received) {
-            listen.setValue('replier', data.user);
-            listen.setValue('replyDate', new Date());
-        }
+//         if (listen.getValue('status') === Enum.ReceiveStatus.received) {
+//             listen.setValue('replier', data.user);
+//             listen.setValue('replyDate', new Date());
+//         }
 
-        await listen.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
-        });
+//         await listen.save(null, { useMasterKey: true }).catch((e) => {
+//             throw e;
+//         });
 
-        if (_input.attachment && _input.extension) {
-            let attachmentSrc: string = `files/${listen.id}_listen_${listen.createdAt.getTime()}.${_input.extension}`;
-            File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
-        }
+//         if (_input.attachment && _input.extension) {
+//             let attachmentSrc: string = `files/${listen.id}_listen_${listen.createdAt.getTime()}.${_input.extension}`;
+//             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
+//         }
 
-        return new Date();
-    },
-);
+//         return new Date();
+//     },
+// );
 
 /**
  * Action Delete

@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicNotify, CharacterCommittee } from '../../custom/models';
+import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResident, MessageResident } from '../../custom/models';
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
@@ -48,6 +48,31 @@ action.post(
             });
         }
 
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value);
+            message.setValue('publicNotify', publicNotify);
+
+            return message.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
         return {
             publicNotifyId: publicNotify.id,
         };
@@ -73,7 +98,7 @@ action.get(
 
         let query: Parse.Query<PublicNotify> = new Parse.Query(PublicNotify);
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
@@ -92,12 +117,7 @@ action.get(
             });
 
         let tasks: Promise<any>[] = publicNotifys.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee)
-                .equalTo('user', value.getValue('creator'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('creator')).first();
         });
         let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
@@ -140,6 +160,9 @@ action.put(
         let publicNotify: PublicNotify = await new Parse.Query(PublicNotify).get(_input.publicNotifyId).catch((e) => {
             throw e;
         });
+        if (!publicNotify) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public notify not found']);
+        }
 
         publicNotify.setValue('date', _input.date);
         publicNotify.setValue('title', _input.title);
@@ -153,6 +176,31 @@ action.put(
             let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${_input.extension}`;
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
         }
+
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value);
+            message.setValue('publicNotify', publicNotify);
+
+            return message.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
 
         return new Date();
     },

@@ -11,6 +11,7 @@ export interface IIndexC extends IIndexBase {}
 export interface IIndexR {
     start?: Date;
     end?: Date;
+    count?: number;
 }
 
 export interface IIndexU extends IIndexBase {

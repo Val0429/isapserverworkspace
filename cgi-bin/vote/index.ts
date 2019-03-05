@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Vote, CharacterCommittee } from '../../custom/models';
+import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, MessageResident } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
@@ -49,6 +49,31 @@ action.post(
             throw e;
         });
 
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value);
+            message.setValue('vote', vote);
+
+            return message.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
         return {
             voteId: vote.id,
         };
@@ -74,7 +99,7 @@ action.get(
 
         let query: Parse.Query<Vote> = new Parse.Query(Vote);
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
@@ -98,12 +123,7 @@ action.get(
             });
 
         let tasks: Promise<any>[] = votes.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee)
-                .equalTo('user', value.getValue('creator'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('creator')).first();
         });
         let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
@@ -175,6 +195,31 @@ action.put(
         );
 
         await vote.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value);
+            message.setValue('vote', vote);
+
+            return message.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

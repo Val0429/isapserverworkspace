@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Gas, CharacterResident } from '../../custom/models';
+import { IRequest, IResponse, Gas, CharacterResident, MessageResident } from '../../custom/models';
 
 let action = new Action({
     loginRequired: true,
@@ -24,13 +24,16 @@ action.post(
         let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
         let _deadline: Date = new Date(new Date(_input.deadline).setHours(0, 0, 0, 0));
 
+        if (_date.getTime() > _deadline.getTime()) {
+            throw Errors.throw(Errors.CustomBadRequest, ['date error']);
+        }
+
         let gasCount: number = await new Parse.Query(Gas)
             .equalTo('date', _date)
             .count()
             .catch((e) => {
                 throw e;
             });
-
         if (gasCount > 0) {
             throw Errors.throw(Errors.CustomBadRequest, ['date presence']);
         }
@@ -47,6 +50,8 @@ action.post(
                 throw e;
             });
 
+        let gass: Gas[] = [];
+
         let tasks: Promise<any>[] = residents.map((value, index, array) => {
             let gas: Gas = new Gas();
 
@@ -56,9 +61,22 @@ action.post(
             gas.setValue('deadline', _deadline);
             gas.setValue('degree', 0);
 
-            return gas.save(null, { useMasterKey: true }).catch((e) => {
-                throw e;
-            });
+            gass.push(gas);
+
+            return gas.save(null, { useMasterKey: true });
+        });
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        tasks = gass.map((value, index, array) => {
+            let message: MessageResident = new MessageResident();
+
+            message.setValue('resident', value.getValue('resident'));
+            message.setValue('gas', value);
+
+            return message.save(null, { useMasterKey: true });
         });
 
         await Promise.all(tasks).catch((e) => {
@@ -85,10 +103,13 @@ action.get(
         let _input: InputR = data.inputType;
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
-        let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
 
-        let query: Parse.Query<Gas> = new Parse.Query(Gas).equalTo('date', _date);
+        let query: Parse.Query<Gas> = new Parse.Query(Gas);
 
+        if (_input.date) {
+            let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
+            query.equalTo('date', _date);
+        }
         if (_input.status === 'filled') {
             query.notEqualTo('degree', 0);
         } else if (_input.status === 'unfilled') {

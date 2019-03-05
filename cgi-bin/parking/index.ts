@@ -35,6 +35,7 @@ action.post(
         }
 
         parking = new Parking();
+
         parking.setValue('creator', data.user);
         parking.setValue('name', _input.name);
         parking.setValue('cost', _input.cost);
@@ -81,12 +82,7 @@ action.get(
             });
 
         let tasks: Promise<any>[] = parkings.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo)
-                .equalTo('resident', value.getValue('resident'))
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
+            return new Parse.Query(CharacterResidentInfo).equalTo('resident', value.getValue('resident')).first();
         });
         let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;

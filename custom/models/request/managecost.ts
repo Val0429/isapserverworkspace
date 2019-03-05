@@ -4,7 +4,7 @@ export interface IIndexC {
 }
 
 export interface IIndexR {
-    date: Date;
+    date?: Date;
     status: 'all' | 'received' | 'unreceived' | 'overdue';
 }
 

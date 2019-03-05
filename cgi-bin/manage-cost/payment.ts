@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, ManageCost } from '../../custom/models';
+import { IRequest, IResponse, ManageCost, MessageResident } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -39,6 +39,15 @@ action.put(
         manageCost.setValue('status', manageCost.getValue('balance') === 0 ? Enum.ReceiveStatus.received : Enum.ReceiveStatus.unreceived);
 
         await manageCost.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', manageCost.getValue('resident'));
+        message.setValue('manageCost', manageCost);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 

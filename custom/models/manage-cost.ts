@@ -32,9 +32,14 @@ export interface IManageCost {
     status: Enum.ReceiveStatus;
 
     /**
-     * 總金額
+     * 停車費
      */
-    total: number;
+    parkingCost: number;
+
+    /**
+     * 住戶管理費
+     */
+    manageCost: number;
 
     /**
      * 剩餘金額

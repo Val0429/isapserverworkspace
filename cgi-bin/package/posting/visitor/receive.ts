@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PackagePosting, CharacterResident } from '../../../../custom/models';
+import { IRequest, IResponse, PackagePosting, MessageResident } from '../../../../custom/models';
 import * as Enum from '../../../../custom/enums';
 import { File } from 'workspace/custom/helpers';
 
@@ -43,6 +43,15 @@ action.put(
         packagePosting.setValue('receiverSrc', receiverSrc);
 
         await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', packagePosting.getValue('resident'));
+        message.setValue('packagePosting', packagePosting);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 

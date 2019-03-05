@@ -42,6 +42,7 @@ export interface IResidentIndexR {
 export interface IResidentAll {
     redsidentId: string;
     address: string;
+    barcode: string;
 }
 
 export interface IResidentInfoIndexC {

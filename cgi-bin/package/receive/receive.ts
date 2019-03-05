@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PackageReceive, CharacterResident } from '../../../custom/models';
+import { IRequest, IResponse, PackageReceive, MessageResident } from '../../../custom/models';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -46,6 +46,15 @@ action.put(
         packageReceive.setValue('memo', _input.memo);
 
         await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', packageReceive.getValue('resident'));
+        message.setValue('packageReceive', packageReceive);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 

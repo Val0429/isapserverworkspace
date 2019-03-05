@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, PackageReturn } from '../../../custom/models';
+import { IRequest, IResponse, CharacterResident, PackageReturn, MessageResident } from '../../../custom/models';
 import * as Enum from '../../../custom/enums';
 import { Draw, Parser, Print } from 'workspace/custom/helpers';
 
@@ -51,6 +51,15 @@ action.post(
             throw e;
         });
 
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', packageReturn.getValue('resident'));
+        message.setValue('packageReturn', packageReturn);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
         return {
             packageReturnId: packageReturn.id,
         };
@@ -60,7 +69,7 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IPackage.IReceiveIndexR & IRequest.IDataList;
+type InputR = IRequest.IDataList & IRequest.IPackage.IReceiveIndexR;
 
 type OutputR = IResponse.IDataList<IResponse.IPackage.IReturnIndexR[]>;
 
@@ -75,14 +84,16 @@ action.get(
         let _count: number = _input.count || 10;
 
         let query: Parse.Query<PackageReturn> = new Parse.Query(PackageReturn);
-        if (_input.status !== null && _input.status !== undefined) {
-            query.equalTo('status', _input.status);
-        }
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', _input.start);
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+        }
+        if (_input.status === 'received') {
+            query.equalTo('status', Enum.ReceiveStatus.received);
+        } else if (_input.status === 'unreceived') {
+            query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -157,6 +168,15 @@ action.put(
         packageReturn.setValue('adjustReason', _input.adjustReason);
 
         await packageReturn.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', packageReturn.getValue('resident'));
+        message.setValue('packageReturn', packageReturn);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 

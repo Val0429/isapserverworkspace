@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Listen } from '../../custom/models';
+import { IRequest, IResponse, Listen, MessageResident } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
@@ -31,12 +31,26 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['listen not found']);
         }
 
-        listen.setValue('replier', data.user);
-        listen.setValue('replyDate', new Date());
-        listen.setValue('replyContent', _input.replyContent);
+        listen.setValue(
+            'replys',
+            listen.getValue('replys').concat({
+                replier: data.user,
+                content: _input.replyContent,
+                date: new Date(),
+            }),
+        );
         listen.setValue('status', Enum.ReceiveStatus.received);
 
         await listen.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        let message: MessageResident = new MessageResident();
+
+        message.setValue('resident', listen.getValue('resident'));
+        message.setValue('listen', listen);
+
+        await message.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
         });
 

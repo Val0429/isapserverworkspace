@@ -8,6 +8,7 @@ export * from './character-resident';
 export * from './gas';
 export * from './listen';
 export * from './manage-cost';
+export * from './message-resident';
 export * from './package-base';
 export * from './package-posting';
 export * from './package-receive';
