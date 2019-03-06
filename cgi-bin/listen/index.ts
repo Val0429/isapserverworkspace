@@ -25,6 +25,11 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
+        let extension: string = '';
+        if (_input.attachment) {
+            extension = GetExtension(_input.attachment);
+        }
+
         let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId);
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
@@ -44,8 +49,8 @@ action.post(
             throw e;
         });
 
-        if (_input.attachment && _input.extension) {
-            let attachmentSrc: string = `files/${listen.id}_listen_${listen.createdAt.getTime()}.${_input.extension}`;
+        if (_input.attachment) {
+            let attachmentSrc: string = `files/${listen.id}_listen_${listen.createdAt.getTime()}.${extension}`;
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
 
             listen.setValue('attachmentSrc', attachmentSrc);
@@ -236,3 +241,30 @@ action.delete(
         return new Date();
     },
 );
+
+/**
+ * Get file extension
+ * (image/jpeg、image/png、application/pdf、audio/mp4、video/mp4、video/x-ms-wmv)
+ * @param data
+ */
+export function GetExtension(data: string): string {
+    try {
+        if (data.indexOf('image/jpeg') > -1) {
+            return 'jpeg';
+        } else if (data.indexOf('image/png') > -1) {
+            return 'png';
+        } else if (data.indexOf('application/pdf') > -1) {
+            return 'pdf';
+        } else if (data.indexOf('audio/mp4') > -1) {
+            return 'mp4';
+        } else if (data.indexOf('video/mp4') > -1) {
+            return 'mp4';
+        } else if (data.indexOf('video/x-ms-wmv') > -1) {
+            return 'wmv';
+        } else {
+            throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
+        }
+    } catch (e) {
+        throw e;
+    }
+}

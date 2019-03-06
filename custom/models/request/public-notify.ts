@@ -3,7 +3,6 @@ export interface IIndexBase {
     title: string;
     content: string;
     attachment?: string;
-    extension?: string;
 }
 
 export interface IIndexC extends IIndexBase {}

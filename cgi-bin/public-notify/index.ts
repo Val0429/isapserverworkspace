@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResident, MessageResident } from '../../custom/models';
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
+import { GetExtension } from '../listen';
 
 let action = new Action({
     loginRequired: true,
@@ -25,6 +26,11 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
+        let extension: string = '';
+        if (_input.attachment) {
+            extension = GetExtension(_input.attachment);
+        }
+
         let publicNotify: PublicNotify = new PublicNotify();
 
         publicNotify.setValue('creator', data.user);
@@ -37,8 +43,8 @@ action.post(
             throw e;
         });
 
-        if (_input.attachment && _input.extension) {
-            let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${_input.extension}`;
+        if (_input.attachment) {
+            let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${extension}`;
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
 
             publicNotify.setValue('attachmentSrc', attachmentSrc);
@@ -157,6 +163,11 @@ action.put(
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
 
+        let extension: string = '';
+        if (_input.attachment) {
+            extension = GetExtension(_input.attachment);
+        }
+
         let publicNotify: PublicNotify = await new Parse.Query(PublicNotify).get(_input.publicNotifyId).catch((e) => {
             throw e;
         });
@@ -172,8 +183,8 @@ action.put(
             throw e;
         });
 
-        if (_input.attachment && _input.extension) {
-            let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${_input.extension}`;
+        if (_input.attachment) {
+            let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${extension}`;
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
         }
 

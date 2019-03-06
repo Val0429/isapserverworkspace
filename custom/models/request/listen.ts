@@ -1,7 +1,6 @@
 export interface IIndexBase {
     title: string;
     content: string;
-    extension?: string;
     attachment?: string;
 }
 
