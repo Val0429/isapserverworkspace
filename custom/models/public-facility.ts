@@ -2,7 +2,8 @@ import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper
 import { IDateRange } from './';
 
 export interface IDayRange extends IDateRange {
-    days: string[];
+    startDay: string;
+    endDay: string;
 }
 
 /**

@@ -24,13 +24,13 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
-        let _start: Date = _input.date.start.getTime() > _input.date.end.getTime() ? _input.date.end : _input.date.start;
-        let _end: Date = _input.date.start.getTime() > _input.date.end.getTime() ? _input.date.start : _input.date.end;
+        let _start: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.endDate : _input.date.startDate;
+        let _end: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.startDate : _input.date.endDate;
 
         let publicCalendar: PublicCalendar = new PublicCalendar();
 
         publicCalendar.setValue('creator', data.user);
-        publicCalendar.setValue('date', { start: _start, end: _end });
+        publicCalendar.setValue('date', { startDate: _start, endDate: _end });
         publicCalendar.setValue('title', _input.title);
         publicCalendar.setValue('content', _input.content);
 
@@ -133,10 +133,10 @@ action.put(
             throw e;
         });
 
-        let _start: Date = _input.date.start.getTime() > _input.date.end.getTime() ? _input.date.end : _input.date.start;
-        let _end: Date = _input.date.start.getTime() > _input.date.end.getTime() ? _input.date.start : _input.date.end;
+        let _start: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.endDate : _input.date.startDate;
+        let _end: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.startDate : _input.date.endDate;
 
-        publicCalendar.setValue('date', { start: _start, end: _end });
+        publicCalendar.setValue('date', { startDate: _start, endDate: _end });
         publicCalendar.setValue('title', _input.title);
         publicCalendar.setValue('content', _input.content);
 

@@ -43,16 +43,16 @@ action.post(
 
         let reservation: PublicFacilityReservation = new PublicFacilityReservation();
 
-        let _start: Date = _input.reservationDates.start.getTime() > _input.reservationDates.end.getTime() ? _input.reservationDates.end : _input.reservationDates.start;
-        let _end: Date = _input.reservationDates.start.getTime() > _input.reservationDates.end.getTime() ? _input.reservationDates.start : _input.reservationDates.end;
+        let _start: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.endDate : _input.reservationDates.startDate;
+        let _end: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.startDate : _input.reservationDates.endDate;
 
         reservation.setValue('creator', data.user);
         reservation.setValue('facility', publicFacility);
         reservation.setValue('resident', resident);
         reservation.setValue('count', _input.count);
         reservation.setValue('reservationDates', {
-            start: _start,
-            end: _end,
+            startDate: _start,
+            endDate: _end,
         });
 
         await reservation.save(null, { useMasterKey: true }).catch((e) => {
@@ -182,19 +182,19 @@ action.put(
         }
 
         let now: Date = new Date();
-        if (reservation.getValue('reservationDates').start.getTime() < now.getTime()) {
+        if (reservation.getValue('reservationDates').startDate.getTime() < now.getTime()) {
             throw Errors.throw(Errors.CustomBadRequest, ['over time']);
         }
 
-        let _start: Date = _input.reservationDates.start.getTime() > _input.reservationDates.end.getTime() ? _input.reservationDates.end : _input.reservationDates.start;
-        let _end: Date = _input.reservationDates.start.getTime() > _input.reservationDates.end.getTime() ? _input.reservationDates.start : _input.reservationDates.end;
+        let _start: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.endDate : _input.reservationDates.startDate;
+        let _end: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.startDate : _input.reservationDates.endDate;
 
         reservation.getValue('resident').setValue('pointBalance', reservation.getValue('resident').getValue('pointBalance') + reservation.getValue('facility').getValue('pointCost') * (reservation.getValue('count') - _input.count));
         reservation.setValue('creator', data.user);
         reservation.setValue('count', _input.count);
         reservation.setValue('reservationDates', {
-            start: _start,
-            end: _end,
+            startDate: _start,
+            endDate: _end,
         });
 
         await reservation.save(null, { useMasterKey: true }).catch((e) => {
@@ -241,7 +241,7 @@ action.delete(
             reservations.map((value, index, array) => {
                 let _tasks: Promise<any>[] = [value.destroy({ useMasterKey: true })];
 
-                if (value.getValue('reservationDates').start.getTime() > now.getTime()) {
+                if (value.getValue('reservationDates').startDate.getTime() > now.getTime()) {
                     value.getValue('resident').setValue('pointBalance', value.getValue('resident').getValue('pointBalance') + value.getValue('count') * value.getValue('facility').getValue('pointCost'));
                     _tasks.push(value.getValue('resident').save(null, { useMasterKey: true }));
                 }

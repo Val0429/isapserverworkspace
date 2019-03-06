@@ -26,16 +26,18 @@ action.post(
         let _input: InputC = data.inputType;
         let _openDates: IDayRange[] = _input.openDates.map((value, index, array) => {
             return {
-                days: value.days,
-                start: new Date(new Date(value.start).setFullYear(0, 0, 1)),
-                end: new Date(new Date(value.end).setFullYear(0, 0, 1)),
+                startDay: value.startDay,
+                endDay: value.endDay,
+                startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
+                endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
             };
         });
         let _maintenanceDates: IDayRange[] = _input.maintenanceDates.map((value, index, array) => {
             return {
-                days: value.days,
-                start: new Date(new Date(value.start).setFullYear(0, 0, 1)),
-                end: new Date(new Date(value.end).setFullYear(0, 0, 1)),
+                startDay: value.startDay,
+                endDay: value.endDay,
+                startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
+                endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
             };
         });
 
@@ -137,16 +139,18 @@ action.put(
         let _input: InputU = data.inputType;
         let _openDates: IDayRange[] = _input.openDates.map((value, index, array) => {
             return {
-                days: value.days,
-                start: new Date(new Date(value.start).setFullYear(0, 0, 1)),
-                end: new Date(new Date(value.end).setFullYear(0, 0, 1)),
+                startDay: value.startDay,
+                endDay: value.endDay,
+                startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
+                endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
             };
         });
         let _maintenanceDates: IDayRange[] = _input.maintenanceDates.map((value, index, array) => {
             return {
-                days: value.days,
-                start: new Date(new Date(value.start).setFullYear(0, 0, 1)),
-                end: new Date(new Date(value.end).setFullYear(0, 0, 1)),
+                startDay: value.startDay,
+                endDay: value.endDay,
+                startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
+                endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
             };
         });
 

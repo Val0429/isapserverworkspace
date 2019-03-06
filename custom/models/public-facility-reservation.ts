@@ -2,8 +2,8 @@ import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper
 import { CharacterResident, PublicFacility } from './';
 
 export interface IDateRange {
-    start: Date;
-    end: Date;
+    startDate: Date;
+    endDate: Date;
 }
 
 /**
