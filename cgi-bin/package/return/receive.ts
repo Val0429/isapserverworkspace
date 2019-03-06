@@ -1,6 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PackageReturn, MessageResident } from '../../../custom/models';
 import * as Enum from '../../../custom/enums';
+import * as Notice from '../../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -50,13 +51,14 @@ action.put(
             throw e;
         });
 
-        let message: MessageResident = new MessageResident();
-
-        message.setValue('resident', packageReturn.getValue('resident'));
-        message.setValue('packageReturn', packageReturn);
-
-        await message.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
+        Notice.notice$.next({
+            resident: packageReturn.getValue('resident'),
+            type: Enum.MessageType.packageReturnReceive,
+            data: packageReturn,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
         });
 
         return new Date();

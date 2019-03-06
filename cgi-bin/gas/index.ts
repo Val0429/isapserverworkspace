@@ -1,5 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Gas, CharacterResident, MessageResident } from '../../custom/models';
+import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -70,17 +72,16 @@ action.post(
             throw e;
         });
 
-        tasks = gass.map((value, index, array) => {
-            let message: MessageResident = new MessageResident();
-
-            message.setValue('resident', value.getValue('resident'));
-            message.setValue('gas', value);
-
-            return message.save(null, { useMasterKey: true });
-        });
-
-        await Promise.all(tasks).catch((e) => {
-            throw e;
+        gass.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value.getValue('resident'),
+                type: Enum.MessageType.gasNew,
+                data: value,
+                message: {
+                    date: _date,
+                    content: '',
+                },
+            });
         });
 
         return new Date();
@@ -180,6 +181,16 @@ action.put(
 
         await gas.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
+        });
+
+        Notice.notice$.next({
+            resident: gas.getValue('resident'),
+            type: Enum.MessageType.gasUpdate,
+            data: gas,
+            message: {
+                date: gas.getValue('date'),
+                content: '',
+            },
         });
 
         return new Date();

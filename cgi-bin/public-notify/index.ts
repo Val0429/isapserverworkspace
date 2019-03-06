@@ -3,6 +3,7 @@ import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResiden
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import { GetExtension } from '../listen';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -66,17 +67,16 @@ action.post(
                 throw e;
             });
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            let message: MessageResident = new MessageResident();
-
-            message.setValue('resident', value);
-            message.setValue('publicNotify', publicNotify);
-
-            return message.save(null, { useMasterKey: true });
-        });
-
-        await Promise.all(tasks).catch((e) => {
-            throw e;
+        residents.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value,
+                type: Enum.MessageType.publicNotifyNew,
+                data: publicNotify,
+                message: {
+                    date: new Date(),
+                    content: ``,
+                },
+            });
         });
 
         return {
@@ -200,17 +200,16 @@ action.put(
                 throw e;
             });
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            let message: MessageResident = new MessageResident();
-
-            message.setValue('resident', value);
-            message.setValue('publicNotify', publicNotify);
-
-            return message.save(null, { useMasterKey: true });
-        });
-
-        await Promise.all(tasks).catch((e) => {
-            throw e;
+        residents.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value,
+                type: Enum.MessageType.publicNotifyUpdate,
+                data: publicNotify,
+                message: {
+                    date: new Date(),
+                    content: ``,
+                },
+            });
         });
 
         return new Date();
@@ -255,6 +254,31 @@ action.delete(
             if (value.getValue('attachmentSrc') && value.getValue('attachmentSrc') !== '') {
                 File.DeleteFile(`${File.assetsPath}/${value.getValue('attachmentSrc')}`);
             }
+        });
+
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        residents.forEach((value, index, array) => {
+            publicNotifys.forEach((value1, index1, array1) => {
+                Notice.notice$.next({
+                    resident: value,
+                    type: Enum.MessageType.publicNotifyDelete,
+                    message: {
+                        date: new Date(),
+                        content: ``,
+                    },
+                });
+            });
         });
 
         return new Date();

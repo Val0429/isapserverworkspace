@@ -1,6 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, ManageCost, MessageResident } from '../../custom/models';
 import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -42,13 +43,14 @@ action.put(
             throw e;
         });
 
-        let message: MessageResident = new MessageResident();
-
-        message.setValue('resident', manageCost.getValue('resident'));
-        message.setValue('manageCost', manageCost);
-
-        await message.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
+        Notice.notice$.next({
+            resident: manageCost.getValue('resident'),
+            type: Enum.MessageType.manageCostPayment,
+            data: manageCost,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
         });
 
         return new Date();

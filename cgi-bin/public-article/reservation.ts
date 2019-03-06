@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo, MessageResident } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 import { Print } from '../../custom/helpers';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -60,13 +61,14 @@ action.post(
             throw e;
         });
 
-        let message: MessageResident = new MessageResident();
-
-        message.setValue('resident', reservation.getValue('resident'));
-        message.setValue('publicArticleReservation', reservation);
-
-        await message.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
+        Notice.notice$.next({
+            resident: reservation.getValue('resident'),
+            type: Enum.MessageType.publicArticleReservationNew,
+            data: reservation,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
         });
 
         return {
@@ -205,6 +207,16 @@ action.put(
             throw e;
         });
 
+        Notice.notice$.next({
+            resident: reservation.getValue('resident'),
+            type: Enum.MessageType.publicArticleReservationReply,
+            data: reservation,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
+        });
+
         return new Date();
     },
 );
@@ -237,7 +249,7 @@ action.delete(
         });
 
         tasks = [].concat(
-            reservations.map((value, index, array) => {
+            ...reservations.map((value, index, array) => {
                 value.getValue('article').setValue('lendCount', value.getValue('article').getValue('lendCount') - value.getValue('lendCount'));
 
                 return [value.destroy({ useMasterKey: true }), value.getValue('article').save(null, { useMasterKey: true })];
@@ -245,6 +257,17 @@ action.delete(
         );
         await Promise.all(tasks).catch((e) => {
             throw e;
+        });
+
+        reservations.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value.getValue('resident'),
+                type: Enum.MessageType.publicArticleReservationDelete,
+                message: {
+                    date: new Date(),
+                    content: ``,
+                },
+            });
         });
 
         return new Date();

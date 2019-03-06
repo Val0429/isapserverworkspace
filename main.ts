@@ -6,6 +6,8 @@ import { Print, Utility, File } from './custom/helpers';
 import './custom/shells/create-index';
 import './custom/shells/auto-index';
 
+import './custom/services/notice';
+
 setTimeout(() => {
     let assets: string[] = ['images', 'files'];
     assets.forEach((value, index, array) => {

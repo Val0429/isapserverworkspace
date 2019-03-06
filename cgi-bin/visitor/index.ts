@@ -1,6 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor, MessageResident } from '../../custom/models';
 import { File } from '../../custom/helpers';
+import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -55,13 +57,14 @@ action.post(
             throw e;
         });
 
-        let message: MessageResident = new MessageResident();
-
-        message.setValue('resident', resident);
-        message.setValue('visitor', visitor);
-
-        await message.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
+        Notice.notice$.next({
+            resident: resident,
+            type: Enum.MessageType.visitorNew,
+            data: visitor,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
         });
 
         return {
@@ -173,6 +176,17 @@ action.delete(
 
         visitors.forEach((value, index, array) => {
             File.DeleteFile(`${File.assetsPath}/${value.getValue('visitorSrc')}`);
+        });
+
+        visitors.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value.getValue('resident'),
+                type: Enum.MessageType.visitorDelete,
+                message: {
+                    date: new Date(),
+                    content: ``,
+                },
+            });
         });
 
         return new Date();

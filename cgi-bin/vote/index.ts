@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, MessageResident } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -61,17 +62,16 @@ action.post(
                 throw e;
             });
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            let message: MessageResident = new MessageResident();
-
-            message.setValue('resident', value);
-            message.setValue('vote', vote);
-
-            return message.save(null, { useMasterKey: true });
-        });
-
-        await Promise.all(tasks).catch((e) => {
-            throw e;
+        residents.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value,
+                type: Enum.MessageType.voteNew,
+                data: vote,
+                message: {
+                    date: new Date(),
+                    content: ``,
+                },
+            });
         });
 
         return {
@@ -210,17 +210,16 @@ action.put(
                 throw e;
             });
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            let message: MessageResident = new MessageResident();
-
-            message.setValue('resident', value);
-            message.setValue('vote', vote);
-
-            return message.save(null, { useMasterKey: true });
-        });
-
-        await Promise.all(tasks).catch((e) => {
-            throw e;
+        residents.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value,
+                type: Enum.MessageType.voteUpdate,
+                data: vote,
+                message: {
+                    date: new Date(),
+                    content: ``,
+                },
+            });
         });
 
         return new Date();
@@ -259,6 +258,31 @@ action.delete(
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
+        });
+
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+
+        let total: number = await query.count().catch((e) => {
+            throw e;
+        });
+        let residents: CharacterResident[] = await query
+            .limit(total)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        residents.forEach((value, index, array) => {
+            votes.forEach((value1, index1, array1) => {
+                Notice.notice$.next({
+                    resident: value,
+                    type: Enum.MessageType.voteDelete,
+                    message: {
+                        date: new Date(),
+                        content: ``,
+                    },
+                });
+            });
         });
 
         return new Date();

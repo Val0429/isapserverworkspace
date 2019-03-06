@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, PackageReceive, MessageResident } from '../../../custom/models';
 import * as Enum from '../../../custom/enums';
 import { Draw, Parser, Print } from 'workspace/custom/helpers';
+import * as Notice from '../../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -51,13 +52,14 @@ action.post(
             throw e;
         });
 
-        let message: MessageResident = new MessageResident();
-
-        message.setValue('resident', packageReceive.getValue('resident'));
-        message.setValue('packageReceive', packageReceive);
-
-        await message.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
+        Notice.notice$.next({
+            resident: packageReceive.getValue('resident'),
+            type: Enum.MessageType.packageReceiveNew,
+            data: packageReceive,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
         });
 
         return {
@@ -171,13 +173,14 @@ action.put(
             throw e;
         });
 
-        let message: MessageResident = new MessageResident();
-
-        message.setValue('resident', packageReceive.getValue('resident'));
-        message.setValue('packageReceive', packageReceive);
-
-        await message.save(null, { useMasterKey: true }).catch((e) => {
-            throw e;
+        Notice.notice$.next({
+            resident: packageReceive.getValue('resident'),
+            type: Enum.MessageType.packageReceiveUpdate,
+            data: packageReceive,
+            message: {
+                date: new Date(),
+                content: ``,
+            },
         });
 
         return new Date();

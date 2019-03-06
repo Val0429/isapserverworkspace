@@ -1,5 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import { CharacterResident, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '.';
+import * as Enum from '../enums';
 
 /**
  * 未讀訊息
@@ -9,6 +10,11 @@ export interface IMessageResident {
      * 住戶
      */
     resident: CharacterResident;
+
+    /**
+     * 訊息類型
+     */
+    type: Enum.MessageType;
 
     /**
      * 新郵件、收取郵件
