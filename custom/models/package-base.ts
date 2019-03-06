@@ -1,5 +1,6 @@
 import * as Enum from '../enums';
 import { CharacterResident } from '.';
+import { Parser } from '../helpers';
 
 /**
  * 郵件
@@ -44,4 +45,9 @@ export interface IPackageBase {
      * 調整原因
      */
     adjustReason: string;
+
+    /**
+     * 經辦人
+     */
+    manager: Parse.User;
 }

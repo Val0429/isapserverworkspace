@@ -44,6 +44,7 @@ action.put(
 
         packageReceive.setValue('status', Enum.ReceiveStatus.received);
         packageReceive.setValue('memo', _input.memo);
+        packageReceive.setValue('manager', data.user);
 
         await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
