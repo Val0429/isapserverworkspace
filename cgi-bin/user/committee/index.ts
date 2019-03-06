@@ -29,9 +29,7 @@ action.post(
             {
                 account: _input.account,
                 password: _input.password,
-                roles: _input.roles.map((value, index, array) => {
-                    return RoleList[value];
-                }),
+                roles: [RoleList[_input.role]],
             },
             availableRoles,
         );
