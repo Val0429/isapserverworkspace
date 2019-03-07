@@ -34,6 +34,7 @@ action.post(
         publicCalendar.setValue('date', { startDate: _start, endDate: _end });
         publicCalendar.setValue('title', _input.title);
         publicCalendar.setValue('content', _input.content);
+        publicCalendar.setValue('aims', _input.aims);
 
         await publicCalendar.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -109,6 +110,7 @@ action.get(
                 date: value.getValue('date'),
                 title: value.getValue('title'),
                 content: value.getValue('content'),
+                aims: value.getValue('aims'),
             };
         });
     },

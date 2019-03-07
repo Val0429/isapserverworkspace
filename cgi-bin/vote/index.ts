@@ -45,6 +45,7 @@ action.post(
             }),
         );
         vote.setValue('status', Enum.ReceiveStatus.unreceived);
+        vote.setValue('aims', _input.aims);
 
         await vote.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -145,6 +146,7 @@ action.get(
                     }),
                     status: value.getValue('status'),
                     sponsorName: committees[index] ? committees[index].getValue('name') : '',
+                    aims: value.getValue('aims'),
                 };
             }),
         };

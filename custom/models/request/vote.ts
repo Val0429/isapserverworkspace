@@ -1,9 +1,12 @@
+import * as Enum from '../../enums';
+
 export interface IIndexC {
     date: Date;
     deadline: Date;
     title: string;
     content: string;
     options: string[];
+    aims: Enum.ResidentCharacter[];
 }
 
 export interface IIndexR {

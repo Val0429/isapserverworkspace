@@ -18,6 +18,7 @@ export interface IIndexR {
     options: string[];
     status: Enum.ReceiveStatus;
     sponsorName: string;
+    aims: Enum.ResidentCharacter[];
 }
 
 export interface IBilling {

@@ -39,6 +39,7 @@ action.post(
         publicNotify.setValue('title', _input.title);
         publicNotify.setValue('content', _input.content);
         publicNotify.setValue('attachmentSrc', '');
+        publicNotify.setValue('aims', _input.aims);
 
         await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -141,6 +142,7 @@ action.get(
                     content: value.getValue('content'),
                     attachmentSrc: value.getValue('attachmentSrc'),
                     creatorName: committees[index] ? committees[index].getValue('name') : '',
+                    aims: value.getValue('aims'),
                 };
             }),
         };

@@ -1,3 +1,5 @@
+import * as Enum from '../../enums';
+
 export interface IIndexBase {
     date: Date;
     title: string;
@@ -5,7 +7,9 @@ export interface IIndexBase {
     attachment?: string;
 }
 
-export interface IIndexC extends IIndexBase {}
+export interface IIndexC extends IIndexBase {
+    aims: Enum.ResidentCharacter[];
+}
 
 export interface IIndexR {
     start?: Date;

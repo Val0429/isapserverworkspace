@@ -45,6 +45,11 @@ export interface IVote {
      * 狀態
      */
     status: Enum.ReceiveStatus;
+
+    /**
+     * 投票範圍
+     */
+    aims: Enum.ResidentCharacter[];
 }
 
 @registerSubclass()

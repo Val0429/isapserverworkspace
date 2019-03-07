@@ -1,4 +1,5 @@
 import { IDateRange } from '../';
+import * as Enum from '../../enums';
 
 export interface IIndexBase {
     date: IDateRange;
@@ -6,7 +7,9 @@ export interface IIndexBase {
     content: string;
 }
 
-export interface IIndexC extends IIndexBase {}
+export interface IIndexC extends IIndexBase {
+    aims: Enum.ResidentCharacter[];
+}
 
 export interface IIndexR {
     start?: Date;

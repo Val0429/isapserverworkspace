@@ -1,5 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import { IDateRange } from './';
+import * as Enum from '../enums';
 
 /**
  * 行事曆
@@ -24,6 +25,11 @@ export interface IPublicCalendar {
      * 內容
      */
     content: string;
+
+    /**
+     * 投票範圍
+     */
+    aims: Enum.ResidentCharacter[];
 }
 
 @registerSubclass()
