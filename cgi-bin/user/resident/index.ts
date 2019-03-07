@@ -150,7 +150,7 @@ action.get(
                     manageCost: value.getValue('manageCost'),
                     pointTotal: value.getValue('pointTotal'),
                     pointBalance: value.getValue('pointBalance'),
-                    barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(value.getValue('barcode'), 0.5, 25).toString(Parser.Encoding.base64)),
+                    barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(value.getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
                 };
             }),
         };

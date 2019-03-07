@@ -205,11 +205,11 @@ export namespace Draw {
     /**
      * Generate barcode image
      */
-    export function Barcode(message: string, quality: number = 1, fontSize: number = 20, width: number = 2, height: number = 100): Buffer {
+    export function Barcode(message: string, quality: number = 1, displayValue = true, fontSize: number = 20, width: number = 2, height: number = 100): Buffer {
         try {
             let canvas = Canvas.createCanvas();
 
-            JsBarcode(canvas, message, { width: width, height: height, fontSize: fontSize, fontOptions: 'bold' });
+            JsBarcode(canvas, message, { width: width, height: height, fontSize: fontSize, fontOptions: 'bold', displayValue: displayValue });
 
             return canvas.toBuffer('image/jpeg', { quality: quality });
         } catch (e) {

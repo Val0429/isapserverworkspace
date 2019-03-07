@@ -63,7 +63,7 @@ action.post(
             education: residentInfo.getValue('education'),
             career: residentInfo.getValue('career'),
             character: residentInfo.getValue('character'),
-            barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(residentInfo.getValue('resident').getValue('barcode'), 0.5, 25).toString(Parser.Encoding.base64)),
+            barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(residentInfo.getValue('resident').getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
         };
     },
 );
