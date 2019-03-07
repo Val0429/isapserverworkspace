@@ -35,7 +35,6 @@ export interface IResidentIndexR {
     manageCost: number;
     pointTotal: number;
     pointBalance: number;
-    character: Enum.ResidentCharacter;
     barcode: string;
 }
 
@@ -59,6 +58,7 @@ export interface IResidentInfoIndexR {
     email: string;
     education: string;
     career: string;
+    character: Enum.ResidentCharacter;
 }
 
 export interface IResidentLogin extends IResidentInfoIndexR {

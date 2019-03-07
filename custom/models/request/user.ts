@@ -50,7 +50,6 @@ export interface IResidentIndexC {
     parkingId?: string;
     manageCost: number;
     pointTotal: number;
-    character: Enum.ResidentCharacter;
 }
 
 export interface IResidentInfoIndexC extends IUser {
@@ -80,4 +79,9 @@ export interface IResidentInfoIndexU {
 
 export interface IResidentInfoIndexD {
     userIds: string | string[];
+}
+
+export interface IResidentCharacter {
+    userId: string;
+    character: Enum.ResidentCharacter;
 }

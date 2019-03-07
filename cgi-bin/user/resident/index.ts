@@ -41,7 +41,6 @@ action.post(
         resident.setValue('pointTotal', _input.pointTotal);
         resident.setValue('pointBalance', _input.pointTotal);
         resident.setValue('pointUpdateDate', new Date());
-        resident.setValue('character', _input.character);
 
         await resident.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -151,7 +150,6 @@ action.get(
                     manageCost: value.getValue('manageCost'),
                     pointTotal: value.getValue('pointTotal'),
                     pointBalance: value.getValue('pointBalance'),
-                    character: value.getValue('character'),
                     barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(value.getValue('barcode'), 0.5, 25).toString(Parser.Encoding.base64)),
                 };
             }),

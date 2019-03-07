@@ -36,11 +36,6 @@ export interface ICharacterResident {
     pointUpdateDate: Date;
 
     /**
-     * 角色
-     */
-    character: Enum.ResidentCharacter;
-
-    /**
      * 條碼
      */
     barcode: string;

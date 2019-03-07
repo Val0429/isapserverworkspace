@@ -1,5 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
+import * as Enum from '../../../custom/enums';
 
 let action = new Action({});
 
@@ -62,7 +63,7 @@ action.post(
         residentInfo.setValue('name', _input.name);
         residentInfo.setValue('gender', _input.gender);
         residentInfo.setValue('birthday', _input.birthday);
-
+        residentInfo.setValue('character', Enum.ResidentCharacter.resident);
         residentInfo.setValue('phone', _input.phone ? _input.phone : '');
         residentInfo.setValue('lineId', _input.lineId ? _input.lineId : '');
         residentInfo.setValue('email', _input.email ? _input.email : '');
@@ -123,6 +124,7 @@ action.get(
                 email: value.getValue('email'),
                 education: value.getValue('education'),
                 career: value.getValue('career'),
+                character: value.getValue('character'),
             };
         });
     },

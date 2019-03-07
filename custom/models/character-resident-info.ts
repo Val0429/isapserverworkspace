@@ -55,6 +55,11 @@ export interface ICharacterResidentInfo {
      * 職業
      */
     career: string;
+
+    /**
+     * 角色
+     */
+    character: Enum.ResidentCharacter;
 }
 
 @registerSubclass()

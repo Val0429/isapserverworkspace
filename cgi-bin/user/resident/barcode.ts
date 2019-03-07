@@ -55,7 +55,6 @@ action.get(
             manageCost: resident.getValue('manageCost'),
             pointTotal: resident.getValue('pointTotal'),
             pointBalance: resident.getValue('pointBalance'),
-            character: resident.getValue('character'),
             barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(resident.getValue('barcode'), 0.5, 25).toString(Parser.Encoding.base64)),
         };
     },
