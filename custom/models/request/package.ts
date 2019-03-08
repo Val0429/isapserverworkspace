@@ -25,12 +25,12 @@ export interface IReceiveIndexU extends IReceiveIndexBase {
 
 export interface IReceiveReceiveBase {
     packageBarcode: string;
-    residentBarcode: string;
     memo: string;
 }
 
 export interface IReceiveReceive extends IReceiveReceiveBase {
     packageReceiveId: string;
+    residentBarcode: string;
 }
 
 export interface IReturnIndexU extends IReceiveIndexBase {
@@ -41,6 +41,7 @@ export interface IReturnIndexU extends IReceiveIndexBase {
 
 export interface IReturnReceive extends IReceiveReceiveBase {
     packageReturnId: string;
+    receiverImage: string;
 }
 
 export interface IPostingIndexU extends IReceiveIndexBase {

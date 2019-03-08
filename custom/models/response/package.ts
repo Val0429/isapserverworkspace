@@ -28,6 +28,7 @@ export interface IReturnIndexC {
 export interface IReturnIndexR extends IReceiveIndexBase {
     barcode: string;
     packageReturnId: string;
+    receiverSrc: string;
 }
 
 export interface IPostingIndexC {

@@ -36,8 +36,7 @@ export interface ICommitteeIndexC extends IUser {
 
 export interface ICommitteeIndexU {
     userId: string;
-    passwordPrevious?: string;
-    passwordCurrent?: string;
+    password?: string;
     adjustReason: string;
 }
 

@@ -47,6 +47,7 @@ action.post(
         packageReturn.setValue('memo', _input.memo);
         packageReturn.setValue('notificateCount', 0);
         packageReturn.setValue('adjustReason', '');
+        packageReturn.setValue('receiverSrc', '');
 
         await packageReturn.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -127,6 +128,7 @@ action.get(
                     memo: value.getValue('memo'),
                     notificateCount: value.getValue('notificateCount'),
                     adjustReason: value.getValue('adjustReason'),
+                    receiverSrc: value.getValue('receiverSrc'),
                 };
             }),
         };

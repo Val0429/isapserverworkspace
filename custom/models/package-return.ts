@@ -4,7 +4,12 @@ import { IPackageReceive } from '.';
 /**
  * 退件
  */
-export interface IPackageReturn extends IPackageReceive {}
+export interface IPackageReturn extends IPackageReceive {
+    /**
+     * 退貨人照片
+     */
+    receiverSrc: string;
+}
 
 @registerSubclass()
 export class PackageReturn extends ParseObject<IPackageReturn> {}

@@ -83,8 +83,7 @@ action.get(
         let committees: CharacterCommittee[] = await new Parse.Query(CharacterCommittee)
             .skip((_page - 1) * _count)
             .limit(_count)
-            .include('user')
-            .include('user.roles')
+            .include(['user', 'user.roles'])
             .find()
             .catch((e) => {
                 throw e;
@@ -140,12 +139,8 @@ action.put(
         });
         Permission.ValidateRoles(availableRoles, roles);
 
-        if (_input.passwordCurrent !== null && _input.passwordCurrent !== undefined) {
-            user = await Parse.User.logIn(user.getUsername(), _input.passwordPrevious).catch((e) => {
-                throw e;
-            });
-
-            user.setPassword(_input.passwordCurrent);
+        if (_input.password) {
+            user.setPassword(_input.password);
             await user.save(null, { useMasterKey: true }).catch((e) => {
                 throw e;
             });

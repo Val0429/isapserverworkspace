@@ -136,13 +136,12 @@ action.get(
                     status: value.getValue('status'),
                     attachmentSrc: value.getValue('attachmentSrc'),
                     replys: value.getValue('replys').map((value1, index1, array1) => {
+                        let committee: CharacterCommittee = committees.find((value2, index2, array2) => {
+                            return value2 && value2.getValue('user').id === value1.replier.id;
+                        });
                         return {
                             id: value1.replier.id,
-                            name: committees
-                                .find((value2, index2, array2) => {
-                                    return value2.getValue('user').id === value1.replier.id;
-                                })
-                                .getValue('name'),
+                            name: committee ? committee.getValue('name') : '',
                             content: value1.content,
                             date: value1.date,
                         };
