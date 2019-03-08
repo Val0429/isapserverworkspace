@@ -13,4 +13,5 @@ export interface IIndexR {
     purpose: string;
     memo: string;
     notificateCount: number;
+    status: string;
 }

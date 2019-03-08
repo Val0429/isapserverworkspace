@@ -5,4 +5,5 @@ export interface IIndexR {
     address: string;
     deadline: Date;
     degree: number;
+    status: string;
 }

@@ -1,8 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, PackageReturn, MessageResident } from '../../../custom/models';
+import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, PackageReturn } from '../../../custom/models';
 import * as Enum from '../../../custom/enums';
-import { Draw, Parser, Print } from 'workspace/custom/helpers';
+import { Draw, Parser } from 'workspace/custom/helpers';
 import * as Notice from '../../../custom/services/notice';
+import { CheckResident } from '../../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -78,7 +79,7 @@ type OutputR = IResponse.IDataList<IResponse.IPackage.IReturnIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -96,6 +97,11 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.received);
         } else if (_input.status === 'unreceived') {
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
+        }
+
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.equalTo('resident', residentInfo.getValue('resident'));
         }
 
         let total: number = await query.count().catch((e) => {

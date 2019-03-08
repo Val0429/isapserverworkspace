@@ -1,9 +1,10 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResident, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import { GetExtension } from '../listen';
 import * as Notice from '../../custom/services/notice';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -97,7 +98,7 @@ type OutputR = IResponse.IDataList<IResponse.IPublicNotify.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -110,6 +111,11 @@ action.get(
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+        }
+
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.containedIn('aims', [residentInfo.getValue('character')]);
         }
 
         let total: number = await query.count().catch((e) => {

@@ -1,8 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 import { Print } from '../../custom/helpers';
 import * as Notice from '../../custom/services/notice';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -20,7 +21,7 @@ type OutputC = IResponse.IPublicArticle.IReservationC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
@@ -88,7 +89,7 @@ type OutputR = IResponse.IDataList<IResponse.IPublicArticle.IReservationR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -114,6 +115,11 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.equalTo('resident', residentInfo.getValue('resident'));
+        }
+
         let total: number = await query.count().catch((e) => {
             throw e;
         });
@@ -121,8 +127,7 @@ action.get(
         let reservations: PublicArticleReservation[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
-            .include('resident')
-            .include('replier')
+            .include(['resident', 'replier'])
             .find()
             .catch((e) => {
                 throw e;
@@ -177,7 +182,7 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;

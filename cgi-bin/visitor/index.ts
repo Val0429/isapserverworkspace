@@ -1,8 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor } from '../../custom/models';
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -82,12 +83,16 @@ type OutputR = IResponse.IDataList<IResponse.IVisitor.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
+        let _divideMinute: number = _input.divideMinute || 30;
+        let _divideDate: Date = new Date();
+
+        _divideDate = new Date(_divideDate.setMinutes(_divideDate.getMinutes() + _divideMinute));
 
         let query: Parse.Query<Visitor> = new Parse.Query(Visitor);
         if (_input.start) {
@@ -95,6 +100,16 @@ action.get(
         }
         if (_input.end) {
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+        }
+        if (_input.status === 'curr') {
+            query.greaterThan('createdAt', _divideDate);
+        } else if (_input.status === 'prev') {
+            query.lessThan('createdAt', _divideDate);
+        }
+
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.equalTo('resident', residentInfo.getValue('resident'));
         }
 
         let total: number = await query.count().catch((e) => {
@@ -133,6 +148,7 @@ action.get(
                     purpose: value.getValue('purpose'),
                     memo: value.getValue('memo'),
                     notificateCount: value.getValue('notificateCount'),
+                    status: _input.status,
                 };
             }),
         };

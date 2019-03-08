@@ -163,6 +163,9 @@ action.put(
             .catch((e) => {
                 throw e;
             });
+        if (!residentInfo) {
+            throw Errors.throw(Errors.CustomBadRequest, ['resident info not found']);
+        }
 
         residentInfo.setValue('phone', _input.phone);
         residentInfo.setValue('lineId', _input.lineId);

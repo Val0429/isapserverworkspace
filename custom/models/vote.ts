@@ -4,7 +4,7 @@ import { CharacterResident } from './';
 
 interface IVoteOption {
     option: string;
-    resident: CharacterResident[];
+    residents: CharacterResident[];
 }
 
 /**

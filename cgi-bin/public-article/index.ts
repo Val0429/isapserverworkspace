@@ -53,7 +53,7 @@ type OutputR = IResponse.IDataList<IResponse.IPublicArticle.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;

@@ -1,8 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -25,6 +26,13 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
+        let _option: string = _input.options.find((value, index, array) => {
+            return array.lastIndexOf(value) !== index;
+        });
+        if (_option) {
+            throw Errors.throw(Errors.CustomBadRequest, ['duplicate option']);
+        }
+
         let vote: Vote = new Vote();
 
         let _start: Date = _input.date.getTime() > _input.deadline.getTime() ? _input.deadline : _input.date;
@@ -40,7 +48,7 @@ action.post(
             _input.options.map((value, index, array) => {
                 return {
                     option: value,
-                    resident: [],
+                    residents: [],
                 };
             }),
         );
@@ -92,7 +100,7 @@ type OutputR = IResponse.IDataList<IResponse.IVote.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -110,6 +118,11 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.received);
         } else if (_input.status === 'unreceived') {
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
+        }
+
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.containedIn('aims', [residentInfo.getValue('character')]);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -169,6 +182,13 @@ action.put(
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
 
+        let _option: string = _input.options.find((value, index, array) => {
+            return array.lastIndexOf(value) !== index;
+        });
+        if (_option) {
+            throw Errors.throw(Errors.CustomBadRequest, ['duplicate option']);
+        }
+
         let vote: Vote = await new Parse.Query(Vote).get(_input.voteId).catch((e) => {
             throw e;
         });
@@ -192,7 +212,7 @@ action.put(
             _input.options.map((value, index, array) => {
                 return {
                     option: value,
-                    resident: [],
+                    residents: [],
                 };
             }),
         );

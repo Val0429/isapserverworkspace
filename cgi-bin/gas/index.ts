@@ -1,7 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Gas, CharacterResident, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, Gas, CharacterResident, CharacterResidentInfo } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -97,7 +98,7 @@ type OutputR = IResponse.IDataList<IResponse.IGas.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -117,6 +118,11 @@ action.get(
         } else if (_input.status === 'overdue') {
             let deadline: Date = new Date(new Date().setHours(0, 0, 0, 0));
             query.equalTo('degree', 0).lessThan('deadline', deadline);
+        }
+
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.equalTo('resident', residentInfo.getValue('resident'));
         }
 
         let total: number = await query.count().catch((e) => {
@@ -144,6 +150,7 @@ action.get(
                     address: value.getValue('resident').getValue('address'),
                     deadline: value.getValue('deadline'),
                     degree: value.getValue('degree'),
+                    status: _input.status,
                 };
             }),
         };
@@ -160,7 +167,7 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;

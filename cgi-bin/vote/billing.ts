@@ -33,12 +33,12 @@ action.get(
 
         return {
             total: vote.getValue('options').reduce((prev, curr, index, array) => {
-                return prev + curr.resident.length;
+                return prev + curr.residents.length;
             }, 0),
             options: vote.getValue('options').map((value, index, array) => {
                 return {
                     option: value.option,
-                    count: value.resident.length,
+                    count: value.residents.length,
                 };
             }),
         };

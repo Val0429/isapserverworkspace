@@ -10,6 +10,8 @@ export interface IIndexC {
 export interface IIndexR {
     start?: Date;
     end?: Date;
+    divideMinute?: number;
+    status: 'all' | 'prev' | 'curr';
 }
 
 export interface IIndexD {

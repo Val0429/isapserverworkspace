@@ -1,8 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicFacility, PublicFacilityReservation, CharacterResident, CharacterResidentInfo, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, PublicFacility, PublicFacilityReservation, CharacterResident, CharacterResidentInfo } from '../../custom/models';
 import * as Enum from '../../custom/enums';
 import { Print } from '../../custom/helpers';
 import * as Notice from '../../custom/services/notice';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -20,7 +21,7 @@ type OutputC = IResponse.IPublicFacility.IReservationC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
@@ -92,7 +93,7 @@ type OutputR = IResponse.IDataList<IResponse.IPublicFacility.IReservationR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -113,6 +114,11 @@ action.get(
             query.equalTo('facility', facility);
         }
 
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.equalTo('resident', residentInfo.getValue('resident'));
+        }
+
         let total: number = await query.count().catch((e) => {
             throw e;
         });
@@ -120,8 +126,7 @@ action.get(
         let reservations: PublicFacilityReservation[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
-            .include('facility')
-            .include('resident')
+            .include(['facility', 'article', 'resident'])
             .find()
             .catch((e) => {
                 throw e;
@@ -158,14 +163,13 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
 
         let reservation: PublicFacilityReservation = await new Parse.Query(PublicFacilityReservation)
-            .include('facility')
-            .include('resident')
+            .include(['facility', 'resident'])
             .get(_input.reservationId)
             .catch((e) => {
                 throw e;
@@ -232,10 +236,7 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _reservationIds.map((value, index, array) => {
-            return new Parse.Query(PublicFacilityReservation)
-                .include('facility')
-                .include('resident')
-                .get(value);
+            return new Parse.Query(PublicFacilityReservation).include(['facility', 'resident']).get(value);
         });
         let reservations: PublicFacilityReservation[] = await Promise.all(tasks).catch((e) => {
             throw e;

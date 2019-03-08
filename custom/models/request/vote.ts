@@ -26,3 +26,8 @@ export interface IIndexD {
 export interface IBilling {
     voteId: string;
 }
+
+export interface IVoting {
+    voteId?: string;
+    option: string;
+}

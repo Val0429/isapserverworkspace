@@ -1,7 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterCommittee, CharacterResident, Listen } from '../../custom/models';
+import { IRequest, IResponse, CharacterCommittee, CharacterResident, CharacterResidentInfo, Listen } from '../../custom/models';
 import { File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
+import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -20,7 +21,7 @@ action.post(
     {
         inputType: 'InputC',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
@@ -76,7 +77,7 @@ type OutputR = IResponse.IDataList<IResponse.IListen.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -96,6 +97,11 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
+        let residentInfo: CharacterResidentInfo = await CheckResident(data);
+        if (residentInfo) {
+            query.equalTo('resident', residentInfo.getValue('resident'));
+        }
+
         let total: number = await query.count().catch((e) => {
             throw e;
         });
@@ -103,8 +109,7 @@ action.get(
         let listens: Listen[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
-            .include('resident')
-            .include('replier')
+            .include(['resident', 'replier'])
             .find()
             .catch((e) => {
                 throw e;
