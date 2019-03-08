@@ -68,8 +68,7 @@ action.post(
             type: Enum.MessageType.packagePostingNew,
             data: packagePosting,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packagePosting.createdAt,
             },
         });
 

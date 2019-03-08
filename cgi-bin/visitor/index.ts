@@ -62,8 +62,7 @@ action.post(
             type: Enum.MessageType.visitorNew,
             data: visitor,
             message: {
-                date: new Date(),
-                content: ``,
+                visitor: visitor.getValue('name'),
             },
         });
 
@@ -183,8 +182,7 @@ action.delete(
                 resident: value.getValue('resident'),
                 type: Enum.MessageType.visitorDelete,
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    visitor: value.getValue('name'),
                 },
             });
         });

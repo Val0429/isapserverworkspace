@@ -71,8 +71,8 @@ action.post(
             type: Enum.MessageType.publicFacilityReservationNew,
             data: reservation,
             message: {
-                date: new Date(),
-                content: ``,
+                facility: publicFacility.getValue('name'),
+                dateRange: reservation.getValue('reservationDates'),
             },
         });
 
@@ -202,8 +202,8 @@ action.put(
             type: Enum.MessageType.publicFacilityReservationUpdate,
             data: reservation,
             message: {
-                date: new Date(),
-                content: ``,
+                facility: reservation.getValue('facility').getValue('name'),
+                dateRange: reservation.getValue('reservationDates'),
             },
         });
 
@@ -264,8 +264,8 @@ action.delete(
                 resident: value.getValue('resident'),
                 type: Enum.MessageType.publicFacilityReservationDelete,
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    facility: value.getValue('facility').getValue('name'),
+                    dateRange: value.getValue('reservationDates'),
                 },
             });
         });

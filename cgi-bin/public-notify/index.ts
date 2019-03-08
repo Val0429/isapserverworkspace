@@ -73,9 +73,10 @@ action.post(
                 resident: value,
                 type: Enum.MessageType.publicNotifyNew,
                 data: publicNotify,
+                aims: _input.aims,
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    date: publicNotify.getValue('date'),
+                    title: publicNotify.getValue('title'),
                 },
             });
         });
@@ -207,9 +208,10 @@ action.put(
                 resident: value,
                 type: Enum.MessageType.publicNotifyUpdate,
                 data: publicNotify,
+                aims: publicNotify.getValue('aims'),
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    date: publicNotify.getValue('date'),
+                    title: publicNotify.getValue('title'),
                 },
             });
         });
@@ -275,9 +277,10 @@ action.delete(
                 Notice.notice$.next({
                     resident: value,
                     type: Enum.MessageType.publicNotifyDelete,
+                    aims: value1.getValue('aims'),
                     message: {
-                        date: new Date(),
-                        content: ``,
+                        date: value1.getValue('date'),
+                        title: value1.getValue('title'),
                     },
                 });
             });

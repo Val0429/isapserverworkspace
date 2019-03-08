@@ -53,8 +53,7 @@ action.put(
             type: Enum.MessageType.packagePostingReceive,
             data: packagePosting,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packagePosting.updatedAt,
             },
         });
 

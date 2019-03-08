@@ -68,9 +68,10 @@ action.post(
                 resident: value,
                 type: Enum.MessageType.voteNew,
                 data: vote,
+                aims: _input.aims,
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    date: vote.getValue('date'),
+                    title: vote.getValue('title'),
                 },
             });
         });
@@ -217,9 +218,10 @@ action.put(
                 resident: value,
                 type: Enum.MessageType.voteUpdate,
                 data: vote,
+                aims: vote.getValue('aims'),
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    date: vote.getValue('date'),
+                    title: vote.getValue('title'),
                 },
             });
         });
@@ -279,9 +281,10 @@ action.delete(
                 Notice.notice$.next({
                     resident: value,
                     type: Enum.MessageType.voteDelete,
+                    aims: value1.getValue('aims'),
                     message: {
-                        date: new Date(),
-                        content: ``,
+                        date: value1.getValue('date'),
+                        title: value1.getValue('title'),
                     },
                 });
             });

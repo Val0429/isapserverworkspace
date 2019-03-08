@@ -56,8 +56,7 @@ action.put(
             type: Enum.MessageType.packageReturnReceive,
             data: packageReturn,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packageReturn.updatedAt,
             },
         });
 

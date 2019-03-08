@@ -66,8 +66,9 @@ action.post(
             type: Enum.MessageType.publicArticleReservationNew,
             data: reservation,
             message: {
-                date: new Date(),
-                content: ``,
+                date: reservation.createdAt,
+                lendCount: reservation.getValue('lendCount'),
+                article: publicArticle.getValue('name'),
             },
         });
 
@@ -212,8 +213,10 @@ action.put(
             type: Enum.MessageType.publicArticleReservationReply,
             data: reservation,
             message: {
-                date: new Date(),
-                content: ``,
+                date: reservation.getValue('replyDate'),
+                cost: _input.count,
+                lendCount: reservation.getValue('lendCount'),
+                article: reservation.getValue('article').getValue('name'),
             },
         });
 
@@ -264,8 +267,7 @@ action.delete(
                 resident: value.getValue('resident'),
                 type: Enum.MessageType.publicArticleReservationDelete,
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    article: value.getValue('article').getValue('name'),
                 },
             });
         });

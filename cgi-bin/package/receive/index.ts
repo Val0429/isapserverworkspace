@@ -57,8 +57,7 @@ action.post(
             type: Enum.MessageType.packageReceiveNew,
             data: packageReceive,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packageReceive.createdAt,
             },
         });
 
@@ -178,8 +177,7 @@ action.put(
             type: Enum.MessageType.packageReceiveUpdate,
             data: packageReceive,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packageReceive.updatedAt,
             },
         });
 

@@ -57,9 +57,10 @@ action.post(
                 resident: value,
                 type: Enum.MessageType.publicCalendarNew,
                 data: publicCalendar,
+                aims: _input.aims,
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    dateRange: publicCalendar.getValue('date'),
+                    title: publicCalendar.getValue('title'),
                 },
             });
         });
@@ -163,9 +164,10 @@ action.put(
                 resident: value,
                 type: Enum.MessageType.publicCalendarUpdate,
                 data: publicCalendar,
+                aims: publicCalendar.getValue('aims'),
                 message: {
-                    date: new Date(),
-                    content: ``,
+                    dateRange: publicCalendar.getValue('date'),
+                    title: publicCalendar.getValue('title'),
                 },
             });
         });
@@ -225,9 +227,10 @@ action.delete(
                 Notice.notice$.next({
                     resident: value,
                     type: Enum.MessageType.publicCalendarDelete,
+                    aims: value1.getValue('aims'),
                     message: {
-                        date: new Date(),
-                        content: ``,
+                        dateRange: value1.getValue('date'),
+                        title: value1.getValue('title'),
                     },
                 });
             });

@@ -57,8 +57,7 @@ action.post(
             type: Enum.MessageType.packageReturnNew,
             data: packageReturn,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packageReturn.createdAt,
             },
         });
 
@@ -178,8 +177,7 @@ action.put(
             type: Enum.MessageType.packageReturnUpdate,
             data: packageReturn,
             message: {
-                date: new Date(),
-                content: ``,
+                date: packageReturn.updatedAt,
             },
         });
 

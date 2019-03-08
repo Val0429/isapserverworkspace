@@ -1,20 +1,38 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { CharacterResident, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '.';
+import { CharacterResidentInfo, IDateRange, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '.';
 import * as Enum from '../enums';
+
+export interface IMessageContent {
+    date?: Date;
+    content?: string;
+    balance?: number;
+    cost?: number;
+    lendCount?: number;
+    article?: string;
+    facility?: string;
+    dateRange?: IDateRange;
+    title?: string;
+    visitor?: string;
+}
 
 /**
  * 未讀訊息
  */
 export interface IMessageResident {
     /**
-     * 住戶
+     * 住戶訊息
      */
-    resident: CharacterResident;
+    residentInfo: CharacterResidentInfo;
 
     /**
      * 訊息類型
      */
     type: Enum.MessageType;
+
+    /**
+     * 訊息內容
+     */
+    message: IMessageContent;
 
     /**
      * 新郵件、收取郵件

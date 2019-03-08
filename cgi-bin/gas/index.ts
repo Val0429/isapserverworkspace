@@ -79,7 +79,6 @@ action.post(
                 data: value,
                 message: {
                     date: _date,
-                    content: '',
                 },
             });
         });
@@ -189,7 +188,6 @@ action.put(
             data: gas,
             message: {
                 date: gas.getValue('date'),
-                content: '',
             },
         });
 

@@ -1,75 +1,90 @@
+import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
-import { CharacterResident, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost, MessageResident } from '../models';
+import { CharacterResident, CharacterResidentInfo, MessageResident, IMessageContent, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '../models';
 import * as Enum from '../enums';
 import { Print } from '../helpers';
-
-interface IMessage {
-    date: Date;
-    content: string;
-}
 
 interface IMessageResident {
     resident: CharacterResident;
     type: Enum.MessageType;
-    message: IMessage;
+    message: IMessageContent;
+    aims?: Enum.ResidentCharacter[];
     data?: PackageReceive | PackageReturn | PackagePosting | Visitor | PublicFacilityReservation | PublicNotify | PublicCalendar | Vote | Listen | PublicArticleReservation | Gas | ManageCost;
 }
 
 export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageResident>();
 
 (async function() {
-    notice$.subscribe({
+    notice$.bufferTime(Config.notify.bufferTimeSecond).subscribe({
         next: async (x) => {
-            let message: MessageResident = new MessageResident();
+            try {
+                let tasks: Promise<any>[] = [].concat(
+                    ...(await Promise.all(
+                        x.map(async (value, index, array) => {
+                            let config = Config.notify[value.type];
 
-            message.setValue('resident', x.resident);
-            message.setValue('type', x.type);
+                            if (!config.isEnable) {
+                                return;
+                            }
 
-            if (x.data) {
-                if (x.data instanceof PackageReceive) {
-                    Print.MinLog('packageReceive');
-                    message.setValue('packageReceive', x.data);
-                } else if (x.data instanceof PackageReturn) {
-                    Print.MinLog('packageReturn');
-                    message.setValue('packageReturn', x.data);
-                } else if (x.data instanceof PackagePosting) {
-                    Print.MinLog('packagePosting');
-                    message.setValue('packagePosting', x.data);
-                } else if (x.data instanceof Visitor) {
-                    Print.MinLog('visitor');
-                    message.setValue('visitor', x.data);
-                } else if (x.data instanceof PublicFacilityReservation) {
-                    Print.MinLog('publicFacilityReservation');
-                    message.setValue('publicFacilityReservation', x.data);
-                } else if (x.data instanceof PublicNotify) {
-                    Print.MinLog('publicNotify');
-                    message.setValue('publicNotify', x.data);
-                } else if (x.data instanceof PublicCalendar) {
-                    Print.MinLog('publicCalendar');
-                    message.setValue('publicCalendar', x.data);
-                } else if (x.data instanceof Vote) {
-                    Print.MinLog('vote');
-                    message.setValue('vote', x.data);
-                } else if (x.data instanceof Listen) {
-                    Print.MinLog('listen');
-                    message.setValue('listen', x.data);
-                } else if (x.data instanceof PublicArticleReservation) {
-                    Print.MinLog('publicArticleReservation');
-                    message.setValue('publicArticleReservation', x.data);
-                } else if (x.data instanceof Gas) {
-                    Print.MinLog('gas');
-                    message.setValue('gas', x.data);
-                } else if (x.data instanceof ManageCost) {
-                    Print.MinLog('manageCost');
-                    message.setValue('manageCost', x.data);
-                }
-            }
+                            let _aims: Enum.ResidentCharacter[] = value.aims || config.aims;
+                            let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
+                                .equalTo('resident', value.resident)
+                                .containedIn('character', _aims)
+                                .find()
+                                .catch((e) => {
+                                    throw e;
+                                });
 
-            Print.MinLog(x.message.content);
+                            return residentInfos.map((value1, index1, array1) => {
+                                Print.MinLog(`<${Enum.MessageType[value.type]}> ${value1.id}, ${JSON.stringify(value.message)}`);
 
-            await message.save(null, { useMasterKey: true }).catch((e) => {
+                                // let message: MessageResident = new MessageResident();
+
+                                // message.setValue('residentInfo', value1);
+                                // message.setValue('type', value.type);
+                                // message.setValue('message', value.message);
+
+                                // if (value.data) {
+                                //     if (value.data instanceof PackageReceive) {
+                                //         message.setValue('packageReceive', value.data);
+                                //     } else if (value.data instanceof PackageReturn) {
+                                //         message.setValue('packageReturn', value.data);
+                                //     } else if (value.data instanceof PackagePosting) {
+                                //         message.setValue('packagePosting', value.data);
+                                //     } else if (value.data instanceof Visitor) {
+                                //         message.setValue('visitor', value.data);
+                                //     } else if (value.data instanceof PublicFacilityReservation) {
+                                //         message.setValue('publicFacilityReservation', value.data);
+                                //     } else if (value.data instanceof PublicNotify) {
+                                //         message.setValue('publicNotify', value.data);
+                                //     } else if (value.data instanceof PublicCalendar) {
+                                //         message.setValue('publicCalendar', value.data);
+                                //     } else if (value.data instanceof Vote) {
+                                //         message.setValue('vote', value.data);
+                                //     } else if (value.data instanceof Listen) {
+                                //         message.setValue('listen', value.data);
+                                //     } else if (value.data instanceof PublicArticleReservation) {
+                                //         message.setValue('publicArticleReservation', value.data);
+                                //     } else if (value.data instanceof Gas) {
+                                //         message.setValue('gas', value.data);
+                                //     } else if (value.data instanceof ManageCost) {
+                                //         message.setValue('manageCost', value.data);
+                                //     }
+                                // }
+
+                                // return message.save(null, { useMasterKey: true });
+                            });
+                        }),
+                    )),
+                );
+
+                await Promise.all(tasks).catch((e) => {
+                    throw e;
+                });
+            } catch (e) {
                 Print.MinLog(e, 'error');
-            });
+            }
         },
     });
 })();
