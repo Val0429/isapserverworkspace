@@ -52,7 +52,7 @@ action.post(
 
         return {
             sessionId: user.sessionId,
-            residentId: residentInfo.id,
+            residentId: residentInfo.getValue('resident').id,
             userId: user.user.id,
             name: residentInfo.getValue('name'),
             gender: residentInfo.getValue('gender'),
@@ -63,6 +63,8 @@ action.post(
             education: residentInfo.getValue('education'),
             career: residentInfo.getValue('career'),
             character: residentInfo.getValue('character'),
+            isEmail: residentInfo.getValue('isEmail'),
+            isNotice: residentInfo.getValue('isNotice'),
             barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(residentInfo.getValue('resident').getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
         };
     },

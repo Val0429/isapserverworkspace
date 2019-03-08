@@ -69,12 +69,14 @@ export interface IResidentInfoIndexR {
 }
 
 export interface IResidentInfoIndexU {
-    userId: string;
+    userId?: string;
     phone: string;
     lineId: string;
     email: string;
     education: string;
     career: string;
+    isEmail: boolean;
+    isNotice: boolean;
 }
 
 export interface IResidentInfoIndexD {

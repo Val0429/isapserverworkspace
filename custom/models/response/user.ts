@@ -59,6 +59,8 @@ export interface IResidentInfoIndexR {
     education: string;
     career: string;
     character: Enum.ResidentCharacter;
+    isEmail: boolean;
+    isNotice: boolean;
 }
 
 export interface IResidentLogin extends IResidentInfoIndexR {

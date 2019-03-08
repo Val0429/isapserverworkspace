@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, ParseObject, ActionParam } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
 import * as Enum from '../../../custom/enums';
 
@@ -69,6 +69,8 @@ action.post(
         residentInfo.setValue('email', _input.email ? _input.email : '');
         residentInfo.setValue('education', _input.education ? _input.education : '');
         residentInfo.setValue('career', _input.career ? _input.career : '');
+        residentInfo.setValue('isEmail', true);
+        residentInfo.setValue('isNotice', true);
 
         await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -125,6 +127,8 @@ action.get(
                 education: value.getValue('education'),
                 career: value.getValue('career'),
                 character: value.getValue('character'),
+                isEmail: value.getValue('isEmail'),
+                isNotice: value.getValue('isNotice'),
             };
         });
     },
@@ -139,7 +143,7 @@ type OutputU = Date;
 
 action.put(
     {
-        inputType: 'InputR',
+        inputType: 'InputU',
         loginRequired: true,
         permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Resident],
     },
@@ -147,7 +151,12 @@ action.put(
         let _input: InputU = data.inputType;
 
         let user: Parse.User = new Parse.User();
-        user.id = _input.userId;
+        if (_input.userId) {
+            user.id = _input.userId;
+        } else {
+            user = data.user;
+        }
+
         let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
             .equalTo('user', user)
             .first()
@@ -160,6 +169,8 @@ action.put(
         residentInfo.setValue('email', _input.email);
         residentInfo.setValue('education', _input.education);
         residentInfo.setValue('career', _input.career);
+        residentInfo.setValue('isEmail', _input.isEmail);
+        residentInfo.setValue('isNotice', _input.isNotice);
 
         await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -208,3 +219,31 @@ action.delete(
         return new Date();
     },
 );
+
+/**
+ * Check user is resident
+ * @param data
+ */
+export async function CheckResident(data: ActionParam<any>): Promise<CharacterResidentInfo> {
+    try {
+        let _role: Parse.Role = data.role.find((value, index, array) => {
+            return value.getName() === RoleList.Resident;
+        });
+
+        if (_role) {
+            let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+                .equalTo('user', data.user)
+                .include('resident')
+                .first()
+                .catch((e) => {
+                    throw e;
+                });
+
+            return residentInfo;
+        }
+
+        return undefined;
+    } catch (e) {
+        throw e;
+    }
+}

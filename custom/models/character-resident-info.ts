@@ -60,6 +60,16 @@ export interface ICharacterResidentInfo {
      * 角色
      */
     character: Enum.ResidentCharacter;
+
+    /**
+     * Email開關
+     */
+    isEmail: boolean;
+
+    /**
+     * 推播開關
+     */
+    isNotice: boolean;
 }
 
 @registerSubclass()
