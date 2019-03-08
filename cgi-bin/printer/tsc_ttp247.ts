@@ -21,13 +21,15 @@ action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _date: string = _input.date || '';
+        let _location: string = _input.locationName || '';
 
         let tsc: Tsc_Ttp247 = new Tsc_Ttp247();
-        tsc.ip = Config.printer.ip;
-        tsc.dllPath = File.RealPath(Config.printer.dllPath);
+        tsc.app = File.RealPath(Config.printer.app);
+        tsc.device = Config.printer.device;
         tsc.Initialization();
 
-        await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _input.locationName, _input.date);
+        await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _location, _date);
 
         return '';
     },

@@ -1,28 +1,28 @@
-let edge = require('edge-js');
+import { execFile } from 'child_process';
 import { Printer } from './base';
 import { Regex, Print, Parser, DateTime } from '..';
 
 export class Tsc_Ttp247 {
     /**
-     * Device Ip
+     * App
      */
-    protected _ip: string;
-    public get ip(): string {
-        return this._ip;
+    protected _app: string;
+    public get app(): string {
+        return this._app;
     }
-    public set ip(value: string) {
-        this._ip = value;
+    public set app(value: string) {
+        this._app = value;
     }
 
     /**
-     * Device Port
+     * Printer Name
      */
-    protected _port: number = 9100;
-    public get port(): number {
-        return this._port;
+    protected _device: string;
+    public get device(): string {
+        return this._device;
     }
-    public set port(value: number) {
-        this._port = value;
+    public set device(value: string) {
+        this._device = value;
     }
 
     /**
@@ -50,14 +50,6 @@ export class Tsc_Ttp247 {
     public Initialization(): void {
         this._isInitialization = false;
 
-        if (this._ip === null || this._ip === undefined || !Regex.IsIp(this._ip)) {
-            throw Printer.Message.SettingIpError;
-        }
-
-        if (this._port === null || this._port === undefined || !Regex.IsNum(this._port.toString()) || this._port < 1 || this._port > 65535) {
-            throw Printer.Message.SettingPortError;
-        }
-
         this._isInitialization = true;
     }
 
@@ -67,6 +59,7 @@ export class Tsc_Ttp247 {
      * @param respondent
      * @param location
      * @param date
+     * http://localhost:6061/printer/tsc_ttp247?visitorName=AAA&respondentName=BBB&date=CCC&locationName=DDD
      */
     public async PrintFetSticker(visitor: string, respondent: string, location: string, date: string = DateTime.DateTime2String(new Date(), 'MM/DD')) {
         try {
@@ -74,77 +67,113 @@ export class Tsc_Ttp247 {
                 throw Printer.Message.DeviceNotInitialization;
             }
 
-            let Tsclibnet: any = edge.func({
-                source: function() {
-                    /*
-                        using System;
-                        using System.Threading.Tasks;
-                        using TSCSDK;
-
-                        public class Startup
-                        {
-                            public async Task<object> Invoke(dynamic input)
-                            {
-                                try
-                                {
-                                    string ip = (string)input.ip;
-                                    int port = (int)input.port;
-                                    string visitor = (string)input.visitor;
-                                    string respondent = (string)input.respondent;
-                                    string date = (string)input.date;
-                                    string location = (string)input.location;
-
-                                    string fontFamily = "Microsoft JhenHei UI";
-
-                                    ethernet tsc = new ethernet();
-                                    tsc.openport(ip, port);
-
-                                    tsc.setup("100", "80", "3", "10", "0", "0", "0");
-                                    tsc.clearbuffer();
-                                    tsc.sendcommand("DIRECTION 0,0");
-                                    tsc.sendcommand("BOX 20,220,780,600,4");
-                                    tsc.windowsfont(80, 250, 130, 0, 0, 0, fontFamily, visitor);
-                                    tsc.windowsfont(85, 400, 90, 0, 0, 0, fontFamily, respondent);
-                                    tsc.windowsfont(85, 510, 110, 0, 0, 0, fontFamily, date);
-                                    tsc.windowsfont(375, 510, 110, 0, 0, 0, fontFamily, location);
-                                    tsc.printlabel("1", "1");
-
-                                    tsc.closeport();
-
-                                    return null;
-                                }
-                                catch (Exception ex) 
-                                {
-                                    return ex.Message;
-                                }
-                            }
-                        }
-                    */
-                },
-                references: [this._dllPath],
-            });
-
-            await new Promise((resolve, reject) => {
-                Tsclibnet(
-                    {
-                        ip: this._ip,
-                        port: this._port,
-                        visitor: visitor,
-                        respondent: respondent,
-                        date: date,
-                        location: location,
-                    },
-                    function(e, result) {
-                        if (result !== null) {
-                            reject(result);
+            let result: string = await new Promise<string>((resolve, reject) => {
+                try {
+                    execFile(this._app, [this._device, visitor, respondent, date, location], (error, stdout) => {
+                        if (error) {
+                            return reject(error);
                         }
 
-                        resolve();
-                    },
-                );
+                        resolve(stdout);
+                    });
+                } catch (e) {
+                    return reject(e);
+                }
             }).catch((e) => {
                 throw e;
             });
+
+            // let Tsclibnet: any = edge.func({
+            //     source: function() {
+            //         /*
+            //             using System;
+            //             using System.Runtime.InteropServices;
+            //             using System.Threading.Tasks;
+
+            //             public class Program
+            //             {
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void openport(string a);
+
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void closeport();
+
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void clearbuffer();
+
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void setup(string a, string b, string c, string d, string e, string f, string g);
+
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void sendcommand(string command);
+
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void printlabel(string a, string b);
+
+            //                 [DllImport("TSCLIB.dll")]
+            //                 public static extern void windowsfont(int a, int b, int c, int d, int e, int f, string g, string h);
+
+            //                 public async Task<object> Invoke(dynamic input)
+            //                 {
+            //                     try
+            //                     {
+            //                         string ip = (string)input.ip;
+            //                         int port = (int)input.port;
+            //                         string visitor = (string)input.visitor;
+            //                         string respondent = (string)input.respondent;
+            //                         string date = (string)input.date;
+            //                         string location = (string)input.location;
+
+            //                         string fontFamily = "Microsoft JhenHei UI";
+
+            //                         openport("TSC TTP-247");
+
+            //                         setup("84", "84", "3", "10", "0", "0", "0");
+            //                         clearbuffer();
+            //                         sendcommand("DIRECTION 0,0");
+            //                         //sendcommand("BOX 20,220,780,600,4");
+            //                         windowsfont(555, 495, 120, 180, 0, 0, fontFamily, visitor);
+            //                         windowsfont(550, 345, 100, 180, 0, 0, fontFamily, respondent);
+            //                         windowsfont(550, 220, 120, 180, 0, 0, fontFamily, date);
+            //                         windowsfont(310, 220, 120, 180, 0, 0, fontFamily, location);
+            //                         printlabel("1", "1");
+
+            //                         closeport();
+
+            //                         return null;
+            //                     }
+            //                     catch (Exception ex)
+            //                     {
+            //                         return ex.Message;
+            //                     }
+            //                 }
+            //             }
+            //         */
+            //     },
+            //     references: [this._dllPath],
+            // });
+
+            // await new Promise((resolve, reject) => {
+            //     Tsclibnet(
+            //         {
+            //             ip: this._ip,
+            //             port: this._port,
+            //             visitor: visitor,
+            //             respondent: respondent,
+            //             date: date,
+            //             location: location,
+            //         },
+            //         function(e, result) {
+            //             if (result !== null) {
+            //                 reject(result);
+            //             }
+
+            //             resolve();
+            //         },
+            //     );
+            // }).catch((e) => {
+            //     throw e;
+            // });
         } catch (e) {
             throw e;
         }
