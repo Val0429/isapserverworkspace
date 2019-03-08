@@ -31,7 +31,8 @@ export interface IReservationR {
     publicFacilityLimit: number;
     publicFacilitySrc: string;
     publicFacilityPointCost: number;
-    residentName: string;
+    residentAddress: string;
+    residentPoint: number;
     count: number;
     reservationDates: IDateRange;
 }

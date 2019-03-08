@@ -30,7 +30,8 @@ export interface IReservationC {
 }
 
 export interface IReservationR {
-    date: Date;
+    start?: Date;
+    end?: Date;
     publicFacilityId?: string;
 }
 

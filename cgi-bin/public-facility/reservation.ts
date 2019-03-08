@@ -99,13 +99,13 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let start: Date = new Date(new Date(_input.date).setHours(0, 0, 0, 0));
-        let end: Date = new Date(new Date(start).setDate(start.getDate() + 1));
-
-        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation)
-            .greaterThanOrEqualTo('createdAt', start)
-            .lessThan('createdAt', end)
-            .include('article');
+        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation);
+        if (_input.start) {
+            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
+        }
+        if (_input.end) {
+            query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+        }
         if (_input.publicFacilityId) {
             let facility: PublicFacility = new PublicFacility();
             facility.id = _input.publicFacilityId;
@@ -127,13 +127,6 @@ action.get(
                 throw e;
             });
 
-        let tasks: Promise<any>[] = reservations.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo).equalTo('resident', value.getValue('resident')).first();
-        });
-        let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
-            throw e;
-        });
-
         return {
             total: total,
             page: _page,
@@ -145,7 +138,8 @@ action.get(
                     publicFacilityLimit: value.getValue('facility').getValue('limit'),
                     publicFacilitySrc: value.getValue('facility').getValue('facilitySrc'),
                     publicFacilityPointCost: value.getValue('facility').getValue('pointCost'),
-                    residentName: residentInfos[index] ? residentInfos[index].getValue('name') : '',
+                    residentAddress: value.getValue('resident').getValue('address'),
+                    residentPoint: value.getValue('resident').getValue('pointBalance'),
                     count: value.getValue('count'),
                     reservationDates: value.getValue('reservationDates'),
                 };
