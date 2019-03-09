@@ -4,6 +4,7 @@ import { Config } from 'core/config.gen';
 import { Print, Utility, File } from './custom/helpers';
 
 import './custom/shells/create-index';
+import './custom/shells/create-default';
 import './custom/shells/auto-index';
 
 import './custom/services/notice';
