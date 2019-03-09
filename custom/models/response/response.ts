@@ -1,3 +1,4 @@
+import * as ICommunity from './community';
 import * as IConfig from './config';
 import * as IGas from './gas';
 import * as IListen from './listen';
@@ -12,7 +13,7 @@ import * as IUser from './user';
 import * as IVisitor from './visitor';
 import * as IVote from './vote';
 
-export { IConfig, IGas, IListen, IManageCost, IParking, IPublicArticle, IPublicCalendar, IPublicFacility, IPublicNotify, IPackage, IUser, IVisitor, IVote };
+export { ICommunity, IConfig, IGas, IListen, IManageCost, IParking, IPublicArticle, IPublicCalendar, IPublicFacility, IPublicNotify, IPackage, IUser, IVisitor, IVote };
 
 export interface IDataList<T> {
     total: number;

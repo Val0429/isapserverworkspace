@@ -5,6 +5,7 @@
 export * from './character-committee';
 export * from './character-resident-info';
 export * from './character-resident';
+export * from './community';
 export * from './gas';
 export * from './listen';
 export * from './manage-cost';
