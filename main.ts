@@ -4,7 +4,6 @@ import { Config } from 'core/config.gen';
 import { Print, Utility } from './custom/helpers';
 
 import './custom/schedulers/index';
-import './custom/shells/index';
 
 setTimeout(() => {
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: '- Local:  ' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });
