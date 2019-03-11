@@ -1,6 +1,5 @@
 import * as Enum from '../enums';
-import { CharacterResident } from '.';
-import { Parser } from '../helpers';
+import { Community, CharacterResident } from '.';
 
 /**
  * 郵件
@@ -10,6 +9,11 @@ export interface IPackageBase {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 住戶

@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { CharacterResident } from './';
+import { Community, CharacterResident } from './';
 
 /**
  * 訪客
@@ -9,6 +9,11 @@ export interface IVisitor {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 住戶

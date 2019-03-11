@@ -1,5 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Parking } from '../../custom/models';
+import { Db } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -17,12 +18,13 @@ type OutputR = IResponse.IParking.IAll[];
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<Parking> = new Parse.Query(Parking);
+        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community);
 
         if (_input.status === 'used') {
             query.notEqualTo('resident', undefined);

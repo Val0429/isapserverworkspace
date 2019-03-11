@@ -1,12 +1,12 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterCommittee } from '../../../custom/models';
-import { Permission, Print } from '../../../custom/helpers';
+import { Permission, Print, Db } from '../../../custom/helpers';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
 import * as Base from '../base';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+    permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
 });
 
 export default action;
@@ -22,6 +22,7 @@ action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapC);
 
@@ -36,6 +37,7 @@ action.post(
 
         let committee: CharacterCommittee = new CharacterCommittee();
         committee.setValue('creator', data.user);
+        committee.setValue('community', _userInfo.community);
         committee.setValue('user', user);
         committee.setValue('permission', '');
         committee.setValue('adjustReason', '');
@@ -62,25 +64,17 @@ action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let unavailableRoles: RoleList[] = Permission.GetUnavailableRoles(data.role, permissionMapR);
-
-        let tasks: Promise<any>[] = unavailableRoles.map((value, index, array) => {
-            return new Parse.Query(Parse.Role).equalTo('name', value).first();
-        });
-        let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
-            throw e;
-        });
-
-        let query: Parse.Query<Parse.User> = new Parse.Query(Parse.User).notContainedIn('roles', roles).include('roles');
+        let query: Parse.Query<CharacterCommittee> = new Parse.Query(CharacterCommittee).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
 
-        let committees: CharacterCommittee[] = await new Parse.Query(CharacterCommittee)
+        let committees: CharacterCommittee[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include(['user', 'user.roles'])
@@ -124,6 +118,7 @@ action.put(
     { inputType: 'InputU' },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapU);
 
@@ -173,6 +168,7 @@ action.delete(
     { inputType: 'InputD' },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _userIds: string[] = [].concat(data.parameters.userIds);
 
         _userIds = _userIds.filter((value, index, array) => {

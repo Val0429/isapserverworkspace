@@ -1,5 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicArticle, CharacterCommittee } from '../../custom/models';
+import { Db } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -17,14 +18,16 @@ type OutputC = IResponse.IPublicArticle.IIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let publicArticle: PublicArticle = new PublicArticle();
 
         publicArticle.setValue('creator', data.user);
+        publicArticle.setValue('community', _userInfo.community);
         publicArticle.setValue('name', _input.name);
         publicArticle.setValue('type', _input.type);
         publicArticle.setValue('defaultCount', _input.defaultCount);
@@ -53,14 +56,15 @@ type OutputR = IResponse.IDataList<IResponse.IPublicArticle.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicArticle> = new Parse.Query(PublicArticle);
+        let query: Parse.Query<PublicArticle> = new Parse.Query(PublicArticle).equalTo('community', _userInfo.community);
         if (_input.type) {
             query.equalTo('type', _input.type);
         }
@@ -115,10 +119,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let publicArticle: PublicArticle = await new Parse.Query(PublicArticle).get(_input.publicArticleId).catch((e) => {
             throw e;
@@ -150,10 +155,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _publicArticleIds: string[] = [].concat(data.parameters.publicArticleIds);
 
         _publicArticleIds = _publicArticleIds.filter((value, index, array) => {

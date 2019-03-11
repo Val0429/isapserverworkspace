@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
+import { Community } from '.';
 import * as Enum from '../enums';
 
 /**
@@ -9,6 +10,11 @@ export interface ICharacterResident {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 地址

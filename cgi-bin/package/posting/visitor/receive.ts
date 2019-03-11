@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PackagePosting, MessageResident } from '../../../../custom/models';
+import { File, Db } from '../../../../custom/helpers';
 import * as Enum from '../../../../custom/enums';
-import { File } from 'workspace/custom/helpers';
 import * as Notice from '../../../../custom/services/notice';
 
 let action = new Action({
@@ -21,10 +21,11 @@ action.put(
     {
         inputType: 'InputU',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let packagePosting: PackagePosting = await new Parse.Query(PackagePosting).get(_input.packagePostingId).catch((e) => {
             throw e;

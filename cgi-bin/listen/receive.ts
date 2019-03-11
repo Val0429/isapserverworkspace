@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Listen, MessageResident } from '../../custom/models';
-import {} from '../../custom/helpers';
+import {Db} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
 
@@ -20,10 +20,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let listen: Listen = await new Parse.Query(Listen).get(_input.listenId).catch((e) => {
             throw e;

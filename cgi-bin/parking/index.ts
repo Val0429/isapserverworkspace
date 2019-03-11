@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject, CharacterResident } from 'core/cgi-package';
 import { IRequest, IResponse, Parking, CharacterResidentInfo } from '../../custom/models';
-import { Print } from 'workspace/custom/helpers';
+import { Print, Db } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -18,10 +18,11 @@ type OutputC = IResponse.IParking.IIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let parking: Parking = await new Parse.Query(Parking)
             .equalTo('name', _input.name)
@@ -29,7 +30,6 @@ action.post(
             .catch((e) => {
                 throw e;
             });
-
         if (parking) {
             throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
         }
@@ -37,6 +37,7 @@ action.post(
         parking = new Parking();
 
         parking.setValue('creator', data.user);
+        parking.setValue('community', _userInfo.community);
         parking.setValue('name', _input.name);
         parking.setValue('cost', _input.cost);
 
@@ -60,14 +61,15 @@ type OutputR = IResponse.IDataList<IResponse.IParking.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Parking> = new Parse.Query(Parking).include('resident');
+        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -76,6 +78,7 @@ action.get(
         let parkings: Parking[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
+            .include('resident')
             .find()
             .catch((e) => {
                 throw e;
@@ -117,10 +120,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _parkingIds: string[] = [].concat(data.parameters.parkingIds);
 
         _parkingIds = _parkingIds.filter((value, index, array) => {

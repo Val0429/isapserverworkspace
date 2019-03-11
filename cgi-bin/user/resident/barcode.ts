@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Parking } from '../../../custom/models';
-import { Print, Draw, Parser } from '../../../custom/helpers';
+import { Print, Draw, Parser, Db } from '../../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -18,10 +18,11 @@ type OutputR = IResponse.IUser.IResidentIndexR;
 action.get(
     {
         path: '/:barcode',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident)
             .equalTo('barcode', data.parameters.barcode)

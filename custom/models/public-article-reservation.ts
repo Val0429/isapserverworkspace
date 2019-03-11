@@ -1,6 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import * as Enum from '../enums';
-import { PublicArticle, CharacterResident } from './';
+import { Community, PublicArticle, CharacterResident } from './';
 
 /**
  * 物品借用
@@ -10,6 +10,11 @@ export interface IPublicArticleReservation {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 物品

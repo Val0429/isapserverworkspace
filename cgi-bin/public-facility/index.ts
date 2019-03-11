@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicFacility, IDayRange, IDateRange } from '../../custom/models';
-import { File } from '../../custom/helpers';
+import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -20,10 +20,11 @@ action.post(
     {
         inputType: 'InputC',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _openDates: IDayRange[] = _input.openDates.map((value, index, array) => {
             return {
                 startDay: value.startDay,
@@ -44,6 +45,7 @@ action.post(
         let publicFacility: PublicFacility = new PublicFacility();
 
         publicFacility.setValue('creator', data.user);
+        publicFacility.setValue('community', _userInfo.community);
         publicFacility.setValue('name', _input.name);
         publicFacility.setValue('description', _input.description);
         publicFacility.setValue('limit', _input.limit);
@@ -81,14 +83,15 @@ type OutputR = IResponse.IDataList<IResponse.IPublicFacility.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility);
+        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -133,10 +136,11 @@ action.put(
     {
         inputType: 'InputU',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _openDates: IDayRange[] = _input.openDates.map((value, index, array) => {
             return {
                 startDay: value.startDay,
@@ -193,10 +197,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _publicFacilityIds: string[] = [].concat(data.parameters.publicFacilityIds);
 
         _publicFacilityIds = _publicFacilityIds.filter((value, index, array) => {

@@ -1,9 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, PackageReceive } from '../../../custom/models';
+import { Draw, Parser, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
-import { Draw, Parser } from 'workspace/custom/helpers';
 import * as Notice from '../../../custom/services/notice';
-import { CheckResident } from '../../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -21,10 +20,11 @@ type OutputC = IResponse.IPackage.IReceiveIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         if (_input.barcode.length > 30) {
             throw Errors.throw(Errors.CustomBadRequest, ['barcode is too long']);
@@ -40,6 +40,7 @@ action.post(
         let packageReceive: PackageReceive = new PackageReceive();
 
         packageReceive.setValue('creator', data.user);
+        packageReceive.setValue('community', _userInfo.community);
         packageReceive.setValue('resident', resident);
         packageReceive.setValue('sender', _input.sender);
         packageReceive.setValue('receiver', _input.receiver);
@@ -78,14 +79,15 @@ type OutputR = IResponse.IDataList<IResponse.IPackage.IReceiveIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PackageReceive> = new Parse.Query(PackageReceive);
+        let query: Parse.Query<PackageReceive> = new Parse.Query(PackageReceive).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -98,9 +100,8 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.equalTo('resident', residentInfo.getValue('resident'));
+        if (_userInfo.resident) {
+            query.equalTo('resident', _userInfo.resident);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -149,10 +150,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
             throw e;

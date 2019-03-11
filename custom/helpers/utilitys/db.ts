@@ -1,5 +1,14 @@
-import { IUser, Action, Restful, RoleList, Errors, Config } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Config, ActionParam } from 'core/cgi-package';
+import { Community, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../models';
 import { Print } from './';
+
+interface IUserInfo {
+    roles: string[];
+    committee: CharacterCommittee;
+    resident: CharacterResident;
+    residentInfo: CharacterResidentInfo;
+    community: Community;
+}
 
 export namespace Db {
     /**
@@ -76,6 +85,55 @@ export namespace Db {
 
                 Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default Users', color: Print.FontColor.blue });
             }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     *
+     * @param data
+     */
+    export async function GetUserInfo(data: ActionParam<any>): Promise<IUserInfo> {
+        try {
+            let roles: string[] = data.role.map((value, index, array) => {
+                return value.getName();
+            });
+
+            let userInfo: IUserInfo = {
+                roles: roles,
+                committee: undefined,
+                resident: undefined,
+                residentInfo: undefined,
+                community: undefined,
+            };
+
+            if (roles.indexOf(RoleList.Resident) > -1) {
+                let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+                    .equalTo('user', data.user)
+                    .include(['community', 'resident'])
+                    .first()
+                    .catch((e) => {
+                        throw e;
+                    });
+
+                userInfo.resident = residentInfo.getValue('resident');
+                userInfo.residentInfo = residentInfo;
+                userInfo.community = residentInfo.getValue('community');
+            } else if (roles.indexOf(RoleList.Chairman) > -1 || roles.indexOf(RoleList.DeputyChairman) > -1 || roles.indexOf(RoleList.FinanceCommittee) > -1 || roles.indexOf(RoleList.DirectorGeneral) > -1 || roles.indexOf(RoleList.Guard) > -1) {
+                let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
+                    .equalTo('user', data.user)
+                    .include('community')
+                    .first()
+                    .catch((e) => {
+                        throw e;
+                    });
+
+                userInfo.committee = committee;
+                userInfo.community = committee.getValue('community');
+            }
+
+            return userInfo;
         } catch (e) {
             throw e;
         }

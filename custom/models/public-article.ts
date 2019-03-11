@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { Community } from '.';
 
 /**
  * 物品
@@ -8,6 +9,11 @@ export interface IPublicArticle {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 名稱

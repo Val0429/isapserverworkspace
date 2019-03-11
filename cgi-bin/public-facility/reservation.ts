@@ -1,9 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicFacility, PublicFacilityReservation, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { Print, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
-import { Print } from '../../custom/helpers';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -21,10 +20,11 @@ type OutputC = IResponse.IPublicFacility.IReservationC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let publicFacility: PublicFacility = await new Parse.Query(PublicFacility).get(_input.publicFacilityId).catch((e) => {
             throw e;
@@ -49,6 +49,7 @@ action.post(
         let _end: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.startDate : _input.reservationDates.endDate;
 
         reservation.setValue('creator', data.user);
+        reservation.setValue('community', _userInfo.community);
         reservation.setValue('facility', publicFacility);
         reservation.setValue('resident', resident);
         reservation.setValue('count', _input.count);
@@ -93,19 +94,20 @@ type OutputR = IResponse.IDataList<IResponse.IPublicFacility.IReservationR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation);
+        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation).equalTo('community', _userInfo.community);
         if (_input.start) {
-            query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
+            query.greaterThanOrEqualTo('reservationDates.startDate', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
-            query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+            query.lessThan('reservationDates.startDate', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
         }
         if (_input.publicFacilityId) {
             let facility: PublicFacility = new PublicFacility();
@@ -114,9 +116,8 @@ action.get(
             query.equalTo('facility', facility);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.equalTo('resident', residentInfo.getValue('resident'));
+        if (_userInfo.resident) {
+            query.equalTo('resident', _userInfo.resident);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -163,10 +164,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let reservation: PublicFacilityReservation = await new Parse.Query(PublicFacilityReservation)
             .include(['facility', 'resident'])
@@ -190,7 +192,6 @@ action.put(
         let _end: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.startDate : _input.reservationDates.endDate;
 
         reservation.getValue('resident').setValue('pointBalance', reservation.getValue('resident').getValue('pointBalance') + reservation.getValue('facility').getValue('pointCost') * (reservation.getValue('count') - _input.count));
-        reservation.setValue('creator', data.user);
         reservation.setValue('count', _input.count);
         reservation.setValue('reservationDates', {
             startDate: _start,
@@ -225,10 +226,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _reservationIds: string[] = [].concat(data.parameters.reservationIds);
 
         _reservationIds = _reservationIds.filter((value, index, array) => {

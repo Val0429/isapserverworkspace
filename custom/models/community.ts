@@ -13,11 +13,6 @@ export interface ICommunity {
      * 社區地址
      */
     address: string;
-
-    /**
-     * 社區條碼
-     */
-    barcode: string;
 }
 
 @registerSubclass()

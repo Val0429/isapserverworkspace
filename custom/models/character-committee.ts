@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
+import { Community } from './';
 
 /**
  * 管委會
@@ -8,6 +9,11 @@ export interface ICharacterCommittee {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 使用者

@@ -1,11 +1,12 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, ManageCost, MessageResident } from '../../custom/models';
+import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+    permission: [RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
 });
 
 export default action;
@@ -21,6 +22,7 @@ action.put(
     { inputType: 'InputU' },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let manageCost: ManageCost = await new Parse.Query(ManageCost).get(_input.manageCostId).catch((e) => {
             throw e;

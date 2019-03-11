@@ -41,7 +41,7 @@ action.post(
 
         let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
             .equalTo('user', user.user)
-            .include('resident')
+            .include(['resident', 'community'])
             .first()
             .catch((e) => {
                 throw e;
@@ -66,6 +66,8 @@ action.post(
             isEmail: residentInfo.getValue('isEmail'),
             isNotice: residentInfo.getValue('isNotice'),
             barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(residentInfo.getValue('resident').getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
+            communityName: residentInfo.getValue('community').getValue('name'),
+            communityAddress: residentInfo.getValue('community').getValue('address'),
         };
     },
 );

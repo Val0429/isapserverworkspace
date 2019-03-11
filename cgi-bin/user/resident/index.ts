@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Parking } from '../../../custom/models';
-import { Print, Draw, Parser } from '../../../custom/helpers';
+import { Print, Draw, Parser, Db } from '../../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -18,10 +18,11 @@ type OutputC = IResponse.IUser.IResidentIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident)
             .equalTo('address', _input.address)
@@ -35,7 +36,9 @@ action.post(
         }
 
         resident = new CharacterResident();
+
         resident.setValue('creator', data.user);
+        resident.setValue('community', _userInfo.community);
         resident.setValue('address', _input.address);
         resident.setValue('manageCost', _input.manageCost);
         resident.setValue('pointTotal', _input.pointTotal);
@@ -92,14 +95,15 @@ type OutputR = IResponse.IDataList<IResponse.IUser.IResidentIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;

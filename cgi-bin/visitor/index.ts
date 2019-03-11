@@ -1,9 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor } from '../../custom/models';
-import { File } from '../../custom/helpers';
+import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -22,10 +21,11 @@ action.post(
     {
         inputType: 'InputC',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
@@ -37,6 +37,7 @@ action.post(
         let visitor: Visitor = new Visitor();
 
         visitor.setValue('creator', data.user);
+        visitor.setValue('community', _userInfo.community);
         visitor.setValue('resident', resident);
         visitor.setValue('name', _input.visitorName);
         visitor.setValue('visitorSrc', '');
@@ -83,10 +84,11 @@ type OutputR = IResponse.IDataList<IResponse.IVisitor.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
         let _divideMinute: number = _input.divideMinute || 30;
@@ -94,7 +96,7 @@ action.get(
 
         _divideDate = new Date(_divideDate.setMinutes(_divideDate.getMinutes() + _divideMinute));
 
-        let query: Parse.Query<Visitor> = new Parse.Query(Visitor);
+        let query: Parse.Query<Visitor> = new Parse.Query(Visitor).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -107,9 +109,8 @@ action.get(
             query.lessThan('createdAt', _divideDate);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.equalTo('resident', residentInfo.getValue('resident'));
+        if (_userInfo.resident) {
+            query.equalTo('resident', _userInfo.resident);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -165,10 +166,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _visitorIds: string[] = [].concat(data.parameters.visitorIds);
 
         _visitorIds = _visitorIds.filter((value, index, array) => {

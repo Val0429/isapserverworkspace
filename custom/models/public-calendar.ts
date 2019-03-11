@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IDateRange } from './';
+import { Community, IDateRange } from './';
 import * as Enum from '../enums';
 
 /**
@@ -10,6 +10,11 @@ export interface IPublicCalendar {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 公告時間

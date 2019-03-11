@@ -1,9 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { Print, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
-import { Print } from '../../custom/helpers';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -21,10 +20,11 @@ type OutputC = IResponse.IPublicArticle.IReservationC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let publicArticle: PublicArticle = await new Parse.Query(PublicArticle).get(_input.publicArticleId).catch((e) => {
             throw e;
@@ -46,6 +46,7 @@ action.post(
         let reservation: PublicArticleReservation = new PublicArticleReservation();
 
         reservation.setValue('creator', data.user);
+        reservation.setValue('community', _userInfo.community);
         reservation.setValue('article', publicArticle);
         reservation.setValue('resident', resident);
         reservation.setValue('lendCount', _input.lendCount);
@@ -89,10 +90,11 @@ type OutputR = IResponse.IDataList<IResponse.IPublicArticle.IReservationR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
@@ -100,9 +102,9 @@ action.get(
         let end: Date = new Date(new Date(start).setDate(start.getDate() + 1));
 
         let query: Parse.Query<PublicArticleReservation> = new Parse.Query(PublicArticleReservation)
+            .equalTo('community', _userInfo.community)
             .greaterThanOrEqualTo('createdAt', start)
-            .lessThan('createdAt', end)
-            .include('article');
+            .lessThan('createdAt', end);
         if (_input.publicArticleId) {
             let article: PublicArticle = new PublicArticle();
             article.id = _input.publicArticleId;
@@ -115,9 +117,8 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.equalTo('resident', residentInfo.getValue('resident'));
+        if (_userInfo.resident) {
+            query.equalTo('resident', _userInfo.resident);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -127,7 +128,7 @@ action.get(
         let reservations: PublicArticleReservation[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
-            .include(['resident', 'replier'])
+            .include(['resident', 'replier', 'article'])
             .find()
             .catch((e) => {
                 throw e;
@@ -182,10 +183,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let reservation: PublicArticleReservation = await new Parse.Query(PublicArticleReservation)
             .include('article')
@@ -239,10 +241,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _reservationIds: string[] = [].concat(data.parameters.reservationIds);
 
         _reservationIds = _reservationIds.filter((value, index, array) => {

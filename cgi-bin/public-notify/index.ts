@@ -1,10 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
-import { File } from '../../custom/helpers';
+import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import { GetExtension } from '../listen';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -23,10 +22,11 @@ action.post(
     {
         inputType: 'InputC',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let extension: string = '';
         if (_input.attachment) {
@@ -36,6 +36,7 @@ action.post(
         let publicNotify: PublicNotify = new PublicNotify();
 
         publicNotify.setValue('creator', data.user);
+        publicNotify.setValue('community', _userInfo.community);
         publicNotify.setValue('date', _input.date);
         publicNotify.setValue('title', _input.title);
         publicNotify.setValue('content', _input.content);
@@ -57,7 +58,7 @@ action.post(
             });
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -98,14 +99,15 @@ type OutputR = IResponse.IDataList<IResponse.IPublicNotify.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicNotify> = new Parse.Query(PublicNotify);
+        let query: Parse.Query<PublicNotify> = new Parse.Query(PublicNotify).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -113,9 +115,8 @@ action.get(
             query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.containedIn('aims', [residentInfo.getValue('character')]);
+        if (_userInfo.residentInfo) {
+            query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -167,10 +168,11 @@ action.put(
     {
         inputType: 'InputU',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let extension: string = '';
         if (_input.attachment) {
@@ -197,7 +199,7 @@ action.put(
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -236,10 +238,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _publicNotifyIds: string[] = [].concat(data.parameters.publicNotifyIds);
 
         _publicNotifyIds = _publicNotifyIds.filter((value, index, array) => {
@@ -266,7 +269,7 @@ action.delete(
             }
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;

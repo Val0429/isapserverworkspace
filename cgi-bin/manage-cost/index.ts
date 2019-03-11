@@ -1,8 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, ManageCost, Parking, CharacterCommittee } from '../../custom/models';
+import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -20,10 +20,11 @@ type OutputC = Date;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
         let _deadline: Date = new Date(new Date(_input.deadline).setHours(0, 0, 0, 0));
 
@@ -32,6 +33,7 @@ action.post(
         }
 
         let manageCostCount: number = await new Parse.Query(ManageCost)
+            .equalTo('community', _userInfo.community)
             .equalTo('date', _date)
             .count()
             .catch((e) => {
@@ -41,7 +43,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['date presence']);
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -72,6 +74,7 @@ action.post(
                 : 0;
 
             manageCost.setValue('creator', data.user);
+            manageCost.setValue('community', _userInfo.community);
             manageCost.setValue('resident', value);
             manageCost.setValue('date', _date);
             manageCost.setValue('deadline', _deadline);
@@ -115,14 +118,15 @@ type OutputR = IResponse.IDataList<IResponse.IManageCost.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<ManageCost> = new Parse.Query(ManageCost);
+        let query: Parse.Query<ManageCost> = new Parse.Query(ManageCost).equalTo('community', _userInfo.community);
 
         if (_input.date) {
             let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
@@ -137,9 +141,8 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived).lessThan('deadline', deadline);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.equalTo('resident', residentInfo.getValue('resident'));
+        if (_userInfo.resident) {
+            query.equalTo('resident', _userInfo.resident);
         }
 
         let total: number = await query.count().catch((e) => {

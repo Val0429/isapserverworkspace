@@ -1,9 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
-import {} from '../../custom/helpers';
+import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -21,10 +20,11 @@ type OutputC = IResponse.IVote.IIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let _option: string = _input.options.find((value, index, array) => {
             return array.lastIndexOf(value) !== index;
@@ -39,6 +39,7 @@ action.post(
         let _end: Date = _input.date.getTime() > _input.deadline.getTime() ? _input.date : _input.deadline;
 
         vote.setValue('creator', data.user);
+        vote.setValue('community', _userInfo.community);
         vote.setValue('date', _start);
         vote.setValue('deadline', _end);
         vote.setValue('title', _input.title);
@@ -59,7 +60,7 @@ action.post(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -100,14 +101,15 @@ type OutputR = IResponse.IDataList<IResponse.IVote.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Vote> = new Parse.Query(Vote);
+        let query: Parse.Query<Vote> = new Parse.Query(Vote).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -120,9 +122,8 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.containedIn('aims', [residentInfo.getValue('character')]);
+        if (_userInfo.residentInfo) {
+            query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -177,10 +178,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let _option: string = _input.options.find((value, index, array) => {
             return array.lastIndexOf(value) !== index;
@@ -221,7 +223,7 @@ action.put(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -260,10 +262,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _voteIds: string[] = [].concat(data.parameters.voteIds);
 
         _voteIds = _voteIds.filter((value, index, array) => {
@@ -284,7 +287,7 @@ action.delete(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;

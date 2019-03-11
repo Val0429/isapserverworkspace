@@ -1,5 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject, ActionParam } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
+import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({});
@@ -21,6 +22,7 @@ action.post(
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident)
             .equalTo('barcode', _input.barcode)
@@ -58,6 +60,7 @@ action.post(
 
         let residentInfo: CharacterResidentInfo = new CharacterResidentInfo();
 
+        residentInfo.setValue('community', resident.getValue('community'));
         residentInfo.setValue('user', user);
         residentInfo.setValue('resident', resident);
         residentInfo.setValue('name', _input.name);
@@ -93,10 +96,11 @@ action.get(
     {
         inputType: 'InputR',
         loginRequired: true,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let roles: RoleList[] = data.role.map((value, index, array) => {
             return value.get('name');
@@ -109,6 +113,7 @@ action.get(
         resident.id = _input.redsidentId;
 
         let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
+            .equalTo('community', _userInfo.community)
             .equalTo('resident', resident)
             .find()
             .catch((e) => {
@@ -145,10 +150,11 @@ action.put(
     {
         inputType: 'InputU',
         loginRequired: true,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Resident],
+        permission: [RoleList.Resident],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let user: Parse.User = new Parse.User();
         if (_input.userId) {
@@ -158,6 +164,7 @@ action.put(
         }
 
         let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+            .equalTo('community', _userInfo.community)
             .equalTo('user', user)
             .first()
             .catch((e) => {
@@ -194,10 +201,11 @@ action.delete(
     {
         inputType: 'InputD',
         loginRequired: true,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _userIds: string[] = [].concat(data.parameters.userIds);
 
         let tasks: Promise<any>[] = [].concat(
@@ -222,31 +230,3 @@ action.delete(
         return new Date();
     },
 );
-
-/**
- * Check user is resident
- * @param data
- */
-export async function CheckResident(data: ActionParam<any>): Promise<CharacterResidentInfo> {
-    try {
-        let _role: Parse.Role = data.role.find((value, index, array) => {
-            return value.getName() === RoleList.Resident;
-        });
-
-        if (_role) {
-            let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
-                .equalTo('user', data.user)
-                .include('resident')
-                .first()
-                .catch((e) => {
-                    throw e;
-                });
-
-            return residentInfo;
-        }
-
-        return undefined;
-    } catch (e) {
-        throw e;
-    }
-}

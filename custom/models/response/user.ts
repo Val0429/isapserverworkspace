@@ -67,4 +67,6 @@ export interface IResidentLogin extends IResidentInfoIndexR {
     sessionId: string;
     residentId: string;
     barcode: string;
+    communityName: string;
+    communityAddress: string;
 }

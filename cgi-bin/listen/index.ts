@@ -1,8 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterCommittee, CharacterResident, CharacterResidentInfo, Listen } from '../../custom/models';
-import { File } from '../../custom/helpers';
+import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -21,10 +20,11 @@ action.post(
     {
         inputType: 'InputC',
         postSizeLimit: 10000000,
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let extension: string = '';
         if (_input.attachment) {
@@ -39,6 +39,7 @@ action.post(
         let listen: Listen = new Listen();
 
         listen.setValue('creator', data.user);
+        listen.setValue('community', _userInfo.community);
         listen.setValue('resident', resident);
         listen.setValue('title', _input.title);
         listen.setValue('content', _input.content);
@@ -77,14 +78,15 @@ type OutputR = IResponse.IDataList<IResponse.IListen.IIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Listen> = new Parse.Query(Listen);
+        let query: Parse.Query<Listen> = new Parse.Query(Listen).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -97,9 +99,8 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.equalTo('resident', residentInfo.getValue('resident'));
+        if (_userInfo.resident) {
+            query.equalTo('resident', _userInfo.resident);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -157,51 +158,6 @@ action.get(
     },
 );
 
-// /**
-//  * Action update
-//  */
-// type InputU = IRequest.IListen.IIndexU;
-
-// type OutputU = Date;
-
-// action.put(
-//     {
-//         inputType: 'InputU',
-//         postSizeLimit: 10000000,
-//         permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee],
-//     },
-//     async (data): Promise<OutputU> => {
-//         let _input: InputU = data.inputType;
-
-//         let listen: Listen = await new Parse.Query(Listen).get(_input.listenId).catch((e) => {
-//             throw e;
-//         });
-//         if (!listen) {
-//             throw Errors.throw(Errors.CustomBadRequest, ['listen not found']);
-//         }
-
-//         listen.setValue('title', _input.title);
-//         listen.setValue('content', _input.content);
-//         listen.setValue('replyContent', _input.replyContent);
-
-//         if (listen.getValue('status') === Enum.ReceiveStatus.received) {
-//             listen.setValue('replier', data.user);
-//             listen.setValue('replyDate', new Date());
-//         }
-
-//         await listen.save(null, { useMasterKey: true }).catch((e) => {
-//             throw e;
-//         });
-
-//         if (_input.attachment && _input.extension) {
-//             let attachmentSrc: string = `files/${listen.id}_listen_${listen.createdAt.getTime()}.${_input.extension}`;
-//             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
-//         }
-
-//         return new Date();
-//     },
-// );
-
 /**
  * Action Delete
  */
@@ -212,10 +168,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _listenIds: string[] = [].concat(data.parameters.listenIds);
 
         _listenIds = _listenIds.filter((value, index, array) => {

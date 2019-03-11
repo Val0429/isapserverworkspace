@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IDateRange } from './';
+import { Community, IDateRange } from './';
 
 export interface IDayRange extends IDateRange {
     startDay: string;
@@ -14,6 +14,11 @@ export interface IPublicFacility {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 名稱

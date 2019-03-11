@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Vote, CharacterCommittee } from '../../custom/models';
-import {} from '../../custom/helpers';
+import {Db} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -19,10 +19,11 @@ type OutputR = IResponse.IVote.IBilling;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let vote: Vote = await new Parse.Query(Vote).get(_input.voteId).catch((e) => {
             throw e;

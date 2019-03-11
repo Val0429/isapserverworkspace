@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { CharacterResidentInfo, IDateRange, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '.';
+import { Community, CharacterResidentInfo, IDateRange, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '.';
 import * as Enum from '../enums';
 
 export interface IMessageContent {
@@ -19,6 +19,11 @@ export interface IMessageContent {
  * 未讀訊息
  */
 export interface IMessageResident {
+    /**
+     * 社區
+     */
+    community: Community;
+
     /**
      * 住戶訊息
      */

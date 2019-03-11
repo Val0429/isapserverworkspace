@@ -1,6 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import * as Enum from '../enums';
-import { CharacterResident } from './';
+import { Community, CharacterResident } from './';
 
 interface IVoteOption {
     option: string;
@@ -15,6 +15,11 @@ export interface IVote {
      * 創造人
      */
     creator: Parse.User;
+
+    /**
+     * 社區
+     */
+    community: Community;
 
     /**
      * 發起時間

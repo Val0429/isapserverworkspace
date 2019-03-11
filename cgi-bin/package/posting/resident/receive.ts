@@ -1,5 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PackagePosting, MessageResident } from '../../../../custom/models';
+import {Db}from "../../../../custom/helpers"
 import * as Enum from '../../../../custom/enums';
 import * as Notice from '../../../../custom/services/notice';
 
@@ -19,10 +20,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.DirectorGeneral, RoleList.Guard],
+        permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let packagePosting: PackagePosting = await new Parse.Query(PackagePosting)
             .include('resident')

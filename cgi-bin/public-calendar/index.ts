@@ -1,9 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PublicCalendar, CharacterResidentInfo, CharacterResident } from '../../custom/models';
-import {} from '../../custom/helpers';
+import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
-import { CheckResident } from '../user/resident/info';
 
 let action = new Action({
     loginRequired: true,
@@ -21,10 +20,11 @@ type OutputC = IResponse.IPublicCalendar.IIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let _start: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.endDate : _input.date.startDate;
         let _end: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.startDate : _input.date.endDate;
@@ -32,6 +32,7 @@ action.post(
         let publicCalendar: PublicCalendar = new PublicCalendar();
 
         publicCalendar.setValue('creator', data.user);
+        publicCalendar.setValue('community', _userInfo.community);
         publicCalendar.setValue('date', { startDate: _start, endDate: _end });
         publicCalendar.setValue('title', _input.title);
         publicCalendar.setValue('content', _input.content);
@@ -41,7 +42,7 @@ action.post(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -82,12 +83,13 @@ type OutputR = IResponse.IPublicCalendar.IIndexR[];
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar);
+        let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('date.start', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -95,9 +97,8 @@ action.get(
             query.lessThan('date.end', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
         }
 
-        let residentInfo: CharacterResidentInfo = await CheckResident(data);
-        if (residentInfo) {
-            query.containedIn('aims', [residentInfo.getValue('character')]);
+        if (_userInfo.residentInfo) {
+            query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
         let total: number = await query.count().catch((e) => {
@@ -133,10 +134,11 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
 
         let publicCalendar: PublicCalendar = await new Parse.Query(PublicCalendar).get(_input.publicCalendarId).catch((e) => {
             throw e;
@@ -153,7 +155,7 @@ action.put(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -192,10 +194,11 @@ type OutputD = Date;
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
+        permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
         let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
         let _publicCalendarIds: string[] = [].concat(data.parameters.publicCalendarIds);
 
         _publicCalendarIds = _publicCalendarIds.filter((value, index, array) => {
@@ -216,7 +219,7 @@ action.delete(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
