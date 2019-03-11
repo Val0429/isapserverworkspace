@@ -118,7 +118,10 @@ action.get(
             });
 
         let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo).equalTo('resident', value).count();
+            return new Parse.Query(CharacterResidentInfo)
+                .equalTo('resident', value)
+                .equalTo('isDeleted', false)
+                .count();
         });
         let residentInfoCounts: number[] = await Promise.all(tasks).catch((e) => {
             throw e;

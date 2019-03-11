@@ -30,6 +30,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                             let _aims: Enum.ResidentCharacter[] = value.aims || config.aims;
                             let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
                                 .equalTo('resident', value.resident)
+                                .equalTo('isDeleted', false)
                                 .containedIn('character', _aims)
                                 .find()
                                 .catch((e) => {

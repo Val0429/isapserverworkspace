@@ -140,7 +140,10 @@ action.get(
             });
 
         let tasks: Promise<any>[] = reservations.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo).equalTo('resident', value.getValue('resident')).first();
+            return new Parse.Query(CharacterResidentInfo)
+                .equalTo('resident', value.getValue('resident'))
+                .equalTo('isDeleted', false)
+                .first();
         });
         let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
