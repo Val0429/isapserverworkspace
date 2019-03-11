@@ -36,12 +36,14 @@ action.post(
         );
 
         let committee: CharacterCommittee = new CharacterCommittee();
+
         committee.setValue('creator', data.user);
         committee.setValue('community', _userInfo.community);
         committee.setValue('user', user);
         committee.setValue('permission', '');
         committee.setValue('adjustReason', '');
         committee.setValue('name', _input.name);
+        committee.setValue('isDeleted', false);
 
         await committee.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -68,7 +70,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<CharacterCommittee> = new Parse.Query(CharacterCommittee).equalTo('community', _userInfo.community);
+        let query: Parse.Query<CharacterCommittee> = new Parse.Query(CharacterCommittee).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -134,19 +136,22 @@ action.put(
         });
         Permission.ValidateRoles(availableRoles, roles);
 
-        if (_input.password) {
-            user.setPassword(_input.password);
-            await user.save(null, { useMasterKey: true }).catch((e) => {
-                throw e;
-            });
-        }
-
         let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
             .equalTo('user', user)
             .first()
             .catch((e) => {
                 throw e;
             });
+        if (committee.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['committee was deleted']);
+        }
+
+        if (_input.password) {
+            user.setPassword(_input.password);
+            await user.save(null, { useMasterKey: true }).catch((e) => {
+                throw e;
+            });
+        }
 
         committee.setValue('adjustReason', _input.adjustReason);
         await committee.save(null, { useMasterKey: true }).catch((e) => {
@@ -195,19 +200,11 @@ action.delete(
 
         tasks = [];
 
-        for (let i: number = 0; i < users.length; i++) {
-            let roles: RoleList[] = users[i].attributes.roles.map((value) => {
-                return value.getName();
-            });
-
-            Permission.ValidateRoles(availableRoles, roles);
-
-            tasks.push(users[i].destroy({ useMasterKey: true }));
-        }
-
         for (let i: number = 0; i < committeess.length; i++) {
             for (let j: number = 0; j < committeess[i].length; j++) {
-                tasks.push(committeess[i][j].destroy({ useMasterKey: true }));
+                committeess[i][j].setValue('isDeleted', true);
+
+                tasks.push(committeess[i][j].save(null, { useMasterKey: true }));
             }
         }
 

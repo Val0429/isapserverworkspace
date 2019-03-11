@@ -33,6 +33,7 @@ export interface IReservationR {
     articleName: string;
     articleType: string;
     articleLessCount: number;
+    articleIsDeleted: boolean;
     residentId: string;
     residentname: string;
     residentAddress: string;

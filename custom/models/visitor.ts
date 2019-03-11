@@ -49,6 +49,11 @@ export interface IVisitor {
      * 通知次數
      */
     notificateCount: number;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

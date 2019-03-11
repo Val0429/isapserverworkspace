@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Listen, MessageResident } from '../../custom/models';
-import {Db} from '../../custom/helpers';
+import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
 
@@ -31,6 +31,9 @@ action.put(
         });
         if (!listen) {
             throw Errors.throw(Errors.CustomBadRequest, ['listen not found']);
+        }
+        if (listen.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['listen was deleted']);
         }
 
         let now: Date = new Date();

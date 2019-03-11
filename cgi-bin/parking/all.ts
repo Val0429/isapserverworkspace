@@ -24,7 +24,7 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community);
+        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         if (_input.status === 'used') {
             query.notEqualTo('resident', undefined);

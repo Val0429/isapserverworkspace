@@ -32,6 +32,7 @@ action.get(
             });
 
         let residentInfoCount: number = await new Parse.Query(CharacterResidentInfo)
+            .equalTo('isDeleted', false)
             .equalTo('resident', resident)
             .count()
             .catch((e) => {

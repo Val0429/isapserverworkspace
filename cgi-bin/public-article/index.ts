@@ -1,6 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicArticle, CharacterCommittee } from '../../custom/models';
+import { IRequest, IResponse, PublicArticle, CharacterCommittee, PublicArticleReservation } from '../../custom/models';
 import { Db } from '../../custom/helpers';
+import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -35,6 +37,7 @@ action.post(
         publicArticle.setValue('adjustReason', '');
         publicArticle.setValue('adjuster', data.user);
         publicArticle.setValue('lendCount', 0);
+        publicArticle.setValue('isDeleted', false);
 
         await publicArticle.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -64,7 +67,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicArticle> = new Parse.Query(PublicArticle).equalTo('community', _userInfo.community);
+        let query: Parse.Query<PublicArticle> = new Parse.Query(PublicArticle).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.type) {
             query.equalTo('type', _input.type);
         }
@@ -131,6 +134,9 @@ action.put(
         if (!publicArticle) {
             throw Errors.throw(Errors.CustomBadRequest, ['public article not found']);
         }
+        if (publicArticle.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public article was deleted']);
+        }
 
         publicArticle.setValue('name', _input.name);
         publicArticle.setValue('adjustCount', _input.adjustCount);
@@ -174,10 +180,34 @@ action.delete(
         });
 
         tasks = publicArticles.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
+        });
+
+        tasks = publicArticles.map((value, index, array) => {
+            return new Parse.Query(PublicArticleReservation)
+                .equalTo('article', value)
+                .include('article')
+                .find();
+        });
+        let reservations: PublicArticleReservation[] = [].concat(
+            ...(await Promise.all(tasks).catch((e) => {
+                throw e;
+            })),
+        );
+        reservations.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value.getValue('resident'),
+                type: Enum.MessageType.publicArticleDelete,
+                data: value,
+                message: {
+                    article: value.getValue('article').getValue('name'),
+                },
+            });
         });
 
         return new Date();

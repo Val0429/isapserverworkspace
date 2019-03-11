@@ -40,6 +40,7 @@ action.post(
         parking.setValue('community', _userInfo.community);
         parking.setValue('name', _input.name);
         parking.setValue('cost', _input.cost);
+        parking.setValue('isDeleted', false);
 
         await parking.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -69,7 +70,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community);
+        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -139,7 +140,9 @@ action.delete(
         });
 
         tasks = parkings.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;

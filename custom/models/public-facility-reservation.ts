@@ -39,6 +39,11 @@ export interface IPublicFacilityReservation {
      * 預約時段
      */
     reservationDates: IDateRange;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

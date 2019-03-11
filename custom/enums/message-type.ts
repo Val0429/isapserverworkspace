@@ -27,11 +27,21 @@ export enum MessageType {
     visitorDelete,
 
     /**
+     * 公設
+     */
+    publicFacilityDelete,
+
+    /**
      * 公設預約
      */
     publicFacilityReservationNew,
     publicFacilityReservationUpdate,
     publicFacilityReservationDelete,
+
+    /**
+     * 物品
+     */
+    publicArticleDelete,
 
     /**
      * 物品預約
@@ -65,6 +75,7 @@ export enum MessageType {
      * 聯絡管委會
      */
     listenReceive,
+    listenDelete,
 
     /**
      * 瓦斯表

@@ -32,6 +32,9 @@ action.post(
         if (!publicFacility) {
             throw Errors.throw(Errors.CustomBadRequest, ['public facility not found']);
         }
+        if (publicFacility.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public facility was deleted']);
+        }
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
@@ -57,6 +60,7 @@ action.post(
             startDate: _start,
             endDate: _end,
         });
+        reservation.setValue('isDeleted', false);
 
         await reservation.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -102,7 +106,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation).equalTo('community', _userInfo.community);
+        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('reservationDates.startDate', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -179,6 +183,9 @@ action.put(
         if (!reservation) {
             throw Errors.throw(Errors.CustomBadRequest, ['reservation not found']);
         }
+        if (reservation.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['reservation was deleted']);
+        }
         if (reservation.getValue('resident').getValue('pointBalance') < -1 * (reservation.getValue('facility').getValue('pointCost') * (reservation.getValue('count') - _input.count))) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident point not enough']);
         }
@@ -248,7 +255,9 @@ action.delete(
 
         tasks = [].concat(
             ...reservations.map((value, index, array) => {
-                let _tasks: Promise<any>[] = [value.destroy({ useMasterKey: true })];
+                value.setValue('isDeleted', true);
+
+                let _tasks: Promise<any>[] = [value.save(null, { useMasterKey: true })];
 
                 if (value.getValue('reservationDates').startDate.getTime() > now.getTime()) {
                     value.getValue('resident').setValue('pointBalance', value.getValue('resident').getValue('pointBalance') + value.getValue('count') * value.getValue('facility').getValue('pointCost'));
@@ -270,6 +279,7 @@ action.delete(
                     facility: value.getValue('facility').getValue('name'),
                     dateRange: value.getValue('reservationDates'),
                 },
+                data: value,
             });
         });
 

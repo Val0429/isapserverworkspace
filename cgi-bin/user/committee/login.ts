@@ -1,5 +1,5 @@
 import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
+import { IRequest, IResponse, CharacterCommittee } from '../../../custom/models';
 import { Print, Draw, Parser } from '../../../custom/helpers';
 
 let action = new Action({
@@ -14,7 +14,7 @@ export default action;
  */
 type InputR = IRequest.IUser.IBaseLogin;
 
-type OutputR = IResponse.IUser.IResidentLogin;
+type OutputR = IResponse.IUser.ICommitteeLogin;
 
 action.post(
     {
@@ -38,7 +38,7 @@ action.post(
             });
         });
 
-        if (!(roles.indexOf('Resident') > -1)) {
+        if (!(roles.indexOf('Chairman') > -1 || roles.indexOf('DeputyChairman') > -1 || roles.indexOf('FinanceCommittee') > -1 || roles.indexOf('DirectorGeneral') > -1 || roles.indexOf('Guard') > -1)) {
             throw Errors.throw(Errors.LoginFailed);
         }
 
@@ -49,38 +49,27 @@ action.post(
             throw e;
         });
 
-        let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+        let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
             .equalTo('user', user.user)
-            .include(['resident', 'community'])
+            .include(['community'])
             .first()
             .catch((e) => {
                 throw e;
             });
-        if (!residentInfo) {
+        if (!committee) {
             throw Errors.throw(Errors.CustomBadRequest, ['user not found']);
         }
-        if (residentInfo.getValue('isDeleted')) {
-            throw Errors.throw(Errors.CustomBadRequest, ['resident info was deleted']);
+        if (committee.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['committee was deleted']);
         }
 
         return {
             sessionId: user.sessionId,
-            residentId: residentInfo.getValue('resident').id,
             userId: user.user.id,
-            name: residentInfo.getValue('name'),
-            gender: residentInfo.getValue('gender'),
-            birthday: residentInfo.getValue('birthday'),
-            phone: residentInfo.getValue('phone'),
-            lineId: residentInfo.getValue('lineId'),
-            email: residentInfo.getValue('email'),
-            education: residentInfo.getValue('education'),
-            career: residentInfo.getValue('career'),
-            character: residentInfo.getValue('character'),
-            isEmail: residentInfo.getValue('isEmail'),
-            isNotice: residentInfo.getValue('isNotice'),
-            barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(residentInfo.getValue('resident').getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
-            communityName: residentInfo.getValue('community').getValue('name'),
-            communityAddress: residentInfo.getValue('community').getValue('address'),
+            roles: roles,
+            serverTime: new Date(),
+            communityName: committee.getValue('community').getValue('name'),
+            communityAddress: committee.getValue('community').getValue('address'),
         };
     },
 );

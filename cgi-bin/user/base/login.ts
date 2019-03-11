@@ -26,6 +26,16 @@ action.post(
             throw e;
         });
 
+        let roles = user.user.get('roles').map((value, index, array) => {
+            return Object.keys(RoleList).find((value1, index1, array1) => {
+                return value.get('name') === RoleList[value1];
+            });
+        });
+
+        if (!(roles.indexOf('SystemAdministrator') > -1 || roles.indexOf('Administrator') > -1)) {
+            throw Errors.throw(Errors.LoginFailed);
+        }
+
         let event: EventLogin = new EventLogin({
             owner: user.user,
         });
@@ -36,11 +46,7 @@ action.post(
         return {
             sessionId: user.sessionId,
             userId: user.user.id,
-            roles: user.user.get('roles').map((value, index, array) => {
-                return Object.keys(RoleList).find((value1, index1, array1) => {
-                    return value.get('name') === RoleList[value1];
-                });
-            }),
+            roles: roles,
             serverTime: new Date(),
         };
     },

@@ -29,6 +29,11 @@ export interface IParking {
      * 車位管理費
      */
     cost: number;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

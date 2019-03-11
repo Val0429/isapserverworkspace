@@ -9,7 +9,7 @@ interface IMessageResident {
     type: Enum.MessageType;
     message: IMessageContent;
     aims?: Enum.ResidentCharacter[];
-    data?: PackageReceive | PackageReturn | PackagePosting | Visitor | PublicFacilityReservation | PublicNotify | PublicCalendar | Vote | Listen | PublicArticleReservation | Gas | ManageCost;
+    data: PackageReceive | PackageReturn | PackagePosting | Visitor | PublicFacilityReservation | PublicNotify | PublicCalendar | Vote | Listen | PublicArticleReservation | Gas | ManageCost;
 }
 
 export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageResident>();

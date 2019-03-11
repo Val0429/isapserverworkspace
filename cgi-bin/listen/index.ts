@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-
 import { IRequest, IResponse, CharacterCommittee, CharacterResident, CharacterResidentInfo, Listen } from '../../custom/models';
 import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -46,6 +47,7 @@ action.post(
         listen.setValue('replys', []);
         listen.setValue('status', Enum.ReceiveStatus.unreceived);
         listen.setValue('attachmentSrc', '');
+        listen.setValue('isDeleted', false);
 
         await listen.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -86,7 +88,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Listen> = new Parse.Query(Listen).equalTo('community', _userInfo.community);
+        let query: Parse.Query<Listen> = new Parse.Query(Listen).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -187,16 +189,23 @@ action.delete(
         });
 
         tasks = listens.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
         listens.forEach((value, index, array) => {
-            if (value.getValue('attachmentSrc') && value.getValue('attachmentSrc') !== '') {
-                File.DeleteFile(`${File.assetsPath}/${value.getValue('attachmentSrc')}`);
-            }
+            Notice.notice$.next({
+                resident: value.getValue('resident'),
+                type: Enum.MessageType.listenDelete,
+                data: value,
+                message: {
+                    title: value.getValue('title'),
+                },
+            });
         });
 
         return new Date();

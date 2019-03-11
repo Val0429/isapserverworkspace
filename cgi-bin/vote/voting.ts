@@ -38,6 +38,9 @@ action.put(
         if (!vote) {
             throw Errors.throw(Errors.CustomBadRequest, ['vote not found']);
         }
+        if (vote.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['vote was deleted']);
+        }
 
         let options: string[] = vote.getValue('options').map((value, index, array) => {
             return value.option;

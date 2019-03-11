@@ -74,6 +74,7 @@ action.post(
         residentInfo.setValue('career', _input.career ? _input.career : '');
         residentInfo.setValue('isEmail', true);
         residentInfo.setValue('isNotice', true);
+        residentInfo.setValue('isDeleted', false);
 
         await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -115,6 +116,7 @@ action.get(
         let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
             .equalTo('community', _userInfo.community)
             .equalTo('resident', resident)
+            .equalTo('isDeleted', false)
             .find()
             .catch((e) => {
                 throw e;
@@ -173,6 +175,9 @@ action.put(
         if (!residentInfo) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident info not found']);
         }
+        if (residentInfo.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['resident info was deleted']);
+        }
 
         residentInfo.setValue('phone', _input.phone);
         residentInfo.setValue('lineId', _input.lineId);
@@ -208,20 +213,20 @@ action.delete(
         let _userInfo = await Db.GetUserInfo(data);
         let _userIds: string[] = [].concat(data.parameters.userIds);
 
-        let tasks: Promise<any>[] = [].concat(
-            ..._userIds.map((value, index, array) => {
-                let user: Parse.User = new Parse.User();
-                user.id = value;
+        let tasks: Promise<any>[] = _userIds.map((value, index, array) => {
+            let user: Parse.User = new Parse.User();
+            user.id = value;
 
-                return [new Parse.Query(Parse.User).get(value), new Parse.Query(CharacterResidentInfo).equalTo('user', user).first()];
-            }),
-        );
-        let datas: (Parse.User | CharacterResidentInfo)[] = await Promise.all(tasks).catch((e) => {
+            return new Parse.Query(CharacterResidentInfo).equalTo('user', user).first();
+        });
+        let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = datas.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+        tasks = residentInfos.map((value, index, array) => {
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;

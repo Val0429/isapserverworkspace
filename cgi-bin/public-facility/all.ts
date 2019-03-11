@@ -23,7 +23,7 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community);
+        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;

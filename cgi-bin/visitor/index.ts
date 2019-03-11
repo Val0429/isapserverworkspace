@@ -45,6 +45,7 @@ action.post(
         visitor.setValue('purpose', _input.purpose);
         visitor.setValue('memo', _input.memo);
         visitor.setValue('notificateCount', 0);
+        visitor.setValue('isDeleted', false);
 
         await visitor.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -96,7 +97,7 @@ action.get(
 
         _divideDate = new Date(_divideDate.setMinutes(_divideDate.getMinutes() + _divideMinute));
 
-        let query: Parse.Query<Visitor> = new Parse.Query(Visitor).equalTo('community', _userInfo.community);
+        let query: Parse.Query<Visitor> = new Parse.Query(Visitor).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -185,14 +186,12 @@ action.delete(
         });
 
         tasks = visitors.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
-        });
-
-        visitors.forEach((value, index, array) => {
-            File.DeleteFile(`${File.assetsPath}/${value.getValue('visitorSrc')}`);
         });
 
         visitors.forEach((value, index, array) => {
@@ -202,6 +201,7 @@ action.delete(
                 message: {
                     visitor: value.getValue('name'),
                 },
+                data: value,
             });
         });
 

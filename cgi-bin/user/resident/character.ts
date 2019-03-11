@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, CharacterResidentInfo } from '../../../custom/models';
-import {Db} from '../../../custom/helpers';
+import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -35,6 +35,9 @@ action.put(
             });
         if (!residentInfo) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident info not found']);
+        }
+        if (residentInfo.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['resident info was deleted']);
         }
 
         residentInfo.setValue('character', _input.character);

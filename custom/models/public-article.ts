@@ -49,6 +49,11 @@ export interface IPublicArticle {
      * 借出數量
      */
     lendCount: number;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

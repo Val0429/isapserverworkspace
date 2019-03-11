@@ -37,6 +37,7 @@ action.post(
         publicCalendar.setValue('title', _input.title);
         publicCalendar.setValue('content', _input.content);
         publicCalendar.setValue('aims', _input.aims);
+        publicCalendar.setValue('isDeleted', false);
 
         await publicCalendar.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -89,7 +90,7 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar).equalTo('community', _userInfo.community);
+        let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('date.start', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -143,6 +144,9 @@ action.put(
         let publicCalendar: PublicCalendar = await new Parse.Query(PublicCalendar).get(_input.publicCalendarId).catch((e) => {
             throw e;
         });
+        if (publicCalendar.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public calendar was deleted']);
+        }
 
         let _start: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.endDate : _input.date.startDate;
         let _end: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.startDate : _input.date.endDate;
@@ -213,7 +217,9 @@ action.delete(
         });
 
         tasks = publicCalendars.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
@@ -241,6 +247,7 @@ action.delete(
                         dateRange: value1.getValue('date'),
                         title: value1.getValue('title'),
                     },
+                    data: value1,
                 });
             });
         });

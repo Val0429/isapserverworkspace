@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, Vote, CharacterCommittee } from '../../custom/models';
-import {Db} from '../../custom/helpers';
+import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -30,6 +30,9 @@ action.get(
         });
         if (!vote) {
             throw Errors.throw(Errors.CustomBadRequest, ['vote not found']);
+        }
+        if (vote.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['vote was deleted']);
         }
 
         return {

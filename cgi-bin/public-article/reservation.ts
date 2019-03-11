@@ -32,6 +32,9 @@ action.post(
         if (!publicArticle) {
             throw Errors.throw(Errors.CustomBadRequest, ['public article not found']);
         }
+        if (publicArticle.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public article was deleted']);
+        }
         if (publicArticle.getValue('adjustCount') - publicArticle.getValue('lendCount') < _input.lendCount) {
             throw Errors.throw(Errors.CustomBadRequest, ['lend count not enough']);
         }
@@ -52,6 +55,7 @@ action.post(
         reservation.setValue('lendCount', _input.lendCount);
         reservation.setValue('replyDate', undefined);
         reservation.setValue('status', Enum.ReceiveStatus.unreceived);
+        reservation.setValue('isDeleted', false);
 
         await reservation.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -101,10 +105,8 @@ action.get(
         let start: Date = new Date(new Date(_input.date).setHours(0, 0, 0, 0));
         let end: Date = new Date(new Date(start).setDate(start.getDate() + 1));
 
-        let query: Parse.Query<PublicArticleReservation> = new Parse.Query(PublicArticleReservation)
-            .equalTo('community', _userInfo.community)
-            .greaterThanOrEqualTo('createdAt', start)
-            .lessThan('createdAt', end);
+        let query: Parse.Query<PublicArticleReservation> = new Parse.Query(PublicArticleReservation).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+
         if (_input.publicArticleId) {
             let article: PublicArticle = new PublicArticle();
             article.id = _input.publicArticleId;
@@ -115,6 +117,9 @@ action.get(
             query.equalTo('status', Enum.ReceiveStatus.received);
         } else if (_input.status === 'unreceived') {
             query.equalTo('status', Enum.ReceiveStatus.unreceived);
+        }
+        if (_input.date) {
+            query.greaterThanOrEqualTo('createdAt', start).lessThan('createdAt', end);
         }
 
         if (_userInfo.resident) {
@@ -159,6 +164,7 @@ action.get(
                     articleName: value.getValue('article').getValue('name'),
                     articleType: value.getValue('article').getValue('type'),
                     articleLessCount: value.getValue('article').getValue('adjustCount') - value.getValue('article').getValue('lendCount'),
+                    articleIsDeleted: value.getValue('article').getValue('isDeleted'),
                     residentId: value.getValue('resident').id,
                     residentname: residentInfos[index] ? residentInfos[index].getValue('name') : '',
                     residentAddress: value.getValue('resident').getValue('address'),
@@ -197,6 +203,9 @@ action.put(
             });
         if (!reservation) {
             throw Errors.throw(Errors.CustomBadRequest, ['reservation not found']);
+        }
+        if (reservation.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['reservation was deleted']);
         }
         if (reservation.getValue('status') === Enum.ReceiveStatus.received) {
             throw Errors.throw(Errors.CustomBadRequest, ['received']);
@@ -261,9 +270,10 @@ action.delete(
 
         tasks = [].concat(
             ...reservations.map((value, index, array) => {
+                value.setValue('isDeleted', true);
                 value.getValue('article').setValue('lendCount', value.getValue('article').getValue('lendCount') - value.getValue('lendCount'));
 
-                return [value.destroy({ useMasterKey: true }), value.getValue('article').save(null, { useMasterKey: true })];
+                return [value.save(null, { useMasterKey: true }), value.getValue('article').save(null, { useMasterKey: true })];
             }),
         );
         await Promise.all(tasks).catch((e) => {
@@ -277,6 +287,7 @@ action.delete(
                 message: {
                     article: value.getValue('article').getValue('name'),
                 },
+                data: value,
             });
         });
 

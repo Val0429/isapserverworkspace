@@ -23,6 +23,11 @@ export interface ICommitteeIndexR extends IBaseIndexR {
     name: string;
 }
 
+export interface ICommitteeLogin extends IBaseLogin {
+    communityName: string;
+    communityAddress: string;
+}
+
 export interface IResidentIndexC {
     residentId: string;
 }

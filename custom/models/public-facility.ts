@@ -54,6 +54,11 @@ export interface IPublicFacility {
      * 點數花費
      */
     pointCost: number;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

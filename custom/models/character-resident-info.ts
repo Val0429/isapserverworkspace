@@ -75,6 +75,11 @@ export interface ICharacterResidentInfo {
      * 推播開關
      */
     isNotice: boolean;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

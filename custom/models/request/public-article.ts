@@ -26,7 +26,7 @@ export interface IReservationC {
 }
 
 export interface IReservationR {
-    date: Date;
+    date?: Date;
     publicArticleId?: string;
     status: 'all' | 'received' | 'unreceived';
 }

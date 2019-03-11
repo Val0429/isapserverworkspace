@@ -42,6 +42,7 @@ action.post(
         publicNotify.setValue('content', _input.content);
         publicNotify.setValue('attachmentSrc', '');
         publicNotify.setValue('aims', _input.aims);
+        publicNotify.setValue('isDeleted', false);
 
         await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -107,7 +108,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicNotify> = new Parse.Query(PublicNotify).equalTo('community', _userInfo.community);
+        let query: Parse.Query<PublicNotify> = new Parse.Query(PublicNotify).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -185,6 +186,9 @@ action.put(
         if (!publicNotify) {
             throw Errors.throw(Errors.CustomBadRequest, ['public notify not found']);
         }
+        if (publicNotify.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public notify was deleted']);
+        }
 
         publicNotify.setValue('date', _input.date);
         publicNotify.setValue('title', _input.title);
@@ -257,16 +261,12 @@ action.delete(
         });
 
         tasks = publicNotifys.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
-        });
-
-        publicNotifys.forEach((value, index, array) => {
-            if (value.getValue('attachmentSrc') && value.getValue('attachmentSrc') !== '') {
-                File.DeleteFile(`${File.assetsPath}/${value.getValue('attachmentSrc')}`);
-            }
         });
 
         let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
@@ -291,6 +291,7 @@ action.delete(
                         date: value1.getValue('date'),
                         title: value1.getValue('title'),
                     },
+                    data: value1,
                 });
             });
         });

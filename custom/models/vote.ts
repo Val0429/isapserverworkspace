@@ -55,6 +55,11 @@ export interface IVote {
      * 投票範圍
      */
     aims: Enum.ResidentCharacter[];
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

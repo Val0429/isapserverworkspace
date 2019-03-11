@@ -1,7 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicFacility, IDayRange, IDateRange } from '../../custom/models';
+import { IRequest, IResponse, PublicFacility, IDayRange, PublicFacilityReservation } from '../../custom/models';
 import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
 
 let action = new Action({
     loginRequired: true,
@@ -53,6 +54,7 @@ action.post(
         publicFacility.setValue('maintenanceDates', _maintenanceDates);
         publicFacility.setValue('facilitySrc', '');
         publicFacility.setValue('pointCost', _input.pointCost);
+        publicFacility.setValue('isDeleted', false);
 
         await publicFacility.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -91,7 +93,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community);
+        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
@@ -164,6 +166,9 @@ action.put(
         if (!publicFacility) {
             throw Errors.throw(Errors.CustomBadRequest, ['public facility not found']);
         }
+        if (publicFacility.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public facility was deleted']);
+        }
 
         publicFacility.setValue('name', _input.name);
         publicFacility.setValue('description', _input.description);
@@ -216,14 +221,34 @@ action.delete(
         });
 
         tasks = publicFacilitys.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        publicFacilitys.forEach((value, index, array) => {
-            File.DeleteFile(`${File.assetsPath}/${value.getValue('facilitySrc')}`);
+        tasks = publicFacilitys.map((value, index, array) => {
+            return new Parse.Query(PublicFacilityReservation)
+                .equalTo('facility', value)
+                .include('facility')
+                .find();
+        });
+        let reservations: PublicFacilityReservation[] = [].concat(
+            ...(await Promise.all(tasks).catch((e) => {
+                throw e;
+            })),
+        );
+        reservations.forEach((value, index, array) => {
+            Notice.notice$.next({
+                resident: value.getValue('resident'),
+                type: Enum.MessageType.publicFacilityDelete,
+                data: value,
+                message: {
+                    facility: value.getValue('facility').getValue('name'),
+                },
+            });
         });
 
         return new Date();

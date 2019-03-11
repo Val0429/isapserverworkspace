@@ -34,6 +34,11 @@ export interface ICharacterCommittee {
      * 調整原因
      */
     adjustReason: string;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

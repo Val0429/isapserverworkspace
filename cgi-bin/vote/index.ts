@@ -55,6 +55,7 @@ action.post(
         );
         vote.setValue('status', Enum.ReceiveStatus.unreceived);
         vote.setValue('aims', _input.aims);
+        vote.setValue('isDeleted', false);
 
         await vote.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -109,7 +110,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Vote> = new Parse.Query(Vote).equalTo('community', _userInfo.community);
+        let query: Parse.Query<Vote> = new Parse.Query(Vote).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -197,6 +198,9 @@ action.put(
         if (!vote) {
             throw Errors.throw(Errors.CustomBadRequest, ['vote not found']);
         }
+        if (vote.getValue('isDeleted')) {
+            throw Errors.throw(Errors.CustomBadRequest, ['vote was deleted']);
+        }
 
         if (vote.getValue('date').getTime() <= new Date().getTime()) {
             throw Errors.throw(Errors.CustomBadRequest, ['now is voting']);
@@ -281,7 +285,9 @@ action.delete(
         });
 
         tasks = votes.map((value, index, array) => {
-            return value.destroy({ useMasterKey: true });
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
         });
         await Promise.all(tasks).catch((e) => {
             throw e;
@@ -309,6 +315,7 @@ action.delete(
                         date: value1.getValue('date'),
                         title: value1.getValue('title'),
                     },
+                    data: value1,
                 });
             });
         });

@@ -45,6 +45,11 @@ export interface IPublicArticleReservation {
      * 狀態
      */
     status: Enum.ReceiveStatus;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()

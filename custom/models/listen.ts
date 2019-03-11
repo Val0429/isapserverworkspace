@@ -62,6 +62,11 @@ export interface IListen {
      * 附件
      */
     attachmentSrc: string;
+
+    /**
+     * 刪除
+     */
+    isDeleted: boolean;
 }
 
 @registerSubclass()
