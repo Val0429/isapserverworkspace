@@ -4,4 +4,6 @@ custom/web/
 custom/assets/images/
 custom/assets/files/
 
+nsis/Release/
+
 node_modules
