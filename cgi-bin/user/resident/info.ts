@@ -205,6 +205,10 @@ action.delete(
         let _userInfo = await Db.GetUserInfo(data);
         let _userIds: string[] = [].concat(data.parameters.userIds);
 
+        _userIds = _userIds.filter((value, index, array) => {
+            return array.indexOf(value) === index;
+        });
+
         let tasks: Promise<any>[] = _userIds.map((value, index, array) => {
             let user: Parse.User = new Parse.User();
             user.id = value;

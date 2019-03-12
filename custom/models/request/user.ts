@@ -51,6 +51,10 @@ export interface IResidentIndexC {
     pointTotal: number;
 }
 
+export interface IResidentIndexD {
+    residentIds: string | string[];
+}
+
 export interface IResidentInfoIndexC extends IUser {
     barcode: string;
     name: string;

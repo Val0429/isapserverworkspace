@@ -163,3 +163,50 @@ action.get(
         };
     },
 );
+
+/**
+ * Action Delete
+ */
+type InputD = IRequest.IUser.IResidentIndexD;
+
+type OutputD = Date;
+
+action.delete(
+    {
+        inputType: 'InputD',
+        loginRequired: true,
+        permission: [RoleList.Chairman, RoleList.DirectorGeneral],
+    },
+    async (data): Promise<OutputD> => {
+        let _input: InputD = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
+        let _residentIds: string[] = [].concat(data.parameters.residentIds);
+
+        _residentIds = _residentIds.filter((value, index, array) => {
+            return array.indexOf(value) === index;
+        });
+
+        let tasks: Promise<any>[] = _residentIds.map((value, index, array) => {
+            let resident: CharacterResident = new CharacterResident();
+            resident.id = value;
+
+            return new Parse.Query(CharacterResidentInfo).equalTo('resident', resident).find();
+        });
+        let residentInfos: CharacterResidentInfo[] = [].concat(
+            ...(await Promise.all(tasks).catch((e) => {
+                throw e;
+            })),
+        );
+
+        tasks = residentInfos.map((value, index, array) => {
+            value.setValue('isDeleted', true);
+
+            return value.save(null, { useMasterKey: true });
+        });
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        return new Date();
+    },
+);
