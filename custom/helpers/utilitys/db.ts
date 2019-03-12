@@ -1,4 +1,5 @@
-import { IUser, Action, Restful, RoleList, Errors, Config, ActionParam } from 'core/cgi-package';
+import { RoleList } from 'core/userRoles.gen';
+import { ActionParam } from 'helpers/cgi-helpers/core';
 import { Community, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../models';
 import { Print } from './';
 

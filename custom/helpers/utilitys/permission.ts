@@ -1,4 +1,6 @@
-import { RoleList, Errors, getEnumKeyArray } from 'core/cgi-package';
+import { RoleList } from 'core/userRoles.gen';
+import { Errors } from 'core/errors.gen';
+import { getEnumKeyArray } from 'helpers/utility/get-enum-key';
 import { IPermissionMap } from '../../../define/userRoles/userPermission.define';
 
 export namespace Permission {
