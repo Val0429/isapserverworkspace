@@ -81,6 +81,8 @@ action.post(
             barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(residentInfo.getValue('resident').getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
             communityName: residentInfo.getValue('community').getValue('name'),
             communityAddress: residentInfo.getValue('community').getValue('address'),
+            deviceToken: residentInfo.getValue('deviceToken'),
+            deviceType: residentInfo.getValue('deviceType'),
         };
     },
 );

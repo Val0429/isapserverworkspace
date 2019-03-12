@@ -65,6 +65,8 @@ export interface IResidentInfoIndexC extends IUser {
     email?: string;
     education?: string;
     career?: string;
+    deviceToken: string;
+    deviceType: 'android' | 'ios';
 }
 
 export interface IResidentInfoIndexR {
@@ -89,4 +91,9 @@ export interface IResidentInfoIndexD {
 export interface IResidentCharacter {
     userId: string;
     character: Enum.ResidentCharacter;
+}
+
+export interface IResidentDevice {
+    deviceToken: string;
+    deviceType: 'android' | 'ios';
 }

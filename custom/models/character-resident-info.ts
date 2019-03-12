@@ -67,6 +67,16 @@ export interface ICharacterResidentInfo {
     character: Enum.ResidentCharacter;
 
     /**
+     * 裝置類型
+     */
+    deviceType: 'android' | 'ios';
+
+    /**
+     * 裝置令牌
+     */
+    deviceToken: string;
+
+    /**
      * Email開關
      */
     isEmail: boolean;

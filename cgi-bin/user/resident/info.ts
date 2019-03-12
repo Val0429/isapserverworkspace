@@ -74,6 +74,8 @@ action.post(
         residentInfo.setValue('isEmail', true);
         residentInfo.setValue('isNotice', true);
         residentInfo.setValue('isDeleted', false);
+        residentInfo.setValue('deviceToken', _input.deviceToken);
+        residentInfo.setValue('deviceType', _input.deviceType);
 
         await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
             throw e;

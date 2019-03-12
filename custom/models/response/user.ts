@@ -74,4 +74,6 @@ export interface IResidentLogin extends IResidentInfoIndexR {
     barcode: string;
     communityName: string;
     communityAddress: string;
+    deviceToken: string;
+    deviceType: 'android' | 'ios';
 }
