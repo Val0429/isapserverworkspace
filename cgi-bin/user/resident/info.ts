@@ -22,7 +22,6 @@ action.post(
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
 
         let resident: CharacterResident = await new Parse.Query(CharacterResident)
             .equalTo('barcode', _input.barcode)
@@ -102,13 +101,6 @@ action.get(
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
-
-        let roles: RoleList[] = data.role.map((value, index, array) => {
-            return value.get('name');
-        });
-        if (roles.indexOf(RoleList.Resident) > -1) {
-            throw Errors.throw(Errors.PermissionDenied);
-        }
 
         let resident: CharacterResident = new CharacterResident();
         resident.id = _input.redsidentId;

@@ -22,8 +22,7 @@ action.get(
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
-
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
