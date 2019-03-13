@@ -126,9 +126,7 @@ action.put(
             resident: packagePosting.getValue('resident'),
             type: Enum.MessageType.packagePostingUpdate,
             data: packagePosting,
-            message: {
-                date: packagePosting.updatedAt,
-            },
+            message: {},
         });
 
         return new Date();

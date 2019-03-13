@@ -177,10 +177,7 @@ action.put(
                 type: Enum.MessageType.publicCalendarUpdate,
                 data: publicCalendar,
                 aims: publicCalendar.getValue('aims'),
-                message: {
-                    dateRange: publicCalendar.getValue('date'),
-                    title: publicCalendar.getValue('title'),
-                },
+                message: {},
             });
         });
 

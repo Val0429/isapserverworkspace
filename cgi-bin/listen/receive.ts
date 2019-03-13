@@ -36,14 +36,12 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['listen was deleted']);
         }
 
-        let now: Date = new Date();
-
         listen.setValue(
             'replys',
             listen.getValue('replys').concat({
                 replier: data.user,
                 content: _input.replyContent,
-                date: now,
+                date: new Date(),
             }),
         );
         listen.setValue('status', Enum.ReceiveStatus.received);
@@ -57,7 +55,7 @@ action.put(
             type: Enum.MessageType.listenReceive,
             data: listen,
             message: {
-                date: now,
+                title: listen.getValue('title'),
                 content: _input.replyContent,
             },
         });

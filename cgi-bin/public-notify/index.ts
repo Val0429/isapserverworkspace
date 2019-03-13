@@ -78,7 +78,6 @@ action.post(
                 data: publicNotify,
                 aims: _input.aims,
                 message: {
-                    date: publicNotify.getValue('date'),
                     title: publicNotify.getValue('title'),
                 },
             });
@@ -221,10 +220,7 @@ action.put(
                 type: Enum.MessageType.publicNotifyUpdate,
                 data: publicNotify,
                 aims: publicNotify.getValue('aims'),
-                message: {
-                    date: publicNotify.getValue('date'),
-                    title: publicNotify.getValue('title'),
-                },
+                message: {},
             });
         });
 
@@ -288,7 +284,6 @@ action.delete(
                     type: Enum.MessageType.publicNotifyDelete,
                     aims: value1.getValue('aims'),
                     message: {
-                        date: value1.getValue('date'),
                         title: value1.getValue('title'),
                     },
                     data: value1,

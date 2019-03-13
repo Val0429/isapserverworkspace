@@ -3,9 +3,8 @@ import { Community, CharacterResidentInfo, IDateRange, PackageReceive, PackageRe
 import * as Enum from '../enums';
 
 export interface IMessageContent {
-    date?: Date;
+    deadline?: Date;
     content?: string;
-    balance?: number;
     cost?: number;
     lendCount?: number;
     article?: string;
@@ -13,6 +12,12 @@ export interface IMessageContent {
     dateRange?: IDateRange;
     title?: string;
     visitor?: string;
+    sender?: string;
+    receiver?: string;
+    address?: string;
+    purpose?: string;
+    YYYYMMDD?: Date;
+    YYYYMM?: Date;
 }
 
 /**
@@ -35,7 +40,7 @@ export interface IMessageResident {
     type: Enum.MessageType;
 
     /**
-     * 訊息內容
+     * 訊息
      */
     message: IMessageContent;
 

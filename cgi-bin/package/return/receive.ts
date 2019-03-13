@@ -59,7 +59,8 @@ action.put(
             type: Enum.MessageType.packageReturnReceive,
             data: packageReturn,
             message: {
-                date: packageReturn.updatedAt,
+                address: packageReturn.getValue('resident').getValue('address'),
+                sender: packageReturn.getValue('sender'),
             },
         });
 

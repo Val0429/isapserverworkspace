@@ -27,9 +27,12 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let packagePosting: PackagePosting = await new Parse.Query(PackagePosting).get(_input.packagePostingId).catch((e) => {
-            throw e;
-        });
+        let packagePosting: PackagePosting = await new Parse.Query(PackagePosting)
+            .include('resident')
+            .get(_input.packagePostingId)
+            .catch((e) => {
+                throw e;
+            });
         if (!packagePosting) {
             throw Errors.throw(Errors.CustomBadRequest, ['package receive not found']);
         }
@@ -51,10 +54,12 @@ action.put(
 
         Notice.notice$.next({
             resident: packagePosting.getValue('resident'),
-            type: Enum.MessageType.packagePostingReceive,
+            type: Enum.MessageType.packagePostingVisitorReceive,
             data: packagePosting,
             message: {
-                date: packagePosting.updatedAt,
+                address: packagePosting.getValue('resident').getValue('address'),
+                sender: packagePosting.getValue('sender'),
+                receiver: packagePosting.getValue('receiver'),
             },
         });
 

@@ -2,14 +2,14 @@ import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { CharacterResident, CharacterResidentInfo, MessageResident, IMessageContent, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '../models';
 import * as Enum from '../enums';
-import { Print } from '../helpers';
+import { Print, DateTime, Fcm, Apn } from '../helpers';
 
 interface IMessageResident {
     resident: CharacterResident;
     type: Enum.MessageType;
-    message: IMessageContent;
     aims?: Enum.ResidentCharacter[];
     data: PackageReceive | PackageReturn | PackagePosting | Visitor | PublicFacilityReservation | PublicNotify | PublicCalendar | Vote | Listen | PublicArticleReservation | Gas | ManageCost;
+    message: IMessageContent;
 }
 
 export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageResident>();
@@ -37,45 +37,114 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                     throw e;
                                 });
 
-                            return residentInfos.map((value1, index1, array1) => {
-                                Print.MinLog(`<${Enum.MessageType[value.type]}> ${value1.id}, ${JSON.stringify(value.message)}`);
+                            return [].concat(
+                                ...(await Promise.all(
+                                    residentInfos.map(async (value1, index1, array1) => {
+                                        try {
+                                            let body: string = config.body;
+                                            if (value.message.deadline) {
+                                                body = body.replace(/{{deadline}}/g, DateTime.DateTime2String(value.message.deadline, 'YYYY/MM/DD'));
+                                            }
+                                            if (value.message.content) {
+                                                body = body.replace(/{{content}}/g, value.message.content);
+                                            }
+                                            if (value.message.cost) {
+                                                body = body.replace(/{{cost}}/g, String(value.message.cost));
+                                            }
+                                            if (value.message.lendCount) {
+                                                body = body.replace(/{{lendCount}}/g, String(value.message.lendCount));
+                                            }
+                                            if (value.message.article) {
+                                                body = body.replace(/{{article}}/g, value.message.article);
+                                            }
+                                            if (value.message.facility) {
+                                                body = body.replace(/{{facility}}/g, value.message.facility);
+                                            }
+                                            if (value.message.dateRange) {
+                                                body = body.replace(/{{dateRange}}/g, `${DateTime.DateTime2String(value.message.dateRange.startDate)}${DateTime.DateTime2String(value.message.dateRange.endDate)}`);
+                                            }
+                                            if (value.message.title) {
+                                                body = body.replace(/{{title}}/g, value.message.title);
+                                            }
+                                            if (value.message.visitor) {
+                                                body = body.replace(/{{visitor}}/g, value.message.visitor);
+                                            }
+                                            if (value.message.sender) {
+                                                body = body.replace(/{{sender}}/g, value.message.sender);
+                                            }
+                                            if (value.message.receiver) {
+                                                body = body.replace(/{{receiver}}/g, value.message.receiver);
+                                            }
+                                            if (value.message.address) {
+                                                body = body.replace(/{{address}}/g, value.message.address);
+                                            }
+                                            if (value.message.purpose) {
+                                                body = body.replace(/{{purpose}}/g, value.message.purpose);
+                                            }
+                                            if (value.message.YYYYMMDD) {
+                                                body = body.replace(/{{YYYYMMDD}}/g, DateTime.DateTime2String(value.message.YYYYMMDD, 'YYYY/MM/DD'));
+                                            }
+                                            if (value.message.YYYYMM) {
+                                                body = body.replace(/{{YYYYMM}}/g, DateTime.DateTime2String(value.message.YYYYMM, 'YYYY/MM'));
+                                            }
 
-                                // let message: MessageResident = new MessageResident();
+                                            Print.MinLog(`<${value1.id}>: ${body}`);
 
-                                // message.setValue('residentInfo', value1);
-                                // message.setValue('type', value.type);
-                                // message.setValue('message', value.message);
+                                            if (value1.getValue('deviceType') === 'android') {
+                                                let fcm: Fcm = new Fcm();
+                                                let result: string = await fcm.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                // if (value.data) {
-                                //     if (value.data instanceof PackageReceive) {
-                                //         message.setValue('packageReceive', value.data);
-                                //     } else if (value.data instanceof PackageReturn) {
-                                //         message.setValue('packageReturn', value.data);
-                                //     } else if (value.data instanceof PackagePosting) {
-                                //         message.setValue('packagePosting', value.data);
-                                //     } else if (value.data instanceof Visitor) {
-                                //         message.setValue('visitor', value.data);
-                                //     } else if (value.data instanceof PublicFacilityReservation) {
-                                //         message.setValue('publicFacilityReservation', value.data);
-                                //     } else if (value.data instanceof PublicNotify) {
-                                //         message.setValue('publicNotify', value.data);
-                                //     } else if (value.data instanceof PublicCalendar) {
-                                //         message.setValue('publicCalendar', value.data);
-                                //     } else if (value.data instanceof Vote) {
-                                //         message.setValue('vote', value.data);
-                                //     } else if (value.data instanceof Listen) {
-                                //         message.setValue('listen', value.data);
-                                //     } else if (value.data instanceof PublicArticleReservation) {
-                                //         message.setValue('publicArticleReservation', value.data);
-                                //     } else if (value.data instanceof Gas) {
-                                //         message.setValue('gas', value.data);
-                                //     } else if (value.data instanceof ManageCost) {
-                                //         message.setValue('manageCost', value.data);
-                                //     }
-                                // }
+                                                Print.MinLog(JSON.stringify(result), 'success');
+                                            } else {
+                                                let apn: Apn = new Apn();
+                                                let result = await apn.Send('A54FF8224AF4CB2F245694E3C692A14CF59FBE1C842A2E7C50F91DB8E64641CB', 'Title', 'Body').catch((e) => {
+                                                    Print.MinLog(e, 'error');
+                                                });
 
-                                // return message.save(null, { useMasterKey: true });
-                            });
+                                                Print.MinLog(JSON.stringify(result), 'success');
+                                            }
+                                        } catch (e) {
+                                            Print.MinLog(e, 'error');
+                                        }
+
+                                        let message: MessageResident = new MessageResident();
+
+                                        message.setValue('residentInfo', value1);
+                                        message.setValue('type', value.type);
+                                        message.setValue('message', value.message);
+
+                                        if (value.data) {
+                                            if (value.data instanceof PackageReceive) {
+                                                message.setValue('packageReceive', value.data);
+                                            } else if (value.data instanceof PackageReturn) {
+                                                message.setValue('packageReturn', value.data);
+                                            } else if (value.data instanceof PackagePosting) {
+                                                message.setValue('packagePosting', value.data);
+                                            } else if (value.data instanceof Visitor) {
+                                                message.setValue('visitor', value.data);
+                                            } else if (value.data instanceof PublicFacilityReservation) {
+                                                message.setValue('publicFacilityReservation', value.data);
+                                            } else if (value.data instanceof PublicNotify) {
+                                                message.setValue('publicNotify', value.data);
+                                            } else if (value.data instanceof PublicCalendar) {
+                                                message.setValue('publicCalendar', value.data);
+                                            } else if (value.data instanceof Vote) {
+                                                message.setValue('vote', value.data);
+                                            } else if (value.data instanceof Listen) {
+                                                message.setValue('listen', value.data);
+                                            } else if (value.data instanceof PublicArticleReservation) {
+                                                message.setValue('publicArticleReservation', value.data);
+                                            } else if (value.data instanceof Gas) {
+                                                message.setValue('gas', value.data);
+                                            } else if (value.data instanceof ManageCost) {
+                                                message.setValue('manageCost', value.data);
+                                            }
+                                        }
+
+                                        return message.save(null, { useMasterKey: true });
+                                    }),
+                                )),
+                            );
                         }),
                     )),
                 );

@@ -59,9 +59,7 @@ action.post(
             resident: packageReturn.getValue('resident'),
             type: Enum.MessageType.packageReturnNew,
             data: packageReturn,
-            message: {
-                date: packageReturn.createdAt,
-            },
+            message: {},
         });
 
         return {
@@ -186,9 +184,7 @@ action.put(
             resident: packageReturn.getValue('resident'),
             type: Enum.MessageType.packageReturnUpdate,
             data: packageReturn,
-            message: {
-                date: packageReturn.updatedAt,
-            },
+            message: {},
         });
 
         return new Date();

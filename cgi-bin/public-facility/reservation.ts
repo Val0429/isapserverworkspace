@@ -213,10 +213,7 @@ action.put(
             resident: reservation.getValue('resident'),
             type: Enum.MessageType.publicFacilityReservationUpdate,
             data: reservation,
-            message: {
-                facility: reservation.getValue('facility').getValue('name'),
-                dateRange: reservation.getValue('reservationDates'),
-            },
+            message: {},
         });
 
         return new Date();

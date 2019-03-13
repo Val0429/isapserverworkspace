@@ -82,7 +82,8 @@ action.post(
                 type: Enum.MessageType.gasNew,
                 data: value,
                 message: {
-                    date: _date,
+                    YYYYMM: value.getValue('date'),
+                    deadline: value.getValue('deadline'),
                 },
             });
         });
@@ -197,9 +198,7 @@ action.put(
             resident: gas.getValue('resident'),
             type: Enum.MessageType.gasUpdate,
             data: gas,
-            message: {
-                date: gas.getValue('date'),
-            },
+            message: {},
         });
 
         return new Date();

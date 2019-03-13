@@ -59,7 +59,8 @@ action.post(
             type: Enum.MessageType.packageReceiveNew,
             data: packageReceive,
             message: {
-                date: packageReceive.createdAt,
+                address: packageReceive.getValue('resident').getValue('address'),
+                receiver: packageReceive.getValue('receiver'),
             },
         });
 
@@ -184,9 +185,7 @@ action.put(
             resident: packageReceive.getValue('resident'),
             type: Enum.MessageType.packageReceiveUpdate,
             data: packageReceive,
-            message: {
-                date: packageReceive.updatedAt,
-            },
+            message: {},
         });
 
         return new Date();

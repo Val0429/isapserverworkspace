@@ -66,6 +66,7 @@ action.post(
             data: visitor,
             message: {
                 visitor: visitor.getValue('name'),
+                purpose: visitor.getValue('purpose'),
             },
         });
 
@@ -201,10 +202,11 @@ action.delete(
             Notice.notice$.next({
                 resident: value.getValue('resident'),
                 type: Enum.MessageType.visitorDelete,
+                data: value,
                 message: {
                     visitor: value.getValue('name'),
+                    purpose: value.getValue('purpose'),
                 },
-                data: value,
             });
         });
 

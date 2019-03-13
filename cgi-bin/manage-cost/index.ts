@@ -98,8 +98,8 @@ action.post(
                 type: Enum.MessageType.manageCostNew,
                 data: value,
                 message: {
-                    date: _date,
-                    balance: value.getValue('balance'),
+                    YYYYMM: value.getValue('date'),
+                    deadline: value.getValue('deadline'),
                 },
             });
         });

@@ -50,8 +50,7 @@ action.put(
             type: Enum.MessageType.manageCostPayment,
             data: manageCost,
             message: {
-                date: manageCost.getValue('date'),
-                balance: manageCost.getValue('balance'),
+                YYYYMM: manageCost.getValue('date'),
                 cost: _input.cost,
             },
         });

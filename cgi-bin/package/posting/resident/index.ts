@@ -67,10 +67,10 @@ action.post(
 
         Notice.notice$.next({
             resident: packagePosting.getValue('resident'),
-            type: Enum.MessageType.packagePostingNew,
+            type: Enum.MessageType.packagePostingResidentNew,
             data: packagePosting,
             message: {
-                date: packagePosting.createdAt,
+                sender: packagePosting.getValue('sender'),
             },
         });
 

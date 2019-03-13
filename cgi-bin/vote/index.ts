@@ -80,7 +80,6 @@ action.post(
                 data: vote,
                 aims: _input.aims,
                 message: {
-                    date: vote.getValue('date'),
                     title: vote.getValue('title'),
                 },
             });
@@ -245,10 +244,7 @@ action.put(
                 type: Enum.MessageType.voteUpdate,
                 data: vote,
                 aims: vote.getValue('aims'),
-                message: {
-                    date: vote.getValue('date'),
-                    title: vote.getValue('title'),
-                },
+                message: {},
             });
         });
 
@@ -312,7 +308,6 @@ action.delete(
                     type: Enum.MessageType.voteDelete,
                     aims: value1.getValue('aims'),
                     message: {
-                        date: value1.getValue('date'),
                         title: value1.getValue('title'),
                     },
                     data: value1,

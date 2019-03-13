@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, PackageReceive, MessageResident } from '../../../custom/models';
-import {Db } from "../../../custom/helpers"
+import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import * as Notice from '../../../custom/services/notice';
 
@@ -58,7 +58,8 @@ action.put(
             type: Enum.MessageType.packageReceiveReceive,
             data: packageReceive,
             message: {
-                date: packageReceive.updatedAt,
+                address: packageReceive.getValue('resident').getValue('address'),
+                receiver: packageReceive.getValue('receiver'),
             },
         });
 

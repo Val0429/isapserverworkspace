@@ -16,9 +16,11 @@ export enum MessageType {
     /**
      * 寄放物品
      */
-    packagePostingNew,
+    packagePostingVisitorNew,
+    packagePostingResidentNew,
     packagePostingUpdate,
-    packagePostingReceive,
+    packagePostingVisitorReceive,
+    packagePostingResidentReceive,
 
     /**
      * 訪客
