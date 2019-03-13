@@ -4,7 +4,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "AiLife Server"
-!define PRODUCT_VERSION "1.0.0"
+!define PRODUCT_VERSION "1.00.01"
 !define PRODUCT_PUBLISHER "iSAP Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
