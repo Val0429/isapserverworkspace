@@ -72,6 +72,14 @@ let config: Config = {
     },
 
     /**
+     * 公設
+     */
+    [Enum.MessageType.publicFacilityDelete]: {
+        isEnable: true,
+        aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
+    },
+
+    /**
      * 公設預約
      */
     [Enum.MessageType.publicFacilityReservationNew]: {
@@ -83,6 +91,14 @@ let config: Config = {
         aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
     },
     [Enum.MessageType.publicFacilityReservationDelete]: {
+        isEnable: true,
+        aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
+    },
+
+    /**
+     * 物品
+     */
+    [Enum.MessageType.publicArticleDelete]: {
         isEnable: true,
         aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
     },
@@ -155,6 +171,10 @@ let config: Config = {
      * 聯絡管委會
      */
     [Enum.MessageType.listenReceive]: {
+        isEnable: true,
+        aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
+    },
+    [Enum.MessageType.listenDelete]: {
         isEnable: true,
         aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
     },
