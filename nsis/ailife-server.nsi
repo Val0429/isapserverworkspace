@@ -4,8 +4,8 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "AiLife Server"
-!define PRODUCT_VERSION "1.00.01"
-!define PRODUCT_PUBLISHER "iSAP Solution" 
+!define PRODUCT_VERSION "1.00.02"
+!define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
 !define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -128,7 +128,7 @@ Section
 	ExecWait '"install_mongo.bat" /s'
 	
 	${If} ${SectionIsSelected} ${SEC01}			
-		ExecWait '"start.bat"'
+		; ExecWait '"start.bat"'
 	${EndIf}
 	
 	# install service

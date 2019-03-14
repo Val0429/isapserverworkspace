@@ -1,10 +1,10 @@
 {
-    "name": "isap-smart-community-service",
-    "version": "1.00.01",
+    "name": "isap-ailife-service",
+    "version": "1.00.02",
     "config": {
-        "displayname": "iSap Smart Community Service"
+        "displayname": "iSap AiLife Service"
     },
-    "description": "iSap Smart Community Service",
+    "description": "iSap AiLife Service",
     "scripts": {
         "start": "npm start --prefix ./../",
         "create-project": "git checkout --orphan",
