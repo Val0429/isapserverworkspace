@@ -92,10 +92,10 @@ action.get(
 
         let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
-            query.greaterThanOrEqualTo('date.start', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
+            query.greaterThanOrEqualTo('date.startDate', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
         if (_input.end) {
-            query.lessThan('date.end', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+            query.lessThan('date.endDate', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
         }
 
         if (_userInfo.residentInfo) {
