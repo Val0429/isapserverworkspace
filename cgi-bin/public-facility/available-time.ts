@@ -1,0 +1,122 @@
+import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
+import { IRequest, IResponse, PublicFacility, PublicFacilityReservation, CharacterResident, CharacterResidentInfo, IDayRange, IDateRange } from '../../custom/models';
+import { Print, Db } from '../../custom/helpers';
+import * as Enum from '../../custom/enums';
+import * as Notice from '../../custom/services/notice';
+
+let action = new Action({
+    loginRequired: true,
+});
+
+export default action;
+
+/**
+ * Action Read
+ */
+type InputR = IRequest.IPublicFacility.IAvailableTime;
+
+type OutputR = IResponse.IPublicFacility.IAvailableTime;
+
+action.get(
+    {
+        inputType: 'InputR',
+        permission: [RoleList.Resident],
+    },
+    async (data): Promise<OutputR> => {
+        let _input: InputR = data.inputType;
+        let _userInfo = await Db.GetUserInfo(data);
+        let _start: Date = new Date(new Date(_input.date).setHours(0, 0, 0, 0));
+        let _end: Date = new Date(new Date(_start).setDate(_input.date.getDate() + 1));
+        let _day: number = _input.date.getDay();
+
+        let publicFacility: PublicFacility = await new Parse.Query(PublicFacility)
+            .equalTo('community', _userInfo.community)
+            .equalTo('isDeleted', false)
+            .get(_input.publicFacilityId)
+            .catch((e) => {
+                throw e;
+            });
+        if (!publicFacility) {
+            throw Errors.throw(Errors.CustomBadRequest, ['public facility not found']);
+        }
+
+        let openHours: number[] = GetHours(publicFacility.getValue('openDates'), _day);
+
+        let maintenanceHours: number[] = GetHours(publicFacility.getValue('maintenanceDates'), _day);
+        openHours = openHours.filter((value, index, array) => {
+            return maintenanceHours.indexOf(value) < 0;
+        });
+
+        let reservations: PublicFacilityReservation[] = await new Parse.Query(PublicFacilityReservation)
+            .equalTo('community', _userInfo.community)
+            .equalTo('isDeleted', false)
+            .equalTo('facility', publicFacility)
+            .greaterThanOrEqualTo('reservationDates.startDate', _start)
+            .lessThan('reservationDates.startDate', _end)
+            .find()
+            .catch((e) => {
+                throw e;
+            });
+
+        let reservationHours: number[] = GetHours1(reservations);
+        openHours = openHours.filter((value, index, array) => {
+            return reservationHours.indexOf(value) < 0;
+        });
+
+        return {
+            hours: openHours,
+        };
+    },
+);
+
+/**
+ *
+ * @param dayRange
+ * @param day
+ */
+function GetHours(dayRange: IDayRange[], day: number): number[] {
+    let hours: number[] = []
+        .concat(
+            ...dayRange
+                .filter((value, index, array) => {
+                    return parseInt(value.startDay) <= day && parseInt(value.endDay) >= day;
+                })
+                .map((value, index, array) => {
+                    let _hours: number[] = [];
+                    for (let i: number = value.startDate.getHours(); i <= value.endDate.getHours(); i++) {
+                        _hours.push(i);
+                    }
+
+                    return _hours;
+                }),
+        )
+        .filter((value, index, array) => {
+            return array.indexOf(value) === index;
+        });
+
+    return hours;
+}
+
+/**
+ *
+ * @param reservations
+ */
+function GetHours1(reservations: PublicFacilityReservation[]): number[] {
+    let hours: number[] = []
+        .concat(
+            ...reservations.map((value, index, array) => {
+                let _date: IDateRange = value.getValue('reservationDates');
+                let _hours: number[] = [];
+                for (let i: number = _date.startDate.getHours(); i <= _date.endDate.getHours(); i++) {
+                    _hours.push(i);
+                }
+
+                return _hours;
+            }),
+        )
+        .filter((value, index, array) => {
+            return array.indexOf(value) === index;
+        });
+
+    return hours;
+}

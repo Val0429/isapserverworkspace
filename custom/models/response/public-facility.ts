@@ -36,3 +36,7 @@ export interface IReservationR {
     count: number;
     reservationDates: IDateRange;
 }
+
+export interface IAvailableTime {
+    hours: number[];
+}

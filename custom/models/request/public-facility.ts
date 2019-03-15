@@ -44,3 +44,8 @@ export interface IReservationU {
 export interface IReservationD {
     reservationIds: string | string[];
 }
+
+export interface IAvailableTime {
+    date: Date;
+    publicFacilityId: string;
+}
