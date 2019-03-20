@@ -28,7 +28,7 @@ export interface Config {
 
 let config: Config = {
     intervalSecond: 1,
-    source: 'frs',
+    source: 'cms',
     channels: ['Camera_01_01'],
     ageRange: '0-20-20-20',
     cameraSources: [
@@ -44,7 +44,7 @@ let config: Config = {
         isEnable: true,
     },
     output: {
-        path: 'demographic',
+        path: 'images/demographic',
         size: 200,
         level: 9,
     },

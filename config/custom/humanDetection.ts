@@ -56,7 +56,7 @@ let config: Config = {
         isEnable: true,
     },
     output: {
-        path: 'humanDetection',
+        path: 'images/humanDetection',
         width: 1280,
         height: 720,
         lineWidth: 13,

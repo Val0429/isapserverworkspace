@@ -4,58 +4,38 @@ import { RoleList } from 'core/cgi-package';
  *
  */
 export interface IPermissionMap {
-    [RoleList.SystemAdmin]: RoleList[];
-    [RoleList.Admin]: RoleList[];
-    [RoleList.Manager]: RoleList[];
-    [RoleList.User]: RoleList[];
-    [RoleList.Investigator]: RoleList[];
-    [RoleList.Edge]: RoleList[];
+    [RoleList.SystemAdministrator]: RoleList[];
+    [RoleList.Administrator]: RoleList[];
 }
 
 /**
  *
  */
 export const permissionMapC: IPermissionMap = {
-    [RoleList.SystemAdmin]: [RoleList.SystemAdmin, RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Admin]: [RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Manager]: [RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.User]: [RoleList.Investigator, RoleList.Edge],
-    [RoleList.Investigator]: [RoleList.Edge],
-    [RoleList.Edge]: [],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
+    [RoleList.Administrator]: [RoleList.Administrator],
 };
 
 /**
  *
  */
 export const permissionMapR: IPermissionMap = {
-    [RoleList.SystemAdmin]: [RoleList.SystemAdmin, RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Admin]: [RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Manager]: [RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.User]: [RoleList.Investigator, RoleList.Edge],
-    [RoleList.Investigator]: [RoleList.Edge],
-    [RoleList.Edge]: [],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
+    [RoleList.Administrator]: [RoleList.Administrator],
 };
 
 /**
  *
  */
 export const permissionMapU: IPermissionMap = {
-    [RoleList.SystemAdmin]: [RoleList.SystemAdmin, RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Admin]: [RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Manager]: [RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.User]: [RoleList.Investigator, RoleList.Edge],
-    [RoleList.Investigator]: [RoleList.Edge],
-    [RoleList.Edge]: [],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
+    [RoleList.Administrator]: [RoleList.Administrator],
 };
 
 /**
  *
  */
 export const permissionMapD: IPermissionMap = {
-    [RoleList.SystemAdmin]: [RoleList.SystemAdmin, RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Admin]: [RoleList.Admin, RoleList.Manager, RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.Manager]: [RoleList.User, RoleList.Investigator, RoleList.Edge],
-    [RoleList.User]: [RoleList.Investigator, RoleList.Edge],
-    [RoleList.Investigator]: [RoleList.Edge],
-    [RoleList.Edge]: [],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator],
+    [RoleList.Administrator]: [RoleList.Administrator],
 };

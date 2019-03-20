@@ -1,5 +1,5 @@
+import { IConfig } from 'core/config.gen';
 import * as HttpClient from 'request';
-import { Config } from '../../../config/custom/cms';
 
 export namespace Cms {
     /**
@@ -9,7 +9,7 @@ export namespace Cms {
      * @param nvr
      * @param channel
      */
-    export async function GetSnapshot(config: Config, nvr: number, channel: number): Promise<{ buffer: Buffer; date: Date }> {
+    export async function GetSnapshot(config: IConfig['cms'], nvr: number, channel: number): Promise<{ buffer: Buffer; date: Date }> {
         try {
             // http://172.16.10.100:7000/cgi-bin/snapshot?nvr=nvr1&channel=channel2&source=backend&timestamp=1546582859401
             let url: string = `http://${config.ip}:${config.port}/cgi-bin/snapshot?nvr=nvr${nvr}&channel=channel${channel}`;

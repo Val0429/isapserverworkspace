@@ -4,6 +4,8 @@ export interface Config {
     wsport: number;
     account: string;
     password: string;
+    specialScoreForUnRecognizedFace: number;
+    throttleKeepSameFaceSeconds: number;
 }
 
 let config: Config = {
@@ -12,5 +14,7 @@ let config: Config = {
     wsport: 7077,
     account: 'Min',
     password: '1',
+    specialScoreForUnRecognizedFace: 0.7,
+    throttleKeepSameFaceSeconds: 15,
 };
 export default config;

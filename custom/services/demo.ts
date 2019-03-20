@@ -1,11 +1,11 @@
 import { Config } from 'core/config.gen';
 import { Print, Cms, Face, Draw, File, Utility, ISapDemo, FRSService, FRSCore, Parser } from '../helpers';
 import * as Rx from 'rxjs';
-import { IHuman, Human, IHumanSummary, HumanSummary } from '../models';
+import { IDB } from '../models';
 import { pulling$ } from '../../cgi-bin/faceCount';
 
 (async function() {
-    let save$: Rx.Subject<IHuman> = SaveQueue();
+    let save$: Rx.Subject<IDB.IHuman> = SaveQueue();
 
     if (Config.demographic.source === 'cms') {
         CMS(save$);
@@ -17,8 +17,8 @@ import { pulling$ } from '../../cgi-bin/faceCount';
 /**
  *
  */
-function SaveQueue(): Rx.Subject<IHuman> {
-    let save$: Rx.Subject<IHuman> = new Rx.Subject();
+function SaveQueue(): Rx.Subject<IDB.IHuman> {
+    let save$: Rx.Subject<IDB.IHuman> = new Rx.Subject();
     let next$: Rx.Subject<{}> = new Rx.Subject();
 
     save$
@@ -40,7 +40,7 @@ function SaveQueue(): Rx.Subject<IHuman> {
 /**
  *
  */
-function CMS(save$: Rx.Subject<IHuman>): void {
+function CMS(save$: Rx.Subject<IDB.IHuman>): void {
     let demo$: Rx.Subject<Date> = new Rx.Subject<Date>();
 
     let success$: Rx.Subject<{}> = new Rx.Subject();
@@ -74,7 +74,7 @@ function CMS(save$: Rx.Subject<IHuman>): void {
 
                         let camera: string = `Camera_${Utility.PadLeft(value1.nvr.toString(), '0', 2)}_${Utility.PadLeft(value2.toString(), '0', 2)}`;
 
-                        let human: IHuman = {
+                        let human: IDB.IHuman = {
                             analyst: '',
                             source: 'cms',
                             camera: camera,
@@ -128,7 +128,7 @@ function CMS(save$: Rx.Subject<IHuman>): void {
 /**
  *
  */
-function FRS(save$: Rx.Subject<IHuman>): void {
+function FRS(save$: Rx.Subject<IDB.IHuman>): void {
     let path: string = `${File.assetsPath}/${Config.demographic.output.path}`;
     File.CreateFolder(path);
 
@@ -164,7 +164,7 @@ function FRS(save$: Rx.Subject<IHuman>): void {
             name = 'unknown';
         }
 
-        let human: IHuman = {
+        let human: IDB.IHuman = {
             analyst: '',
             source: 'frs',
             camera: camera,
@@ -197,7 +197,7 @@ function FRS(save$: Rx.Subject<IHuman>): void {
  * @param filename
  * @param human
  */
-async function ISapAnalysis(save$: Rx.Subject<IHuman>, buffer: Buffer, path: string, filename: string, human?: IHuman): Promise<ISapDemo.IFeature> {
+async function ISapAnalysis(save$: Rx.Subject<IDB.IHuman>, buffer: Buffer, path: string, filename: string, human?: IDB.IHuman): Promise<ISapDemo.IFeature> {
     let isap: ISapDemo = new ISapDemo();
     isap.ip = Config.demographic.isap.ip;
     isap.port = Config.demographic.isap.port;
@@ -219,7 +219,7 @@ async function ISapAnalysis(save$: Rx.Subject<IHuman>, buffer: Buffer, path: str
             save$.next(human);
         }
 
-        buffer = await Draw.Resize2Square(buffer, Config.demographic.output.size, Config.demographic.output.level);
+        buffer = await Draw.Resize2Square(buffer, Config.demographic.output.size);
 
         File.WriteFile(`${path}/${filename}`, buffer);
 
@@ -231,11 +231,11 @@ async function ISapAnalysis(save$: Rx.Subject<IHuman>, buffer: Buffer, path: str
  *
  * @param _humans
  */
-async function Save(_human: IHuman): Promise<void> {
+async function Save(_human: IDB.IHuman): Promise<void> {
     try {
         let tasks: Promise<any>[] = [];
 
-        let human: Human = await SaveHuman(_human);
+        let human: IDB.Human = await SaveHuman(_human);
 
         tasks.push(SaveHumanSummary(human, _human, 'month'));
         tasks.push(SaveHumanSummary(human, _human, 'day'));
@@ -253,9 +253,9 @@ async function Save(_human: IHuman): Promise<void> {
  *
  * @param _humans
  */
-async function SaveHuman(_human: IHuman): Promise<Human> {
+async function SaveHuman(_human: IDB.IHuman): Promise<IDB.Human> {
     try {
-        let human: Human = new Human();
+        let human: IDB.Human = new IDB.Human();
         await human.save(_human, { useMasterKey: true }).catch((e) => {
             throw e;
         });
@@ -271,7 +271,7 @@ async function SaveHuman(_human: IHuman): Promise<Human> {
  * @param _humans
  * @param type
  */
-async function SaveHumanSummary(human: Human, _human: IHuman, type: 'month' | 'day' | 'hour'): Promise<void> {
+async function SaveHumanSummary(human: IDB.Human, _human: IDB.IHuman, type: 'month' | 'day' | 'hour'): Promise<void> {
     try {
         let date: Date = new Date(_human.date);
         if (type === 'month') {
@@ -282,7 +282,7 @@ async function SaveHumanSummary(human: Human, _human: IHuman, type: 'month' | 'd
             date = new Date(date.setMinutes(0, 0, 0));
         }
 
-        let humanSummary: HumanSummary = await new Parse.Query(HumanSummary)
+        let humanSummary: IDB.HumanSummary = await new Parse.Query(IDB.HumanSummary)
             .equalTo('analyst', _human.analyst)
             .equalTo('source', _human.source)
             .equalTo('camera', _human.camera)
@@ -294,7 +294,7 @@ async function SaveHumanSummary(human: Human, _human: IHuman, type: 'month' | 'd
             });
 
         if (humanSummary === null || humanSummary === undefined) {
-            let _humanSummary: IHumanSummary = {
+            let _humanSummary: IDB.IHumanSummary = {
                 analyst: _human.analyst,
                 source: _human.source,
                 camera: _human.camera,
@@ -305,7 +305,7 @@ async function SaveHumanSummary(human: Human, _human: IHuman, type: 'month' | 'd
                 humans: [human],
             };
 
-            humanSummary = new HumanSummary();
+            humanSummary = new IDB.HumanSummary();
             await humanSummary.save(_humanSummary, { useMasterKey: true }).catch((e) => {
                 throw e;
             });

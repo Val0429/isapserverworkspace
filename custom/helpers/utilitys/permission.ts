@@ -1,4 +1,5 @@
-import { RoleList, Errors, getEnumKeyArray } from 'core/cgi-package';
+import { RoleList } from 'core/userRoles.gen';
+import { Errors } from 'core/errors.gen';
 import { IPermissionMap } from '../../../define/userRoles/userPermission.define';
 
 export namespace Permission {
@@ -27,6 +28,24 @@ export namespace Permission {
     }
 
     /**
+     * Get Unavailable Roles
+     * @param currentUserRoles
+     * @param permissionMap
+     */
+    export function GetUnavailableRoles(currentUserRoles: Parse.Role[], permissionMap: IPermissionMap): RoleList[] {
+        let roles: RoleList[] = Object.keys(RoleList).map((value, index, array) => {
+            return RoleList[value];
+        });
+        let availableRoles: RoleList[] = GetAvailableRoles(currentUserRoles, permissionMap);
+
+        let unavailableRoles: RoleList[] = roles.filter((value, index, array) => {
+            return availableRoles.indexOf(value) < 0;
+        });
+
+        return unavailableRoles;
+    }
+
+    /**
      * Validate Roles
      * @param availableRoles
      * @param userRoles
@@ -40,6 +59,6 @@ export namespace Permission {
             return;
         }
 
-        throw Errors.throw(Errors.CustomUnauthorized, [`Permission denied for roles <${getEnumKeyArray(RoleList, result).join(', ')}>.`]);
+        throw Errors.throw(Errors.CustomUnauthorized, [`Permission denied for roles.`]);
     }
 }

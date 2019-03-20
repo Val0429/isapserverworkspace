@@ -1,9 +1,9 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
-import { Config } from 'core/config.gen';
-import { HumanSummary, IRequest, IResponse, IWs } from '../../custom/models';
-import { Print, DateTime } from 'workspace/custom/helpers';
-import * as Occupancy from '../occupancy';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
+import { IRequest, IResponse, IDB, IWs } from '../../custom/models';
+import { Print, DateTime } from '../../custom/helpers';
+import * as Enum from '../../custom/enums';
 import * as Rx from 'rxjs';
+import * as Occupancy from '../occupancy';
 
 let action = new Action({
     loginRequired: false,
@@ -73,7 +73,7 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
         let _count: number = input.count || 10;
         let _date: Date = new Date(input.date || new Date());
 
-        let cameraCount: number = await Occupancy.GetCameraCount(HumanSummary);
+        let cameraCount: number = await Occupancy.GetCameraCount(IDB.HumanSummary);
 
         let limit: number = _count * (cameraCount + 1);
         let min: Date = new Date(_date);
@@ -86,7 +86,7 @@ export async function GetSummary(input: IRequest.IDemographic.ISummaryR): Promis
             min = new Date(min.setHours(min.getHours() - _count));
         }
 
-        let humanSummarys: HumanSummary[] = await new Parse.Query(HumanSummary)
+        let humanSummarys: IDB.HumanSummary[] = await new Parse.Query(IDB.HumanSummary)
             .equalTo('analyst', input.analyst)
             .equalTo('type', input.type)
             .lessThanOrEqualTo('date', _date)

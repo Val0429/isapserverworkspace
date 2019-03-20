@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "canvas": "^2.2.0"
+    "canvas": "^2.4.0",
+    "jsbarcode": "^3.11.0"
   }
 }

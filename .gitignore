@@ -1,10 +1,9 @@
 .vscode/
-custom/files/
-custom/web/
-custom/license/license.xml
+
 node_modules/
 
-yolo3/
-*.jpg
-*.jpeg
-*.png
+nsis/Release/
+
+custom/web/
+custom/assets/images/
+custom/assets/files/

@@ -1,5 +1,5 @@
 import * as Canvas from 'canvas';
-import { Print } from './print';
+import * as JsBarcode from 'jsbarcode';
 
 export namespace Draw {
     /**
@@ -81,7 +81,7 @@ export namespace Draw {
     export async function Rectangle(rects: IRect[], buffer: Buffer): Promise<Buffer>;
     export async function Rectangle(rects: IRect[], source: ISize | Buffer): Promise<Buffer> {
         try {
-            let canvas = Canvas.createCanvas();
+            let canvas = Canvas.createCanvas(0, 0);
             let ctx = canvas.getContext('2d');
 
             if (source instanceof Buffer) {
@@ -127,7 +127,7 @@ export namespace Draw {
      */
     export async function Resize(buffer: Buffer, size: ISize, quality: number = 1): Promise<Buffer> {
         try {
-            let canvas = Canvas.createCanvas();
+            let canvas = Canvas.createCanvas(0, 0);
             let ctx = canvas.getContext('2d');
 
             let image: Canvas.Image = await LoadImage(buffer);
@@ -149,9 +149,9 @@ export namespace Draw {
      * @param size
      * @param level
      */
-    export async function Resize2Square(buffer: Buffer, size: number, level: number = 0): Promise<Buffer> {
+    export async function Resize2Square(buffer: Buffer, size: number): Promise<Buffer> {
         try {
-            let canvas = Canvas.createCanvas();
+            let canvas = Canvas.createCanvas(0, 0);
             let ctx = canvas.getContext('2d');
 
             let image: Canvas.Image = await LoadImage(buffer);
@@ -166,7 +166,7 @@ export namespace Draw {
 
             ctx.drawImage(image, x, y, width, height);
 
-            return canvas.toBuffer('image/png', { compressionLevel: level });
+            return canvas.toBuffer('image/png');
         } catch (e) {
             throw e;
         }
@@ -181,7 +181,8 @@ export namespace Draw {
     export async function CutImage(locations: ILocation[], buffer: Buffer, quality: number = 1): Promise<Buffer[]> {
         try {
             let buffers: Buffer[] = [];
-            let canvas = Canvas.createCanvas();
+
+            let canvas = Canvas.createCanvas(0, 0);
             let ctx = canvas.getContext('2d');
 
             let image: Canvas.Image = await LoadImage(buffer);
@@ -196,6 +197,27 @@ export namespace Draw {
             });
 
             return buffers;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Generate barcode image
+     * @param message
+     * @param quality
+     * @param displayValue
+     * @param fontSize
+     * @param width
+     * @param height
+     */
+    export function Barcode(message: string, quality: number = 1, displayValue = true, fontSize: number = 20, width: number = 2, height: number = 100): Buffer {
+        try {
+            let canvas = Canvas.createCanvas(0, 0);
+
+            JsBarcode(canvas, message, { width: width, height: height, fontSize: fontSize, fontOptions: 'bold', displayValue: displayValue });
+
+            return canvas.toBuffer('image/jpeg', { quality: quality });
         } catch (e) {
             throw e;
         }

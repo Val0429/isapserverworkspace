@@ -1,11 +1,11 @@
 import { Config } from 'core/config.gen';
 import { Print, HumanDetection, Yolo3, ISapHD, File, Cms, Draw, Utility, DateTime } from '../helpers';
 import * as Rx from 'rxjs';
-import { IHumans, Humans, IHumansSummary, HumansSummary } from '../models';
+import { IDB } from '../models';
 import { pulling$ } from '../../cgi-bin/occupancy';
 
 (async function() {
-    let save$: Rx.Subject<IHumans> = SaveQueue();
+    let save$: Rx.Subject<IDB.IHumans> = SaveQueue();
 
     CMS(save$);
 })();
@@ -13,8 +13,8 @@ import { pulling$ } from '../../cgi-bin/occupancy';
 /**
  *
  */
-function SaveQueue(): Rx.Subject<IHumans> {
-    let save$: Rx.Subject<IHumans> = new Rx.Subject();
+function SaveQueue(): Rx.Subject<IDB.IHumans> {
+    let save$: Rx.Subject<IDB.IHumans> = new Rx.Subject();
     let next$: Rx.Subject<{}> = new Rx.Subject();
 
     save$
@@ -35,7 +35,7 @@ function SaveQueue(): Rx.Subject<IHumans> {
 /**
  *
  */
-function CMS(save$: Rx.Subject<IHumans>): void {
+function CMS(save$: Rx.Subject<IDB.IHumans>): void {
     let hd$: Rx.Subject<Date> = new Rx.Subject<Date>();
 
     let success$: Rx.Subject<{}> = new Rx.Subject();
@@ -59,7 +59,7 @@ function CMS(save$: Rx.Subject<IHumans>): void {
 
                         let camera: string = `Camera_${Utility.PadLeft(value1.nvr.toString(), '0', 2)}_${Utility.PadLeft(value2.toString(), '0', 2)}`;
 
-                        let humans: IHumans = {
+                        let humans: IDB.IHumans = {
                             analyst: '',
                             source: 'cms',
                             camera: camera,
@@ -125,7 +125,7 @@ function CMS(save$: Rx.Subject<IHumans>): void {
  * @param filename
  * @param humans
  */
-async function YoloAnalysis(save$: Rx.Subject<IHumans>, buffer: Buffer, path: string, filename: string, humans?: IHumans): Promise<HumanDetection.ILocation[]> {
+async function YoloAnalysis(save$: Rx.Subject<IDB.IHumans>, buffer: Buffer, path: string, filename: string, humans?: IDB.IHumans): Promise<HumanDetection.ILocation[]> {
     try {
         File.WriteFile(`${path}/${filename}`, buffer);
 
@@ -163,7 +163,7 @@ async function YoloAnalysis(save$: Rx.Subject<IHumans>, buffer: Buffer, path: st
  * @param filename
  * @param humans
  */
-async function ISapAnalysis(save$: Rx.Subject<IHumans>, buffer: Buffer, path: string, filename: string, humans?: IHumans): Promise<HumanDetection.ILocation[]> {
+async function ISapAnalysis(save$: Rx.Subject<IDB.IHumans>, buffer: Buffer, path: string, filename: string, humans?: IDB.IHumans): Promise<HumanDetection.ILocation[]> {
     try {
         let isapHD: ISapHD = new ISapHD();
         isapHD.ip = Config.humanDetection.isap.ip;
@@ -231,7 +231,7 @@ async function SaveImage(buffer: Buffer, result: HumanDetection.ILocation[]): Pr
  *
  * @param _humans
  */
-async function Save(_humans: IHumans): Promise<void> {
+async function Save(_humans: IDB.IHumans): Promise<void> {
     try {
         let tasks: Promise<any>[] = [];
 
@@ -252,9 +252,9 @@ async function Save(_humans: IHumans): Promise<void> {
  *
  * @param _humans
  */
-async function SaveHumans(_humans: IHumans): Promise<void> {
+async function SaveHumans(_humans: IDB.IHumans): Promise<void> {
     try {
-        let humans: Humans = new Humans();
+        let humans: IDB.Humans = new IDB.Humans();
         await humans.save(_humans, { useMasterKey: true }).catch((e) => {
             throw e;
         });
@@ -268,7 +268,7 @@ async function SaveHumans(_humans: IHumans): Promise<void> {
  * @param _humans
  * @param type
  */
-async function SaveHumansSummary(_humans: IHumans, type: 'month' | 'day' | 'hour'): Promise<void> {
+async function SaveHumansSummary(_humans: IDB.IHumans, type: 'month' | 'day' | 'hour'): Promise<void> {
     try {
         let date: Date = new Date(_humans.date);
         if (type === 'month') {
@@ -279,7 +279,7 @@ async function SaveHumansSummary(_humans: IHumans, type: 'month' | 'day' | 'hour
             date = new Date(date.setMinutes(0, 0, 0));
         }
 
-        let humansSummary: HumansSummary = await new Parse.Query(HumansSummary)
+        let humansSummary: IDB.HumansSummary = await new Parse.Query(IDB.HumansSummary)
             .equalTo('analyst', _humans.analyst)
             .equalTo('source', _humans.source)
             .equalTo('camera', _humans.camera)
@@ -291,7 +291,7 @@ async function SaveHumansSummary(_humans: IHumans, type: 'month' | 'day' | 'hour
             });
 
         if (humansSummary === null || humansSummary === undefined) {
-            let _humansSummary: IHumansSummary = {
+            let _humansSummary: IDB.IHumansSummary = {
                 analyst: _humans.analyst,
                 source: _humans.source,
                 camera: _humans.camera,
@@ -300,7 +300,7 @@ async function SaveHumansSummary(_humans: IHumans, type: 'month' | 'day' | 'hour
                 total: _humans.locations.length,
             };
 
-            humansSummary = new HumansSummary();
+            humansSummary = new IDB.HumansSummary();
             await humansSummary.save(_humansSummary, { useMasterKey: true }).catch((e) => {
                 throw e;
             });
