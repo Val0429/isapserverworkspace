@@ -1,6 +1,5 @@
 import { RoleList } from 'core/userRoles.gen';
 import { Errors } from 'core/errors.gen';
-import { getEnumKeyArray } from 'helpers/utility/get-enum-key';
 import { IPermissionMap } from '../../../define/userRoles/userPermission.define';
 
 export namespace Permission {
@@ -60,6 +59,6 @@ export namespace Permission {
             return;
         }
 
-        throw Errors.throw(Errors.CustomUnauthorized, [`Permission denied for roles <${getEnumKeyArray(RoleList, result).join(', ')}>.`]);
+        throw Errors.throw(Errors.CustomUnauthorized, [`Permission denied for roles.`]);
     }
 }
