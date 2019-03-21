@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicFacility, PublicFacilityReservation, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -26,7 +26,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicFacility: PublicFacility = await new Parse.Query(PublicFacility).get(_input.publicFacilityId).catch((e) => {
+        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility).get(_input.publicFacilityId).catch((e) => {
             throw e;
         });
         if (!publicFacility) {
@@ -36,7 +36,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['public facility was deleted']);
         }
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
         });
         if (!resident) {
@@ -46,7 +46,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['resident point not enough']);
         }
 
-        let reservation: PublicFacilityReservation = new PublicFacilityReservation();
+        let reservation: IDB.PublicFacilityReservation = new IDB.PublicFacilityReservation();
 
         let _start: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.endDate : _input.reservationDates.startDate;
         let _end: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.startDate : _input.reservationDates.endDate;
@@ -106,7 +106,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicFacilityReservation> = new Parse.Query(PublicFacilityReservation).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicFacilityReservation> = new Parse.Query(IDB.PublicFacilityReservation).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('reservationDates.startDate', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -114,7 +114,7 @@ action.get(
             query.lessThan('reservationDates.startDate', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
         }
         if (_input.publicFacilityId) {
-            let facility: PublicFacility = new PublicFacility();
+            let facility: IDB.PublicFacility = new IDB.PublicFacility();
             facility.id = _input.publicFacilityId;
 
             query.equalTo('facility', facility);
@@ -128,7 +128,7 @@ action.get(
             throw e;
         });
 
-        let reservations: PublicFacilityReservation[] = await query
+        let reservations: IDB.PublicFacilityReservation[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include(['facility', 'article', 'resident'])
@@ -174,7 +174,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let reservation: PublicFacilityReservation = await new Parse.Query(PublicFacilityReservation)
+        let reservation: IDB.PublicFacilityReservation = await new Parse.Query(IDB.PublicFacilityReservation)
             .include(['facility', 'resident'])
             .get(_input.reservationId)
             .catch((e) => {
@@ -242,9 +242,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _reservationIds.map((value, index, array) => {
-            return new Parse.Query(PublicFacilityReservation).include(['facility', 'resident']).get(value);
+            return new Parse.Query(IDB.PublicFacilityReservation).include(['facility', 'resident']).get(value);
         });
-        let reservations: PublicFacilityReservation[] = await Promise.all(tasks).catch((e) => {
+        let reservations: IDB.PublicFacilityReservation[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

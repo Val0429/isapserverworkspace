@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Draw, Parser } from '../../custom/helpers';
 
 let action = new Action({

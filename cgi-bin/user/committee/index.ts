@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterCommittee } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Permission, Print, Db } from '../../../custom/helpers';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
 import * as Base from '../base';
@@ -35,7 +35,7 @@ action.post(
             availableRoles,
         );
 
-        let committee: CharacterCommittee = new CharacterCommittee();
+        let committee: IDB.CharacterCommittee = new IDB.CharacterCommittee();
 
         committee.setValue('creator', data.user);
         committee.setValue('community', _userInfo.community);
@@ -70,13 +70,13 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<CharacterCommittee> = new Parse.Query(CharacterCommittee).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.CharacterCommittee> = new Parse.Query(IDB.CharacterCommittee).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
 
-        let committees: CharacterCommittee[] = await query
+        let committees: IDB.CharacterCommittee[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include(['user', 'user.roles'])
@@ -136,7 +136,7 @@ action.put(
         });
         Permission.ValidateRoles(availableRoles, roles);
 
-        let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
+        let committee: IDB.CharacterCommittee = await new Parse.Query(IDB.CharacterCommittee)
             .equalTo('user', user)
             .first()
             .catch((e) => {
@@ -192,9 +192,9 @@ action.delete(
         tasks = _userIds.map((value, index, array) => {
             let user: Parse.User = new Parse.User();
             user.id = value;
-            return new Parse.Query(CharacterCommittee).equalTo('user', user).find();
+            return new Parse.Query(IDB.CharacterCommittee).equalTo('user', user).find();
         });
-        let committeess: CharacterCommittee[][] = await Promise.all(tasks).catch((e) => {
+        let committeess: IDB.CharacterCommittee[][] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

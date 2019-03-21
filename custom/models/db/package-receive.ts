@@ -1,6 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Enum from '../enums';
-import { CharacterResident, IPackageBase } from '.';
+import { IPackageBase } from './_index';
 
 /**
  * 郵件

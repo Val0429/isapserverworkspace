@@ -1,5 +1,5 @@
 import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterCommittee } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Draw, Parser } from '../../../custom/helpers';
 
 let action = new Action({
@@ -49,7 +49,7 @@ action.post(
             throw e;
         });
 
-        let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
+        let committee: IDB.CharacterCommittee = await new Parse.Query(IDB.CharacterCommittee)
             .equalTo('user', user.user)
             .include(['community'])
             .first()

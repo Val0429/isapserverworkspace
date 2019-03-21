@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicArticle, CharacterCommittee, PublicArticleReservation } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -26,7 +26,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicArticle: PublicArticle = new PublicArticle();
+        let publicArticle: IDB.PublicArticle = new IDB.PublicArticle();
 
         publicArticle.setValue('creator', data.user);
         publicArticle.setValue('community', _userInfo.community);
@@ -67,7 +67,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicArticle> = new Parse.Query(PublicArticle).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicArticle> = new Parse.Query(IDB.PublicArticle).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.type) {
             query.equalTo('type', _input.type);
         }
@@ -76,7 +76,7 @@ action.get(
             throw e;
         });
 
-        let publicArticlea: PublicArticle[] = await query
+        let publicArticlea: IDB.PublicArticle[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
@@ -85,9 +85,9 @@ action.get(
             });
 
         let tasks: Promise<any>[] = publicArticlea.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('adjuster')).first();
+            return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('adjuster')).first();
         });
-        let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
+        let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -128,7 +128,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicArticle: PublicArticle = await new Parse.Query(PublicArticle).get(_input.publicArticleId).catch((e) => {
+        let publicArticle: IDB.PublicArticle = await new Parse.Query(IDB.PublicArticle).get(_input.publicArticleId).catch((e) => {
             throw e;
         });
         if (!publicArticle) {
@@ -173,9 +173,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _publicArticleIds.map((value, index, array) => {
-            return new Parse.Query(PublicArticle).get(value);
+            return new Parse.Query(IDB.PublicArticle).get(value);
         });
-        let publicArticles: PublicArticle[] = await Promise.all(tasks).catch((e) => {
+        let publicArticles: IDB.PublicArticle[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -189,12 +189,12 @@ action.delete(
         });
 
         tasks = publicArticles.map((value, index, array) => {
-            return new Parse.Query(PublicArticleReservation)
+            return new Parse.Query(IDB.PublicArticleReservation)
                 .equalTo('article', value)
                 .include('article')
                 .find();
         });
-        let reservations: PublicArticleReservation[] = [].concat(
+        let reservations: IDB.PublicArticleReservation[] = [].concat(
             ...(await Promise.all(tasks).catch((e) => {
                 throw e;
             })),

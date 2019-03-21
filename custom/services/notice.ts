@@ -1,15 +1,15 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
-import { CharacterResident, CharacterResidentInfo, MessageResident, IMessageContent, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '../models';
+import { IDB } from '../models';
 import * as Enum from '../enums';
 import { Print, DateTime, Fcm, Apn } from '../helpers';
 
 interface IMessageResident {
-    resident: CharacterResident;
+    resident: IDB.CharacterResident;
     type: Enum.MessageType;
     aims?: Enum.ResidentCharacter[];
-    data: PackageReceive | PackageReturn | PackagePosting | Visitor | PublicFacilityReservation | PublicNotify | PublicCalendar | Vote | Listen | PublicArticleReservation | Gas | ManageCost;
-    message: IMessageContent;
+    data: IDB.PackageReceive | IDB.PackageReturn | IDB.PackagePosting | IDB.Visitor | IDB.PublicFacilityReservation | IDB.PublicNotify | IDB.PublicCalendar | IDB.Vote | IDB.Listen | IDB.PublicArticleReservation | IDB.Gas | IDB.ManageCost;
+    message: IDB.IMessageContent;
 }
 
 export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageResident>();
@@ -28,7 +28,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                             }
 
                             let _aims: Enum.ResidentCharacter[] = value.aims || config.aims;
-                            let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
+                            let residentInfos: IDB.CharacterResidentInfo[] = await new Parse.Query(IDB.CharacterResidentInfo)
                                 .equalTo('resident', value.resident)
                                 .equalTo('isDeleted', false)
                                 .containedIn('character', _aims)
@@ -107,36 +107,36 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                             Print.MinLog(e, 'error');
                                         }
 
-                                        let message: MessageResident = new MessageResident();
+                                        let message: IDB.MessageResident = new IDB.MessageResident();
 
                                         message.setValue('residentInfo', value1);
                                         message.setValue('type', value.type);
                                         message.setValue('message', value.message);
 
                                         if (value.data) {
-                                            if (value.data instanceof PackageReceive) {
+                                            if (value.data instanceof IDB.PackageReceive) {
                                                 message.setValue('packageReceive', value.data);
-                                            } else if (value.data instanceof PackageReturn) {
+                                            } else if (value.data instanceof IDB.PackageReturn) {
                                                 message.setValue('packageReturn', value.data);
-                                            } else if (value.data instanceof PackagePosting) {
+                                            } else if (value.data instanceof IDB.PackagePosting) {
                                                 message.setValue('packagePosting', value.data);
-                                            } else if (value.data instanceof Visitor) {
+                                            } else if (value.data instanceof IDB.Visitor) {
                                                 message.setValue('visitor', value.data);
-                                            } else if (value.data instanceof PublicFacilityReservation) {
+                                            } else if (value.data instanceof IDB.PublicFacilityReservation) {
                                                 message.setValue('publicFacilityReservation', value.data);
-                                            } else if (value.data instanceof PublicNotify) {
+                                            } else if (value.data instanceof IDB.PublicNotify) {
                                                 message.setValue('publicNotify', value.data);
-                                            } else if (value.data instanceof PublicCalendar) {
+                                            } else if (value.data instanceof IDB.PublicCalendar) {
                                                 message.setValue('publicCalendar', value.data);
-                                            } else if (value.data instanceof Vote) {
+                                            } else if (value.data instanceof IDB.Vote) {
                                                 message.setValue('vote', value.data);
-                                            } else if (value.data instanceof Listen) {
+                                            } else if (value.data instanceof IDB.Listen) {
                                                 message.setValue('listen', value.data);
-                                            } else if (value.data instanceof PublicArticleReservation) {
+                                            } else if (value.data instanceof IDB.PublicArticleReservation) {
                                                 message.setValue('publicArticleReservation', value.data);
-                                            } else if (value.data instanceof Gas) {
+                                            } else if (value.data instanceof IDB.Gas) {
                                                 message.setValue('gas', value.data);
-                                            } else if (value.data instanceof ManageCost) {
+                                            } else if (value.data instanceof IDB.ManageCost) {
                                                 message.setValue('manageCost', value.data);
                                             }
                                         }

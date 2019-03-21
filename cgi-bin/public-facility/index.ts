@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicFacility, IDayRange, PublicFacilityReservation } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -26,7 +26,7 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
-        let _openDates: IDayRange[] = _input.openDates.map((value, index, array) => {
+        let _openDates: IDB.IDayRange[] = _input.openDates.map((value, index, array) => {
             return {
                 startDay: value.startDay,
                 endDay: value.endDay,
@@ -34,7 +34,7 @@ action.post(
                 endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
             };
         });
-        let _maintenanceDates: IDayRange[] = _input.maintenanceDates.map((value, index, array) => {
+        let _maintenanceDates: IDB.IDayRange[] = _input.maintenanceDates.map((value, index, array) => {
             return {
                 startDay: value.startDay,
                 endDay: value.endDay,
@@ -43,7 +43,7 @@ action.post(
             };
         });
 
-        let publicFacility: PublicFacility = new PublicFacility();
+        let publicFacility: IDB.PublicFacility = new IDB.PublicFacility();
 
         publicFacility.setValue('creator', data.user);
         publicFacility.setValue('community', _userInfo.community);
@@ -93,13 +93,13 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicFacility> = new Parse.Query(IDB.PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
 
-        let publicFacilitys: PublicFacility[] = await query
+        let publicFacilitys: IDB.PublicFacility[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
@@ -143,7 +143,7 @@ action.put(
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
-        let _openDates: IDayRange[] = _input.openDates.map((value, index, array) => {
+        let _openDates: IDB.IDayRange[] = _input.openDates.map((value, index, array) => {
             return {
                 startDay: value.startDay,
                 endDay: value.endDay,
@@ -151,7 +151,7 @@ action.put(
                 endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
             };
         });
-        let _maintenanceDates: IDayRange[] = _input.maintenanceDates.map((value, index, array) => {
+        let _maintenanceDates: IDB.IDayRange[] = _input.maintenanceDates.map((value, index, array) => {
             return {
                 startDay: value.startDay,
                 endDay: value.endDay,
@@ -160,7 +160,7 @@ action.put(
             };
         });
 
-        let publicFacility: PublicFacility = await new Parse.Query(PublicFacility).get(_input.publicFacilityId).catch((e) => {
+        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility).get(_input.publicFacilityId).catch((e) => {
             throw e;
         });
         if (!publicFacility) {
@@ -214,9 +214,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _publicFacilityIds.map((value, index, array) => {
-            return new Parse.Query(PublicFacility).get(value);
+            return new Parse.Query(IDB.PublicFacility).get(value);
         });
-        let publicFacilitys: PublicFacility[] = await Promise.all(tasks).catch((e) => {
+        let publicFacilitys: IDB.PublicFacility[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -230,12 +230,12 @@ action.delete(
         });
 
         tasks = publicFacilitys.map((value, index, array) => {
-            return new Parse.Query(PublicFacilityReservation)
+            return new Parse.Query(IDB.PublicFacilityReservation)
                 .equalTo('facility', value)
                 .include('facility')
                 .find();
         });
-        let reservations: PublicFacilityReservation[] = [].concat(
+        let reservations: IDB.PublicFacilityReservation[] = [].concat(
             ...(await Promise.all(tasks).catch((e) => {
                 throw e;
             })),

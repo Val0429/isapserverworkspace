@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
-import { Community } from './';
+import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { Community } from './_index';
 
 /**
  * 管委會

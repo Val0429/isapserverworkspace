@@ -1,3 +1,3 @@
-import * as IResponse from './response';
+import * as IResponse from './_index';
 
 export { IResponse };

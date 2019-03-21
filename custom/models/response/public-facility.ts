@@ -1,4 +1,4 @@
-import { IDayRange, IDateRange } from '../';
+import { IDayRange, IDateRange } from '../db/_index';
 
 export interface IIndexC {
     publicFacilityId: string;

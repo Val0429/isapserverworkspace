@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicCalendar, CharacterResidentInfo, CharacterResident } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -29,7 +29,7 @@ action.post(
         let _start: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.endDate : _input.date.startDate;
         let _end: Date = _input.date.startDate.getTime() > _input.date.endDate.getTime() ? _input.date.startDate : _input.date.endDate;
 
-        let publicCalendar: PublicCalendar = new PublicCalendar();
+        let publicCalendar: IDB.PublicCalendar = new IDB.PublicCalendar();
 
         publicCalendar.setValue('creator', data.user);
         publicCalendar.setValue('community', _userInfo.community);
@@ -43,12 +43,12 @@ action.post(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -90,7 +90,7 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<PublicCalendar> = new Parse.Query(PublicCalendar).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicCalendar> = new Parse.Query(IDB.PublicCalendar).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('date.startDate', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -106,7 +106,7 @@ action.get(
             throw e;
         });
 
-        let publicCalendars: PublicCalendar[] = await query
+        let publicCalendars: IDB.PublicCalendar[] = await query
             .limit(_input.count ? _input.count : total)
             .find()
             .catch((e) => {
@@ -141,7 +141,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicCalendar: PublicCalendar = await new Parse.Query(PublicCalendar).get(_input.publicCalendarId).catch((e) => {
+        let publicCalendar: IDB.PublicCalendar = await new Parse.Query(IDB.PublicCalendar).get(_input.publicCalendarId).catch((e) => {
             throw e;
         });
         if (publicCalendar.getValue('isDeleted')) {
@@ -159,12 +159,12 @@ action.put(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -207,9 +207,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _publicCalendarIds.map((value, index, array) => {
-            return new Parse.Query(PublicCalendar).get(value);
+            return new Parse.Query(IDB.PublicCalendar).get(value);
         });
-        let publicCalendars: PublicCalendar[] = await Promise.all(tasks).catch((e) => {
+        let publicCalendars: IDB.PublicCalendar[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -222,12 +222,12 @@ action.delete(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {

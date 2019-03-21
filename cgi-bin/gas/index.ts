@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Gas, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -32,7 +32,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['date error']);
         }
 
-        let gasCount: number = await new Parse.Query(Gas)
+        let gasCount: number = await new Parse.Query(IDB.Gas)
             .equalTo('community', _userInfo.community)
             .equalTo('date', _date)
             .count()
@@ -43,22 +43,22 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['date presence']);
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
                 throw e;
             });
 
-        let gass: Gas[] = [];
+        let gass: IDB.Gas[] = [];
 
         let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            let gas: Gas = new Gas();
+            let gas: IDB.Gas = new IDB.Gas();
 
             gas.setValue('creator', data.user);
             gas.setValue('community', _userInfo.community);
@@ -110,7 +110,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Gas> = new Parse.Query(Gas).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.Gas> = new Parse.Query(IDB.Gas).equalTo('community', _userInfo.community);
 
         if (_input.date) {
             let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
@@ -133,7 +133,7 @@ action.get(
             throw e;
         });
 
-        let gass: Gas[] = await query
+        let gass: IDB.Gas[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -181,7 +181,7 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['degree error']);
         }
 
-        let gas: Gas = await new Parse.Query(Gas).get(_input.gasId).catch((e) => {
+        let gas: IDB.Gas = await new Parse.Query(IDB.Gas).get(_input.gasId).catch((e) => {
             throw e;
         });
         if (!gas) {

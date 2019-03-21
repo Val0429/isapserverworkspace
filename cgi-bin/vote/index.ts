@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -33,7 +33,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['duplicate option']);
         }
 
-        let vote: Vote = new Vote();
+        let vote: IDB.Vote = new IDB.Vote();
 
         let _start: Date = _input.date.getTime() > _input.deadline.getTime() ? _input.deadline : _input.date;
         let _end: Date = _input.date.getTime() > _input.deadline.getTime() ? _input.date : _input.deadline;
@@ -61,12 +61,12 @@ action.post(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -109,7 +109,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Vote> = new Parse.Query(Vote).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.Vote> = new Parse.Query(IDB.Vote).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -130,7 +130,7 @@ action.get(
             throw e;
         });
 
-        let votes: Vote[] = await query
+        let votes: IDB.Vote[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
@@ -139,9 +139,9 @@ action.get(
             });
 
         let tasks: Promise<any>[] = votes.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('creator')).first();
+            return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('creator')).first();
         });
-        let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
+        let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -191,7 +191,7 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['duplicate option']);
         }
 
-        let vote: Vote = await new Parse.Query(Vote).get(_input.voteId).catch((e) => {
+        let vote: IDB.Vote = await new Parse.Query(IDB.Vote).get(_input.voteId).catch((e) => {
             throw e;
         });
         if (!vote) {
@@ -226,12 +226,12 @@ action.put(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -274,9 +274,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _voteIds.map((value, index, array) => {
-            return new Parse.Query(Vote).get(value);
+            return new Parse.Query(IDB.Vote).get(value);
         });
-        let votes: Vote[] = await Promise.all(tasks).catch((e) => {
+        let votes: IDB.Vote[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -289,12 +289,12 @@ action.delete(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {

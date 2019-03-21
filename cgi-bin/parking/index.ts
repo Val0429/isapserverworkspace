@@ -1,5 +1,5 @@
-import { IUser, Action, Restful, RoleList, Errors, ParseObject, CharacterResident } from 'core/cgi-package';
-import { IRequest, IResponse, Parking, CharacterResidentInfo } from '../../custom/models';
+import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, Db } from '../../custom/helpers';
 
 let action = new Action({
@@ -24,7 +24,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let parking: Parking = await new Parse.Query(Parking)
+        let parking: IDB.Parking = await new Parse.Query(IDB.Parking)
             .equalTo('name', _input.name)
             .first()
             .catch((e) => {
@@ -34,7 +34,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
         }
 
-        parking = new Parking();
+        parking = new IDB.Parking();
 
         parking.setValue('creator', data.user);
         parking.setValue('community', _userInfo.community);
@@ -70,13 +70,13 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.Parking> = new Parse.Query(IDB.Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
 
-        let parkings: Parking[] = await query
+        let parkings: IDB.Parking[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -86,12 +86,12 @@ action.get(
             });
 
         let tasks: Promise<any>[] = parkings.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo)
+            return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value.getValue('resident'))
                 .equalTo('isDeleted', false)
                 .first();
         });
-        let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+        let residentInfos: IDB.CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -136,9 +136,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _parkingIds.map((value, index, array) => {
-            return new Parse.Query(Parking).get(value);
+            return new Parse.Query(IDB.Parking).get(value);
         });
-        let parkings: Parking[] = await Promise.all(tasks).catch((e) => {
+        let parkings: IDB.Parking[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

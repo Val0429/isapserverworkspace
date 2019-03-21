@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicNotify, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import { GetExtension } from '../listen';
@@ -33,7 +33,7 @@ action.post(
             extension = GetExtension(_input.attachment);
         }
 
-        let publicNotify: PublicNotify = new PublicNotify();
+        let publicNotify: IDB.PublicNotify = new IDB.PublicNotify();
 
         publicNotify.setValue('creator', data.user);
         publicNotify.setValue('community', _userInfo.community);
@@ -59,12 +59,12 @@ action.post(
             });
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -107,7 +107,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PublicNotify> = new Parse.Query(PublicNotify).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicNotify> = new Parse.Query(IDB.PublicNotify).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -123,7 +123,7 @@ action.get(
             throw e;
         });
 
-        let publicNotifys: PublicNotify[] = await query
+        let publicNotifys: IDB.PublicNotify[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
@@ -132,9 +132,9 @@ action.get(
             });
 
         let tasks: Promise<any>[] = publicNotifys.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('creator')).first();
+            return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('creator')).first();
         });
-        let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
+        let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -179,7 +179,7 @@ action.put(
             extension = GetExtension(_input.attachment);
         }
 
-        let publicNotify: PublicNotify = await new Parse.Query(PublicNotify).get(_input.publicNotifyId).catch((e) => {
+        let publicNotify: IDB.PublicNotify = await new Parse.Query(IDB.PublicNotify).get(_input.publicNotifyId).catch((e) => {
             throw e;
         });
         if (!publicNotify) {
@@ -202,12 +202,12 @@ action.put(
             File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -250,9 +250,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _publicNotifyIds.map((value, index, array) => {
-            return new Parse.Query(PublicNotify).get(value);
+            return new Parse.Query(IDB.PublicNotify).get(value);
         });
-        let publicNotifys: PublicNotify[] = await Promise.all(tasks).catch((e) => {
+        let publicNotifys: IDB.PublicNotify[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -265,12 +265,12 @@ action.delete(
             throw e;
         });
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {

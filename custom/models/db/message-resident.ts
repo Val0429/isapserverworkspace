@@ -1,6 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { Community, CharacterResidentInfo, IDateRange, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from '.';
-import * as Enum from '../enums';
+import { Community, CharacterResidentInfo, IDateRange, PackageReceive, PackageReturn, PackagePosting, Visitor, PublicFacilityReservation, PublicNotify, PublicCalendar, Vote, Listen, PublicArticleReservation, Gas, ManageCost } from './_index';
+import * as Enum from '../../enums';
 
 export interface IMessageContent {
     deadline?: Date;

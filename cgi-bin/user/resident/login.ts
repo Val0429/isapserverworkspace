@@ -1,5 +1,5 @@
 import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Draw, Parser } from '../../../custom/helpers';
 
 let action = new Action({
@@ -49,7 +49,7 @@ action.post(
             throw e;
         });
 
-        let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+        let residentInfo: IDB.CharacterResidentInfo = await new Parse.Query(IDB.CharacterResidentInfo)
             .equalTo('user', user.user)
             .include(['resident', 'community'])
             .first()

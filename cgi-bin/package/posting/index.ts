@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, PackagePosting } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import * as Notice from '../../../custom/services/notice';
@@ -28,7 +28,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PackagePosting> = new Parse.Query(PackagePosting).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.PackagePosting> = new Parse.Query(IDB.PackagePosting).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -49,7 +49,7 @@ action.get(
             throw e;
         });
 
-        let packagePostings: PackagePosting[] = await query
+        let packagePostings: IDB.PackagePosting[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -98,14 +98,14 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packagePosting: PackagePosting = await new Parse.Query(PackagePosting).get(_input.packagePostingId).catch((e) => {
+        let packagePosting: IDB.PackagePosting = await new Parse.Query(IDB.PackagePosting).get(_input.packagePostingId).catch((e) => {
             throw e;
         });
         if (!packagePosting) {

@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicFacility } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 
 let action = new Action({
@@ -23,13 +23,13 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<PublicFacility> = new Parse.Query(PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicFacility> = new Parse.Query(IDB.PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
 
-        let facilitys: PublicFacility[] = await query
+        let facilitys: IDB.PublicFacility[] = await query
             .limit(total)
             .find()
             .catch((e) => {

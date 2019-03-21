@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, PackagePosting, MessageResident } from '../../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../../custom/models';
 import { File, Db } from '../../../../custom/helpers';
 import * as Enum from '../../../../custom/enums';
 import * as Notice from '../../../../custom/services/notice';
@@ -27,7 +27,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident)
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
             .equalTo('barcode', _input.residentBarcode)
             .first()
             .catch((e) => {
@@ -37,7 +37,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packagePosting: PackagePosting = new PackagePosting();
+        let packagePosting: IDB.PackagePosting = new IDB.PackagePosting();
 
         packagePosting.setValue('creator', data.user);
         packagePosting.setValue('community', _userInfo.community);

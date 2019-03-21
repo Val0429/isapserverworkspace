@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicArticle, PublicArticleReservation, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -26,7 +26,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicArticle: PublicArticle = await new Parse.Query(PublicArticle).get(_input.publicArticleId).catch((e) => {
+        let publicArticle: IDB.PublicArticle = await new Parse.Query(IDB.PublicArticle).get(_input.publicArticleId).catch((e) => {
             throw e;
         });
         if (!publicArticle) {
@@ -39,14 +39,14 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['lend count not enough']);
         }
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let reservation: PublicArticleReservation = new PublicArticleReservation();
+        let reservation: IDB.PublicArticleReservation = new IDB.PublicArticleReservation();
 
         reservation.setValue('creator', data.user);
         reservation.setValue('community', _userInfo.community);
@@ -105,10 +105,10 @@ action.get(
         let start: Date = new Date(new Date(_input.date).setHours(0, 0, 0, 0));
         let end: Date = new Date(new Date(start).setDate(start.getDate() + 1));
 
-        let query: Parse.Query<PublicArticleReservation> = new Parse.Query(PublicArticleReservation).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.PublicArticleReservation> = new Parse.Query(IDB.PublicArticleReservation).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         if (_input.publicArticleId) {
-            let article: PublicArticle = new PublicArticle();
+            let article: IDB.PublicArticle = new IDB.PublicArticle();
             article.id = _input.publicArticleId;
 
             query.equalTo('article', article);
@@ -130,7 +130,7 @@ action.get(
             throw e;
         });
 
-        let reservations: PublicArticleReservation[] = await query
+        let reservations: IDB.PublicArticleReservation[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include(['resident', 'replier', 'article'])
@@ -140,19 +140,19 @@ action.get(
             });
 
         let tasks: Promise<any>[] = reservations.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo)
+            return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value.getValue('resident'))
                 .equalTo('isDeleted', false)
                 .first();
         });
-        let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+        let residentInfos: IDB.CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
         tasks = reservations.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('replier')).first();
+            return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('replier')).first();
         });
-        let repliers: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
+        let repliers: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -198,7 +198,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let reservation: PublicArticleReservation = await new Parse.Query(PublicArticleReservation)
+        let reservation: IDB.PublicArticleReservation = await new Parse.Query(IDB.PublicArticleReservation)
             .include('article')
             .get(_input.reservationId)
             .catch((e) => {
@@ -264,9 +264,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _reservationIds.map((value, index, array) => {
-            return new Parse.Query(PublicArticleReservation).include('article').get(value);
+            return new Parse.Query(IDB.PublicArticleReservation).include('article').get(value);
         });
-        let reservations: PublicArticleReservation[] = await Promise.all(tasks).catch((e) => {
+        let reservations: IDB.PublicArticleReservation[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

@@ -1,4 +1,4 @@
-import { IDateRange } from '../';
+import { IDateRange } from '../db/_index';
 import * as Enum from '../../enums';
 
 export interface IIndexC {

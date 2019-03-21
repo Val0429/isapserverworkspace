@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Db } from '../../../custom/helpers';
 
 let action = new Action({
@@ -22,13 +22,13 @@ action.get(
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
 
-        let articles: CharacterResident[] = await query
+        let articles: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {

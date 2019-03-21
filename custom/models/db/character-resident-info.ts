@@ -1,6 +1,6 @@
-import { registerSubclass, ParseObject } from '../../../helpers/parse-server/parse-helper';
-import * as Enum from '../enums';
-import { Community, CharacterResident } from '.';
+import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { Community, CharacterResident } from './_index';
+import * as Enum from '../../enums';
 
 /**
  * 住戶訊息

@@ -1,5 +1,5 @@
-import * as Enum from '../enums';
-import { Community, CharacterResident } from '.';
+import { Community, CharacterResident } from './_index';
+import * as Enum from '../../enums';
 
 /**
  * 郵件

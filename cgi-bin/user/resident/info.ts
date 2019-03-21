@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject, ActionParam } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
@@ -23,7 +23,7 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident)
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
             .equalTo('barcode', _input.barcode)
             .first()
             .catch((e) => {
@@ -57,7 +57,7 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, [e]);
             });
 
-        let residentInfo: CharacterResidentInfo = new CharacterResidentInfo();
+        let residentInfo: IDB.CharacterResidentInfo = new IDB.CharacterResidentInfo();
 
         residentInfo.setValue('community', resident.getValue('community'));
         residentInfo.setValue('user', user);
@@ -104,10 +104,10 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: CharacterResident = new CharacterResident();
+        let resident: IDB.CharacterResident = new IDB.CharacterResident();
         resident.id = _input.redsidentId;
 
-        let residentInfos: CharacterResidentInfo[] = await new Parse.Query(CharacterResidentInfo)
+        let residentInfos: IDB.CharacterResidentInfo[] = await new Parse.Query(IDB.CharacterResidentInfo)
             .equalTo('community', _userInfo.community)
             .equalTo('resident', resident)
             .equalTo('isDeleted', false)
@@ -159,7 +159,7 @@ action.put(
             user = data.user;
         }
 
-        let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+        let residentInfo: IDB.CharacterResidentInfo = await new Parse.Query(IDB.CharacterResidentInfo)
             .equalTo('community', _userInfo.community)
             .equalTo('user', user)
             .first()
@@ -215,9 +215,9 @@ action.delete(
             let user: Parse.User = new Parse.User();
             user.id = value;
 
-            return new Parse.Query(CharacterResidentInfo).equalTo('user', user).first();
+            return new Parse.Query(IDB.CharacterResidentInfo).equalTo('user', user).first();
         });
-        let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+        let residentInfos: IDB.CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResidentInfo } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
@@ -27,7 +27,7 @@ action.put(
 
         let user: Parse.User = new Parse.User();
         user.id = _input.userId;
-        let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+        let residentInfo: IDB.CharacterResidentInfo = await new Parse.Query(IDB.CharacterResidentInfo)
             .equalTo('user', user)
             .first()
             .catch((e) => {

@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Parking } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 
 let action = new Action({
@@ -24,7 +24,7 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<Parking> = new Parse.Query(Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.Parking> = new Parse.Query(IDB.Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
         if (_input.status === 'used') {
             query.notEqualTo('resident', undefined);
@@ -36,7 +36,7 @@ action.get(
             throw e;
         });
 
-        let parkings: Parking[] = await query
+        let parkings: IDB.Parking[] = await query
             .limit(total)
             .find()
             .catch((e) => {

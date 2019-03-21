@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Community, CharacterCommittee } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
@@ -23,7 +23,7 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
-        let community: Community = await new Parse.Query(Community)
+        let community: IDB.Community = await new Parse.Query(IDB.Community)
             .equalTo('name', _input.name)
             .first()
             .catch((e) => {
@@ -33,7 +33,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
         }
 
-        community = new Community();
+        community = new IDB.Community();
 
         community.setValue('name', _input.name);
         community.setValue('address', _input.address);
@@ -59,7 +59,7 @@ action.post(
             throw e;
         });
 
-        let committee: CharacterCommittee = new CharacterCommittee();
+        let committee: IDB.CharacterCommittee = new IDB.CharacterCommittee();
 
         committee.setValue('user', user);
         committee.setValue('name', _input.userName);
@@ -92,7 +92,7 @@ action.get(
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
 
-        let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
+        let committee: IDB.CharacterCommittee = await new Parse.Query(IDB.CharacterCommittee)
             .equalTo('user', data.user)
             .include('community')
             .first()

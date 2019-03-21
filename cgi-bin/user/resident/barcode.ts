@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Parking } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Draw, Parser, Db } from '../../../custom/helpers';
 
 let action = new Action({
@@ -24,14 +24,14 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident)
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
             .equalTo('barcode', data.parameters.barcode)
             .first()
             .catch((e) => {
                 throw e;
             });
 
-        let residentInfoCount: number = await new Parse.Query(CharacterResidentInfo)
+        let residentInfoCount: number = await new Parse.Query(IDB.CharacterResidentInfo)
             .equalTo('isDeleted', false)
             .equalTo('resident', resident)
             .count()
@@ -39,7 +39,7 @@ action.get(
                 throw e;
             });
 
-        let parkings: Parking[] = await new Parse.Query(Parking)
+        let parkings: IDB.Parking[] = await new Parse.Query(IDB.Parking)
             .equalTo('resident', resident)
             .find()
             .catch((e) => {

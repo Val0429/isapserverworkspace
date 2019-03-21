@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Vote, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -26,13 +26,13 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let query: Parse.Query<Vote> = new Parse.Query(Vote);
+        let query: Parse.Query<IDB.Vote> = new Parse.Query(IDB.Vote);
 
         if (_userInfo.residentInfo) {
             query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
-        let vote: Vote = await query.get(_input.voteId).catch((e) => {
+        let vote: IDB.Vote = await query.get(_input.voteId).catch((e) => {
             throw e;
         });
         if (!vote) {

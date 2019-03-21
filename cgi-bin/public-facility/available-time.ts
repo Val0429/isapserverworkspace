@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PublicFacility, PublicFacilityReservation, CharacterResident, CharacterResidentInfo, IDayRange, IDateRange } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -29,7 +29,7 @@ action.get(
         let _end: Date = new Date(new Date(_start).setDate(_input.date.getDate() + 1));
         let _day: number = _input.date.getDay();
 
-        let publicFacility: PublicFacility = await new Parse.Query(PublicFacility)
+        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility)
             .equalTo('community', _userInfo.community)
             .equalTo('isDeleted', false)
             .get(_input.publicFacilityId)
@@ -47,7 +47,7 @@ action.get(
             return maintenanceHours.indexOf(value) < 0;
         });
 
-        let reservations: PublicFacilityReservation[] = await new Parse.Query(PublicFacilityReservation)
+        let reservations: IDB.PublicFacilityReservation[] = await new Parse.Query(IDB.PublicFacilityReservation)
             .equalTo('community', _userInfo.community)
             .equalTo('isDeleted', false)
             .equalTo('facility', publicFacility)
@@ -74,7 +74,7 @@ action.get(
  * @param dayRange
  * @param day
  */
-function GetHours(dayRange: IDayRange[], day: number): number[] {
+function GetHours(dayRange: IDB.IDayRange[], day: number): number[] {
     let hours: number[] = []
         .concat(
             ...dayRange
@@ -101,11 +101,11 @@ function GetHours(dayRange: IDayRange[], day: number): number[] {
  *
  * @param reservations
  */
-function GetHours1(reservations: PublicFacilityReservation[]): number[] {
+function GetHours1(reservations: IDB.PublicFacilityReservation[]): number[] {
     let hours: number[] = []
         .concat(
             ...reservations.map((value, index, array) => {
-                let _date: IDateRange = value.getValue('reservationDates');
+                let _date: IDB.IDateRange = value.getValue('reservationDates');
                 let _hours: number[] = [];
                 for (let i: number = _date.startDate.getHours(); i <= _date.endDate.getHours(); i++) {
                     _hours.push(i);

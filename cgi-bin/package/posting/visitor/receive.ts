@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, PackagePosting, MessageResident } from '../../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../../custom/models';
 import { File, Db } from '../../../../custom/helpers';
 import * as Enum from '../../../../custom/enums';
 import * as Notice from '../../../../custom/services/notice';
@@ -27,7 +27,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let packagePosting: PackagePosting = await new Parse.Query(PackagePosting)
+        let packagePosting: IDB.PackagePosting = await new Parse.Query(IDB.PackagePosting)
             .include('resident')
             .get(_input.packagePostingId)
             .catch((e) => {

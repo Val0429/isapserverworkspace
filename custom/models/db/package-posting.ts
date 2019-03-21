@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IPackageBase } from '.';
+import { IPackageBase } from './_index';
 
 /**
  * 寄放物品

@@ -1,14 +1,14 @@
 import { RoleList } from 'core/userRoles.gen';
 import { ActionParam } from 'helpers/cgi-helpers/core';
-import { Community, CharacterCommittee, CharacterResident, CharacterResidentInfo } from '../../models';
+import { IDB } from '../../models';
 import { Print } from './';
 
 interface IUserInfo {
     roles: string[];
-    committee: CharacterCommittee;
-    resident: CharacterResident;
-    residentInfo: CharacterResidentInfo;
-    community: Community;
+    committee: IDB.CharacterCommittee;
+    resident: IDB.CharacterResident;
+    residentInfo: IDB.CharacterResidentInfo;
+    community: IDB.Community;
 }
 
 export namespace Db {
@@ -34,7 +34,10 @@ export namespace Db {
                     });
                 }
 
-                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default Roles', color: Print.FontColor.blue });
+                let roles: string[] = Object.keys(RoleList).map((value, index, array) => {
+                    return `<${value}>`;
+                });
+                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Roles:  ' }, { message: roles.join(', '), color: Print.FontColor.cyan });
             }
         } catch (e) {
             throw e;
@@ -84,7 +87,7 @@ export namespace Db {
                     throw e;
                 });
 
-                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default Users', color: Print.FontColor.blue });
+                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Users:  ' }, { message: '<SysAdmin>, <Admin>', color: Print.FontColor.cyan });
             }
         } catch (e) {
             throw e;
@@ -110,7 +113,7 @@ export namespace Db {
             };
 
             if (roles.indexOf(RoleList.Resident) > -1) {
-                let residentInfo: CharacterResidentInfo = await new Parse.Query(CharacterResidentInfo)
+                let residentInfo: IDB.CharacterResidentInfo = await new Parse.Query(IDB.CharacterResidentInfo)
                     .equalTo('user', data.user)
                     .include(['community', 'resident'])
                     .first()
@@ -122,7 +125,7 @@ export namespace Db {
                 userInfo.residentInfo = residentInfo;
                 userInfo.community = residentInfo.getValue('community');
             } else if (roles.indexOf(RoleList.Chairman) > -1 || roles.indexOf(RoleList.DeputyChairman) > -1 || roles.indexOf(RoleList.FinanceCommittee) > -1 || roles.indexOf(RoleList.DirectorGeneral) > -1 || roles.indexOf(RoleList.Guard) > -1) {
-                let committee: CharacterCommittee = await new Parse.Query(CharacterCommittee)
+                let committee: IDB.CharacterCommittee = await new Parse.Query(IDB.CharacterCommittee)
                     .equalTo('user', data.user)
                     .include('community')
                     .first()

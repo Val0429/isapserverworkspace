@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterCommittee, CharacterResident, CharacterResidentInfo, Listen } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -32,12 +32,12 @@ action.post(
             extension = GetExtension(_input.attachment);
         }
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId);
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId);
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let listen: Listen = new Listen();
+        let listen: IDB.Listen = new IDB.Listen();
 
         listen.setValue('creator', data.user);
         listen.setValue('community', _userInfo.community);
@@ -88,7 +88,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<Listen> = new Parse.Query(Listen).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.Listen> = new Parse.Query(IDB.Listen).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -109,7 +109,7 @@ action.get(
             throw e;
         });
 
-        let listens: Listen[] = await query
+        let listens: IDB.Listen[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include(['resident', 'replier'])
@@ -121,11 +121,11 @@ action.get(
         let tasks: Promise<any>[] = [].concat(
             ...listens.map((value, index, array) => {
                 return value.getValue('replys').map((value1, index1, array1) => {
-                    return new Parse.Query(CharacterCommittee).equalTo('user', value1.replier).first();
+                    return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value1.replier).first();
                 });
             }),
         );
-        let committees: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
+        let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -144,7 +144,7 @@ action.get(
                     status: value.getValue('status'),
                     attachmentSrc: value.getValue('attachmentSrc'),
                     replys: value.getValue('replys').map((value1, index1, array1) => {
-                        let committee: CharacterCommittee = committees.find((value2, index2, array2) => {
+                        let committee: IDB.CharacterCommittee = committees.find((value2, index2, array2) => {
                             return value2 && value2.getValue('user').id === value1.replier.id;
                         });
                         return {
@@ -182,9 +182,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _listenIds.map((value, index, array) => {
-            return new Parse.Query(Listen).get(value);
+            return new Parse.Query(IDB.Listen).get(value);
         });
-        let listens: Listen[] = await Promise.all(tasks).catch((e) => {
+        let listens: IDB.Listen[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

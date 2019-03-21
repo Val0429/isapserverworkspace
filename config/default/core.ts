@@ -1,11 +1,10 @@
-
 import { Config } from 'config_default/core';
 
 var config: Partial<Config> = {
     port: 6060,
     disableCache: true,
     accessControlAllowOrigin: true,
-    cgiPath: "",
+    cgiPath: '',
     httpsEnabled: true,
     httpsPort: 4443
 };

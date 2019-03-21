@@ -1,16 +1,28 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Enum from '../enums';
-import { Community, CharacterResident } from './';
+import { Community, CharacterResident } from './_index';
+import * as Enum from '../../enums';
 
-interface IVoteOption {
-    option: string;
-    residents: CharacterResident[];
+interface IReply {
+    /**
+     * 回復人
+     */
+    replier: Parse.User;
+
+    /**
+     * 內容
+     */
+    content: string;
+
+    /**
+     * 日期
+     */
+    date: Date;
 }
 
 /**
- * 投票
+ * 聯絡管委會
  */
-export interface IVote {
+export interface IListen {
     /**
      * 創造人
      */
@@ -22,14 +34,9 @@ export interface IVote {
     community: Community;
 
     /**
-     * 發起時間
+     * 住戶
      */
-    date: Date;
-
-    /**
-     * 截止日
-     */
-    deadline: Date;
+    resident: CharacterResident;
 
     /**
      * 主旨
@@ -42,9 +49,9 @@ export interface IVote {
     content: string;
 
     /**
-     * 選項
+     * 回復
      */
-    options: IVoteOption[];
+    replys: IReply[];
 
     /**
      * 狀態
@@ -52,9 +59,9 @@ export interface IVote {
     status: Enum.ReceiveStatus;
 
     /**
-     * 投票範圍
+     * 附件
      */
-    aims: Enum.ResidentCharacter[];
+    attachmentSrc: string;
 
     /**
      * 刪除
@@ -63,4 +70,4 @@ export interface IVote {
 }
 
 @registerSubclass()
-export class Vote extends ParseObject<IVote> {}
+export class Listen extends ParseObject<IListen> {}

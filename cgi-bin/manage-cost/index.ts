@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, ManageCost, Parking, CharacterCommittee } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -32,7 +32,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['date error']);
         }
 
-        let manageCostCount: number = await new Parse.Query(ManageCost)
+        let manageCostCount: number = await new Parse.Query(IDB.ManageCost)
             .equalTo('community', _userInfo.community)
             .equalTo('date', _date)
             .count()
@@ -43,12 +43,12 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['date presence']);
         }
 
-        let query: Parse.Query<CharacterResident> = new Parse.Query(CharacterResident).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
         let total: number = await query.count().catch((e) => {
             throw e;
         });
-        let residents: CharacterResident[] = await query
+        let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
             .catch((e) => {
@@ -56,16 +56,16 @@ action.post(
             });
 
         let tasks: Promise<any>[] = residents.map((value, index, array) => {
-            return new Parse.Query(Parking).equalTo('resident', value).find();
+            return new Parse.Query(IDB.Parking).equalTo('resident', value).find();
         });
-        let parkings: Parking[][] = await Promise.all(tasks).catch((e) => {
+        let parkings: IDB.Parking[][] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        let manageCosts: ManageCost[] = [];
+        let manageCosts: IDB.ManageCost[] = [];
 
         tasks = residents.map((value, index, array) => {
-            let manageCost: ManageCost = new ManageCost();
+            let manageCost: IDB.ManageCost = new IDB.ManageCost();
 
             let parkingCost: number = parkings[index]
                 ? parkings[index].reduce((prev, curr, index, array) => {
@@ -126,7 +126,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<ManageCost> = new Parse.Query(ManageCost).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.ManageCost> = new Parse.Query(IDB.ManageCost).equalTo('community', _userInfo.community);
 
         if (_input.date) {
             let _date: Date = new Date(new Date(new Date(_input.date).setDate(1)).setHours(0, 0, 0, 0));
@@ -149,7 +149,7 @@ action.get(
             throw e;
         });
 
-        let manageCosts: ManageCost[] = await query
+        let manageCosts: IDB.ManageCost[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -159,16 +159,16 @@ action.get(
             });
 
         let tasks: Promise<any>[] = manageCosts.map((value, index, array) => {
-            return new Parse.Query(Parking).equalTo('resident', value.getValue('resident')).count();
+            return new Parse.Query(IDB.Parking).equalTo('resident', value.getValue('resident')).count();
         });
         let parkingCounts: number[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
         tasks = manageCosts.map((value, index, array) => {
-            return new Parse.Query(CharacterCommittee).equalTo('user', value.getValue('charger')).first();
+            return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('charger')).first();
         });
-        let chargers: CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
+        let chargers: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

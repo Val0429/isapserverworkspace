@@ -9,17 +9,10 @@ import './custom/shells/auto-index';
 
 import './custom/services/notice';
 
+app.use(`/images`, express.static(`workspace/custom/assets/images`));
+app.use(`/files`, express.static(`workspace/custom/assets/files`));
+
 setTimeout(() => {
-    let assets: string[] = ['images', 'files'];
-    assets.forEach((value, index, array) => {
-        let path: string = `${File.assetsPath}/${value}`;
-        File.CreateFolder(path);
-
-        app.use(`/${value}`, express.static(`workspace/custom/assets/${value}`));
-
-        Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create folder at:', color: Print.FontColor.blue }, { message: `- workspace/custom/assets/${value}` });
-    });
-
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: '- Local:  ' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });
 
     let ips: Utility.IIp[] = Utility.GetIp();

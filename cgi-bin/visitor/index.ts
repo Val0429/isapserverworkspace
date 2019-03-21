@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, Visitor } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { File, Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -27,14 +27,14 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let visitor: Visitor = new Visitor();
+        let visitor: IDB.Visitor = new IDB.Visitor();
 
         visitor.setValue('creator', data.user);
         visitor.setValue('community', _userInfo.community);
@@ -98,7 +98,7 @@ action.get(
 
         _divideDate = new Date(_divideDate.setMinutes(_divideDate.getMinutes() + _divideMinute));
 
-        let query: Parse.Query<Visitor> = new Parse.Query(Visitor).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.Visitor> = new Parse.Query(IDB.Visitor).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -119,7 +119,7 @@ action.get(
             throw e;
         });
 
-        let visitors: Visitor[] = await query
+        let visitors: IDB.Visitor[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -129,12 +129,12 @@ action.get(
             });
 
         let tasks: Promise<any>[] = visitors.map((value, index, array) => {
-            return new Parse.Query(CharacterResidentInfo)
+            return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value.getValue('resident'))
                 .equalTo('isDeleted', false)
                 .first();
         });
-        let residentInfos: CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+        let residentInfos: IDB.CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
@@ -183,9 +183,9 @@ action.delete(
         });
 
         let tasks: Promise<any>[] = _visitorIds.map((value, index, array) => {
-            return new Parse.Query(Visitor).get(value);
+            return new Parse.Query(IDB.Visitor).get(value);
         });
-        let visitors: Visitor[] = await Promise.all(tasks).catch((e) => {
+        let visitors: IDB.Visitor[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 

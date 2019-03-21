@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo, PackageReceive } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Draw, Parser, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import * as Notice from '../../../custom/services/notice';
@@ -30,14 +30,14 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['barcode is too long']);
         }
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packageReceive: PackageReceive = new PackageReceive();
+        let packageReceive: IDB.PackageReceive = new IDB.PackageReceive();
 
         packageReceive.setValue('creator', data.user);
         packageReceive.setValue('community', _userInfo.community);
@@ -88,7 +88,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<PackageReceive> = new Parse.Query(PackageReceive).equalTo('community', _userInfo.community);
+        let query: Parse.Query<IDB.PackageReceive> = new Parse.Query(IDB.PackageReceive).equalTo('community', _userInfo.community);
         if (_input.start) {
             query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
         }
@@ -109,7 +109,7 @@ action.get(
             throw e;
         });
 
-        let packageReceives: PackageReceive[] = await query
+        let packageReceives: IDB.PackageReceive[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
             .include('resident')
@@ -157,14 +157,14 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: CharacterResident = await new Parse.Query(CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packageReceive: PackageReceive = await new Parse.Query(PackageReceive).get(_input.packageReceiveId).catch((e) => {
+        let packageReceive: IDB.PackageReceive = await new Parse.Query(IDB.PackageReceive).get(_input.packageReceiveId).catch((e) => {
             throw e;
         });
         if (!packageReceive) {

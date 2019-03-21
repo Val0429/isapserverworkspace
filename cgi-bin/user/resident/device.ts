@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, ParseObject, ActionParam } from 'core/cgi-package';
-import { IRequest, IResponse, CharacterResident, CharacterResidentInfo } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 

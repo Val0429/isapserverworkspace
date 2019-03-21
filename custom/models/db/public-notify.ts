@@ -1,11 +1,11 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { Community, IDateRange } from './';
-import * as Enum from '../enums';
+import { Community } from './_index';
+import * as Enum from '../../enums';
 
 /**
- * 行事曆
+ * 公告
  */
-export interface IPublicCalendar {
+export interface IPublicNotify {
     /**
      * 創造人
      */
@@ -19,7 +19,7 @@ export interface IPublicCalendar {
     /**
      * 公告時間
      */
-    date: IDateRange;
+    date: Date;
 
     /**
      * 主旨
@@ -30,6 +30,11 @@ export interface IPublicCalendar {
      * 內容
      */
     content: string;
+
+    /**
+     * 附件
+     */
+    attachmentSrc: string;
 
     /**
      * 投票範圍
@@ -43,4 +48,4 @@ export interface IPublicCalendar {
 }
 
 @registerSubclass()
-export class PublicCalendar extends ParseObject<IPublicCalendar> {}
+export class PublicNotify extends ParseObject<IPublicNotify> {}

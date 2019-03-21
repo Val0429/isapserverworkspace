@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, Listen, MessageResident } from '../../custom/models';
+import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Db } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
@@ -26,7 +26,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let listen: Listen = await new Parse.Query(Listen).get(_input.listenId).catch((e) => {
+        let listen: IDB.Listen = await new Parse.Query(IDB.Listen).get(_input.listenId).catch((e) => {
             throw e;
         });
         if (!listen) {
