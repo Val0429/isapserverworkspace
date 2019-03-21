@@ -67,7 +67,6 @@ action.post(
             sessionId: user.sessionId,
             userId: user.user.id,
             roles: roles,
-            serverTime: new Date(),
             communityName: committee.getValue('community').getValue('name'),
             communityAddress: committee.getValue('community').getValue('address'),
         };
