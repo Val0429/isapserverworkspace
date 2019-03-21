@@ -97,9 +97,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                                 Print.MinLog(JSON.stringify(result), 'success');
                                             } else {
                                                 let apn: Apn = new Apn();
-                                                let result = await apn.Send('A54FF8224AF4CB2F245694E3C692A14CF59FBE1C842A2E7C50F91DB8E64641CB', 'Title', 'Body').catch((e) => {
-                                                    Print.MinLog(e, 'error');
-                                                });
+                                                let result = await apn.Send(value1.getValue('deviceToken'), config.title, body);
 
                                                 Print.MinLog(JSON.stringify(result), 'success');
                                             }
