@@ -1,6 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse } from '../../../custom/models';
-import { Permission, Print } from '../../../custom/helpers';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
+import { Permission } from '../../../custom/helpers';
+import * as Enum from '../../../custom/enums';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
 
 let action = new Action({
@@ -85,6 +86,57 @@ action.get(
                 };
             }),
         };
+    },
+);
+
+/**
+ * Action update
+ */
+type InputU = IRequest.IUser.IBaseIndexU;
+
+type OutputU = Date;
+
+action.put(
+    { inputType: 'InputU' },
+    async (data): Promise<OutputU> => {
+        let _input: InputU = data.inputType;
+
+        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapU);
+
+        let user: Parse.User = await new Parse.Query(Parse.User)
+            .include('roles')
+            .get(_input.userId)
+            .catch((e) => {
+                throw e;
+            });
+
+        let userRoles: RoleList[] = user.attributes.roles.map((value) => {
+            return value.getName();
+        });
+
+        Permission.ValidateRoles(availableRoles, userRoles);
+
+        let rolesCheck: RoleList[] = _input.roles.filter((value, index, array) => {
+            return availableRoles.indexOf(value) < 0;
+        });
+        if (rolesCheck && rolesCheck.length > 0) {
+            throw Errors.throw(Errors.CustomUnauthorized, [`Permission denied for roles.`]);
+        }
+
+        let tasks: Promise<any>[] = _input.roles.map((value, index, array) => {
+            return new Parse.Query(Parse.Role).equalTo('name', value).first();
+        });
+        let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        user.set('roles', roles);
+
+        await user.save(null, { useMasterKey: true }).catch((e) => {
+            throw e;
+        });
+
+        return new Date();
     },
 );
 

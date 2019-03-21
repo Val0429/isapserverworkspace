@@ -15,7 +15,6 @@ export interface IBaseLogin {
     sessionId: string;
     userId: string;
     roles: string[];
-    serverTime: Date;
 }
 
 export interface ICommitteeIndexR extends IBaseIndexR {

@@ -10,6 +10,11 @@ export interface IBaseIndexC extends IUser {
     roles: RoleList[];
 }
 
+export interface IBaseIndexU {
+    userId: string;
+    roles: RoleList[];
+}
+
 export interface IBaseIndexD {
     userId: string;
 }

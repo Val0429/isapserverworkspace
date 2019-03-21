@@ -1,5 +1,7 @@
 import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList } from 'core/cgi-package';
-import { IRequest, IResponse } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
+import {} from '../../../custom/helpers';
+import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: false,
@@ -11,13 +13,14 @@ export default action;
 /**
  * Action Login
  */
-type Input = IRequest.IUser.IBaseLogin;
-type Output = IResponse.IUser.IBaseLogin;
+type InputC = IRequest.IUser.IBaseLogin;
+
+type OutputC = IResponse.IUser.IBaseLogin;
 
 action.post(
-    { inputType: 'Input' },
-    async (data): Promise<Output> => {
-        let _input: Input = data.inputType;
+    { inputType: 'InputC' },
+    async (data): Promise<OutputC> => {
+        let _input: InputC = data.inputType;
 
         let user = await UserHelper.login({
             username: _input.account,
@@ -26,7 +29,7 @@ action.post(
             throw e;
         });
 
-        let roles = user.user.get('roles').map((value, index, array) => {
+        let roles: string[] = user.user.get('roles').map((value, index, array) => {
             return Object.keys(RoleList).find((value1, index1, array1) => {
                 return value.get('name') === RoleList[value1];
             });
@@ -47,7 +50,6 @@ action.post(
             sessionId: user.sessionId,
             userId: user.user.id,
             roles: roles,
-            serverTime: new Date(),
         };
     },
 );

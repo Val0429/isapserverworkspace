@@ -1,5 +1,7 @@
 import { Action, Events, EventLogout } from 'core/cgi-package';
-import { IRequest, IResponse } from '../../../custom/models';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
+import {} from '../../../custom/helpers';
+import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
@@ -11,13 +13,14 @@ export default action;
 /**
  * Action Logout
  */
-type Input = IRequest.IUser.IBaseLogout;
-type Output = Date;
+type InputC = IRequest.IUser.IBaseLogout;
+
+type OutputC = Date;
 
 action.post(
-    { inputType: 'Input' },
-    async (data): Promise<Output> => {
-        let _input: Input = data.inputType;
+    { inputType: 'InputC' },
+    async (data): Promise<OutputC> => {
+        let _input: InputC = data.inputType;
 
         await data.session.destroy({ sessionToken: _input.sessionId }).catch((e) => {
             throw e;
