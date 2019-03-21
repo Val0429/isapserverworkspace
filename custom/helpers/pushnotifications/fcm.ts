@@ -21,14 +21,15 @@ export class Fcm {
      * @param body
      * @param data
      */
-    public async Send(deviceToken: string, title: string, body: string, data: object = {}): Promise<string> {
+    public async Send(deviceToken: string, title: string, body: string): Promise<string> {
         let message = {
             to: deviceToken,
             collapse_key: Config.pushnotification.fcm.collapseKey,
-            data: data,
-            notification: {
-                title: title,
-                body: body,
+            data: {
+                custom_notification: {
+                    title: title,
+                    body: body,
+                },
             },
         };
 
