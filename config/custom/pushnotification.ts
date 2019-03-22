@@ -25,7 +25,7 @@ let config: Config = {
         key: '-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgPVc6tl7pVeJEIzzFbrpxIMFl+W8QEoKqpufOz8OWDwWgCgYIKoZIzj0DAQehRANCAAQzzicm75wxl1u4hIUkzLjbuDo4SnZksQfsIxy5LaWy6WWKY3oCAhk62J1eGH9W2O/HORHGjLX0W2KO8+oqbzUN\n-----END PRIVATE KEY-----',
         keyId: 'QPX99ZHTND',
         teamId: '8S693EH9B2',
-        production: false,
+        production: !process.env.NODE_ENV || process.env.NODE_ENV !== 'development',
         topic: 'com.isap.AiLife',
     },
 };

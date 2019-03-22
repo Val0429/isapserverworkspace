@@ -13,6 +13,9 @@ app.use(`/images`, express.static(`workspace/custom/assets/images`));
 app.use(`/files`, express.static(`workspace/custom/assets/files`));
 
 setTimeout(() => {
+    let node_env: string = !process.env.NODE_ENV || process.env.NODE_ENV !== 'development' ? 'Production' : 'Development';
+    Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: `- ${node_env} Mode` });
+
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: '- Local:  ' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });
 
     let ips: Utility.IIp[] = Utility.GetIp();
