@@ -5,8 +5,9 @@ var config: Partial<Config> = {
     disableCache: true,
     accessControlAllowOrigin: true,
     cgiPath: '',
+    httpDisabled: false,
     httpsEnabled: true,
-    httpsPort: 4443
+    httpsPort: 4443,
 };
 export default config;
 export { Config };
