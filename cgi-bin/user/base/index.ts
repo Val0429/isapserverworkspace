@@ -6,7 +6,7 @@ import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.Administrator],
+    permission: [RoleList.SystemAdministrator],
 });
 
 export default action;

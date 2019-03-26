@@ -5,7 +5,6 @@ import { RoleList } from 'core/cgi-package';
  */
 export interface IPermissionMap {
     [RoleList.SystemAdministrator]: RoleList[];
-    [RoleList.Administrator]: RoleList[];
     [RoleList.Chairman]: RoleList[];
     [RoleList.DeputyChairman]: RoleList[];
     [RoleList.FinanceCommittee]: RoleList[];
@@ -18,8 +17,7 @@ export interface IPermissionMap {
  *
  */
 export const permissionMapC: IPermissionMap = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.DeputyChairman]: [RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.FinanceCommittee]: [],
@@ -32,8 +30,7 @@ export const permissionMapC: IPermissionMap = {
  *
  */
 export const permissionMapR: IPermissionMap = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.DeputyChairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.FinanceCommittee]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
@@ -46,8 +43,7 @@ export const permissionMapR: IPermissionMap = {
  *
  */
 export const permissionMapU: IPermissionMap = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.DeputyChairman]: [RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.FinanceCommittee]: [],
@@ -60,8 +56,7 @@ export const permissionMapU: IPermissionMap = {
  *
  */
 export const permissionMapD: IPermissionMap = {
-    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
-    [RoleList.Administrator]: [RoleList.Administrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
+    [RoleList.SystemAdministrator]: [RoleList.SystemAdministrator, RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.Chairman]: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard, RoleList.Resident],
     [RoleList.DeputyChairman]: [RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     [RoleList.FinanceCommittee]: [],
