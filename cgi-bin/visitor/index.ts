@@ -147,7 +147,7 @@ action.get(
                     visitorId: value.id,
                     date: value.createdAt,
                     residentName: residentInfos[index] ? residentInfos[index].getValue('name') : '',
-                    residentAddress: value.getValue('name'),
+                    residentAddress: value.getValue('resident').getValue('address'),
                     name: value.getValue('name'),
                     visitorSrc: value.getValue('visitorSrc'),
                     count: value.getValue('count'),
