@@ -1,4 +1,5 @@
 import * as express from 'express';
+import * as history from 'connect-history-api-fallback';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
 import { Print, Utility, File } from './custom/helpers';
@@ -10,6 +11,7 @@ import './custom/shells/auto-index';
 
 import './custom/services/notice';
 
+app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
 app.use(`/files`, express.static(`workspace/custom/assets/files`));
 
