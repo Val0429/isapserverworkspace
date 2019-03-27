@@ -37,69 +37,69 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                     throw e;
                                 });
 
+                            let body: string = config.body;
+                            if (value.message.deadline) {
+                                body = body.replace(/{{deadline}}/g, DateTime.DateTime2String(value.message.deadline, 'YYYY/MM/DD'));
+                            }
+                            if (value.message.content) {
+                                body = body.replace(/{{content}}/g, value.message.content);
+                            }
+                            if (value.message.cost) {
+                                body = body.replace(/{{cost}}/g, String(value.message.cost));
+                            }
+                            if (value.message.lendCount) {
+                                body = body.replace(/{{lendCount}}/g, String(value.message.lendCount));
+                            }
+                            if (value.message.article) {
+                                body = body.replace(/{{article}}/g, value.message.article);
+                            }
+                            if (value.message.facility) {
+                                body = body.replace(/{{facility}}/g, value.message.facility);
+                            }
+                            if (value.message.dateRange) {
+                                body = body.replace(/{{dateRange}}/g, `${DateTime.DateTime2String(value.message.dateRange.startDate)}${DateTime.DateTime2String(value.message.dateRange.endDate)}`);
+                            }
+                            if (value.message.title) {
+                                body = body.replace(/{{title}}/g, value.message.title);
+                            }
+                            if (value.message.visitor) {
+                                body = body.replace(/{{visitor}}/g, value.message.visitor);
+                            }
+                            if (value.message.sender) {
+                                body = body.replace(/{{sender}}/g, value.message.sender);
+                            }
+                            if (value.message.receiver) {
+                                body = body.replace(/{{receiver}}/g, value.message.receiver);
+                            }
+                            if (value.message.address) {
+                                body = body.replace(/{{address}}/g, value.message.address);
+                            }
+                            if (value.message.purpose) {
+                                body = body.replace(/{{purpose}}/g, value.message.purpose);
+                            }
+                            if (value.message.YYYYMMDD) {
+                                body = body.replace(/{{YYYYMMDD}}/g, DateTime.DateTime2String(value.message.YYYYMMDD, 'YYYY/MM/DD'));
+                            }
+                            if (value.message.YYYYMM) {
+                                body = body.replace(/{{YYYYMM}}/g, DateTime.DateTime2String(value.message.YYYYMM, 'YYYY/MM'));
+                            }
+
+                            Print.MinLog(`${config.title}: ${body}`);
+
                             return [].concat(
                                 ...(await Promise.all(
                                     residentInfos.map(async (value1, index1, array1) => {
                                         try {
-                                            let body: string = config.body;
-                                            if (value.message.deadline) {
-                                                body = body.replace(/{{deadline}}/g, DateTime.DateTime2String(value.message.deadline, 'YYYY/MM/DD'));
-                                            }
-                                            if (value.message.content) {
-                                                body = body.replace(/{{content}}/g, value.message.content);
-                                            }
-                                            if (value.message.cost) {
-                                                body = body.replace(/{{cost}}/g, String(value.message.cost));
-                                            }
-                                            if (value.message.lendCount) {
-                                                body = body.replace(/{{lendCount}}/g, String(value.message.lendCount));
-                                            }
-                                            if (value.message.article) {
-                                                body = body.replace(/{{article}}/g, value.message.article);
-                                            }
-                                            if (value.message.facility) {
-                                                body = body.replace(/{{facility}}/g, value.message.facility);
-                                            }
-                                            if (value.message.dateRange) {
-                                                body = body.replace(/{{dateRange}}/g, `${DateTime.DateTime2String(value.message.dateRange.startDate)}${DateTime.DateTime2String(value.message.dateRange.endDate)}`);
-                                            }
-                                            if (value.message.title) {
-                                                body = body.replace(/{{title}}/g, value.message.title);
-                                            }
-                                            if (value.message.visitor) {
-                                                body = body.replace(/{{visitor}}/g, value.message.visitor);
-                                            }
-                                            if (value.message.sender) {
-                                                body = body.replace(/{{sender}}/g, value.message.sender);
-                                            }
-                                            if (value.message.receiver) {
-                                                body = body.replace(/{{receiver}}/g, value.message.receiver);
-                                            }
-                                            if (value.message.address) {
-                                                body = body.replace(/{{address}}/g, value.message.address);
-                                            }
-                                            if (value.message.purpose) {
-                                                body = body.replace(/{{purpose}}/g, value.message.purpose);
-                                            }
-                                            if (value.message.YYYYMMDD) {
-                                                body = body.replace(/{{YYYYMMDD}}/g, DateTime.DateTime2String(value.message.YYYYMMDD, 'YYYY/MM/DD'));
-                                            }
-                                            if (value.message.YYYYMM) {
-                                                body = body.replace(/{{YYYYMM}}/g, DateTime.DateTime2String(value.message.YYYYMM, 'YYYY/MM'));
-                                            }
-
-                                            Print.MinLog(`<${value1.id}>: ${body}`);
-
                                             if (value1.getValue('deviceType') === 'android') {
                                                 let fcm: Fcm = new Fcm();
                                                 let result: string = await fcm.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                Print.MinLog(JSON.stringify(result), 'success');
+                                                Print.MinLog(`Fcm: ${JSON.stringify(result)}`, 'success');
                                             } else {
                                                 let apn: Apn = new Apn();
                                                 let result = await apn.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                Print.MinLog(JSON.stringify(result), 'success');
+                                                Print.MinLog(`Apn: ${JSON.stringify(result)}`, 'success');
                                             }
                                         } catch (e) {
                                             Print.MinLog(e, 'error');

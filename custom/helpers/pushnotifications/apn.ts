@@ -1,25 +1,23 @@
-import PushNotifications = require('node-pushnotifications');
+import * as APN from 'apn';
 import { Config } from 'core/config.gen';
 
 export class Apn {
-    private apn = null;
+    private apn: APN.Provider = undefined;
 
     /**
      * Constructor
      */
     public constructor() {
         let setting = {
-            apn: {
-                token: {
-                    key: Config.pushnotification.apn.key,
-                    keyId: Config.pushnotification.apn.keyId,
-                    teamId: Config.pushnotification.apn.teamId,
-                },
-                production: Config.pushnotification.apn.production,
+            token: {
+                key: Config.pushnotification.apn.key,
+                keyId: Config.pushnotification.apn.keyId,
+                teamId: Config.pushnotification.apn.teamId,
             },
+            production: Config.pushnotification.apn.production,
         };
 
-        this.apn = new PushNotifications(setting);
+        this.apn = new APN.Provider(setting);
     }
 
     /**
@@ -30,40 +28,21 @@ export class Apn {
      * @param data
      */
     public async Send(deviceToken: string, title: string, body: string): Promise<string> {
-        var data = {
-            retryLimit: 1,
-            expiry: Math.floor(Date.now() / 1000) + 3600,
-            priority: 10,
-            encoding: '',
-            badge: 1,
-            sound: 'default',
-            alert: {
-                title: title,
-                body: body,
-            },
-            topic: Config.pushnotification.apn.topic,
-            category: '',
-            contentAvailable: true,
-            truncateAtWordEnd: true,
-            mutableContent: 0,
-        };
+        let note: APN.Notification = new APN.Notification();
 
-        let response = await new Promise<string>((resolve, reject) => {
-            try {
-                this.apn.send(deviceToken, data, (e, response) => {
-                    if (e) {
-                        return reject(e);
-                    } else {
-                        return resolve(response);
-                    }
-                });
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
+        note.expiry = Math.floor(Date.now() / 1000) + 3600;
+        note.badge = 1;
+        note.sound = 'default';
+        note.alert = {
+            title: title,
+            body: body,
+        };
+        note.topic = Config.pushnotification.apn.topic;
+
+        let response: APN.Responses = await this.apn.send(note, deviceToken).catch((e) => {
             throw e;
         });
 
-        return response;
+        return JSON.stringify(response);
     }
 }
