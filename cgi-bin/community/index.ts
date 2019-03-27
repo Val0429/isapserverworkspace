@@ -66,6 +66,7 @@ action.post(
         committee.setValue('community', community);
         committee.setValue('permission', '');
         committee.setValue('adjustReason', '');
+        committee.setValue('isDeleted', false);
 
         await committee.save(null, { useMasterKey: true }).catch((e) => {
             throw e;

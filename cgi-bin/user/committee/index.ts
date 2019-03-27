@@ -70,7 +70,7 @@ action.get(
         let _page: number = _input.page || 1;
         let _count: number = _input.count || 10;
 
-        let query: Parse.Query<IDB.CharacterCommittee> = new Parse.Query(IDB.CharacterCommittee).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+        let query: Parse.Query<IDB.CharacterCommittee> = new Parse.Query(IDB.CharacterCommittee).equalTo('community', _userInfo.community).notEqualTo('isDeleted', true);
 
         let total: number = await query.count().catch((e) => {
             throw e;
