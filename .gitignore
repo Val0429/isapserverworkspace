@@ -1,8 +1,7 @@
 .vscode/
-custom/web/
 
-custom/assets/images/
-custom/assets/files/
+custom/web/
+custom/assets/
 
 nsis/Release/
 
