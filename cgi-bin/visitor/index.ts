@@ -96,7 +96,7 @@ action.get(
         let _divideMinute: number = _input.divideMinute || 30;
         let _divideDate: Date = new Date();
 
-        _divideDate = new Date(_divideDate.setMinutes(_divideDate.getMinutes() + _divideMinute));
+        _divideDate = new Date(_divideDate.setMinutes(_divideDate.getMinutes() - _divideMinute));
 
         let query: Parse.Query<IDB.Visitor> = new Parse.Query(IDB.Visitor).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
         if (_input.start) {
