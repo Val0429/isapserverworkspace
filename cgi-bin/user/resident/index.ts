@@ -25,6 +25,7 @@ action.post(
         let _userInfo = await Db.GetUserInfo(data);
 
         let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
+            .equalTo('community', _userInfo.community)
             .equalTo('address', _input.address)
             .first()
             .catch((e) => {
