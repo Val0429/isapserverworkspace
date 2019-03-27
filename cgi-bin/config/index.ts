@@ -17,28 +17,27 @@ export default action;
  */
 type InputR = IRequest.IConfig.IIndexR;
 
-type OutputR =
-    | IConfig
-    | {
-          [key: string]: IConfig[keyof IConfig];
-      };
+type OutputR = IResponse.IConfig.IIndexR[] | IResponse.IConfig.IIndexR;
 
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
 
-        let config: OutputR =
-            _input.key === '*'
-                ? Config
-                : {
-                      [_input.key]: Config[_input.key],
-                  };
-        if (!config) {
-            throw Errors.throw(Errors.ParametersInvalid, ['key']);
+        let configs: OutputR;
+        if (_input.key === '*') {
+            configs = Object.keys(Config).map((value, index, array) => {
+                return {
+                    [value]: Config[value],
+                };
+            });
+        } else {
+            configs = {
+                [_input.key]: Config[_input.key],
+            };
         }
 
-        return config;
+        return configs;
     },
 );
 
@@ -47,7 +46,7 @@ action.get(
  */
 type InputU = IRequest.IConfig.IIndexU;
 
-type OutputU = string;
+type OutputU = Date;
 
 action.put(
     { inputType: 'InputU' },
@@ -61,7 +60,7 @@ action.put(
             Config[key] = { ...Config[key], ..._input.data[key] };
         }
 
-        return '';
+        return new Date();
     },
 );
 

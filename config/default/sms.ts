@@ -1,8 +1,7 @@
-
 import { Config } from 'config_default/sms';
 export { Config };
 
 var config: Partial<Config> = {
-    enable: true
+    enable: false,
 };
 export default config;

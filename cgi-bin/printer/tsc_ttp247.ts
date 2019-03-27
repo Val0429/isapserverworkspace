@@ -25,12 +25,12 @@ action.get(
         let _location: string = _input.locationName || '';
 
         let tsc: Tsc_Ttp247 = new Tsc_Ttp247();
-        tsc.app = File.RealPath(Config.printer.app);
         tsc.device = Config.printer.device;
+
         tsc.Initialization();
 
-        await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _location, _date);
+        let result: string = await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _location, _date);
 
-        return '';
+        return result;
     },
 );

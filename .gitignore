@@ -1,5 +1,8 @@
 .vscode/
-custom/files/
+
 custom/web/
-custom/license/license.xml
-node_modules/
+custom/assets/
+
+nsis/Release/
+
+node_modules

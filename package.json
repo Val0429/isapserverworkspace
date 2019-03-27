@@ -4,7 +4,7 @@
     "config": {
         "displayname": "iSap Printer Service"
     },
-    "description": "iSap Printer Service v1.00.01",
+    "description": "iSap Printer Service",
     "scripts": {
         "start": "npm start --prefix ./../",
         "create-project": "git checkout --orphan"

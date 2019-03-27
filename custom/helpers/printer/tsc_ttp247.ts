@@ -1,17 +1,14 @@
 import { execFile } from 'child_process';
 import { Printer } from './base';
-import { Regex, Print, Parser, DateTime } from '..';
+import { Regex, Print, Parser, DateTime, File } from '..';
 
 export class Tsc_Ttp247 {
     /**
      * App
      */
-    protected _app: string;
+    protected _app: string = File.RealPath('./workspace/custom/helpers/printer/TscPrinter/TscPrinter.exe');
     public get app(): string {
         return this._app;
-    }
-    public set app(value: string) {
-        this._app = value;
     }
 
     /**
@@ -34,17 +31,6 @@ export class Tsc_Ttp247 {
     }
 
     /**
-     * Dll path
-     */
-    protected _dllPath: string;
-    public get dllPath(): string {
-        return this._dllPath;
-    }
-    public set dllPath(value: string) {
-        this._dllPath = value;
-    }
-
-    /**
      * Initialization device
      */
     public Initialization(): void {
@@ -61,7 +47,7 @@ export class Tsc_Ttp247 {
      * @param date
      * http://localhost:6061/printer/tsc_ttp247?visitorName=AAA&respondentName=BBB&date=CCC&locationName=DDD
      */
-    public async PrintFetSticker(visitor: string, respondent: string, location: string, date: string = DateTime.DateTime2String(new Date(), 'MM/DD')) {
+    public async PrintFetSticker(visitor: string, respondent: string, location: string, date: string = DateTime.DateTime2String(new Date(), 'MM/DD')): Promise<string> {
         try {
             if (!this._isInitialization) {
                 throw Printer.Message.DeviceNotInitialization;
@@ -82,6 +68,8 @@ export class Tsc_Ttp247 {
             }).catch((e) => {
                 throw e;
             });
+
+            return result;
 
             // let Tsclibnet: any = edge.func({
             //     source: function() {

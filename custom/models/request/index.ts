@@ -1,3 +1,3 @@
-import * as IRequest from './request';
+import * as IRequest from './_index';
 
 export { IRequest };

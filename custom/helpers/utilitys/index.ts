@@ -1,4 +1,5 @@
 export * from './datetime';
+export * from './db';
 export * from './file';
 export * from './parser';
 export * from './permission';
