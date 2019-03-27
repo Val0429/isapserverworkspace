@@ -1,2 +1,2 @@
-net stop "isap-vms-service"
-npm run uninstall-windows-service
+net stop "isap-smart-community-service"
+sc delete "isap-smart-community-service"

@@ -17,7 +17,7 @@ OutFile "${PATH_OUT}\${OUTPUT_NAME}-v${PRODUCT_VERSION}.exe"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 
 # define installation directory
-InstallDir "$PROGRAMFILES64\VMS"
+InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 
 !macro DoUninstall UN
 Function ${UN}DoUninstall
@@ -89,9 +89,9 @@ ShowInstDetails show
   !insertmacro MUI_PAGE_LICENSE "License.txt"
   !insertmacro MUI_PAGE_COMPONENTS 
   
-Section "Run npm start before installing service" SEC01
+;Section "Run npm start before installing service" SEC01
 	
-SectionEnd
+;SectionEnd
 
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
