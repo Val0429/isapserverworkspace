@@ -4,6 +4,7 @@ export interface IIndexBase {
     date: Date;
     title: string;
     content: string;
+    isTop: boolean;
     attachment?: string;
 }
 

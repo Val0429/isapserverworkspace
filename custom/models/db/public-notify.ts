@@ -42,6 +42,11 @@ export interface IPublicNotify {
     aims: Enum.ResidentCharacter[];
 
     /**
+     * 置頂
+     */
+    isTop: boolean;
+
+    /**
      * 刪除
      */
     isDeleted: boolean;

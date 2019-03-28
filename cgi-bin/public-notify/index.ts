@@ -43,6 +43,7 @@ action.post(
         publicNotify.setValue('attachmentSrc', '');
         publicNotify.setValue('aims', _input.aims);
         publicNotify.setValue('isDeleted', false);
+        publicNotify.setValue('isTop', _input.isTop);
 
         await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
             throw e;
@@ -126,6 +127,7 @@ action.get(
         let publicNotifys: IDB.PublicNotify[] = await query
             .skip((_page - 1) * _count)
             .limit(_count)
+            .descending(['isTop', 'date'])
             .find()
             .catch((e) => {
                 throw e;
@@ -151,6 +153,7 @@ action.get(
                     attachmentSrc: value.getValue('attachmentSrc'),
                     creatorName: committees[index] ? committees[index].getValue('name') : '',
                     aims: value.getValue('aims'),
+                    isTop: value.getValue('isTop') || false,
                 };
             }),
         };
@@ -192,6 +195,7 @@ action.put(
         publicNotify.setValue('date', _input.date);
         publicNotify.setValue('title', _input.title);
         publicNotify.setValue('content', _input.content);
+        publicNotify.setValue('isTop', _input.isTop);
 
         await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
             throw e;

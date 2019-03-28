@@ -12,4 +12,5 @@ export interface IIndexR {
     attachmentSrc: string;
     creatorName: string;
     aims: Enum.ResidentCharacter[];
+    isTop: boolean;
 }
