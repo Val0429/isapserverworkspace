@@ -26,6 +26,8 @@ action.post(
 
         let parking: IDB.Parking = await new Parse.Query(IDB.Parking)
             .equalTo('name', _input.name)
+            .equalTo('community', _userInfo.community)
+            .equalTo('isDeleted', false)
             .first()
             .catch((e) => {
                 throw e;
