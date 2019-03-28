@@ -127,9 +127,9 @@ Section
 	# intall mongo
 	ExecWait '"install_mongo.bat" /s'
 	
-	${If} ${SectionIsSelected} ${SEC01}			
-		ExecWait '"start.bat"'
-	${EndIf}
+	;${If} ${SectionIsSelected} ${SEC01}			
+	;	ExecWait '"start.bat"'
+	;${EndIf}
 	
 	# install service
 	ExecWait '"install.bat" /s'
