@@ -106,6 +106,12 @@ let config: Config = {
         title: '刪除訪客',
         body: '貴住戶您好，現有{{visitor}}欲拜訪，目的：{{purpose}}，已取消，以上通知，請貴住戶知悉。',
     },
+    [Enum.MessageType.visitorLeave]: {
+        isEnable: true,
+        aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
+        title: '訪客離開',
+        body: '貴住戶您好，現有{{visitor}}已離開，以上通知，請貴住戶知悉。',
+    },
 
     /**
      * 公設

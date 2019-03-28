@@ -27,6 +27,7 @@ export enum MessageType {
      */
     visitorNew,
     visitorDelete,
+    visitorLeave,
 
     /**
      * 公設

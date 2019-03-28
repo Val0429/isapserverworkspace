@@ -14,4 +14,5 @@ export interface IIndexR {
     memo: string;
     notificateCount: number;
     status: string;
+    leaveDate: Date;
 }

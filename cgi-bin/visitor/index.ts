@@ -155,6 +155,7 @@ action.get(
                     memo: value.getValue('memo'),
                     notificateCount: value.getValue('notificateCount'),
                     status: _input.status,
+                    leaveDate: value.getValue('leaveDate'),
                 };
             }),
         };

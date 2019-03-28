@@ -17,3 +17,7 @@ export interface IIndexR {
 export interface IIndexD {
     visitorIds: string | string[];
 }
+
+export interface ILeave {
+    visitorId: string;
+}

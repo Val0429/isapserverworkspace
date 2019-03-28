@@ -54,6 +54,11 @@ export interface IVisitor {
      * 刪除
      */
     isDeleted: boolean;
+
+    /**
+     * 離開時間
+     */
+    leaveDate: Date;
 }
 
 @registerSubclass()
