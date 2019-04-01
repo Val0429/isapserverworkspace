@@ -22,16 +22,11 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
         let _date: string = _input.date || '';
-        let _location: string = '';
+        let _location: string = _input.locationName || '';
 
-        let tsc: Tsc_Ttp247 = new Tsc_Ttp247();
-
-        tsc.Initialization();
-
-        let result: string = await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _location, _date);
         Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
 
-        return 'OK';
+        return JSON.stringify(_input);
     },
 );
 
@@ -47,15 +42,10 @@ action.get(
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
         let _date: string = _input.date || '';
-        let _location: string = '';
+        let _location: string = _input.locationName || '';
 
-        let tsc: Tsc_Ttp247 = new Tsc_Ttp247();
-
-        tsc.Initialization();
-
-        let result: string = await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _location, _date);
         Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
 
-        return 'OK';
+        return JSON.stringify(_input);
     },
 );

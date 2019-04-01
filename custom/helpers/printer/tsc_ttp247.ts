@@ -1,3 +1,4 @@
+import { Config } from 'core/config.gen';
 import { execFile } from 'child_process';
 import { Printer } from './base';
 import { Regex, Print, Parser, DateTime, File } from '..';
@@ -14,12 +15,17 @@ export class Tsc_Ttp247 {
     /**
      * Printer Name
      */
-    protected _device: string;
+    protected _device: string = Config.printer.device;
     public get device(): string {
         return this._device;
     }
-    public set device(value: string) {
-        this._device = value;
+
+    /**
+     * Printer font family
+     */
+    protected _fontFamily: string = Config.printer.fontFamily;
+    public get fontFamily(): string {
+        return this._fontFamily;
     }
 
     /**
@@ -55,7 +61,7 @@ export class Tsc_Ttp247 {
 
             let result: string = await new Promise<string>((resolve, reject) => {
                 try {
-                    execFile(this._app, [this._device, visitor, respondent, date, location], (error, stdout) => {
+                    execFile(this._app, [this._device, this._fontFamily, visitor, respondent, date, location], (error, stdout) => {
                         if (error) {
                             return reject(error);
                         }
