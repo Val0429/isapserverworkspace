@@ -1,5 +1,8 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 
+/**
+ * 基本屬性
+ */
 export interface IBase {
     /**
      * 創造人

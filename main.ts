@@ -4,11 +4,13 @@ import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
 import { Print, Utility } from './custom/helpers';
 
+import './custom/shells/create-folder';
 import './custom/shells/create-index';
 import './custom/shells/create-default';
 import './custom/shells/auto-index';
 
 app.use(history());
+app.use(`/images`, express.static(`workspace/custom/assets/images`));
 
 setTimeout(() => {
     let node_env: string = !process.env.NODE_ENV || process.env.NODE_ENV !== 'development' ? 'Production' : 'Development';
