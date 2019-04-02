@@ -68,7 +68,32 @@ export namespace Db {
                     throw e;
                 });
 
-                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Users:  ' }, { message: '<SysAdmin>', color: Print.FontColor.cyan });
+                user = new Parse.User();
+
+                user.setUsername('Admin');
+                user.setPassword('123456');
+                user.set(
+                    'roles',
+                    roles.filter((value, index, array) => {
+                        return value.getName() === RoleList.Admin;
+                    }),
+                );
+
+                await user.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+
+                info = new IDB.UserInfo();
+
+                info.setValue('user', user);
+                info.setValue('name', 'Admin');
+                info.setValue('isDeleted', false);
+
+                await info.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+
+                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Users:  ' }, { message: '<SysAdmin>, <Admin>', color: Print.FontColor.cyan });
             }
         } catch (e) {
             throw e;
