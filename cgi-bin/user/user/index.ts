@@ -19,7 +19,7 @@ type OutputC = IResponse.IUser.IUserIndexC;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.SystemAdministrator, RoleList.Admin],
+        permission: [RoleList.Admin],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
@@ -63,7 +63,7 @@ type OutputR = IResponse.IDataList<IResponse.IUser.IUserIndexR[]>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.SystemAdministrator, RoleList.Admin, RoleList.User],
+        permission: [RoleList.Admin, RoleList.User],
     },
     async (data): Promise<OutputR> => {
         let _input: InputR = data.inputType;
@@ -132,7 +132,7 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.SystemAdministrator, RoleList.Admin],
+        permission: [RoleList.Admin],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
@@ -208,18 +208,24 @@ action.delete(
             let user: Parse.User = new Parse.User();
             user.id = value;
 
-            return new Parse.Query(IDB.UserInfo).equalTo('user', user).first();
+            return new Parse.Query(IDB.UserInfo)
+                .equalTo('user', user)
+                .include('user')
+                .first();
         });
 
         let infos: IDB.UserInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = infos.map<any>((value, index, array) => {
-            value.setValue('isDeleted', true);
+        tasks = [].concat(
+            ...infos.map((value, index, array) => {
+                value.setValue('isDeleted', true);
+                value.setValue('deleter', data.user);
 
-            return value.save(null, { useMasterKey: true });
-        });
+                return [value.getValue('user').destroy({ useMasterKey: true }), value.save(null, { useMasterKey: true })];
+            }),
+        );
 
         await Promise.all(tasks).catch((e) => {
             throw e;
