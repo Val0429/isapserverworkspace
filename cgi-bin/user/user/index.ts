@@ -210,12 +210,17 @@ action.delete(
 
             return new Parse.Query(IDB.UserInfo)
                 .equalTo('user', user)
+                .equalTo('isDeleted', false)
                 .include('user')
                 .first();
         });
 
         let infos: IDB.UserInfo[] = await Promise.all(tasks).catch((e) => {
             throw e;
+        });
+
+        infos = infos.filter((value, index, array) => {
+            return value;
         });
 
         tasks = [].concat(
