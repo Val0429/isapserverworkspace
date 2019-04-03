@@ -1,5 +1,5 @@
 export * from './base';
-export * from './location-floor';
+export * from './config-hanwha';
 export * from './location-region';
 export * from './location-site';
 export * from './user-info';

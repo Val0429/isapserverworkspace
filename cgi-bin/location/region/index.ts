@@ -150,7 +150,7 @@ action.put(
             region.setValue('imageHeight', _input.imageHeight);
         }
         if (_input.imageBase64) {
-            let imageSrc: string = `images/${region.id}_region_${region.createdAt.getTime()}.${extension}`;
+            let imageSrc: string = region.getValue('imageSrc');
             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, _input.imageBase64);
         }
 

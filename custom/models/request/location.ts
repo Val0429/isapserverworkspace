@@ -29,6 +29,9 @@ export interface ISiteIndexC {
     iconHeight: number;
     x: number;
     y: number;
+    imageBase64: string;
+    imageWidth: number;
+    imageHeight: number;
 }
 
 export interface ISiteIndexR {
@@ -43,34 +46,11 @@ export interface ISiteIndexU {
     iconHeight?: number;
     x?: number;
     y?: number;
-}
-
-export interface ISiteIndexD {
-    siteIds: string | string[];
-}
-
-export interface IFloorIndexC {
-    siteId: string;
-    name: string;
-    floor: number;
-    imageBase64: string;
-    imageWidth: number;
-    imageHeight: number;
-}
-
-export interface IFloorIndexR {
-    siteId?: string;
-}
-
-export interface IFloorIndexU {
-    floorId: string;
-    name?: string;
-    floor?: number;
     imageBase64?: string;
     imageWidth?: number;
     imageHeight?: number;
 }
 
-export interface IFloorIndexD {
-    floorIds: string | string[];
+export interface ISiteIndexD {
+    siteIds: string | string[];
 }

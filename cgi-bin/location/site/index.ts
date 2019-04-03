@@ -25,8 +25,13 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
-        let extension: string = File.GetExtension(_input.iconBase64);
-        if (!extension) {
+        let iconExtension: string = File.GetExtension(_input.iconBase64);
+        if (!iconExtension) {
+            throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
+        }
+
+        let imageExtension: string = File.GetExtension(_input.imageBase64);
+        if (!imageExtension) {
             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
         }
 
@@ -48,15 +53,23 @@ action.post(
         site.setValue('iconHeight', _input.iconHeight);
         site.setValue('x', _input.x);
         site.setValue('y', _input.y);
+        site.setValue('imageSrc', '');
+        site.setValue('imageWidth', _input.imageWidth);
+        site.setValue('imageHeight', _input.imageHeight);
 
         await site.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
-        let imageSrc: string = `images/${site.id}_site_${site.createdAt.getTime()}.${extension}`;
-        File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, _input.iconBase64);
+        let iconSrc: string = `images/${site.id}_site_icon_${site.createdAt.getTime()}.${iconExtension}`;
+        File.WriteBase64File(`${File.assetsPath}/${iconSrc}`, _input.iconBase64);
 
-        site.setValue('iconSrc', imageSrc);
+        site.setValue('iconSrc', iconSrc);
+
+        let imageSrc: string = `images/${site.id}_site_image_${site.createdAt.getTime()}.${imageExtension}`;
+        File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, _input.imageBase64);
+
+        site.setValue('imageSrc', imageSrc);
 
         await site.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
@@ -117,6 +130,9 @@ action.get(
                     iconHeight: value.getValue('iconHeight'),
                     x: value.getValue('x'),
                     y: value.getValue('y'),
+                    imageSrc: value.getValue('imageSrc'),
+                    imageWidth: value.getValue('imageWidth'),
+                    imageHeight: value.getValue('imageHeight'),
                 };
             }),
         };
@@ -145,8 +161,13 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['site not found']);
         }
 
-        let extension: string = _input.iconBase64 ? File.GetExtension(_input.iconBase64) : 'aa';
-        if (!extension) {
+        let iconExtension: string = _input.iconBase64 ? File.GetExtension(_input.iconBase64) : 'aa';
+        if (!iconExtension) {
+            throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
+        }
+
+        let imageExtension: string = _input.imageBase64 ? File.GetExtension(_input.imageBase64) : 'aa';
+        if (!imageExtension) {
             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
         }
 
@@ -166,8 +187,18 @@ action.put(
             site.setValue('y', _input.y);
         }
         if (_input.iconBase64) {
-            let imageSrc: string = `images/${site.id}_site_${site.createdAt.getTime()}.${extension}`;
-            File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, _input.iconBase64);
+            let iconSrc: string = site.getValue('iconSrc');
+            File.WriteBase64File(`${File.assetsPath}/${iconSrc}`, _input.iconBase64);
+        }
+        if (_input.imageWidth) {
+            site.setValue('imageWidth', _input.imageWidth);
+        }
+        if (_input.imageHeight) {
+            site.setValue('imageHeight', _input.imageHeight);
+        }
+        if (_input.imageBase64) {
+            let imageSrc: string = site.getValue('imageSrc');
+            File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, _input.imageBase64);
         }
 
         await site.save(null, { useMasterKey: true }).fail((e) => {

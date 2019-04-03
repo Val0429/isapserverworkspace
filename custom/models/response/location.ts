@@ -25,17 +25,6 @@ export interface ISiteIndexR {
     iconHeight: number;
     x: number;
     y: number;
-}
-
-export interface IFloorIndexC {
-    floorId: string;
-}
-
-export interface IFloorIndexR {
-    siteId: string;
-    floorId: string;
-    name: string;
-    floor: number;
     imageSrc: string;
     imageWidth: number;
     imageHeight: number;

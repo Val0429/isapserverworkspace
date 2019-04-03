@@ -39,6 +39,21 @@ export interface ILocationSite extends IBase {
      * Y
      */
     y: number;
+
+    /**
+     * 圖片
+     */
+    imageSrc: string;
+
+    /**
+     * 寬
+     */
+    imageWidth: number;
+
+    /**
+     * 高
+     */
+    imageHeight: number;
 }
 
 @registerSubclass()
