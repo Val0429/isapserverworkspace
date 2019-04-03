@@ -1,8 +1,8 @@
-export interface IRegionC {
+export interface IRegionIndexC {
     regionId: string;
 }
 
-export interface IRegionR {
+export interface IRegionIndexR {
     regionId: string;
     name: string;
     longitude: number;
@@ -12,11 +12,11 @@ export interface IRegionR {
     imageHeight: number;
 }
 
-export interface ISiteC {
+export interface ISiteIndexC {
     siteId: string;
 }
 
-export interface ISiteR {
+export interface ISiteIndexR {
     regionId: string;
     siteId: string;
     name: string;
@@ -27,11 +27,11 @@ export interface ISiteR {
     y: number;
 }
 
-export interface IFloorC {
+export interface IFloorIndexC {
     floorId: string;
 }
 
-export interface IFloorR {
+export interface IFloorIndexR {
     siteId: string;
     floorId: string;
     name: string;

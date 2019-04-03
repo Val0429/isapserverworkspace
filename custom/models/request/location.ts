@@ -1,4 +1,4 @@
-export interface IRegionC {
+export interface IRegionIndexC {
     name: string;
     longitude?: number;
     latitude?: number;
@@ -7,7 +7,7 @@ export interface IRegionC {
     imageHeight: number;
 }
 
-export interface IRegionU {
+export interface IRegionIndexU {
     regionId: string;
     name?: string;
     longitude?: number;
@@ -17,11 +17,11 @@ export interface IRegionU {
     imageHeight?: number;
 }
 
-export interface IRegionD {
+export interface IRegionIndexD {
     regionIds: string | string[];
 }
 
-export interface ISiteC {
+export interface ISiteIndexC {
     regionId: string;
     name: string;
     iconBase64: string;
@@ -31,11 +31,11 @@ export interface ISiteC {
     y: number;
 }
 
-export interface ISiteR {
+export interface ISiteIndexR {
     regionId?: string;
 }
 
-export interface ISiteU {
+export interface ISiteIndexU {
     siteId: string;
     name?: string;
     iconBase64?: string;
@@ -45,11 +45,11 @@ export interface ISiteU {
     y?: number;
 }
 
-export interface ISiteD {
+export interface ISiteIndexD {
     siteIds: string | string[];
 }
 
-export interface IFloorC {
+export interface IFloorIndexC {
     siteId: string;
     name: string;
     floor: number;
@@ -58,11 +58,11 @@ export interface IFloorC {
     imageHeight: number;
 }
 
-export interface IFloorR {
+export interface IFloorIndexR {
     siteId?: string;
 }
 
-export interface IFloorU {
+export interface IFloorIndexU {
     floorId: string;
     name?: string;
     floor?: number;
@@ -71,6 +71,6 @@ export interface IFloorU {
     imageHeight?: number;
 }
 
-export interface IFloorD {
+export interface IFloorIndexD {
     floorIds: string | string[];
 }

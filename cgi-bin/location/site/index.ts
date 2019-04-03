@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
-import { IRequest, IResponse, IDB } from '../../custom/models';
-import { File } from '../../custom/helpers';
-import * as Enum from '../../custom/enums';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
+import { File } from '../../../custom/helpers';
+import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
@@ -13,9 +13,9 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.ILocation.ISiteC;
+type InputC = IRequest.ILocation.ISiteIndexC;
 
-type OutputC = IResponse.ILocation.ISiteC;
+type OutputC = IResponse.ILocation.ISiteIndexC;
 
 action.post(
     {
@@ -71,9 +71,9 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList & IRequest.ILocation.ISiteR;
+type InputR = IRequest.IDataList & IRequest.ILocation.ISiteIndexR;
 
-type OutputR = IResponse.IDataList<IResponse.ILocation.ISiteR[]>;
+type OutputR = IResponse.IDataList<IResponse.ILocation.ISiteIndexR[]>;
 
 action.get(
     { inputType: 'InputR' },
@@ -126,7 +126,7 @@ action.get(
 /**
  * Action update
  */
-type InputU = IRequest.ILocation.ISiteU;
+type InputU = IRequest.ILocation.ISiteIndexU;
 
 type OutputU = Date;
 
@@ -181,7 +181,7 @@ action.put(
 /**
  * Action Delete
  */
-type InputD = IRequest.ILocation.ISiteD;
+type InputD = IRequest.ILocation.ISiteIndexD;
 
 type OutputD = Date;
 
