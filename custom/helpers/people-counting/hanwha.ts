@@ -180,6 +180,51 @@ export class Hanwha {
     }
 
     /**
+     * Get version
+     */
+    public async GetVersion(): Promise<string> {
+        if (!this._isInitialization) {
+            throw Base.Message.NotInitialization;
+        }
+
+        let url: string = `${this._baseUrl}/stw-cgi/system.cgi?msubmenu=deviceinfo&action=view`;
+
+        let result: string = await new Promise<string>((resolve, reject) => {
+            try {
+                HttpClient.get(
+                    {
+                        url: url,
+                        encoding: null,
+                        json: true,
+                        auth: {
+                            username: this._config.account,
+                            password: this._config.password,
+                            sendImmediately: false,
+                        },
+                    },
+                    (error, response, body) => {
+                        if (error) {
+                            return reject(error);
+                        } else if (response.statusCode !== 200) {
+                            return reject(`${response.statusCode}, ${response.statusMessage}`);
+                        } else if (body.Error) {
+                            return reject(body.Error.Details);
+                        }
+
+                        resolve(body.FirmwareVersion);
+                    },
+                );
+            } catch (e) {
+                return reject(e);
+            }
+        }).catch((e) => {
+            throw e;
+        });
+
+        return result;
+    }
+
+    /**
      * Enable Live Subject
      */
     public EnableLiveSubject(intervalSecond: number): void {

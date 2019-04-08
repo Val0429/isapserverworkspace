@@ -1,3 +1,3 @@
+export * from './camera-mode';
+export * from './camera-type';
 export * from './device-type';
-export * from './frs-device-type';
-export * from './people-counting-type';

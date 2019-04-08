@@ -32,4 +32,14 @@ export namespace Regex {
 
         return rule.test(str);
     }
+
+    /**
+     * Check string is port?
+     * @param str
+     */
+    export function IsPort(str: string): boolean {
+        let rule: any = /^[0-9]*$/;
+
+        return rule.test(str) && parseInt(str) > 0 && parseInt(str) < 65536;
+    }
 }
