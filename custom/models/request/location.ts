@@ -1,3 +1,5 @@
+import * as Enum from '../../enums';
+
 export interface IRegionIndexC {
     name: string;
     longitude?: number;
@@ -53,4 +55,42 @@ export interface ISiteIndexU {
 
 export interface ISiteIndexD {
     siteIds: string | string[];
+}
+
+export interface IDeviceIndexC {
+    siteId: string;
+    type: Enum.DeviceType;
+    cameraId?: string;
+    name: string;
+    iconBase64: string;
+    iconWidth: number;
+    iconHeight: number;
+    x: number;
+    y: number;
+    angle?: number;
+    visibleDistance?: number;
+    visibleAngle?: number;
+}
+
+export interface IDeviceIndexR {
+    siteId?: string;
+}
+
+export interface IDeviceIndexU {
+    deviceId: string;
+    type?: Enum.DeviceType;
+    cameraId?: string;
+    name?: string;
+    iconBase64?: string;
+    iconWidth?: number;
+    iconHeight?: number;
+    x?: number;
+    y?: number;
+    angle?: number;
+    visibleDistance?: number;
+    visibleAngle?: number;
+}
+
+export interface IDeviceIndexD {
+    deviceIds: string | string[];
 }
