@@ -1,4 +1,5 @@
 export * from './frs-service';
+export * from './people-counting';
 export * from './utilitys';
 
 import './frs-service/modules/live-faces';
