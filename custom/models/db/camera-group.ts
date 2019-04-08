@@ -1,10 +1,15 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IBase, IConfigHanwha, IAction } from './_index';
+import { IBase, IConfigHanwha, IAction, LocationSite } from './_index';
 
 /**
  * 相機群組
  */
 export interface ICameraGroup extends IBase {
+    /**
+     * 樓層
+     */
+    site: LocationSite;
+
     /**
      * Nvr 設定
      */

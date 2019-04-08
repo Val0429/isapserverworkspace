@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { File } from '../../../custom/helpers';
+import { File, Regex } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -42,6 +42,13 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['region not found']);
         }
 
+        if (!Regex.IsIp(_input.nvrConfig.ip)) {
+            throw Errors.throw(Errors.CustomBadRequest, ['nvr ip error']);
+        }
+        if (!Regex.IsPort(_input.nvrConfig.port.toString())) {
+            throw Errors.throw(Errors.CustomBadRequest, ['nvr port error']);
+        }
+
         let site: IDB.LocationSite = new IDB.LocationSite();
 
         site.setValue('creator', data.user);
@@ -72,6 +79,18 @@ action.post(
         site.setValue('imageSrc', imageSrc);
 
         await site.save(null, { useMasterKey: true }).fail((e) => {
+            throw e;
+        });
+
+        let group: IDB.CameraGroup = new IDB.CameraGroup();
+
+        group.setValue('creator', data.user);
+        group.setValue('isDeleted', false);
+        group.setValue('site', site);
+        group.setValue('nvrConfig', _input.nvrConfig);
+        group.setValue('action', _input.action);
+
+        await group.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -116,6 +135,13 @@ action.get(
                 throw e;
             });
 
+        let tasks: Promise<any>[] = sites.map<any>((value, index, array) => {
+            return new Parse.Query(IDB.CameraGroup).equalTo('site', value).first();
+        });
+        let groups: IDB.CameraGroup[] = await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
         return {
             total: total,
             page: _page,
@@ -133,6 +159,8 @@ action.get(
                     imageSrc: value.getValue('imageSrc'),
                     imageWidth: value.getValue('imageWidth'),
                     imageHeight: value.getValue('imageHeight'),
+                    nvrConfig: groups[index] ? groups[index].getValue('nvrConfig') : undefined,
+                    action: groups[index] ? groups[index].getValue('action') : undefined,
                 };
             }),
         };
@@ -171,6 +199,16 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
         }
 
+        let group: IDB.CameraGroup = await new Parse.Query(IDB.CameraGroup)
+            .equalTo('site', site)
+            .first()
+            .fail((e) => {
+                throw e;
+            });
+        if (!group) {
+            throw Errors.throw(Errors.CustomBadRequest, ['group not found']);
+        }
+
         if (_input.name) {
             site.setValue('name', _input.name);
         }
@@ -202,6 +240,24 @@ action.put(
         }
 
         await site.save(null, { useMasterKey: true }).fail((e) => {
+            throw e;
+        });
+
+        if (_input.nvrConfig) {
+            if (!Regex.IsIp(_input.nvrConfig.ip)) {
+                throw Errors.throw(Errors.CustomBadRequest, ['nvr ip error']);
+            }
+            if (!Regex.IsPort(_input.nvrConfig.port.toString())) {
+                throw Errors.throw(Errors.CustomBadRequest, ['nvr port error']);
+            }
+
+            group.setValue('nvrConfig', _input.nvrConfig);
+        }
+        if (_input.action) {
+            group.setValue('action', _input.action);
+        }
+
+        await group.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

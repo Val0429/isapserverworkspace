@@ -1,3 +1,4 @@
+import { IConfigHanwha, IAction } from '../db/_index';
 import * as Enum from '../../enums';
 
 export interface IRegionIndexC {
@@ -34,6 +35,8 @@ export interface ISiteIndexC {
     imageBase64: string;
     imageWidth: number;
     imageHeight: number;
+    nvrConfig: IConfigHanwha;
+    action: IAction;
 }
 
 export interface ISiteIndexR {
@@ -51,6 +54,8 @@ export interface ISiteIndexU {
     imageBase64?: string;
     imageWidth?: number;
     imageHeight?: number;
+    nvrConfig?: IConfigHanwha;
+    action?: IAction;
 }
 
 export interface ISiteIndexD {
