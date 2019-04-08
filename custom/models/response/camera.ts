@@ -18,3 +18,8 @@ export interface IIndexR {
 export interface IDoCount {
     count: number;
 }
+
+export interface IAll {
+    cameraId: string;
+    name: string;
+}
