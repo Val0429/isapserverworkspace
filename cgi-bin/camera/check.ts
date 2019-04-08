@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, ParseObject, EnumConverter } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
 import { PeopleCounting, Print } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
@@ -24,13 +24,8 @@ action.post(
 
         try {
             if (_input.type === Enum.CameraType.hanwha) {
-                let camera: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                camera.config = _input.config.cameraConfig;
-                camera.Initialization();
-                let cameraVersion: string = await camera.GetVersion();
-
                 let nvr: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                nvr.config = _input.config.nvrConfig;
+                nvr.config = _input.config;
                 nvr.Initialization();
                 let nvrVersion: string = await nvr.GetVersion();
             }

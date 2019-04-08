@@ -22,17 +22,11 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
-        if (!Regex.IsIp(_input.config.cameraConfig.ip)) {
+        if (!Regex.IsIp(_input.config.ip)) {
             throw Errors.throw(Errors.CustomBadRequest, ['camera ip error']);
         }
-        if (!Regex.IsPort(_input.config.cameraConfig.port.toString())) {
+        if (!Regex.IsPort(_input.config.port.toString())) {
             throw Errors.throw(Errors.CustomBadRequest, ['camera port error']);
-        }
-        if (!Regex.IsIp(_input.config.nvrConfig.ip)) {
-            throw Errors.throw(Errors.CustomBadRequest, ['nvr ip error']);
-        }
-        if (!Regex.IsPort(_input.config.nvrConfig.port.toString())) {
-            throw Errors.throw(Errors.CustomBadRequest, ['nvr port error']);
         }
 
         let camera: IDB.Camera = new IDB.Camera();
@@ -43,8 +37,6 @@ action.post(
         camera.setValue('mode', _input.mode);
         camera.setValue('type', _input.type);
         camera.setValue('config', _input.config);
-        camera.setValue('groups', _input.groups);
-        camera.setValue('action', _input.action);
 
         await camera.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
@@ -95,8 +87,6 @@ action.get(
                     mode: value.getValue('mode'),
                     type: value.getValue('type'),
                     config: value.getValue('config'),
-                    groups: value.getValue('groups'),
-                    action: value.getValue('action'),
                 };
             }),
         };
@@ -132,26 +122,14 @@ action.put(
             camera.setValue('type', _input.type);
         }
         if (_input.config) {
-            if (!Regex.IsIp(_input.config.cameraConfig.ip)) {
+            if (!Regex.IsIp(_input.config.ip)) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera ip error']);
             }
-            if (!Regex.IsPort(_input.config.cameraConfig.port.toString())) {
+            if (!Regex.IsPort(_input.config.port.toString())) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera port error']);
-            }
-            if (!Regex.IsIp(_input.config.nvrConfig.ip)) {
-                throw Errors.throw(Errors.CustomBadRequest, ['nvr ip error']);
-            }
-            if (!Regex.IsPort(_input.config.nvrConfig.port.toString())) {
-                throw Errors.throw(Errors.CustomBadRequest, ['nvr port error']);
             }
 
             camera.setValue('config', _input.config);
-        }
-        if (_input.groups) {
-            camera.setValue('groups', _input.groups);
-        }
-        if (_input.action) {
-            camera.setValue('action', _input.action);
         }
 
         await camera.save(null, { useMasterKey: true }).fail((e) => {

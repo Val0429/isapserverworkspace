@@ -1,5 +1,6 @@
 export * from './action-hanwha-aircondition';
 export * from './action';
+export * from './camera-group';
 export * from './camera';
 export * from './base';
 export * from './config-hanwha';

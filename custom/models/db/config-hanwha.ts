@@ -4,17 +4,7 @@ import { Hanwha } from '../../helpers/people-counting/hanwha';
 /**
  * 和華相機設定
  */
-export interface IConfigHanwha {
-    /**
-     * Camera 設定
-     */
-    cameraConfig: Hanwha.IConfig;
-
-    /**
-     * Nvr 設定
-     */
-    nvrConfig: Hanwha.IConfig;
-}
+export interface IConfigHanwha extends Hanwha.IConfig {}
 
 @registerSubclass()
 export class ConfigHanwha extends ParseObject<IConfigHanwha> {}

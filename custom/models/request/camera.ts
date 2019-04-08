@@ -6,8 +6,6 @@ export interface IIndexC {
     mode: Enum.CameraMode;
     type: Enum.CameraType;
     config: IConfigHanwha;
-    groups: string[];
-    action: IAction;
 }
 
 export interface IIndexU {
@@ -16,8 +14,6 @@ export interface IIndexU {
     mode?: Enum.CameraMode;
     type?: Enum.CameraType;
     config?: IConfigHanwha;
-    groups?: string[];
-    action?: IAction;
 }
 
 export interface IIndexD {
@@ -29,6 +25,4 @@ export interface ICheck {
     config: IConfigHanwha;
 }
 
-export interface IDoCount {
-    cameraId: string;
-}
+export interface IDoCount extends IConfigHanwha {}

@@ -11,8 +11,6 @@ export interface IIndexR {
     mode: Enum.CameraMode;
     type: Enum.CameraType;
     config: IConfigHanwha;
-    groups: string[];
-    action: IAction;
 }
 
 export interface IDoCount {

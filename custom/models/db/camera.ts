@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IBase, IConfigHanwha, IAction } from './_index';
+import { IBase, IConfigHanwha } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -25,16 +25,6 @@ export interface ICamera extends IBase {
      * 設定
      */
     config: IConfigHanwha;
-
-    /**
-     * 群組
-     */
-    groups: string[];
-
-    /**
-     * 動作
-     */
-    action: IAction;
 }
 
 @registerSubclass()
