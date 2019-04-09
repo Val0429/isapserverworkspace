@@ -35,6 +35,12 @@ export interface ISiteIndexR {
     action: IAction;
 }
 
+export interface ISiteAll {
+    regionId: string;
+    siteId: string;
+    name: string;
+}
+
 export interface IDeviceIndexC {
     deviceId: string;
 }
