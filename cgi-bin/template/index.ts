@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
 import {} from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
@@ -73,3 +73,10 @@ action.delete(
         return '';
     },
 );
+
+/**
+ * Action WebSocket
+ */
+action.ws(async (data) => {
+    let _socket: Socket = data.socket;
+});
