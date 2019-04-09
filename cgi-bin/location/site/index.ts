@@ -290,12 +290,25 @@ action.delete(
             throw e;
         });
 
-        tasks = sites.map<any>((value, index, array) => {
-            value.setValue('isDeleted', true);
-            value.setValue('deleter', data.user);
+        let groups: IDB.CameraGroup[] = await new Parse.Query(IDB.CameraGroup)
+            .containedIn('site', sites)
+            .include('site')
+            .find()
+            .fail((e) => {
+                throw e;
+            });
 
-            return value.save(null, { useMasterKey: true });
-        });
+        tasks = [].concat(
+            ...groups.map<any>((value, index, array) => {
+                value.setValue('isDeleted', true);
+                value.setValue('deleter', data.user);
+
+                value.getValue('site').setValue('isDeleted', true);
+                value.getValue('site').setValue('deleter', data.user);
+
+                return [value.getValue('site').save(null, { useMasterKey: true }), value.save(null, { useMasterKey: true })];
+            }),
+        );
 
         await Promise.all(tasks).catch((e) => {
             throw e;
