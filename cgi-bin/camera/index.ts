@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Regex, Utility } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
+import licenseService from 'services/license';
 
 let action = new Action({
     loginRequired: true,
@@ -21,6 +22,15 @@ action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
+        let license = await licenseService.getLicense();
+
+        let count: number = await new Parse.Query(IDB.Camera).equalTo('isDeleted', false).count();
+        let limit: number = license.licenses.reduce((prev, curr, index, array) => {
+            return prev + curr.count;
+        }, 0);
+        if (limit <= count) {
+            throw Errors.throw(Errors.CustomBadRequest, ['upper limit is full']);
+        }
 
         if (!Regex.IsIp(_input.config.ip)) {
             throw Errors.throw(Errors.CustomBadRequest, ['camera ip error']);
@@ -178,6 +188,20 @@ action.delete(
 
         await Promise.all(tasks).catch((e) => {
             throw e;
+        });
+
+        let devices: IDB.LocationDevice[] = await new Parse.Query(IDB.LocationDevice)
+            .containedIn('camera', cameras)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        tasks = devices.map<any>((value, index, array) => {
+            value.setValue('isDeleted', true);
+            value.setValue('deleter', data.user);
+
+            return value.save(null, { useMasterKey: true });
         });
 
         Utility.ReStartServer();

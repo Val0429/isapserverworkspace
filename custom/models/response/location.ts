@@ -60,3 +60,9 @@ export interface IDeviceIndexR {
     visibleDistance: number;
     visibleAngle: number;
 }
+
+export interface IDeviceAll {
+    siteId: string;
+    deviceId: string;
+    name: string;
+}
