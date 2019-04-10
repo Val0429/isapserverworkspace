@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { File, Regex } from '../../../custom/helpers';
+import { File, Regex, Utility } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -93,6 +93,8 @@ action.post(
         await group.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
+
+        Utility.ReStartServer();
 
         return {
             siteId: site.id,
@@ -261,6 +263,8 @@ action.put(
             throw e;
         });
 
+        Utility.ReStartServer();
+
         return new Date();
     },
 );
@@ -313,6 +317,8 @@ action.delete(
         await Promise.all(tasks).catch((e) => {
             throw e;
         });
+
+        Utility.ReStartServer();
 
         return new Date();
     },

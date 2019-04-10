@@ -1,4 +1,5 @@
 import * as Os from 'os';
+import { File, Print } from '.';
 
 export namespace Utility {
     /**
@@ -64,5 +65,14 @@ export namespace Utility {
             });
 
         return ips;
+    }
+
+    /**
+     * Re start server
+     */
+    export function ReStartServer(): void {
+        let path: string = './workspace/config/default/core.ts';
+        let file: Buffer = File.ReadFile(path);
+        File.WriteFile(path, file);
     }
 }
