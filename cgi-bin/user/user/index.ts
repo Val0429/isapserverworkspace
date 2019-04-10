@@ -25,7 +25,7 @@ action.post(
         let _input: InputC = data.inputType;
 
         let role: Parse.Role = await new Parse.Query(Parse.Role)
-            .equalTo('name', RoleList[_input.role])
+            .equalTo('name', _input.role)
             .first()
             .fail((e) => {
                 throw e;
@@ -160,7 +160,7 @@ action.put(
 
         if (_input.role) {
             let role: Parse.Role = await new Parse.Query(Parse.Role)
-                .equalTo('name', RoleList[_input.role])
+                .equalTo('name', _input.role)
                 .first()
                 .fail((e) => {
                     throw e;
