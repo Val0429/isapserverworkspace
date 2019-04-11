@@ -27,6 +27,8 @@ export interface IRegionIndexD {
 export interface ISiteIndexC {
     regionId: string;
     name: string;
+    longitude?: number;
+    latitude?: number;
     iconBase64: string;
     iconWidth: number;
     iconHeight: number;
@@ -46,6 +48,8 @@ export interface ISiteIndexR {
 export interface ISiteIndexU {
     siteId: string;
     name?: string;
+    longitude?: number;
+    latitude?: number;
     iconBase64?: string;
     iconWidth?: number;
     iconHeight?: number;

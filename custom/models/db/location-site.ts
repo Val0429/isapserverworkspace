@@ -16,6 +16,16 @@ export interface ILocationSite extends IBase {
     name: string;
 
     /**
+     * 經度
+     */
+    longitude: number;
+
+    /**
+     * 緯度
+     */
+    latitude: number;
+
+    /**
      * 圖示
      */
     iconSrc: string;

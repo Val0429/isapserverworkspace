@@ -23,6 +23,8 @@ export interface ISiteIndexR {
     regionId: string;
     siteId: string;
     name: string;
+    longitude: number;
+    latitude: number;
     iconSrc: string;
     iconWidth: number;
     iconHeight: number;

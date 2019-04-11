@@ -55,6 +55,8 @@ action.post(
         site.setValue('isDeleted', false);
         site.setValue('region', region);
         site.setValue('name', _input.name);
+        site.setValue('longitude', _input.longitude || 0);
+        site.setValue('latitude', _input.latitude || 0);
         site.setValue('iconSrc', '');
         site.setValue('iconWidth', _input.iconWidth);
         site.setValue('iconHeight', _input.iconHeight);
@@ -153,6 +155,8 @@ action.get(
                     regionId: value.getValue('region').id,
                     siteId: value.id,
                     name: value.getValue('name'),
+                    longitude: value.getValue('longitude'),
+                    latitude: value.getValue('latitude'),
                     iconSrc: value.getValue('iconSrc'),
                     iconWidth: value.getValue('iconWidth'),
                     iconHeight: value.getValue('iconHeight'),
@@ -213,6 +217,12 @@ action.put(
 
         if (_input.name) {
             site.setValue('name', _input.name);
+        }
+        if (_input.longitude) {
+            site.setValue('longitude', _input.longitude);
+        }
+        if (_input.latitude) {
+            site.setValue('latitude', _input.latitude);
         }
         if (_input.iconWidth) {
             site.setValue('iconWidth', _input.iconWidth);
