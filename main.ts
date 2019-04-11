@@ -12,6 +12,9 @@ import './custom/shells/auto-index';
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
 
+import './custom/actions';
+import './custom/services';
+
 setTimeout(() => {
     let node_env: string = !process.env.NODE_ENV || process.env.NODE_ENV !== 'development' ? 'Production' : 'Development';
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: `- ${node_env} Mode` });
