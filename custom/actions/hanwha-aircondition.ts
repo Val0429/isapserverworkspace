@@ -20,6 +20,10 @@ class Action {
         try {
             this._action$.subscribe({
                 next: async (x) => {
+                    if (!x.group.getValue('action').hanwhaAirConditions) {
+                        return;
+                    }
+
                     let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
                     hanwha.config = x.group.getValue('nvrConfig');
 

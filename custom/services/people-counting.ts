@@ -105,6 +105,8 @@ class Service {
                                 counts.find((n) => n.deviceId === x.deviceId).count = x.count;
                             }
 
+                            DataWindow.push$.next(counts);
+
                             let curr: number = counts.reduce((prev, curr, index, array) => {
                                 return prev + curr.count.in - curr.count.out;
                             }, 0);
@@ -114,12 +116,11 @@ class Service {
                                 prev: prev,
                                 curr: curr,
                             });
-
-                            DataWindow.push$.next(counts);
                         },
                     });
 
                 return {
+                    group: value,
                     siteId: value.getValue('site').id,
                     liveStreamGroup$: liveStreamGroup$,
                 };
@@ -143,8 +144,10 @@ class Service {
                         let site: IDB.LocationSite = device.getValue('site');
                         let region: IDB.LocationRegion = site.getValue('region');
                         let camera: IDB.Camera = device.getValue('camera');
+                        let streamGroup = this._liveStreamGroups.find((x) => x.siteId === site.id);
+                        let group: IDB.CameraGroup = streamGroup.group;
 
-                        Print.MinLog(`${index}: ${region.id}, ${site.id}, ${device.id}, ${camera.id}`, 'info');
+                        Print.MinLog(`${index}. region: ${region.id}, site: ${site.id}, group: ${group.id}, device: ${device.id}, camera: ${camera.id}`, 'info');
 
                         if (camera.getValue('type') === Enum.CameraType.hanwha) {
                             let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
@@ -158,14 +161,12 @@ class Service {
                                 next: (counts) => {
                                     let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
 
-                                    this._liveStreamGroups
-                                        .find((x) => x.siteId === site.id)
-                                        .liveStreamGroup$.next({
-                                            regionId: region.id,
-                                            siteId: site.id,
-                                            deviceId: device.id,
-                                            count: count,
-                                        });
+                                    streamGroup.liveStreamGroup$.next({
+                                        regionId: region.id,
+                                        siteId: site.id,
+                                        deviceId: device.id,
+                                        count: count,
+                                    });
                                 },
                                 error: (e) => {
                                     Print.MinLog(`${camera.id}: ${e}`, 'error');
@@ -186,6 +187,7 @@ export default new Service();
 
 namespace Service {
     export interface ILiveStreamGroup {
+        group: IDB.CameraGroup;
         siteId: string;
         liveStreamGroup$: Rx.Subject<Service.ILiveStreamGroupData>;
     }
