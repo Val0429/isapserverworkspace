@@ -1,6 +1,6 @@
 {
     "name": "isap-airbase-service",
-    "version": "1.00.00",
+    "version": "2.00.00",
     "config": {
         "displayname": "iSap Airbase Service"
     },
