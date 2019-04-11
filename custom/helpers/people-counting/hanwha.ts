@@ -41,6 +41,14 @@ export class Hanwha {
     }
 
     /**
+     * Live stream stop
+     */
+    private _liveStreamStop$: Rx.Subject<{}> = new Rx.Subject();
+    public get liveStreamStop$(): Rx.Subject<{}> {
+        return this._liveStreamStop$;
+    }
+
+    /**
      * Initialization
      */
     public Initialization(): void {
@@ -236,8 +244,11 @@ export class Hanwha {
 
         let url: string = `${this._baseUrl}/stw-cgi/eventsources.cgi?msubmenu=peoplecount&action=check`;
 
+        let next$: Rx.Subject<{}> = new Rx.Subject();
         Rx.Observable.interval(intervalSecond)
             .startWith(0)
+            .zip(next$.startWith(0))
+            .takeUntil(this._liveStreamStop$)
             .subscribe({
                 next: async (x) => {
                     try {
@@ -283,10 +294,18 @@ export class Hanwha {
                                 });
                             }),
                         );
+
                         this._liveStream$.next(count);
+                        next$.next();
                     } catch (e) {
-                        Print.MinLog(e, 'error');
+                        this._liveStreamStop$.error(e);
                     }
+                },
+                error: (e) => {
+                    this._liveStream$.error(e);
+                },
+                complete: () => {
+                    this._liveStream$.complete();
                 },
             });
     }
