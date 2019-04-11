@@ -26,37 +26,50 @@ enum PushMode {
     'site',
     'stop',
 }
-export const push$: Rx.Subject<IPushCount[]> = new Rx.Subject();
+export const push$: Rx.Subject<IPushCount> = new Rx.Subject();
 
 action.ws(async (data) => {
     let _socket: Socket = data.socket;
 
-    let _count: number = PeopleCountingService.devices.length;
+    // let _count: number = PeopleCountingService.devices.length;
 
     let _mode: PushMode = PushMode.stop;
     let _id: string = '';
 
+    let _counts: IPushCount[] = [];
+
     push$
-        .bufferCount(_count)
-        .map((x) => {
-            let counts: IPushCount[] = [].concat(...x);
-            let deviceIds: string[] = counts.map((value, index, array) => {
-                return value.deviceId;
-            });
+        // .bufferCount(_count)
+        // .map((x) => {
+        //     let counts: IPushCount[] = [].concat(...x);
+        //     let deviceIds: string[] = counts.map((value, index, array) => {
+        //         return value.deviceId;
+        //     });
 
-            counts = counts.filter((value, index, array) => {
-                return deviceIds.lastIndexOf(value.deviceId) === index;
-            });
+        //     counts = counts.filter((value, index, array) => {
+        //         return deviceIds.lastIndexOf(value.deviceId) === index;
+        //     });
 
-            return counts;
-        })
-        .filter((x) => {
-            return x.length > 0;
-        })
+        //     return counts;
+        // })
+        // .filter((x) => {
+        //     return x.length > 0;
+        // })
         .subscribe({
             next: async (x) => {
+                if (!_counts.find((n) => n.deviceId === x.deviceId)) {
+                    _counts.push({
+                        regionId: x.regionId,
+                        siteId: x.siteId,
+                        deviceId: x.deviceId,
+                        count: x.count,
+                    });
+                } else {
+                    _counts.find((n) => n.deviceId === x.deviceId).count = x.count;
+                }
+
                 if (_mode !== PushMode.stop) {
-                    let counts = CountFilter(JSON.parse(JSON.stringify(x)), _mode, _id);
+                    let counts = CountFilter(_counts, _mode, _id);
                     if (counts.length > 0) {
                         _socket.send(counts);
                     }
@@ -102,6 +115,8 @@ action.ws(async (data) => {
                 throw e;
             })),
         );
+
+        _counts = counts;
 
         counts = CountFilter(counts, _mode, _id);
         if (counts.length > 0) {

@@ -114,8 +114,6 @@ class Service {
                                 counts.find((n) => n.deviceId === x.deviceId).count = x.count;
                             }
 
-                            DataWindow.push$.next(counts);
-
                             let curr: number = counts.reduce((prev, curr, index, array) => {
                                 return prev + curr.count.in - curr.count.out;
                             }, 0);
@@ -171,6 +169,13 @@ class Service {
                                     let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
 
                                     streamGroup.liveStreamGroup$.next({
+                                        regionId: region.id,
+                                        siteId: site.id,
+                                        deviceId: device.id,
+                                        count: count,
+                                    });
+
+                                    DataWindow.push$.next({
                                         regionId: region.id,
                                         siteId: site.id,
                                         deviceId: device.id,
