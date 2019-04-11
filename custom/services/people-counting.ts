@@ -12,10 +12,19 @@ class Service {
     private _liveStreamGroups: Service.ILiveStreamGroup[] = [];
 
     private _sites: IDB.LocationSite[] = undefined;
+    public get sites(): IDB.LocationSite[] {
+        return this._sites;
+    }
 
     private _devices: IDB.LocationDevice[] = undefined;
+    public get devices(): IDB.LocationDevice[] {
+        return this._devices;
+    }
 
     private _groups: IDB.CameraGroup[] = undefined;
+    public get groups(): IDB.CameraGroup[] {
+        return this._groups;
+    }
 
     constructor() {
         setTimeout(async () => {

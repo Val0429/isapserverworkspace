@@ -143,6 +143,62 @@ export class Hanwha {
     }
 
     /**
+     * Get Do Status
+     */
+    public async GetDoStatus(): Promise<Hanwha.ICount[]> {
+        if (!this._isInitialization) {
+            throw Base.Message.NotInitialization;
+        }
+
+        let url: string = `${this._baseUrl}/stw-cgi/eventsources.cgi?msubmenu=peoplecount&action=check`;
+
+        let result: Hanwha.IPeopleCount = await new Promise<Hanwha.IPeopleCount>((resolve, reject) => {
+            try {
+                HttpClient.get(
+                    {
+                        url: url,
+                        encoding: null,
+                        json: true,
+                        auth: {
+                            username: this._config.account,
+                            password: this._config.password,
+                            sendImmediately: false,
+                        },
+                    },
+                    (error, response, body) => {
+                        if (error) {
+                            return reject(error);
+                        } else if (response.statusCode !== 200) {
+                            return reject(`${response.statusCode}, ${response.statusMessage}`);
+                        } else if (body.Error) {
+                            return reject(body.Error.Details);
+                        }
+
+                        resolve(body);
+                    },
+                );
+            } catch (e) {
+                return reject(e);
+            }
+        }).catch((e) => {
+            throw e;
+        });
+
+        let counts: Hanwha.ICount[] = [].concat(
+            ...result.PeopleCount.map((value, index, array) => {
+                return value.Lines.map((value1, index1, array1) => {
+                    return {
+                        in: value1.InCount,
+                        out: value1.OutCount,
+                    };
+                });
+            }),
+        );
+
+        return counts;
+    }
+
+    /**
      * Control Do
      */
     public async ControlDo(doNumber: number, status: 'On' | 'Off'): Promise<string> {
@@ -242,8 +298,6 @@ export class Hanwha {
 
         this._liveStream$ = new Rx.Subject();
 
-        let url: string = `${this._baseUrl}/stw-cgi/eventsources.cgi?msubmenu=peoplecount&action=check`;
-
         let next$: Rx.Subject<{}> = new Rx.Subject();
         Rx.Observable.interval(intervalSecond)
             .startWith(0)
@@ -252,50 +306,9 @@ export class Hanwha {
             .subscribe({
                 next: async (x) => {
                     try {
-                        let result: Hanwha.IPeopleCount = await new Promise<Hanwha.IPeopleCount>((resolve, reject) => {
-                            try {
-                                HttpClient.get(
-                                    {
-                                        url: url,
-                                        encoding: null,
-                                        json: true,
-                                        auth: {
-                                            username: this._config.account,
-                                            password: this._config.password,
-                                            sendImmediately: false,
-                                        },
-                                    },
-                                    (error, response, body) => {
-                                        if (error) {
-                                            return reject(error);
-                                        } else if (response.statusCode !== 200) {
-                                            return reject(`${response.statusCode}, ${response.statusMessage}`);
-                                        } else if (body.Error) {
-                                            return reject(body.Error.Details);
-                                        }
+                        let counts: Hanwha.ICount[] = await this.GetDoStatus();
 
-                                        resolve(body);
-                                    },
-                                );
-                            } catch (e) {
-                                return reject(e);
-                            }
-                        }).catch((e) => {
-                            throw e;
-                        });
-
-                        let count: Hanwha.ICount[] = [].concat(
-                            ...result.PeopleCount.map((value, index, array) => {
-                                return value.Lines.map((value1, index1, array1) => {
-                                    return {
-                                        in: value1.InCount,
-                                        out: value1.OutCount,
-                                    };
-                                });
-                            }),
-                        );
-
-                        this._liveStream$.next(count);
+                        this._liveStream$.next(counts);
                         next$.next();
                     } catch (e) {
                         this._liveStreamStop$.error(e);
