@@ -31,51 +31,32 @@ export const push$: Rx.Subject<IPushCount> = new Rx.Subject();
 action.ws(async (data) => {
     let _socket: Socket = data.socket;
 
-    // let _count: number = PeopleCountingService.devices.length;
-
     let _mode: EPushMode = EPushMode.stop;
     let _id: string = '';
 
     let _counts: IPushCount[] = [];
 
-    push$
-        // .bufferCount(_count)
-        // .map((x) => {
-        //     let counts: IPushCount[] = [].concat(...x);
-        //     let deviceIds: string[] = counts.map((value, index, array) => {
-        //         return value.deviceId;
-        //     });
+    push$.subscribe({
+        next: async (x) => {
+            if (!_counts.find((n) => n.deviceId === x.deviceId)) {
+                _counts.push({
+                    regionId: x.regionId,
+                    siteId: x.siteId,
+                    deviceId: x.deviceId,
+                    count: x.count,
+                });
+            } else {
+                _counts.find((n) => n.deviceId === x.deviceId).count = x.count;
+            }
 
-        //     counts = counts.filter((value, index, array) => {
-        //         return deviceIds.lastIndexOf(value.deviceId) === index;
-        //     });
-
-        //     return counts;
-        // })
-        // .filter((x) => {
-        //     return x.length > 0;
-        // })
-        .subscribe({
-            next: async (x) => {
-                if (!_counts.find((n) => n.deviceId === x.deviceId)) {
-                    _counts.push({
-                        regionId: x.regionId,
-                        siteId: x.siteId,
-                        deviceId: x.deviceId,
-                        count: x.count,
-                    });
-                } else {
-                    _counts.find((n) => n.deviceId === x.deviceId).count = x.count;
+            if (_mode !== EPushMode.stop) {
+                let counts = CountFilter(_counts, _mode, _id);
+                if (counts.length > 0) {
+                    _socket.send(counts);
                 }
-
-                if (_mode !== EPushMode.stop) {
-                    let counts = CountFilter(_counts, _mode, _id);
-                    if (counts.length > 0) {
-                        _socket.send(counts);
-                    }
-                }
-            },
-        });
+            }
+        },
+    });
 
     _socket.io.on('message', async (data) => {
         let _input: IWs<any> = JSON.parse(data);
@@ -137,19 +118,28 @@ function CountFilter(counts: IPushCount[], mode: EPushMode, id: string): IPushCo
             .filter((value, index, array) => {
                 return value.regionId === id;
             })
-            .reduce((prev, curr, index, array) => {
-                return {
-                    regionId: prev.regionId,
+            .reduce(
+                (prev, curr, index, array) => {
+                    return {
+                        regionId: prev.regionId,
+                        siteId: '',
+                        deviceId: '',
+                        count: {
+                            in: prev.count.in + curr.count.in,
+                            out: prev.count.out + curr.count.out,
+                        },
+                    };
+                },
+                {
+                    regionId: id,
                     siteId: '',
                     deviceId: '',
                     count: {
-                        in: prev.count.in + curr.count.in,
-                        out: prev.count.out + curr.count.out,
+                        in: 0,
+                        out: 0,
                     },
-                };
-            });
-        count.siteId = '';
-        count.deviceId = '';
+                },
+            );
 
         return [count];
     } else if (mode === EPushMode.site) {
