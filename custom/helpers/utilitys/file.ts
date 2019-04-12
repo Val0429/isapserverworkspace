@@ -55,6 +55,21 @@ export namespace File {
     }
 
     /**
+     * Append file
+     * @param filename
+     * @param data
+     */
+    export function AppendFile(filename: string, data: any): void {
+        try {
+            let realpath: string = RealPath(filename);
+
+            Fs.appendFileSync(realpath, data);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Write base64 data to file
      * @param filename
      * @param image
