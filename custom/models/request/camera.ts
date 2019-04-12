@@ -3,16 +3,16 @@ import * as Enum from '../../enums';
 
 export interface IIndexC {
     name: string;
-    mode: Enum.CameraMode;
-    type: Enum.CameraType;
+    mode: Enum.ECameraMode;
+    type: Enum.ECameraType;
     config: IConfigHanwha;
 }
 
 export interface IIndexU {
     cameraId: string;
     name?: string;
-    mode?: Enum.CameraMode;
-    type?: Enum.CameraType;
+    mode?: Enum.ECameraMode;
+    type?: Enum.ECameraType;
     config?: IConfigHanwha;
 }
 
@@ -21,7 +21,7 @@ export interface IIndexD {
 }
 
 export interface ICheck {
-    type: Enum.CameraType;
+    type: Enum.ECameraType;
     config: IConfigHanwha;
 }
 

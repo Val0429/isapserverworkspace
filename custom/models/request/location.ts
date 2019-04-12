@@ -68,7 +68,7 @@ export interface ISiteIndexD {
 
 export interface IDeviceIndexC {
     siteId: string;
-    type: Enum.DeviceType;
+    type: Enum.EDeviceType;
     cameraId?: string;
     name: string;
     iconBase64: string;
@@ -87,7 +87,7 @@ export interface IDeviceIndexR {
 
 export interface IDeviceIndexU {
     deviceId: string;
-    type?: Enum.DeviceType;
+    type?: Enum.EDeviceType;
     cameraId?: string;
     name?: string;
     iconBase64?: string;

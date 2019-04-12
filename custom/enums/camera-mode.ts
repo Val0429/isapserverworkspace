@@ -1,3 +1,3 @@
-export enum CameraMode {
+export enum ECameraMode {
     peopleCounting,
 }

@@ -23,7 +23,7 @@ action.post(
         let _input: InputC = data.inputType;
 
         try {
-            if (_input.type === Enum.CameraType.hanwha) {
+            if (_input.type === Enum.ECameraType.hanwha) {
                 let nvr: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
                 nvr.config = _input.config;
                 nvr.Initialization();

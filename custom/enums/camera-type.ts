@@ -1,3 +1,3 @@
-export enum CameraType {
+export enum ECameraType {
     hanwha,
 }

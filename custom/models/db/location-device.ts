@@ -14,7 +14,7 @@ export interface ILocationDevice extends IBase {
     /**
      * 裝置類型
      */
-    type: Enum.DeviceType;
+    type: Enum.EDeviceType;
 
     /**
      * 相機

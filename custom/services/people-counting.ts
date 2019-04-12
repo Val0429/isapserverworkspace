@@ -156,7 +156,7 @@ class Service {
 
                         Print.MinLog(`${index}. region: ${region.id}, site: ${site.id}, group: ${group.id}, device: ${device.id}, camera: ${camera.id}`, 'info');
 
-                        if (camera.getValue('type') === Enum.CameraType.hanwha) {
+                        if (camera.getValue('type') === Enum.ECameraType.hanwha) {
                             let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
                             hanwha.config = camera.getValue('config');
 

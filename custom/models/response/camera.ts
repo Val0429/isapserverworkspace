@@ -8,8 +8,8 @@ export interface IIndexC {
 export interface IIndexR {
     cameraId: string;
     name: string;
-    mode: Enum.CameraMode;
-    type: Enum.CameraType;
+    mode: Enum.ECameraMode;
+    type: Enum.ECameraType;
     config: IConfigHanwha;
 }
 

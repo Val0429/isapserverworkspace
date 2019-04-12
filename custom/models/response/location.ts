@@ -50,7 +50,7 @@ export interface IDeviceIndexC {
 export interface IDeviceIndexR {
     siteId: string;
     deviceId: string;
-    type: Enum.DeviceType;
+    type: Enum.EDeviceType;
     cameraId: string;
     name: string;
     iconSrc: string;

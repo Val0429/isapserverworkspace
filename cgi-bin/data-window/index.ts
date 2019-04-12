@@ -21,7 +21,7 @@ interface IPushCount {
     deviceId: string;
     count: PeopleCounting.Hanwha.ICount;
 }
-enum PushMode {
+enum EPushMode {
     'region',
     'site',
     'stop',
@@ -33,7 +33,7 @@ action.ws(async (data) => {
 
     // let _count: number = PeopleCountingService.devices.length;
 
-    let _mode: PushMode = PushMode.stop;
+    let _mode: EPushMode = EPushMode.stop;
     let _id: string = '';
 
     let _counts: IPushCount[] = [];
@@ -68,7 +68,7 @@ action.ws(async (data) => {
                     _counts.find((n) => n.deviceId === x.deviceId).count = x.count;
                 }
 
-                if (_mode !== PushMode.stop) {
+                if (_mode !== EPushMode.stop) {
                     let counts = CountFilter(_counts, _mode, _id);
                     if (counts.length > 0) {
                         _socket.send(counts);
@@ -80,16 +80,16 @@ action.ws(async (data) => {
     _socket.io.on('message', async (data) => {
         let _input: IWs<any> = JSON.parse(data);
 
-        if (_input.type === PushMode[PushMode.stop]) {
+        if (_input.type === EPushMode[EPushMode.stop]) {
             _id = '';
             return;
         }
 
-        if (_input.type === PushMode[PushMode.region]) {
-            _mode = PushMode.region;
+        if (_input.type === EPushMode[EPushMode.region]) {
+            _mode = EPushMode.region;
             _id = _input.content;
-        } else if (_input.type === PushMode[PushMode.site]) {
-            _mode = PushMode.site;
+        } else if (_input.type === EPushMode[EPushMode.site]) {
+            _mode = EPushMode.site;
             _id = _input.content;
         }
 
@@ -131,8 +131,8 @@ action.ws(async (data) => {
  * @param mode
  * @param id
  */
-function CountFilter(counts: IPushCount[], mode: PushMode, id: string): IPushCount[] {
-    if (mode === PushMode.region) {
+function CountFilter(counts: IPushCount[], mode: EPushMode, id: string): IPushCount[] {
+    if (mode === EPushMode.region) {
         let count: IPushCount = counts
             .filter((value, index, array) => {
                 return value.regionId === id;
@@ -152,7 +152,7 @@ function CountFilter(counts: IPushCount[], mode: PushMode, id: string): IPushCou
         count.deviceId = '';
 
         return [count];
-    } else if (mode === PushMode.site) {
+    } else if (mode === EPushMode.site) {
         return counts.filter((value, index, array) => {
             return value.siteId === id;
         });

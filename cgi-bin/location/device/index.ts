@@ -31,7 +31,7 @@ action.post(
         }
 
         let camera: IDB.Camera = undefined;
-        if (_input.type === Enum.DeviceType.camera) {
+        if (_input.type === Enum.EDeviceType.camera) {
             if (!_input.cameraId) {
                 throw Errors.throw(Errors.CustomBadRequest, ['need camera id']);
             }
@@ -179,7 +179,7 @@ action.put(
         if (_input.type) {
             device.setValue('type', _input.type);
 
-            if (_input.type === Enum.DeviceType.camera) {
+            if (_input.type === Enum.EDeviceType.camera) {
                 if (!_input.cameraId) {
                     throw Errors.throw(Errors.CustomBadRequest, ['need camera id']);
                 }

@@ -1,3 +1,3 @@
-export enum DeviceType {
+export enum EDeviceType {
     camera,
 }

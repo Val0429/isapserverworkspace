@@ -14,12 +14,12 @@ export interface ICamera extends IBase {
     /**
      * 模式
      */
-    mode: Enum.CameraMode;
+    mode: Enum.ECameraMode;
 
     /**
      * 類型
      */
-    type: Enum.CameraType;
+    type: Enum.ECameraType;
 
     /**
      * 設定
