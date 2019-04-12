@@ -29,7 +29,7 @@ action.post(
             .equalTo('community', _userInfo.community)
             .equalTo('isDeleted', false)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (parking) {
@@ -44,7 +44,7 @@ action.post(
         parking.setValue('cost', _input.cost);
         parking.setValue('isDeleted', false);
 
-        await parking.save(null, { useMasterKey: true }).catch((e) => {
+        await parking.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -74,7 +74,7 @@ action.get(
 
         let query: Parse.Query<IDB.Parking> = new Parse.Query(IDB.Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -83,11 +83,11 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = parkings.map((value, index, array) => {
+        let tasks: Promise<any>[] = parkings.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value.getValue('resident'))
                 .equalTo('isDeleted', false)
@@ -137,14 +137,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _parkingIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _parkingIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Parking).get(value);
         });
         let parkings: IDB.Parking[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = parkings.map((value, index, array) => {
+        tasks = parkings.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });

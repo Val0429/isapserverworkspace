@@ -32,7 +32,7 @@ action.put(
             query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
-        let vote: IDB.Vote = await query.get(_input.voteId).catch((e) => {
+        let vote: IDB.Vote = await query.get(_input.voteId).fail((e) => {
             throw e;
         });
         if (!vote) {
@@ -70,7 +70,7 @@ action.put(
             }),
         );
 
-        await vote.save(null, { useMasterKey: true }).catch((e) => {
+        await vote.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

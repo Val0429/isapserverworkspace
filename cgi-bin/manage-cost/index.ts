@@ -36,7 +36,7 @@ action.post(
             .equalTo('community', _userInfo.community)
             .equalTo('date', _date)
             .count()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (manageCostCount > 0) {
@@ -45,17 +45,17 @@ action.post(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+        let tasks: Promise<any>[] = residents.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Parking).equalTo('resident', value).find();
         });
         let parkings: IDB.Parking[][] = await Promise.all(tasks).catch((e) => {
@@ -64,7 +64,7 @@ action.post(
 
         let manageCosts: IDB.ManageCost[] = [];
 
-        tasks = residents.map((value, index, array) => {
+        tasks = residents.map<any>((value, index, array) => {
             let manageCost: IDB.ManageCost = new IDB.ManageCost();
 
             let parkingCost: number = parkings[index]
@@ -145,7 +145,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -154,18 +154,18 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = manageCosts.map((value, index, array) => {
+        let tasks: Promise<any>[] = manageCosts.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Parking).equalTo('resident', value.getValue('resident')).count();
         });
         let parkingCounts: number[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = manageCosts.map((value, index, array) => {
+        tasks = manageCosts.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('charger')).first();
         });
         let chargers: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {

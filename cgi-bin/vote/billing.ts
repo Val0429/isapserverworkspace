@@ -25,7 +25,7 @@ action.get(
         let _input: InputR = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let vote: IDB.Vote = await new Parse.Query(IDB.Vote).get(_input.voteId).catch((e) => {
+        let vote: IDB.Vote = await new Parse.Query(IDB.Vote).get(_input.voteId).fail((e) => {
             throw e;
         });
         if (!vote) {

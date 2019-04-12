@@ -25,14 +25,14 @@ action.get(
 
         let query: Parse.Query<IDB.PublicFacility> = new Parse.Query(IDB.PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
         let facilitys: IDB.PublicFacility[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 

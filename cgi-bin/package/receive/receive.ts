@@ -29,7 +29,7 @@ action.put(
         let packageReceive: IDB.PackageReceive = await new Parse.Query(IDB.PackageReceive)
             .include('resident')
             .get(_input.packageReceiveId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!packageReceive) {
@@ -49,7 +49,7 @@ action.put(
         packageReceive.setValue('memo', _input.memo);
         packageReceive.setValue('manager', data.user);
 
-        await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReceive.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

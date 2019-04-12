@@ -53,7 +53,7 @@ action.post(
             .equalTo('user', user.user)
             .include(['community'])
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!committee) {

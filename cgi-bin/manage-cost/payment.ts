@@ -24,7 +24,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let manageCost: IDB.ManageCost = await new Parse.Query(IDB.ManageCost).get(_input.manageCostId).catch((e) => {
+        let manageCost: IDB.ManageCost = await new Parse.Query(IDB.ManageCost).get(_input.manageCostId).fail((e) => {
             throw e;
         });
         if (!manageCost) {
@@ -41,7 +41,7 @@ action.put(
         manageCost.setValue('balance', manageCost.getValue('balance') - _input.cost);
         manageCost.setValue('status', manageCost.getValue('balance') === 0 ? Enum.ReceiveStatus.received : Enum.ReceiveStatus.unreceived);
 
-        await manageCost.save(null, { useMasterKey: true }).catch((e) => {
+        await manageCost.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

@@ -45,7 +45,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -54,7 +54,7 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -98,14 +98,14 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packagePosting: IDB.PackagePosting = await new Parse.Query(IDB.PackagePosting).get(_input.packagePostingId).catch((e) => {
+        let packagePosting: IDB.PackagePosting = await new Parse.Query(IDB.PackagePosting).get(_input.packagePostingId).fail((e) => {
             throw e;
         });
         if (!packagePosting) {
@@ -118,7 +118,7 @@ action.put(
         packagePosting.setValue('memo', _input.memo);
         packagePosting.setValue('adjustReason', _input.adjustReason);
 
-        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

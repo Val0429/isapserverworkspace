@@ -30,7 +30,7 @@ action.put(
         let residentInfo: IDB.CharacterResidentInfo = await new Parse.Query(IDB.CharacterResidentInfo)
             .equalTo('user', user)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!residentInfo) {
@@ -42,7 +42,7 @@ action.put(
 
         residentInfo.setValue('character', _input.character);
 
-        await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
+        await residentInfo.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

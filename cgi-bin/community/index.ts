@@ -26,7 +26,7 @@ action.post(
         let community: IDB.Community = await new Parse.Query(IDB.Community)
             .equalTo('name', _input.name)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (community) {
@@ -41,7 +41,7 @@ action.post(
         let roles: Parse.Role[] = await new Parse.Query(Parse.Role)
             .equalTo('name', RoleList.Chairman)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -51,11 +51,11 @@ action.post(
         user.setPassword(_input.userPassword);
         user.set('roles', roles);
 
-        await user.signUp(null, { useMasterKey: true }).catch((e) => {
+        await user.signUp(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
-        await community.save(null, { useMasterKey: true }).catch((e) => {
+        await community.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -68,7 +68,7 @@ action.post(
         committee.setValue('adjustReason', '');
         committee.setValue('isDeleted', false);
 
-        await committee.save(null, { useMasterKey: true }).catch((e) => {
+        await committee.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -97,7 +97,7 @@ action.get(
             .equalTo('user', data.user)
             .include('community')
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!committee) {

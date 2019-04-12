@@ -27,7 +27,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
@@ -49,7 +49,7 @@ action.post(
         packagePosting.setValue('packageSrc', '');
         packagePosting.setValue('senderSrc', '');
 
-        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -62,7 +62,7 @@ action.post(
         packagePosting.setValue('packageSrc', packageSrc);
         packagePosting.setValue('senderSrc', senderSrc);
 
-        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

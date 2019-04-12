@@ -26,7 +26,7 @@ action.post(
         let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
             .equalTo('barcode', _input.barcode)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!resident) {
@@ -36,7 +36,7 @@ action.post(
         let role: Parse.Role = await new Parse.Query(Parse.Role)
             .equalTo('name', RoleList.Resident)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -53,7 +53,7 @@ action.post(
                     useMasterKey: true,
                 },
             )
-            .catch((e) => {
+            .fail((e) => {
                 throw Errors.throw(Errors.CustomBadRequest, [e]);
             });
 
@@ -77,7 +77,7 @@ action.post(
         residentInfo.setValue('deviceToken', _input.deviceToken);
         residentInfo.setValue('deviceType', _input.deviceType);
 
-        await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
+        await residentInfo.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -112,7 +112,7 @@ action.get(
             .equalTo('resident', resident)
             .equalTo('isDeleted', false)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -163,7 +163,7 @@ action.put(
             .equalTo('community', _userInfo.community)
             .equalTo('user', user)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!residentInfo) {
@@ -181,7 +181,7 @@ action.put(
         residentInfo.setValue('isEmail', _input.isEmail);
         residentInfo.setValue('isNotice', _input.isNotice);
 
-        await residentInfo.save(null, { useMasterKey: true }).catch((e) => {
+        await residentInfo.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -211,7 +211,7 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _userIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _userIds.map<any>((value, index, array) => {
             let user: Parse.User = new Parse.User();
             user.id = value;
 
@@ -221,7 +221,7 @@ action.delete(
             throw e;
         });
 
-        tasks = residentInfos.map((value, index, array) => {
+        tasks = residentInfos.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });

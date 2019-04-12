@@ -26,7 +26,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let listen: IDB.Listen = await new Parse.Query(IDB.Listen).get(_input.listenId).catch((e) => {
+        let listen: IDB.Listen = await new Parse.Query(IDB.Listen).get(_input.listenId).fail((e) => {
             throw e;
         });
         if (!listen) {
@@ -46,7 +46,7 @@ action.put(
         );
         listen.setValue('status', Enum.ReceiveStatus.received);
 
-        await listen.save(null, { useMasterKey: true }).catch((e) => {
+        await listen.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

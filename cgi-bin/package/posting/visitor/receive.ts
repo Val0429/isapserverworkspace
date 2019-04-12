@@ -30,7 +30,7 @@ action.put(
         let packagePosting: IDB.PackagePosting = await new Parse.Query(IDB.PackagePosting)
             .include('resident')
             .get(_input.packagePostingId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!packagePosting) {
@@ -48,7 +48,7 @@ action.put(
         packagePosting.setValue('receiverSrc', receiverSrc);
         packagePosting.setValue('manager', data.user);
 
-        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

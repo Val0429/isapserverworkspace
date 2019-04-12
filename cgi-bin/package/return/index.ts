@@ -30,7 +30,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['barcode is too long']);
         }
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
@@ -51,7 +51,7 @@ action.post(
         packageReturn.setValue('adjustReason', '');
         packageReturn.setValue('receiverSrc', '');
 
-        await packageReturn.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReturn.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -103,7 +103,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -112,7 +112,7 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -156,14 +156,14 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packageReturn: IDB.PackageReturn = await new Parse.Query(IDB.PackageReturn).get(_input.packageReturnId).catch((e) => {
+        let packageReturn: IDB.PackageReturn = await new Parse.Query(IDB.PackageReturn).get(_input.packageReturnId).fail((e) => {
             throw e;
         });
         if (!packageReturn) {
@@ -176,7 +176,7 @@ action.put(
         packageReturn.setValue('memo', _input.memo);
         packageReturn.setValue('adjustReason', _input.adjustReason);
 
-        await packageReturn.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReturn.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

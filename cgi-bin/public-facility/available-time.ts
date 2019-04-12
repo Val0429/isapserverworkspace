@@ -33,7 +33,7 @@ action.get(
             .equalTo('community', _userInfo.community)
             .equalTo('isDeleted', false)
             .get(_input.publicFacilityId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!publicFacility) {
@@ -54,7 +54,7 @@ action.get(
             .greaterThanOrEqualTo('reservationDates.startDate', _start)
             .lessThan('reservationDates.startDate', _end)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 

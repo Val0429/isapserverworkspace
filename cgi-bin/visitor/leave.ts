@@ -22,7 +22,7 @@ action.put(
     async (data): Promise<OutputU> => {
         let _input: InputU = data.inputType;
 
-        let visitor: IDB.Visitor = await new Parse.Query(IDB.Visitor).get(_input.visitorId).catch((e) => {
+        let visitor: IDB.Visitor = await new Parse.Query(IDB.Visitor).get(_input.visitorId).fail((e) => {
             throw e;
         });
         if (!visitor) {
@@ -34,7 +34,7 @@ action.put(
 
         visitor.setValue('leaveDate', new Date());
 
-        await visitor.save(null, { useMasterKey: true }).catch((e) => {
+        await visitor.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

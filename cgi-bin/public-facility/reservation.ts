@@ -26,7 +26,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility).get(_input.publicFacilityId).catch((e) => {
+        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility).get(_input.publicFacilityId).fail((e) => {
             throw e;
         });
         if (!publicFacility) {
@@ -36,7 +36,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['public facility was deleted']);
         }
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
@@ -62,13 +62,13 @@ action.post(
         });
         reservation.setValue('isDeleted', false);
 
-        await reservation.save(null, { useMasterKey: true }).catch((e) => {
+        await reservation.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         resident.setValue('pointBalance', resident.getValue('pointBalance') - publicFacility.getValue('pointCost') * _input.count);
 
-        await resident.save(null, { useMasterKey: true }).catch((e) => {
+        await resident.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -124,7 +124,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -133,7 +133,7 @@ action.get(
             .limit(_count)
             .include(['facility', 'article', 'resident'])
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -177,7 +177,7 @@ action.put(
         let reservation: IDB.PublicFacilityReservation = await new Parse.Query(IDB.PublicFacilityReservation)
             .include(['facility', 'resident'])
             .get(_input.reservationId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!reservation) {
@@ -205,7 +205,7 @@ action.put(
             endDate: _end,
         });
 
-        await reservation.save(null, { useMasterKey: true }).catch((e) => {
+        await reservation.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -241,7 +241,7 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _reservationIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _reservationIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicFacilityReservation).include(['facility', 'resident']).get(value);
         });
         let reservations: IDB.PublicFacilityReservation[] = await Promise.all(tasks).catch((e) => {
@@ -251,14 +251,14 @@ action.delete(
         let now: Date = new Date();
 
         tasks = [].concat(
-            ...reservations.map((value, index, array) => {
+            ...reservations.map<any>((value, index, array) => {
                 value.setValue('isDeleted', true);
 
-                let _tasks: Promise<any>[] = [value.save(null, { useMasterKey: true })];
+                let _tasks: Promise<any>[] = [<any>value.save(null, { useMasterKey: true })];
 
                 if (value.getValue('reservationDates').startDate.getTime() > now.getTime()) {
                     value.getValue('resident').setValue('pointBalance', value.getValue('resident').getValue('pointBalance') + value.getValue('count') * value.getValue('facility').getValue('pointCost'));
-                    _tasks.push(value.getValue('resident').save(null, { useMasterKey: true }));
+                    _tasks.push(<any>value.getValue('resident').save(null, { useMasterKey: true }));
                 }
 
                 return _tasks;

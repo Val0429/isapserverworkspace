@@ -30,7 +30,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['barcode is too long']);
         }
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
@@ -50,7 +50,7 @@ action.post(
         packageReceive.setValue('notificateCount', 0);
         packageReceive.setValue('adjustReason', '');
 
-        await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReceive.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -105,7 +105,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -114,7 +114,7 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -157,14 +157,14 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
             throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
 
-        let packageReceive: IDB.PackageReceive = await new Parse.Query(IDB.PackageReceive).get(_input.packageReceiveId).catch((e) => {
+        let packageReceive: IDB.PackageReceive = await new Parse.Query(IDB.PackageReceive).get(_input.packageReceiveId).fail((e) => {
             throw e;
         });
         if (!packageReceive) {
@@ -177,7 +177,7 @@ action.put(
         packageReceive.setValue('memo', _input.memo);
         packageReceive.setValue('adjustReason', _input.adjustReason);
 
-        await packageReceive.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReceive.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

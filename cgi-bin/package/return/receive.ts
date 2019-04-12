@@ -29,7 +29,7 @@ action.put(
         let packageReturn: IDB.PackageReturn = await new Parse.Query(IDB.PackageReturn)
             .include('resident')
             .get(_input.packageReturnId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!packageReturn) {
@@ -50,7 +50,7 @@ action.put(
         packageReturn.setValue('manager', data.user);
         packageReturn.setValue('receiverSrc', receiverSrc);
 
-        await packageReturn.save(null, { useMasterKey: true }).catch((e) => {
+        await packageReturn.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

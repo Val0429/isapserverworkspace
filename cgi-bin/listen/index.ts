@@ -49,7 +49,7 @@ action.post(
         listen.setValue('attachmentSrc', '');
         listen.setValue('isDeleted', false);
 
-        await listen.save(null, { useMasterKey: true }).catch((e) => {
+        await listen.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -59,7 +59,7 @@ action.post(
 
             listen.setValue('attachmentSrc', attachmentSrc);
 
-            await listen.save(null, { useMasterKey: true }).catch((e) => {
+            await listen.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
         }
@@ -105,7 +105,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -114,7 +114,7 @@ action.get(
             .limit(_count)
             .include(['resident', 'replier'])
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -181,14 +181,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _listenIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _listenIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Listen).get(value);
         });
         let listens: IDB.Listen[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = listens.map((value, index, array) => {
+        tasks = listens.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });

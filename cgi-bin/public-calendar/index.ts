@@ -39,19 +39,19 @@ action.post(
         publicCalendar.setValue('aims', _input.aims);
         publicCalendar.setValue('isDeleted', false);
 
-        await publicCalendar.save(null, { useMasterKey: true }).catch((e) => {
+        await publicCalendar.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -102,14 +102,14 @@ action.get(
             query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
         let publicCalendars: IDB.PublicCalendar[] = await query
             .limit(_input.count ? _input.count : total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -141,7 +141,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicCalendar: IDB.PublicCalendar = await new Parse.Query(IDB.PublicCalendar).get(_input.publicCalendarId).catch((e) => {
+        let publicCalendar: IDB.PublicCalendar = await new Parse.Query(IDB.PublicCalendar).get(_input.publicCalendarId).fail((e) => {
             throw e;
         });
         if (publicCalendar.getValue('isDeleted')) {
@@ -155,19 +155,19 @@ action.put(
         publicCalendar.setValue('title', _input.title);
         publicCalendar.setValue('content', _input.content);
 
-        await publicCalendar.save(null, { useMasterKey: true }).catch((e) => {
+        await publicCalendar.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -206,14 +206,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _publicCalendarIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _publicCalendarIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicCalendar).get(value);
         });
         let publicCalendars: IDB.PublicCalendar[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = publicCalendars.map((value, index, array) => {
+        tasks = publicCalendars.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });
@@ -224,13 +224,13 @@ action.delete(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 

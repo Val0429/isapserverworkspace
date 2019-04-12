@@ -45,7 +45,7 @@ action.post(
         committee.setValue('name', _input.name);
         committee.setValue('isDeleted', false);
 
-        await committee.save(null, { useMasterKey: true }).catch((e) => {
+        await committee.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -72,7 +72,7 @@ action.get(
 
         let query: Parse.Query<IDB.CharacterCommittee> = new Parse.Query(IDB.CharacterCommittee).equalTo('community', _userInfo.community).notEqualTo('isDeleted', true);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -81,7 +81,7 @@ action.get(
             .limit(_count)
             .include(['user', 'user.roles'])
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -127,7 +127,7 @@ action.put(
         let user: Parse.User = await new Parse.Query(Parse.User)
             .include('roles')
             .get(_input.userId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -139,7 +139,7 @@ action.put(
         let committee: IDB.CharacterCommittee = await new Parse.Query(IDB.CharacterCommittee)
             .equalTo('user', user)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (committee.getValue('isDeleted')) {
@@ -148,13 +148,13 @@ action.put(
 
         if (_input.password) {
             user.setPassword(_input.password);
-            await user.save(null, { useMasterKey: true }).catch((e) => {
+            await user.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
         }
 
         committee.setValue('adjustReason', _input.adjustReason);
-        await committee.save(null, { useMasterKey: true }).catch((e) => {
+        await committee.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -182,14 +182,14 @@ action.delete(
 
         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
 
-        let tasks: Promise<any>[] = _userIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _userIds.map<any>((value, index, array) => {
             return new Parse.Query(Parse.User).include('roles').get(value);
         });
         let users: Parse.User[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = _userIds.map((value, index, array) => {
+        tasks = _userIds.map<any>((value, index, array) => {
             let user: Parse.User = new Parse.User();
             user.id = value;
             return new Parse.Query(IDB.CharacterCommittee).equalTo('user', user).find();
@@ -204,7 +204,7 @@ action.delete(
             for (let j: number = 0; j < committeess[i].length; j++) {
                 committeess[i][j].setValue('isDeleted', true);
 
-                tasks.push(committeess[i][j].save(null, { useMasterKey: true }));
+                tasks.push(<any>committeess[i][j].save(null, { useMasterKey: true }));
             }
         }
 

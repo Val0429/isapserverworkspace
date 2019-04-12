@@ -27,7 +27,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
@@ -47,7 +47,7 @@ action.post(
         visitor.setValue('notificateCount', 0);
         visitor.setValue('isDeleted', false);
 
-        await visitor.save(null, { useMasterKey: true }).catch((e) => {
+        await visitor.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -56,7 +56,7 @@ action.post(
 
         visitor.setValue('visitorSrc', visitorSrc);
 
-        await visitor.save(null, { useMasterKey: true }).catch((e) => {
+        await visitor.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -115,7 +115,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -124,11 +124,11 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = visitors.map((value, index, array) => {
+        let tasks: Promise<any>[] = visitors.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value.getValue('resident'))
                 .equalTo('isDeleted', false)
@@ -183,14 +183,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _visitorIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _visitorIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Visitor).get(value);
         });
         let visitors: IDB.Visitor[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = visitors.map((value, index, array) => {
+        tasks = visitors.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });

@@ -30,7 +30,7 @@ action.post(
         let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
             .equalTo('barcode', _input.residentBarcode)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!resident) {
@@ -52,7 +52,7 @@ action.post(
         packagePosting.setValue('packageSrc', '');
         packagePosting.setValue('senderSrc', '');
 
-        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -61,7 +61,7 @@ action.post(
 
         packagePosting.setValue('packageSrc', packageSrc);
 
-        await packagePosting.save(null, { useMasterKey: true }).catch((e) => {
+        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

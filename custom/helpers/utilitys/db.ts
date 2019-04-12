@@ -17,7 +17,7 @@ export namespace Db {
      */
     export async function CreateDefaultRole(): Promise<void> {
         try {
-            let role = await new Parse.Query(Parse.Role).first().catch((e) => {
+            let role = await new Parse.Query(Parse.Role).first().fail((e) => {
                 throw e;
             });
             if (!role) {
@@ -29,7 +29,7 @@ export namespace Db {
 
                     role = new Parse.Role(name, roleACL);
 
-                    await role.save(null, { useMasterKey: true }).catch((e) => {
+                    await role.save(null, { useMasterKey: true }).fail((e) => {
                         throw e;
                     });
                 }
@@ -49,11 +49,11 @@ export namespace Db {
      */
     export async function CreateDefaultUser(): Promise<void> {
         try {
-            let user = await new Parse.Query(Parse.User).first().catch((e) => {
+            let user = await new Parse.Query(Parse.User).first().fail((e) => {
                 throw e;
             });
             if (!user) {
-                let roles: Parse.Role[] = await new Parse.Query(Parse.Role).find().catch((e) => {
+                let roles: Parse.Role[] = await new Parse.Query(Parse.Role).find().fail((e) => {
                     throw e;
                 });
 
@@ -68,7 +68,7 @@ export namespace Db {
                     }),
                 );
 
-                await user.save(null, { useMasterKey: true }).catch((e) => {
+                await user.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;
                 });
 
@@ -102,7 +102,7 @@ export namespace Db {
                     .equalTo('user', data.user)
                     .include(['community', 'resident'])
                     .first()
-                    .catch((e) => {
+                    .fail((e) => {
                         throw e;
                     });
 
@@ -114,7 +114,7 @@ export namespace Db {
                     .equalTo('user', data.user)
                     .include('community')
                     .first()
-                    .catch((e) => {
+                    .fail((e) => {
                         throw e;
                     });
 

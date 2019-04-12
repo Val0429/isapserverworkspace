@@ -57,19 +57,19 @@ action.post(
         vote.setValue('aims', _input.aims);
         vote.setValue('isDeleted', false);
 
-        await vote.save(null, { useMasterKey: true }).catch((e) => {
+        await vote.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -126,7 +126,7 @@ action.get(
             query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -134,11 +134,11 @@ action.get(
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = votes.map((value, index, array) => {
+        let tasks: Promise<any>[] = votes.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('creator')).first();
         });
         let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
@@ -191,7 +191,7 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['duplicate option']);
         }
 
-        let vote: IDB.Vote = await new Parse.Query(IDB.Vote).get(_input.voteId).catch((e) => {
+        let vote: IDB.Vote = await new Parse.Query(IDB.Vote).get(_input.voteId).fail((e) => {
             throw e;
         });
         if (!vote) {
@@ -222,19 +222,19 @@ action.put(
             }),
         );
 
-        await vote.save(null, { useMasterKey: true }).catch((e) => {
+        await vote.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -273,14 +273,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _voteIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _voteIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Vote).get(value);
         });
         let votes: IDB.Vote[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = votes.map((value, index, array) => {
+        tasks = votes.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });
@@ -291,13 +291,13 @@ action.delete(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 

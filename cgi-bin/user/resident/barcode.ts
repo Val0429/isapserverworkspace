@@ -27,7 +27,7 @@ action.get(
         let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident)
             .equalTo('barcode', data.parameters.barcode)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -35,14 +35,14 @@ action.get(
             .equalTo('isDeleted', false)
             .equalTo('resident', resident)
             .count()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
         let parkings: IDB.Parking[] = await new Parse.Query(IDB.Parking)
             .equalTo('resident', resident)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         let parkingCost: number = parkings.reduce((prev, curr, index, array) => {

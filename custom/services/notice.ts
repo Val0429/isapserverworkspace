@@ -33,7 +33,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                 .equalTo('isDeleted', false)
                                 .containedIn('character', _aims)
                                 .find()
-                                .catch((e) => {
+                                .fail((e) => {
                                     throw e;
                                 });
 

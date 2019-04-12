@@ -49,7 +49,7 @@ action.get(
 
         let unavailableRoles: RoleList[] = Permission.GetUnavailableRoles(data.role, permissionMapR);
 
-        let tasks: Promise<any>[] = unavailableRoles.map((value, index, array) => {
+        let tasks: Promise<any>[] = unavailableRoles.map<any>((value, index, array) => {
             return new Parse.Query(Parse.Role).equalTo('name', value).first();
         });
         let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
@@ -58,7 +58,7 @@ action.get(
 
         let query: Parse.Query<Parse.User> = new Parse.Query(Parse.User).notContainedIn('roles', roles).include('roles');
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -66,7 +66,7 @@ action.get(
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -106,7 +106,7 @@ action.put(
         let user: Parse.User = await new Parse.Query(Parse.User)
             .include('roles')
             .get(_input.userId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -123,7 +123,7 @@ action.put(
             throw Errors.throw(Errors.CustomUnauthorized, [`Permission denied for roles.`]);
         }
 
-        let tasks: Promise<any>[] = _input.roles.map((value, index, array) => {
+        let tasks: Promise<any>[] = _input.roles.map<any>((value, index, array) => {
             return new Parse.Query(Parse.Role).equalTo('name', value).first();
         });
         let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
@@ -132,7 +132,7 @@ action.put(
 
         user.set('roles', roles);
 
-        await user.save(null, { useMasterKey: true }).catch((e) => {
+        await user.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -157,7 +157,7 @@ action.delete(
         let user: Parse.User = await new Parse.Query(Parse.User)
             .include('roles')
             .get(_input.userId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -167,7 +167,7 @@ action.delete(
 
         Permission.ValidateRoles(availableRoles, roles);
 
-        await user.destroy({ useMasterKey: true }).catch((e) => {
+        await user.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -184,7 +184,7 @@ export async function CreateUser(input: InputC, availableRoles: RoleList[]): Pro
     try {
         Permission.ValidateRoles(availableRoles, input.roles);
 
-        let tasks: Promise<any>[] = input.roles.map((value, index, array) => {
+        let tasks: Promise<any>[] = input.roles.map<any>((value, index, array) => {
             return new Parse.Query(Parse.Role).equalTo('name', value).first();
         });
         let roles: Parse.Role[] = await Promise.all(tasks).catch((e) => {
@@ -208,7 +208,7 @@ export async function CreateUser(input: InputC, availableRoles: RoleList[]): Pro
                     useMasterKey: true,
                 },
             )
-            .catch((e) => {
+            .fail((e) => {
                 throw Errors.throw(Errors.CustomBadRequest, [e]);
             });
 

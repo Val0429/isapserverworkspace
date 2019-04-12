@@ -22,7 +22,7 @@ action.post(
     async (data): Promise<OutputC> => {
         let _input: InputC = data.inputType;
 
-        await data.session.destroy({ sessionToken: _input.sessionId }).catch((e) => {
+        await data.session.destroy({ sessionToken: _input.sessionId }).fail((e) => {
             throw e;
         });
 

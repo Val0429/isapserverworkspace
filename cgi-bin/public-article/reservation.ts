@@ -26,7 +26,7 @@ action.post(
         let _input: InputC = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicArticle: IDB.PublicArticle = await new Parse.Query(IDB.PublicArticle).get(_input.publicArticleId).catch((e) => {
+        let publicArticle: IDB.PublicArticle = await new Parse.Query(IDB.PublicArticle).get(_input.publicArticleId).fail((e) => {
             throw e;
         });
         if (!publicArticle) {
@@ -39,7 +39,7 @@ action.post(
             throw Errors.throw(Errors.CustomBadRequest, ['lend count not enough']);
         }
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).catch((e) => {
+        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
             throw e;
         });
         if (!resident) {
@@ -57,13 +57,13 @@ action.post(
         reservation.setValue('status', Enum.ReceiveStatus.unreceived);
         reservation.setValue('isDeleted', false);
 
-        await reservation.save(null, { useMasterKey: true }).catch((e) => {
+        await reservation.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         publicArticle.setValue('lendCount', publicArticle.getValue('lendCount') + _input.lendCount);
 
-        await publicArticle.save(null, { useMasterKey: true }).catch((e) => {
+        await publicArticle.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -126,7 +126,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -135,11 +135,11 @@ action.get(
             .limit(_count)
             .include(['resident', 'replier', 'article'])
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = reservations.map((value, index, array) => {
+        let tasks: Promise<any>[] = reservations.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value.getValue('resident'))
                 .equalTo('isDeleted', false)
@@ -149,7 +149,7 @@ action.get(
             throw e;
         });
 
-        tasks = reservations.map((value, index, array) => {
+        tasks = reservations.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('replier')).first();
         });
         let repliers: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
@@ -201,7 +201,7 @@ action.put(
         let reservation: IDB.PublicArticleReservation = await new Parse.Query(IDB.PublicArticleReservation)
             .include('article')
             .get(_input.reservationId)
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (!reservation) {
@@ -223,7 +223,7 @@ action.put(
         reservation.setValue('status', reservation.getValue('lendCount') === 0 ? Enum.ReceiveStatus.received : Enum.ReceiveStatus.unreceived);
         reservation.getValue('article').setValue('lendCount', reservation.getValue('article').getValue('lendCount') - _input.count);
 
-        await reservation.save(null, { useMasterKey: true }).catch((e) => {
+        await reservation.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -263,7 +263,7 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _reservationIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _reservationIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicArticleReservation).include('article').get(value);
         });
         let reservations: IDB.PublicArticleReservation[] = await Promise.all(tasks).catch((e) => {

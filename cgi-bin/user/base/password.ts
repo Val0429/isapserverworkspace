@@ -23,16 +23,16 @@ action.put(
         let _input: InputU = data.inputType;
         let _userId: string = _input.userId || data.user.id;
 
-        let user: Parse.User = await new Parse.Query(Parse.User).get(_userId).catch((e) => {
+        let user: Parse.User = await new Parse.Query(Parse.User).get(_userId).fail((e) => {
             throw e;
         });
 
-        user = await Parse.User.logIn(user.getUsername(), _input.previous).catch((e) => {
+        user = await Parse.User.logIn(user.getUsername(), _input.previous).fail((e) => {
             throw e;
         });
 
         user.setPassword(_input.current);
-        await user.save(null, { useMasterKey: true }).catch((e) => {
+        await user.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

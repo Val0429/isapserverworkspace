@@ -36,7 +36,7 @@ action.post(
             .equalTo('community', _userInfo.community)
             .equalTo('date', _date)
             .count()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
         if (gasCount > 0) {
@@ -45,19 +45,19 @@ action.post(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
         let gass: IDB.Gas[] = [];
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+        let tasks: Promise<any>[] = residents.map<any>((value, index, array) => {
             let gas: IDB.Gas = new IDB.Gas();
 
             gas.setValue('creator', data.user);
@@ -129,7 +129,7 @@ action.get(
             query.equalTo('resident', _userInfo.resident);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -138,7 +138,7 @@ action.get(
             .limit(_count)
             .include('resident')
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -181,7 +181,7 @@ action.put(
             throw Errors.throw(Errors.CustomBadRequest, ['degree error']);
         }
 
-        let gas: IDB.Gas = await new Parse.Query(IDB.Gas).get(_input.gasId).catch((e) => {
+        let gas: IDB.Gas = await new Parse.Query(IDB.Gas).get(_input.gasId).fail((e) => {
             throw e;
         });
         if (!gas) {
@@ -190,7 +190,7 @@ action.put(
 
         gas.setValue('degree', _input.degree);
 
-        await gas.save(null, { useMasterKey: true }).catch((e) => {
+        await gas.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

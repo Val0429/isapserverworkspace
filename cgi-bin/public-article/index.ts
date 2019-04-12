@@ -39,7 +39,7 @@ action.post(
         publicArticle.setValue('lendCount', 0);
         publicArticle.setValue('isDeleted', false);
 
-        await publicArticle.save(null, { useMasterKey: true }).catch((e) => {
+        await publicArticle.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -72,7 +72,7 @@ action.get(
             query.equalTo('type', _input.type);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -80,11 +80,11 @@ action.get(
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = publicArticlea.map((value, index, array) => {
+        let tasks: Promise<any>[] = publicArticlea.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('adjuster')).first();
         });
         let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
@@ -128,7 +128,7 @@ action.put(
         let _input: InputU = data.inputType;
         let _userInfo = await Db.GetUserInfo(data);
 
-        let publicArticle: IDB.PublicArticle = await new Parse.Query(IDB.PublicArticle).get(_input.publicArticleId).catch((e) => {
+        let publicArticle: IDB.PublicArticle = await new Parse.Query(IDB.PublicArticle).get(_input.publicArticleId).fail((e) => {
             throw e;
         });
         if (!publicArticle) {
@@ -143,7 +143,7 @@ action.put(
         publicArticle.setValue('adjustReason', _input.adjustReason);
         publicArticle.setValue('adjuster', data.user);
 
-        await publicArticle.save(null, { useMasterKey: true }).catch((e) => {
+        await publicArticle.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -172,14 +172,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _publicArticleIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _publicArticleIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicArticle).get(value);
         });
         let publicArticles: IDB.PublicArticle[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = publicArticles.map((value, index, array) => {
+        tasks = publicArticles.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });
@@ -188,7 +188,7 @@ action.delete(
             throw e;
         });
 
-        tasks = publicArticles.map((value, index, array) => {
+        tasks = publicArticles.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicArticleReservation)
                 .equalTo('article', value)
                 .include('article')

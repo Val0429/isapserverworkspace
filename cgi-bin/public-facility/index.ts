@@ -56,7 +56,7 @@ action.post(
         publicFacility.setValue('pointCost', _input.pointCost);
         publicFacility.setValue('isDeleted', false);
 
-        await publicFacility.save(null, { useMasterKey: true }).catch((e) => {
+        await publicFacility.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -65,7 +65,7 @@ action.post(
 
         publicFacility.setValue('facilitySrc', facilitySrc);
 
-        await publicFacility.save(null, { useMasterKey: true }).catch((e) => {
+        await publicFacility.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -95,7 +95,7 @@ action.get(
 
         let query: Parse.Query<IDB.PublicFacility> = new Parse.Query(IDB.PublicFacility).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -103,7 +103,7 @@ action.get(
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -160,7 +160,7 @@ action.put(
             };
         });
 
-        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility).get(_input.publicFacilityId).catch((e) => {
+        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility).get(_input.publicFacilityId).fail((e) => {
             throw e;
         });
         if (!publicFacility) {
@@ -184,7 +184,7 @@ action.put(
             publicFacility.setValue('facilitySrc', facilitySrc);
         }
 
-        await publicFacility.save(null, { useMasterKey: true }).catch((e) => {
+        await publicFacility.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -213,14 +213,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _publicFacilityIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _publicFacilityIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicFacility).get(value);
         });
         let publicFacilitys: IDB.PublicFacility[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = publicFacilitys.map((value, index, array) => {
+        tasks = publicFacilitys.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });
@@ -229,7 +229,7 @@ action.delete(
             throw e;
         });
 
-        tasks = publicFacilitys.map((value, index, array) => {
+        tasks = publicFacilitys.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicFacilityReservation)
                 .equalTo('facility', value)
                 .include('facility')

@@ -34,7 +34,7 @@ action.put(
         _userInfo.residentInfo.setValue('deviceToken', _input.deviceToken);
         _userInfo.residentInfo.setValue('deviceType', _input.deviceType);
 
-        await _userInfo.residentInfo.save(null, { useMasterKey: true }).catch((e) => {
+        await _userInfo.residentInfo.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 

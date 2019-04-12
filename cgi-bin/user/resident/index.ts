@@ -28,7 +28,7 @@ action.post(
             .equalTo('community', _userInfo.community)
             .equalTo('address', _input.address)
             .first()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -46,19 +46,19 @@ action.post(
         resident.setValue('pointBalance', _input.pointTotal);
         resident.setValue('pointUpdateDate', new Date());
 
-        await resident.save(null, { useMasterKey: true }).catch((e) => {
+        await resident.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         resident.setValue('barcode', resident.id);
 
-        await resident.save(null, { useMasterKey: true }).catch((e) => {
+        await resident.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
         if (_input.parkingId) {
             try {
-                let parking: IDB.Parking = await new Parse.Query(IDB.Parking).get(_input.parkingId).catch((e) => {
+                let parking: IDB.Parking = await new Parse.Query(IDB.Parking).get(_input.parkingId).fail((e) => {
                     throw e;
                 });
 
@@ -68,11 +68,11 @@ action.post(
 
                 parking.setValue('resident', resident);
 
-                await parking.save(null, { useMasterKey: true }).catch((e) => {
+                await parking.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;
                 });
             } catch (e) {
-                await resident.destroy({ useMasterKey: true }).catch((e) => {
+                await resident.destroy({ useMasterKey: true }).fail((e) => {
                     throw e;
                 });
 
@@ -106,7 +106,7 @@ action.get(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -114,11 +114,11 @@ action.get(
             .skip((_page - 1) * _count)
             .limit(_count)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = residents.map((value, index, array) => {
+        let tasks: Promise<any>[] = residents.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('resident', value)
                 .equalTo('isDeleted', false)
@@ -128,7 +128,7 @@ action.get(
             throw e;
         });
 
-        tasks = residents.map((value, index, array) => {
+        tasks = residents.map<any>((value, index, array) => {
             return new Parse.Query(IDB.Parking).equalTo('resident', value).find();
         });
         let parkingss: IDB.Parking[][] = await Promise.all(tasks).catch((e) => {
@@ -187,7 +187,7 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _residentIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _residentIds.map<any>((value, index, array) => {
             let resident: IDB.CharacterResident = new IDB.CharacterResident();
             resident.id = value;
 
@@ -199,7 +199,7 @@ action.delete(
             })),
         );
 
-        tasks = residentInfos.map((value, index, array) => {
+        tasks = residentInfos.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });

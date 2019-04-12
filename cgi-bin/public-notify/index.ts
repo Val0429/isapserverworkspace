@@ -45,7 +45,7 @@ action.post(
         publicNotify.setValue('isDeleted', false);
         publicNotify.setValue('isTop', _input.isTop);
 
-        await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
+        await publicNotify.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -55,20 +55,20 @@ action.post(
 
             publicNotify.setValue('attachmentSrc', attachmentSrc);
 
-            await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
+            await publicNotify.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
         }
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -120,7 +120,7 @@ action.get(
             query.containedIn('aims', [_userInfo.residentInfo.getValue('character')]);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
@@ -129,11 +129,11 @@ action.get(
             .limit(_count)
             .descending(['isTop', 'date'])
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = publicNotifys.map((value, index, array) => {
+        let tasks: Promise<any>[] = publicNotifys.map<any>((value, index, array) => {
             return new Parse.Query(IDB.CharacterCommittee).equalTo('user', value.getValue('creator')).first();
         });
         let committees: IDB.CharacterCommittee[] = await Promise.all(tasks).catch((e) => {
@@ -182,7 +182,7 @@ action.put(
             extension = GetExtension(_input.attachment);
         }
 
-        let publicNotify: IDB.PublicNotify = await new Parse.Query(IDB.PublicNotify).get(_input.publicNotifyId).catch((e) => {
+        let publicNotify: IDB.PublicNotify = await new Parse.Query(IDB.PublicNotify).get(_input.publicNotifyId).fail((e) => {
             throw e;
         });
         if (!publicNotify) {
@@ -197,7 +197,7 @@ action.put(
         publicNotify.setValue('content', _input.content);
         publicNotify.setValue('isTop', _input.isTop);
 
-        await publicNotify.save(null, { useMasterKey: true }).catch((e) => {
+        await publicNotify.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
 
@@ -208,13 +208,13 @@ action.put(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
@@ -253,14 +253,14 @@ action.delete(
             return array.indexOf(value) === index;
         });
 
-        let tasks: Promise<any>[] = _publicNotifyIds.map((value, index, array) => {
+        let tasks: Promise<any>[] = _publicNotifyIds.map<any>((value, index, array) => {
             return new Parse.Query(IDB.PublicNotify).get(value);
         });
         let publicNotifys: IDB.PublicNotify[] = await Promise.all(tasks).catch((e) => {
             throw e;
         });
 
-        tasks = publicNotifys.map((value, index, array) => {
+        tasks = publicNotifys.map<any>((value, index, array) => {
             value.setValue('isDeleted', true);
 
             return value.save(null, { useMasterKey: true });
@@ -271,13 +271,13 @@ action.delete(
 
         let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
         let residents: IDB.CharacterResident[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 

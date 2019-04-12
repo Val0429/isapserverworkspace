@@ -32,14 +32,14 @@ action.get(
             query.equalTo('resident', undefined);
         }
 
-        let total: number = await query.count().catch((e) => {
+        let total: number = await query.count().fail((e) => {
             throw e;
         });
 
         let parkings: IDB.Parking[] = await query
             .limit(total)
             .find()
-            .catch((e) => {
+            .fail((e) => {
                 throw e;
             });
 
