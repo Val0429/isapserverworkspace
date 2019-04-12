@@ -9,13 +9,13 @@ import './custom/shells/create-index';
 import './custom/shells/create-default';
 import './custom/shells/auto-index';
 
-import './custom/services/notice';
-
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
 app.use(`/files`, express.static(`workspace/custom/assets/files`));
 
 import './custom/actions';
+import './custom/services';
+
 setTimeout(() => {
     let node_env: string = !process.env.NODE_ENV || process.env.NODE_ENV !== 'development' ? 'Production' : 'Development';
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: `- ${node_env} Mode` });
