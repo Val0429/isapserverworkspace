@@ -1,3 +1,6 @@
+import { DateTime } from '../utilitys';
+import * as Action from '../../actions';
+
 export namespace Print {
     const Reset = '\x1b[0m';
 
@@ -99,5 +102,70 @@ export namespace Print {
                 message: message,
             },
         );
+    }
+
+    /**
+     * Print log
+     * @param message
+     */
+    export function Log(message: Error, mode: 'message' | 'warning' | 'info' | 'error' | 'success'): void {
+        let font: FontColor = FontColor.white;
+        let back: BackColor = BackColor.white;
+        let title: string = 'Message';
+        let date: string = DateTime.DateTime2String(new Date());
+
+        switch (mode) {
+            case 'warning':
+                font = FontColor.yellow;
+                back = BackColor.yellow;
+                title = 'Warning';
+                break;
+            case 'info':
+                font = FontColor.blue;
+                back = BackColor.blue;
+                title = '   Info';
+                break;
+            case 'error':
+                font = FontColor.red;
+                back = BackColor.red;
+                title = '  Error';
+                break;
+            case 'success':
+                font = FontColor.green;
+                back = BackColor.green;
+                title = 'Success';
+                break;
+        }
+
+        let path: string = JSON.stringify(message.stack);
+        let paths = path.match(/at .*?\(.*?\)\\n/g);
+        path = paths && paths.length > 0 ? paths[0].substring(paths[0].lastIndexOf('workspace'), paths[0].lastIndexOf(')')) : '';
+
+        Message(
+            {
+                message: '  ',
+                background: back,
+            },
+            {
+                message: date,
+                color: font,
+            },
+            {
+                message: title,
+                color: font,
+            },
+            {
+                message: '--->',
+                color: font,
+            },
+            {
+                message: message.message,
+            },
+            {
+                message: `(${path})`,
+            },
+        );
+
+        Action.WriteLog.action$.next(`${date} ${title} ---> ${message.message} (${path})`);
     }
 }
