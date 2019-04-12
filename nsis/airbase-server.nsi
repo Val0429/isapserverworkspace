@@ -2,7 +2,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "Airbase Server"
-!define PRODUCT_VERSION "2.00.01"
+!define PRODUCT_VERSION "2.00.02"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
@@ -173,7 +173,7 @@ Section
 
 	SetOutPath $INSTDIR
 	File /r *.bat
-	File /r /x .git /x .gitignore /x assets /x nsis ..\..\*.* 
+	File /r /x license.xml /x .git /x .gitignore /x assets /x nsis ..\..\*.* 
 	
 	ExecWait '"install_mongo.bat" /s'
 	
