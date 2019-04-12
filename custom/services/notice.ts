@@ -84,7 +84,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                 body = body.replace(/{{YYYYMM}}/g, DateTime.DateTime2String(value.message.YYYYMM, 'YYYY/MM'));
                             }
 
-                            Print.MinLog(`${config.title}: ${body}`);
+                            Print.Log(new Error(`${config.title}: ${body}`), 'message');
 
                             return [].concat(
                                 ...(await Promise.all(
@@ -94,15 +94,15 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                                 let fcm: Fcm = new Fcm();
                                                 let result: string = await fcm.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                Print.MinLog(`Fcm: ${JSON.stringify(result)}`, 'success');
+                                                Print.Log(new Error(`Fcm: ${JSON.stringify(result)}`), 'success');
                                             } else {
                                                 let apn: Apn = new Apn();
                                                 let result = await apn.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                Print.MinLog(`Apn: ${JSON.stringify(result)}`, 'success');
+                                                Print.Log(new Error(`Apn: ${JSON.stringify(result)}`), 'success');
                                             }
                                         } catch (e) {
-                                            Print.MinLog(e, 'error');
+                                            Print.Log(new Error(e), 'error');
                                         }
 
                                         let message: IDB.MessageResident = new IDB.MessageResident();
@@ -151,7 +151,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                     throw e;
                 });
             } catch (e) {
-                Print.MinLog(e, 'error');
+                Print.Log(new Error(e), 'error');
             }
         },
     });
