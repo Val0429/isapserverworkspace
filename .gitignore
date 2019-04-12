@@ -1,8 +1,9 @@
 .vscode/
 
-custom/web/
-custom/assets/
+node_modules/
 
 nsis/Release/
 
-node_modules
+custom/web/
+custom/license/license.xml
+custom/assets/
