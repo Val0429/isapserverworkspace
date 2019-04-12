@@ -38,70 +38,78 @@ action.ws(async (data) => {
 
     push$.subscribe({
         next: async (x) => {
-            if (!_counts.find((n) => n.deviceId === x.deviceId)) {
-                _counts.push({
-                    regionId: x.regionId,
-                    siteId: x.siteId,
-                    deviceId: x.deviceId,
-                    count: x.count,
-                });
-            } else {
-                _counts.find((n) => n.deviceId === x.deviceId).count = x.count;
-            }
-
-            if (_mode !== EPushMode.stop) {
-                let counts = CountFilter(_counts, _mode, _id);
-                if (counts.length > 0) {
-                    _socket.send(counts);
+            try {
+                if (!_counts.find((n) => n.deviceId === x.deviceId)) {
+                    _counts.push({
+                        regionId: x.regionId,
+                        siteId: x.siteId,
+                        deviceId: x.deviceId,
+                        count: x.count,
+                    });
+                } else {
+                    _counts.find((n) => n.deviceId === x.deviceId).count = x.count;
                 }
+
+                if (_mode !== EPushMode.stop) {
+                    let counts = CountFilter(_counts, _mode, _id);
+                    if (counts.length > 0) {
+                        _socket.send(counts);
+                    }
+                }
+            } catch (e) {
+                Print.Log(new Error(e), 'error');
             }
         },
     });
 
     _socket.io.on('message', async (data) => {
-        let _input: IWs<any> = JSON.parse(data);
+        try {
+            let _input: IWs<any> = JSON.parse(data);
 
-        if (_input.type === EPushMode[EPushMode.stop]) {
-            _id = '';
-            return;
-        }
+            if (_input.type === EPushMode[EPushMode.stop]) {
+                _id = '';
+                return;
+            }
 
-        if (_input.type === EPushMode[EPushMode.region]) {
-            _mode = EPushMode.region;
-            _id = _input.content;
-        } else if (_input.type === EPushMode[EPushMode.site]) {
-            _mode = EPushMode.site;
-            _id = _input.content;
-        }
+            if (_input.type === EPushMode[EPushMode.region]) {
+                _mode = EPushMode.region;
+                _id = _input.content;
+            } else if (_input.type === EPushMode[EPushMode.site]) {
+                _mode = EPushMode.site;
+                _id = _input.content;
+            }
 
-        let counts: IPushCount[] = [].concat(
-            ...(await Promise.all(
-                PeopleCountingService.devices.map(async (value, index, array) => {
-                    let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                    hanwha.config = value.getValue('camera').getValue('config');
+            let counts: IPushCount[] = [].concat(
+                ...(await Promise.all(
+                    PeopleCountingService.devices.map(async (value, index, array) => {
+                        let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
+                        hanwha.config = value.getValue('camera').getValue('config');
 
-                    hanwha.Initialization();
+                        hanwha.Initialization();
 
-                    let counts = await hanwha.GetDoStatus();
-                    let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
+                        let counts = await hanwha.GetDoStatus();
+                        let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
 
-                    return {
-                        regionId: value.getValue('site').getValue('region').id,
-                        siteId: value.getValue('site').id,
-                        deviceId: value.id,
-                        count: count,
-                    };
-                }),
-            ).catch((e) => {
-                throw e;
-            })),
-        );
+                        return {
+                            regionId: value.getValue('site').getValue('region').id,
+                            siteId: value.getValue('site').id,
+                            deviceId: value.id,
+                            count: count,
+                        };
+                    }),
+                ).catch((e) => {
+                    throw e;
+                })),
+            );
 
-        _counts = counts;
+            _counts = counts;
 
-        counts = CountFilter(counts, _mode, _id);
-        if (counts.length > 0) {
-            _socket.send(counts);
+            counts = CountFilter(counts, _mode, _id);
+            if (counts.length > 0) {
+                _socket.send(counts);
+            }
+        } catch (e) {
+            Print.Log(new Error(e), 'error');
         }
     });
 });
@@ -113,38 +121,42 @@ action.ws(async (data) => {
  * @param id
  */
 function CountFilter(counts: IPushCount[], mode: EPushMode, id: string): IPushCount[] {
-    if (mode === EPushMode.region) {
-        let count: IPushCount = counts
-            .filter((value, index, array) => {
-                return value.regionId === id;
-            })
-            .reduce(
-                (prev, curr, index, array) => {
-                    return {
-                        regionId: prev.regionId,
+    try {
+        if (mode === EPushMode.region) {
+            let count: IPushCount = counts
+                .filter((value, index, array) => {
+                    return value.regionId === id;
+                })
+                .reduce(
+                    (prev, curr, index, array) => {
+                        return {
+                            regionId: prev.regionId,
+                            siteId: '',
+                            deviceId: '',
+                            count: {
+                                in: prev.count.in + curr.count.in,
+                                out: prev.count.out + curr.count.out,
+                            },
+                        };
+                    },
+                    {
+                        regionId: id,
                         siteId: '',
                         deviceId: '',
                         count: {
-                            in: prev.count.in + curr.count.in,
-                            out: prev.count.out + curr.count.out,
+                            in: 0,
+                            out: 0,
                         },
-                    };
-                },
-                {
-                    regionId: id,
-                    siteId: '',
-                    deviceId: '',
-                    count: {
-                        in: 0,
-                        out: 0,
                     },
-                },
-            );
+                );
 
-        return [count];
-    } else if (mode === EPushMode.site) {
-        return counts.filter((value, index, array) => {
-            return value.siteId === id;
-        });
+            return [count];
+        } else if (mode === EPushMode.site) {
+            return counts.filter((value, index, array) => {
+                return value.siteId === id;
+            });
+        }
+    } catch (e) {
+        throw e;
     }
 }

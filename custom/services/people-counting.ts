@@ -39,7 +39,7 @@ class Service {
             this.EnableLiveStreamGroup();
             this.EnableLiveStream();
         } catch (e) {
-            Print.MinLog(e, 'error');
+            Print.Log(new Error(e), 'error');
         }
     };
 
@@ -99,30 +99,34 @@ class Service {
                     })
                     .subscribe({
                         next: (x) => {
-                            let prev: number = counts.reduce((prev, curr, index, array) => {
-                                return prev + curr.count.in - curr.count.out;
-                            }, 0);
+                            try {
+                                let prev: number = counts.reduce((prev, curr, index, array) => {
+                                    return prev + curr.count.in - curr.count.out;
+                                }, 0);
 
-                            if (!counts.find((n) => n.deviceId === x.deviceId)) {
-                                counts.push({
-                                    regionId: x.regionId,
-                                    siteId: x.siteId,
-                                    deviceId: x.deviceId,
-                                    count: x.count,
+                                if (!counts.find((n) => n.deviceId === x.deviceId)) {
+                                    counts.push({
+                                        regionId: x.regionId,
+                                        siteId: x.siteId,
+                                        deviceId: x.deviceId,
+                                        count: x.count,
+                                    });
+                                } else {
+                                    counts.find((n) => n.deviceId === x.deviceId).count = x.count;
+                                }
+
+                                let curr: number = counts.reduce((prev, curr, index, array) => {
+                                    return prev + curr.count.in - curr.count.out;
+                                }, 0);
+
+                                Action.HanwhaAircondition.action$.next({
+                                    group: x.group,
+                                    prev: prev,
+                                    curr: curr,
                                 });
-                            } else {
-                                counts.find((n) => n.deviceId === x.deviceId).count = x.count;
+                            } catch (e) {
+                                Print.Log(new Error(e), 'error');
                             }
-
-                            let curr: number = counts.reduce((prev, curr, index, array) => {
-                                return prev + curr.count.in - curr.count.out;
-                            }, 0);
-
-                            Action.HanwhaAircondition.action$.next({
-                                group: x.group,
-                                prev: prev,
-                                curr: curr,
-                            });
                         },
                     });
 
@@ -148,47 +152,55 @@ class Service {
                 })
                 .subscribe({
                     next: ({ index, device }) => {
-                        let site: IDB.LocationSite = device.getValue('site');
-                        let region: IDB.LocationRegion = site.getValue('region');
-                        let camera: IDB.Camera = device.getValue('camera');
-                        let streamGroup = this._liveStreamGroups.find((x) => x.siteId === site.id);
-                        let group: IDB.CameraGroup = streamGroup.group;
+                        try {
+                            let site: IDB.LocationSite = device.getValue('site');
+                            let region: IDB.LocationRegion = site.getValue('region');
+                            let camera: IDB.Camera = device.getValue('camera');
+                            let streamGroup = this._liveStreamGroups.find((x) => x.siteId === site.id);
+                            let group: IDB.CameraGroup = streamGroup.group;
 
-                        Print.MinLog(`${index}. region: ${region.id}, site: ${site.id}, group: ${group.id}, device: ${device.id}, camera: ${camera.id}`, 'info');
+                            // Print.Log(new Error(`${index}. region: ${region.id}, site: ${site.id}, group: ${group.id}, device: ${device.id}, camera: ${camera.id}`), 'info');
 
-                        if (camera.getValue('type') === Enum.ECameraType.hanwha) {
-                            let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                            hanwha.config = camera.getValue('config');
+                            if (camera.getValue('type') === Enum.ECameraType.hanwha) {
+                                let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
+                                hanwha.config = camera.getValue('config');
 
-                            hanwha.Initialization();
+                                hanwha.Initialization();
 
-                            hanwha.EnableLiveSubject(this._interval);
+                                hanwha.EnableLiveSubject(this._interval);
 
-                            hanwha.liveStream$.subscribe({
-                                next: (counts) => {
-                                    let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
+                                hanwha.liveStream$.subscribe({
+                                    next: (counts) => {
+                                        try {
+                                            let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
 
-                                    streamGroup.liveStreamGroup$.next({
-                                        regionId: region.id,
-                                        siteId: site.id,
-                                        deviceId: device.id,
-                                        count: count,
-                                    });
+                                            streamGroup.liveStreamGroup$.next({
+                                                regionId: region.id,
+                                                siteId: site.id,
+                                                deviceId: device.id,
+                                                count: count,
+                                            });
 
-                                    DataWindow.push$.next({
-                                        regionId: region.id,
-                                        siteId: site.id,
-                                        deviceId: device.id,
-                                        count: count,
-                                    });
-                                },
-                                error: (e) => {
-                                    Print.MinLog(`${camera.id}: ${e}`, 'error');
-                                },
-                                complete: () => {
-                                    Print.MinLog(`${camera.id}: complete`, 'success');
-                                },
-                            });
+                                            DataWindow.push$.next({
+                                                regionId: region.id,
+                                                siteId: site.id,
+                                                deviceId: device.id,
+                                                count: count,
+                                            });
+                                        } catch (e) {
+                                            Print.Log(new Error(e), 'error');
+                                        }
+                                    },
+                                    error: (e) => {
+                                        Print.Log(new Error(`${camera.id}: ${e}`), 'error');
+                                    },
+                                    complete: () => {
+                                        Print.Log(new Error(`${camera.id}: complete`), 'success');
+                                    },
+                                });
+                            }
+                        } catch (e) {
+                            Print.Log(new Error(e), 'error');
                         }
                     },
                 });

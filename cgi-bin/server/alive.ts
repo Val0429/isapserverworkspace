@@ -23,7 +23,11 @@ action.ws(async (data) => {
 
     timer$.subscribe({
         next: async () => {
-            UserHelper.extendSessionExpires(data.session.id);
+            try {
+                UserHelper.extendSessionExpires(data.session.id);
+            } catch (e) {
+                Print.Log(new Error(e), 'error');
+            }
         },
     });
 

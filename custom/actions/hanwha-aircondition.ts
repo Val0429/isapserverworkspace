@@ -20,31 +20,35 @@ class Action {
         try {
             this._action$.subscribe({
                 next: async (x) => {
-                    if (!x.group.getValue('action').hanwhaAirConditions) {
-                        return;
-                    }
+                    try {
+                        if (!x.group.getValue('action').hanwhaAirConditions) {
+                            return;
+                        }
 
-                    let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                    hanwha.config = x.group.getValue('nvrConfig');
+                        let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
+                        hanwha.config = x.group.getValue('nvrConfig');
 
-                    hanwha.Initialization();
+                        hanwha.Initialization();
 
-                    let prevRange = x.group.getValue('action').hanwhaAirConditions.find((value, index, array) => {
-                        return value.triggerMax >= x.prev && value.triggerMin <= x.prev;
-                    });
-                    let currRange = x.group.getValue('action').hanwhaAirConditions.find((value, index, array) => {
-                        return value.triggerMax >= x.curr && value.triggerMin <= x.curr;
-                    });
+                        let prevRange = x.group.getValue('action').hanwhaAirConditions.find((value, index, array) => {
+                            return value.triggerMax >= x.prev && value.triggerMin <= x.prev;
+                        });
+                        let currRange = x.group.getValue('action').hanwhaAirConditions.find((value, index, array) => {
+                            return value.triggerMax >= x.curr && value.triggerMin <= x.curr;
+                        });
 
-                    if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
-                        if (currRange) await hanwha.ControlDo(currRange.doNumber, currRange.doStatus);
-                        if (prevRange) await hanwha.ControlDo(prevRange.doNumber, prevRange.doStatus === 'Off' ? 'On' : 'Off');
-                        Print.MinLog(`${x.group.id}, ${x.prev}(${JSON.stringify(prevRange)}) -> ${x.curr}(${JSON.stringify(currRange)})`);
+                        if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
+                            if (currRange) await hanwha.ControlDo(currRange.doNumber, currRange.doStatus);
+                            if (prevRange) await hanwha.ControlDo(prevRange.doNumber, prevRange.doStatus === 'Off' ? 'On' : 'Off');
+                            // Print.Log(new Error(`group: ${x.group.id}, ${x.prev}(${prevRange ? `Do${prevRange.doNumber}+${prevRange.doStatus}, ${prevRange.triggerMin}~${prevRange.triggerMax}` : 'undefined'}) -> ${x.curr}(${currRange ? `Do${currRange.doNumber}+${currRange.doStatus}, ${currRange.triggerMin}~${currRange.triggerMax}` : 'undefined'})`), 'message');
+                        }
+                    } catch (e) {
+                        Print.Log(new Error(e), 'error');
                     }
                 },
             });
         } catch (e) {
-            Print.MinLog(e, 'error');
+            Print.Log(new Error(e), 'error');
         }
     };
 }
