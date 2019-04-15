@@ -21,36 +21,41 @@ action.post(
         permission: [RoleList.Chairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputC> => {
-        let _input: InputC = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
+        try {
+            let _input: InputC = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data);
 
-        let parking: IDB.Parking = await new Parse.Query(IDB.Parking)
-            .equalTo('name', _input.name)
-            .equalTo('community', _userInfo.community)
-            .equalTo('isDeleted', false)
-            .first()
-            .fail((e) => {
+            let parking: IDB.Parking = await new Parse.Query(IDB.Parking)
+                .equalTo('name', _input.name)
+                .equalTo('community', _userInfo.community)
+                .equalTo('isDeleted', false)
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+            if (parking) {
+                throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
+            }
+
+            parking = new IDB.Parking();
+
+            parking.setValue('creator', data.user);
+            parking.setValue('community', _userInfo.community);
+            parking.setValue('name', _input.name);
+            parking.setValue('cost', _input.cost);
+            parking.setValue('isDeleted', false);
+
+            await parking.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
-        if (parking) {
-            throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
-        }
 
-        parking = new IDB.Parking();
-
-        parking.setValue('creator', data.user);
-        parking.setValue('community', _userInfo.community);
-        parking.setValue('name', _input.name);
-        parking.setValue('cost', _input.cost);
-        parking.setValue('isDeleted', false);
-
-        await parking.save(null, { useMasterKey: true }).fail((e) => {
+            return {
+                parkingId: parking.id,
+            };
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
-        });
-
-        return {
-            parkingId: parking.id,
-        };
+        }
     },
 );
 
@@ -67,52 +72,57 @@ action.get(
         permission: [RoleList.Chairman, RoleList.DeputyChairman, RoleList.FinanceCommittee, RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
-        let _page: number = _input.page || 1;
-        let _count: number = _input.count || 10;
+        try {
+            let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data);
+            let _page: number = _input.page || 1;
+            let _count: number = _input.count || 10;
 
-        let query: Parse.Query<IDB.Parking> = new Parse.Query(IDB.Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
+            let query: Parse.Query<IDB.Parking> = new Parse.Query(IDB.Parking).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
 
-        let total: number = await query.count().fail((e) => {
-            throw e;
-        });
-
-        let parkings: IDB.Parking[] = await query
-            .skip((_page - 1) * _count)
-            .limit(_count)
-            .include('resident')
-            .find()
-            .fail((e) => {
+            let total: number = await query.count().fail((e) => {
                 throw e;
             });
 
-        let tasks: Promise<any>[] = parkings.map<any>((value, index, array) => {
-            return new Parse.Query(IDB.CharacterResidentInfo)
-                .equalTo('resident', value.getValue('resident'))
-                .equalTo('isDeleted', false)
-                .first();
-        });
-        let residentInfos: IDB.CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+            let parkings: IDB.Parking[] = await query
+                .skip((_page - 1) * _count)
+                .limit(_count)
+                .include('resident')
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            let tasks: Promise<any>[] = parkings.map<any>((value, index, array) => {
+                return new Parse.Query(IDB.CharacterResidentInfo)
+                    .equalTo('resident', value.getValue('resident'))
+                    .equalTo('isDeleted', false)
+                    .first();
+            });
+            let residentInfos: IDB.CharacterResidentInfo[] = await Promise.all(tasks).catch((e) => {
+                throw e;
+            });
+
+            return {
+                total: total,
+                page: _page,
+                count: _count,
+                content: parkings.map((value, index, array) => {
+                    let isResident: boolean = value.getValue('resident') !== null && value.getValue('resident') !== undefined;
+
+                    return {
+                        parkingId: value.id,
+                        parkingName: value.getValue('name'),
+                        address: isResident ? value.getValue('resident').getValue('address') : '',
+                        residentName: isResident && residentInfos[index] ? residentInfos[index].getValue('name') : '',
+                        phone: isResident && residentInfos[index] ? residentInfos[index].getValue('phone') : '',
+                    };
+                }),
+            };
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
-        });
-
-        return {
-            total: total,
-            page: _page,
-            count: _count,
-            content: parkings.map((value, index, array) => {
-                let isResident: boolean = value.getValue('resident') !== null && value.getValue('resident') !== undefined;
-
-                return {
-                    parkingId: value.id,
-                    parkingName: value.getValue('name'),
-                    address: isResident ? value.getValue('resident').getValue('address') : '',
-                    residentName: isResident && residentInfos[index] ? residentInfos[index].getValue('name') : '',
-                    phone: isResident && residentInfos[index] ? residentInfos[index].getValue('phone') : '',
-                };
-            }),
-        };
+        }
     },
 );
 
@@ -129,30 +139,35 @@ action.delete(
         permission: [RoleList.Chairman, RoleList.DirectorGeneral],
     },
     async (data): Promise<OutputD> => {
-        let _input: InputD = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
-        let _parkingIds: string[] = [].concat(data.parameters.parkingIds);
+        try {
+            let _input: InputD = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data);
+            let _parkingIds: string[] = [].concat(data.parameters.parkingIds);
 
-        _parkingIds = _parkingIds.filter((value, index, array) => {
-            return array.indexOf(value) === index;
-        });
+            _parkingIds = _parkingIds.filter((value, index, array) => {
+                return array.indexOf(value) === index;
+            });
 
-        let tasks: Promise<any>[] = _parkingIds.map<any>((value, index, array) => {
-            return new Parse.Query(IDB.Parking).get(value);
-        });
-        let parkings: IDB.Parking[] = await Promise.all(tasks).catch((e) => {
+            let tasks: Promise<any>[] = _parkingIds.map<any>((value, index, array) => {
+                return new Parse.Query(IDB.Parking).get(value);
+            });
+            let parkings: IDB.Parking[] = await Promise.all(tasks).catch((e) => {
+                throw e;
+            });
+
+            tasks = parkings.map<any>((value, index, array) => {
+                value.setValue('isDeleted', true);
+
+                return value.save(null, { useMasterKey: true });
+            });
+            await Promise.all(tasks).catch((e) => {
+                throw e;
+            });
+
+            return new Date();
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
-        });
-
-        tasks = parkings.map<any>((value, index, array) => {
-            value.setValue('isDeleted', true);
-
-            return value.save(null, { useMasterKey: true });
-        });
-        await Promise.all(tasks).catch((e) => {
-            throw e;
-        });
-
-        return new Date();
+        }
     },
 );

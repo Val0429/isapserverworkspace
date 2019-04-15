@@ -23,49 +23,54 @@ action.get(
         permission: [RoleList.Resident],
     },
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
-        let _start: Date = new Date(new Date(_input.date).setHours(0, 0, 0, 0));
-        let _end: Date = new Date(new Date(_start).setDate(_input.date.getDate() + 1));
-        let _day: number = _input.date.getDay();
+        try {
+            let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data);
+            let _start: Date = new Date(new Date(_input.date).setHours(0, 0, 0, 0));
+            let _end: Date = new Date(new Date(_start).setDate(_input.date.getDate() + 1));
+            let _day: number = _input.date.getDay();
 
-        let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility)
-            .equalTo('community', _userInfo.community)
-            .equalTo('isDeleted', false)
-            .get(_input.publicFacilityId)
-            .fail((e) => {
-                throw e;
+            let publicFacility: IDB.PublicFacility = await new Parse.Query(IDB.PublicFacility)
+                .equalTo('community', _userInfo.community)
+                .equalTo('isDeleted', false)
+                .get(_input.publicFacilityId)
+                .fail((e) => {
+                    throw e;
+                });
+            if (!publicFacility) {
+                throw Errors.throw(Errors.CustomBadRequest, ['public facility not found']);
+            }
+
+            let openHours: number[] = GetHours(publicFacility.getValue('openDates'), _day);
+
+            let maintenanceHours: number[] = GetHours(publicFacility.getValue('maintenanceDates'), _day);
+            openHours = openHours.filter((value, index, array) => {
+                return maintenanceHours.indexOf(value) < 0;
             });
-        if (!publicFacility) {
-            throw Errors.throw(Errors.CustomBadRequest, ['public facility not found']);
+
+            let reservations: IDB.PublicFacilityReservation[] = await new Parse.Query(IDB.PublicFacilityReservation)
+                .equalTo('community', _userInfo.community)
+                .equalTo('isDeleted', false)
+                .equalTo('facility', publicFacility)
+                .greaterThanOrEqualTo('reservationDates.startDate', _start)
+                .lessThan('reservationDates.startDate', _end)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            let reservationHours: number[] = GetHours1(reservations);
+            openHours = openHours.filter((value, index, array) => {
+                return reservationHours.indexOf(value) < 0;
+            });
+
+            return {
+                hours: openHours,
+            };
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
         }
-
-        let openHours: number[] = GetHours(publicFacility.getValue('openDates'), _day);
-
-        let maintenanceHours: number[] = GetHours(publicFacility.getValue('maintenanceDates'), _day);
-        openHours = openHours.filter((value, index, array) => {
-            return maintenanceHours.indexOf(value) < 0;
-        });
-
-        let reservations: IDB.PublicFacilityReservation[] = await new Parse.Query(IDB.PublicFacilityReservation)
-            .equalTo('community', _userInfo.community)
-            .equalTo('isDeleted', false)
-            .equalTo('facility', publicFacility)
-            .greaterThanOrEqualTo('reservationDates.startDate', _start)
-            .lessThan('reservationDates.startDate', _end)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        let reservationHours: number[] = GetHours1(reservations);
-        openHours = openHours.filter((value, index, array) => {
-            return reservationHours.indexOf(value) < 0;
-        });
-
-        return {
-            hours: openHours,
-        };
     },
 );
 

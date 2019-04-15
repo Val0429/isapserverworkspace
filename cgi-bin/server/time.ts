@@ -1,5 +1,5 @@
 import { Action } from 'core/cgi-package';
-import { DateTime } from '../../custom/helpers';
+import { DateTime, Print } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: false,
@@ -16,6 +16,11 @@ type Output = string;
 
 action.get(
     async (): Promise<Output> => {
-        return DateTime.DateTime2String(new Date(), DateTime.Format.default);
+        try {
+            return DateTime.DateTime2String(new Date(), DateTime.Format.default);
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

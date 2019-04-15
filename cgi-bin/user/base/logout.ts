@@ -1,6 +1,6 @@
 import { Action, Events, EventLogout } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import {} from '../../../custom/helpers';
+import { Print } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -20,19 +20,24 @@ type OutputC = Date;
 action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
-        let _input: InputC = data.inputType;
+        try {
+            let _input: InputC = data.inputType;
 
-        await data.session.destroy({ sessionToken: _input.sessionId }).fail((e) => {
+            await data.session.destroy({ sessionToken: _input.sessionId }).fail((e) => {
+                throw e;
+            });
+
+            let event: EventLogout = new EventLogout({
+                owner: data.user,
+            });
+            await Events.save(event).catch((e) => {
+                throw e;
+            });
+
+            return new Date();
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
-        });
-
-        let event: EventLogout = new EventLogout({
-            owner: data.user,
-        });
-        await Events.save(event).catch((e) => {
-            throw e;
-        });
-
-        return new Date();
+        }
     },
 );

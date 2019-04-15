@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../../custom/models';
-import { File, Db } from '../../../../custom/helpers';
+import { File, Db, Print } from '../../../../custom/helpers';
 import * as Enum from '../../../../custom/enums';
 import * as Notice from '../../../../custom/services/notice';
 
@@ -24,57 +24,62 @@ action.post(
         permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputC> => {
-        let _input: InputC = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
+        try {
+            let _input: InputC = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data);
 
-        let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
+            let resident: IDB.CharacterResident = await new Parse.Query(IDB.CharacterResident).get(_input.residentId).fail((e) => {
+                throw e;
+            });
+            if (!resident) {
+                throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
+            }
+
+            let packagePosting: IDB.PackagePosting = new IDB.PackagePosting();
+
+            packagePosting.setValue('creator', data.user);
+            packagePosting.setValue('community', _userInfo.community);
+            packagePosting.setValue('resident', resident);
+            packagePosting.setValue('sender', _input.sender);
+            packagePosting.setValue('receiver', _input.receiver);
+            packagePosting.setValue('status', Enum.ReceiveStatus.unreceived);
+            packagePosting.setValue('memo', _input.memo);
+            packagePosting.setValue('notificateCount', 0);
+            packagePosting.setValue('adjustReason', '');
+            packagePosting.setValue('receiverSrc', '');
+            packagePosting.setValue('packageSrc', '');
+            packagePosting.setValue('senderSrc', '');
+
+            await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            let packageSrc: string = `images/${packagePosting.id}_package_${packagePosting.createdAt.getTime()}.png`;
+            File.WriteBase64File(`${File.assetsPath}/${packageSrc}`, _input.packageImage);
+
+            let senderSrc: string = `images/${packagePosting.id}_sender_${packagePosting.createdAt.getTime()}.png`;
+            File.WriteBase64File(`${File.assetsPath}/${senderSrc}`, _input.senderImage);
+
+            packagePosting.setValue('packageSrc', packageSrc);
+            packagePosting.setValue('senderSrc', senderSrc);
+
+            await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            Notice.notice$.next({
+                resident: packagePosting.getValue('resident'),
+                type: Enum.MessageType.packagePostingVisitorNew,
+                data: packagePosting,
+                message: {},
+            });
+
+            return {
+                packagePostingId: packagePosting.id,
+            };
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
-        });
-        if (!resident) {
-            throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
         }
-
-        let packagePosting: IDB.PackagePosting = new IDB.PackagePosting();
-
-        packagePosting.setValue('creator', data.user);
-        packagePosting.setValue('community', _userInfo.community);
-        packagePosting.setValue('resident', resident);
-        packagePosting.setValue('sender', _input.sender);
-        packagePosting.setValue('receiver', _input.receiver);
-        packagePosting.setValue('status', Enum.ReceiveStatus.unreceived);
-        packagePosting.setValue('memo', _input.memo);
-        packagePosting.setValue('notificateCount', 0);
-        packagePosting.setValue('adjustReason', '');
-        packagePosting.setValue('receiverSrc', '');
-        packagePosting.setValue('packageSrc', '');
-        packagePosting.setValue('senderSrc', '');
-
-        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
-            throw e;
-        });
-
-        let packageSrc: string = `images/${packagePosting.id}_package_${packagePosting.createdAt.getTime()}.png`;
-        File.WriteBase64File(`${File.assetsPath}/${packageSrc}`, _input.packageImage);
-
-        let senderSrc: string = `images/${packagePosting.id}_sender_${packagePosting.createdAt.getTime()}.png`;
-        File.WriteBase64File(`${File.assetsPath}/${senderSrc}`, _input.senderImage);
-
-        packagePosting.setValue('packageSrc', packageSrc);
-        packagePosting.setValue('senderSrc', senderSrc);
-
-        await packagePosting.save(null, { useMasterKey: true }).fail((e) => {
-            throw e;
-        });
-
-        Notice.notice$.next({
-            resident: packagePosting.getValue('resident'),
-            type: Enum.MessageType.packagePostingVisitorNew,
-            data: packagePosting,
-            message: {},
-        });
-
-        return {
-            packagePostingId: packagePosting.id,
-        };
     },
 );

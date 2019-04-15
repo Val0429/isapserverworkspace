@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import {} from '../../custom/helpers';
+import { Print } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -20,9 +20,14 @@ type OutputC = string;
 action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
-        let _input: InputC = data.inputType;
+        try {
+            let _input: InputC = data.inputType;
 
-        return '';
+            return '';
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
 
@@ -36,9 +41,14 @@ type OutputR = string;
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
+        try {
+            let _input: InputR = data.inputType;
 
-        return '';
+            return '';
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
 
@@ -52,9 +62,14 @@ type OutputU = string;
 action.put(
     { inputType: 'InputU' },
     async (data): Promise<OutputU> => {
-        let _input: InputU = data.inputType;
+        try {
+            let _input: InputU = data.inputType;
 
-        return '';
+            return '';
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
 
@@ -68,8 +83,13 @@ type OutputD = string;
 action.delete(
     { inputType: 'InputD' },
     async (data): Promise<OutputD> => {
-        let _input: InputD = data.inputType;
+        try {
+            let _input: InputD = data.inputType;
 
-        return '';
+            return '';
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

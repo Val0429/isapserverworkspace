@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Db } from '../../../custom/helpers';
+import { Db, Print } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import * as Notice from '../../../custom/services/notice';
 
@@ -23,46 +23,51 @@ action.put(
         permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputU> => {
-        let _input: InputU = data.inputType;
-        let _userInfo = await Db.GetUserInfo(data);
+        try {
+            let _input: InputU = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data);
 
-        let packageReceive: IDB.PackageReceive = await new Parse.Query(IDB.PackageReceive)
-            .include('resident')
-            .get(_input.packageReceiveId)
-            .fail((e) => {
+            let packageReceive: IDB.PackageReceive = await new Parse.Query(IDB.PackageReceive)
+                .include('resident')
+                .get(_input.packageReceiveId)
+                .fail((e) => {
+                    throw e;
+                });
+            if (!packageReceive) {
+                throw Errors.throw(Errors.CustomBadRequest, ['package receive not found']);
+            }
+            if (packageReceive.getValue('status') === Enum.ReceiveStatus.received) {
+                throw Errors.throw(Errors.CustomBadRequest, ['package was received']);
+            }
+            if (packageReceive.getValue('barcode') !== _input.packageBarcode) {
+                throw Errors.throw(Errors.CustomBadRequest, ['package receive barcode is error']);
+            }
+            if (packageReceive.getValue('resident').getValue('barcode') !== _input.residentBarcode) {
+                throw Errors.throw(Errors.CustomBadRequest, ['resident barcode is error']);
+            }
+
+            packageReceive.setValue('status', Enum.ReceiveStatus.received);
+            packageReceive.setValue('memo', _input.memo);
+            packageReceive.setValue('manager', data.user);
+
+            await packageReceive.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
-        if (!packageReceive) {
-            throw Errors.throw(Errors.CustomBadRequest, ['package receive not found']);
-        }
-        if (packageReceive.getValue('status') === Enum.ReceiveStatus.received) {
-            throw Errors.throw(Errors.CustomBadRequest, ['package was received']);
-        }
-        if (packageReceive.getValue('barcode') !== _input.packageBarcode) {
-            throw Errors.throw(Errors.CustomBadRequest, ['package receive barcode is error']);
-        }
-        if (packageReceive.getValue('resident').getValue('barcode') !== _input.residentBarcode) {
-            throw Errors.throw(Errors.CustomBadRequest, ['resident barcode is error']);
-        }
 
-        packageReceive.setValue('status', Enum.ReceiveStatus.received);
-        packageReceive.setValue('memo', _input.memo);
-        packageReceive.setValue('manager', data.user);
+            Notice.notice$.next({
+                resident: packageReceive.getValue('resident'),
+                type: Enum.MessageType.packageReceiveReceive,
+                data: packageReceive,
+                message: {
+                    address: packageReceive.getValue('resident').getValue('address'),
+                    receiver: packageReceive.getValue('receiver'),
+                },
+            });
 
-        await packageReceive.save(null, { useMasterKey: true }).fail((e) => {
+            return new Date();
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
-        });
-
-        Notice.notice$.next({
-            resident: packageReceive.getValue('resident'),
-            type: Enum.MessageType.packageReceiveReceive,
-            data: packageReceive,
-            message: {
-                address: packageReceive.getValue('resident').getValue('address'),
-                receiver: packageReceive.getValue('receiver'),
-            },
-        });
-
-        return new Date();
+        }
     },
 );
