@@ -31,6 +31,9 @@ action.get(
                 .fail((e) => {
                     throw e;
                 });
+            if (!resident) {
+                throw Errors.throw(Errors.CustomBadRequest, ['resident not found']);
+            }
 
             let residentInfoCount: number = await new Parse.Query(IDB.CharacterResidentInfo)
                 .equalTo('isDeleted', false)
