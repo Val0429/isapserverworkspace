@@ -30,7 +30,7 @@ action.post(
             {
                 account: _input.account,
                 password: _input.password,
-                roles: [RoleList[_input.role]],
+                roles: [_input.role],
             },
             availableRoles,
         );
