@@ -18,6 +18,7 @@ export interface IReceiveIndexBase {
 
 export interface IReceiveIndexR extends IReceiveIndexBase {
     barcode: string;
+    barcodeSrc: string;
     packageReceiveId: string;
 }
 
@@ -27,6 +28,7 @@ export interface IReturnIndexC {
 
 export interface IReturnIndexR extends IReceiveIndexBase {
     barcode: string;
+    barcodeSrc: string;
     packageReturnId: string;
     receiverSrc: string;
 }
