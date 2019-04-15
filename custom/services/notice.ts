@@ -89,20 +89,22 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                             return [].concat(
                                 ...(await Promise.all(
                                     residentInfos.map(async (value1, index1, array1) => {
-                                        try {
-                                            if (value1.getValue('deviceType') === 'android') {
-                                                let fcm: Fcm = new Fcm();
-                                                let result: string = await fcm.Send(value1.getValue('deviceToken'), config.title, body);
+                                        if (value1.getValue('isNotice')) {
+                                            try {
+                                                if (value1.getValue('deviceType') === 'android') {
+                                                    let fcm: Fcm = new Fcm();
+                                                    let result: string = await fcm.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                Print.Log(new Error(`Fcm: ${JSON.stringify(result)}`), 'success');
-                                            } else {
-                                                let apn: Apn = new Apn();
-                                                let result = await apn.Send(value1.getValue('deviceToken'), config.title, body);
+                                                    Print.Log(new Error(`Fcm: ${JSON.stringify(result)}`), 'success');
+                                                } else {
+                                                    let apn: Apn = new Apn();
+                                                    let result = await apn.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                Print.Log(new Error(`Apn: ${JSON.stringify(result)}`), 'success');
+                                                    Print.Log(new Error(`Apn: ${JSON.stringify(result)}`), 'success');
+                                                }
+                                            } catch (e) {
+                                                Print.Log(new Error(e), 'error');
                                             }
-                                        } catch (e) {
-                                            Print.Log(new Error(e), 'error');
                                         }
 
                                         let message: IDB.MessageResident = new IDB.MessageResident();
