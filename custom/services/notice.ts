@@ -57,7 +57,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                 body = body.replace(/{{facility}}/g, value.message.facility);
                             }
                             if (value.message.dateRange) {
-                                body = body.replace(/{{dateRange}}/g, `${DateTime.DateTime2String(value.message.dateRange.startDate)}${DateTime.DateTime2String(value.message.dateRange.endDate)}`);
+                                body = body.replace(/{{dateRange}}/g, `${DateTime.DateTime2String(value.message.dateRange.startDate)}-${DateTime.DateTime2String(value.message.dateRange.endDate)}`);
                             }
                             if (value.message.title) {
                                 body = body.replace(/{{title}}/g, value.message.title);
