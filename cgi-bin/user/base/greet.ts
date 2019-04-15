@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import {} from '../../../custom/helpers';
+import { Print } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -19,8 +19,13 @@ type OutputR = Date;
 
 action.get(
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
+        try {
+            let _input: InputR = data.inputType;
 
-        return new Date();
+            return new Date();
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

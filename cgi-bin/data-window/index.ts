@@ -57,7 +57,7 @@ action.ws(async (data) => {
                     }
                 }
             } catch (e) {
-                Print.Log(new Error(e), 'error');
+                Print.Log(new Error(JSON.stringify(e)), 'error');
             }
         },
     });
@@ -109,7 +109,7 @@ action.ws(async (data) => {
                 _socket.send(counts);
             }
         } catch (e) {
-            Print.Log(new Error(e), 'error');
+            Print.Log(new Error(JSON.stringify(e)), 'error');
         }
     });
 });

@@ -4,6 +4,7 @@ import * as Path from 'path';
 import * as Fs from 'fs';
 import { promisify } from 'bluebird';
 import { IRequest, IResponse } from '../../custom/models';
+import { Print } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -22,22 +23,27 @@ type OutputR = IResponse.IConfig.IIndexR[] | IResponse.IConfig.IIndexR;
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
+        try {
+            let _input: InputR = data.inputType;
 
-        let configs: OutputR;
-        if (_input.key === '*') {
-            configs = Object.keys(Config).map((value, index, array) => {
-                return {
-                    [value]: Config[value],
+            let configs: OutputR;
+            if (_input.key === '*') {
+                configs = Object.keys(Config).map((value, index, array) => {
+                    return {
+                        [value]: Config[value],
+                    };
+                });
+            } else {
+                configs = {
+                    [_input.key]: Config[_input.key],
                 };
-            });
-        } else {
-            configs = {
-                [_input.key]: Config[_input.key],
-            };
-        }
+            }
 
-        return configs;
+            return configs;
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
 
@@ -51,16 +57,21 @@ type OutputU = Date;
 action.put(
     { inputType: 'InputU' },
     async (data): Promise<OutputU> => {
-        let _input: InputU = data.inputType;
+        try {
+            let _input: InputU = data.inputType;
 
-        for (let key in _input.data) {
-            /// update data
-            await UpdateConfig(key, _input.data[key]);
-            /// update memory
-            Config[key] = { ...Config[key], ..._input.data[key] };
+            for (let key in _input.data) {
+                /// update data
+                await UpdateConfig(key, _input.data[key]);
+                /// update memory
+                Config[key] = { ...Config[key], ..._input.data[key] };
+            }
+
+            return new Date();
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
         }
-
-        return new Date();
     },
 );
 

@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import {} from '../../custom/helpers';
+import { Print } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -19,26 +19,31 @@ type OutputR = IResponse.ICamera.IAll[];
 
 action.get(
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
+        try {
+            let _input: InputR = data.inputType;
 
-        let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera).equalTo('isDeleted', false);
+            let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera).equalTo('isDeleted', false);
 
-        let total: number = await query.count().fail((e) => {
-            throw e;
-        });
-
-        let cameras: IDB.Camera[] = await query
-            .limit(total)
-            .find()
-            .fail((e) => {
+            let total: number = await query.count().fail((e) => {
                 throw e;
             });
 
-        return cameras.map((value, index, array) => {
-            return {
-                cameraId: value.id,
-                name: value.getValue('name'),
-            };
-        });
+            let cameras: IDB.Camera[] = await query
+                .limit(total)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            return cameras.map((value, index, array) => {
+                return {
+                    cameraId: value.id,
+                    name: value.getValue('name'),
+                };
+            });
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

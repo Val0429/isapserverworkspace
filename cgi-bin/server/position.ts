@@ -1,4 +1,5 @@
 import { Action } from 'core/cgi-package';
+import { Print } from '../../custom/helpers';
 import * as path from 'path';
 
 let action = new Action({
@@ -16,8 +17,13 @@ type Output = string;
 
 action.get(
     async (): Promise<Output> => {
-        let server: string = path.dirname(require.main.filename);
+        try {
+            let server: string = path.dirname(require.main.filename);
 
-        return `${server.replace(/\\/gi, '/')}/`;
+            return `${server.replace(/\\/gi, '/')}/`;
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

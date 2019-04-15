@@ -20,19 +20,24 @@ type OutputC = Date;
 action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
-        let _input: InputC = data.inputType;
-
         try {
-            if (_input.type === Enum.ECameraType.hanwha) {
-                let nvr: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                nvr.config = _input.config;
-                nvr.Initialization();
-                let nvrVersion: string = await nvr.GetVersion();
-            }
-        } catch (e) {
-            throw Errors.throw(Errors.CustomBadRequest, [e]);
-        }
+            let _input: InputC = data.inputType;
 
-        return new Date();
+            try {
+                if (_input.type === Enum.ECameraType.hanwha) {
+                    let nvr: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
+                    nvr.config = _input.config;
+                    nvr.Initialization();
+                    let nvrVersion: string = await nvr.GetVersion();
+                }
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [e]);
+            }
+
+            return new Date();
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

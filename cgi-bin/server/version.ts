@@ -1,4 +1,5 @@
 import { Action } from 'core/cgi-package';
+import { Print } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: false,
@@ -15,6 +16,11 @@ type Output = string;
 
 action.get(
     async (): Promise<Output> => {
-        return process.env.npm_package_version;
+        try {
+            return process.env.npm_package_version;
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );

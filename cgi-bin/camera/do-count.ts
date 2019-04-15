@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { PeopleCounting } from '../../custom/helpers';
+import { PeopleCounting, Print } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -20,17 +20,22 @@ type OutputR = IResponse.ICamera.IDoCount;
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
+        try {
+            let _input: InputR = data.inputType;
 
-        let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-        hanwha.config = _input;
+            let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
+            hanwha.config = _input;
 
-        hanwha.Initialization();
+            hanwha.Initialization();
 
-        let count: number = (await hanwha.GetDoSetting()).AlarmOutputs.length;
+            let count: number = (await hanwha.GetDoSetting()).AlarmOutputs.length;
 
-        return {
-            count: count,
-        };
+            return {
+                count: count,
+            };
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
