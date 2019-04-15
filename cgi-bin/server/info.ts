@@ -17,7 +17,10 @@ type Output = string;
 action.get(
     async (): Promise<Output> => {
         try {
-            return process.env.npm_package_version;
+            let description: string = process.env.npm_package_description;
+            let version: string = process.env.npm_package_version;
+
+            return `${description}(v${version})`;
         } catch (e) {
             Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;
