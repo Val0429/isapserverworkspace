@@ -118,7 +118,7 @@ export class CMSService {
     /**
      * Enable Live Subject
      */
-    public EnableLiveSubject(intervalSecond: number, sources: CMSService.ISource[]): void {
+    public EnableLiveSubject(intervalSecond: number, sources: CMSService.ISource[], isLive: boolean = true): void {
         if (!this._isInitialization) {
             throw Base.Message.NotInitialization;
         }
@@ -135,7 +135,7 @@ export class CMSService {
             .subscribe({
                 next: async (x) => {
                     try {
-                        let image: Buffer = await this.GetSnapshot(x.nvr, x.channel, x.timestamp);
+                        let image: Buffer = isLive ? await this.GetSnapshot(x.nvr, x.channel) : await this.GetSnapshot(x.nvr, x.channel, x.timestamp);
 
                         next$.next();
 
