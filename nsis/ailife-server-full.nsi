@@ -1,6 +1,7 @@
 !include "MUI2.nsh"
+
 !define PRODUCT_NAME "AiLife Server"
-!define PRODUCT_VERSION "1.00.06"
+!define PRODUCT_VERSION "1.00.07"
 !define MONGO "mongodb-win32-x86_64-2008plus-ssl-3.6.7-rc1-signed.msi"
 !define NODE "node-v8.12.0-x64.msi"
 ; !define VCREDIST "vc_redist.x64.exe"
@@ -8,26 +9,25 @@
 ; !define NETFRAMEWORK "NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
 !define OUTPUT_NAME "ailife-server" 
 
-# define installation directory
 InstallDir "$TEMP\AiLife\Temp"
 OutFile "Release\${OUTPUT_NAME}-v${PRODUCT_VERSION}-FULL.exe"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 
-; request admin level
 RequestExecutionLevel admin
 
 AutoCloseWindow true
-;ShowInstDetails show
-;--------------------------------
-;Interface Settings
+; ShowInstDetails show
 
-  !define MUI_ABORTWARNING
 
-;--------------------------------
-;Pages
+; --------------------------------
+; Interface Settings
+!define MUI_ABORTWARNING
 
-  ;!insertmacro MUI_PAGE_LICENSE "License.txt"
-  !insertmacro MUI_PAGE_COMPONENTS
+
+; --------------------------------
+; Pages
+; !insertmacro MUI_PAGE_LICENSE "License.txt"
+!insertmacro MUI_PAGE_COMPONENTS
 
 ; Section ".NET Framework 4.5.2" SEC00
   
@@ -49,29 +49,25 @@ SectionEnd
   
 ; SectionEnd 
   
-;Section "Install Mongo Db Service" SEC03
+; Section "Install Mongo Db Service" SEC03
 
-;SectionEnd 
-  
-  ;!insertmacro MUI_PAGE_DIRECTORY
-  !insertmacro MUI_PAGE_INSTFILES
-  
-  !insertmacro MUI_UNPAGE_CONFIRM
-  !insertmacro MUI_UNPAGE_INSTFILES
-  
+; SectionEnd 
 
+; !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
 
-;--------------------------------
-;Languages
- 
-  !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
 
 
+; --------------------------------
+; Languages
+!insertmacro MUI_LANGUAGE "English"
 
-;--------------------------------
-;Installer Sections
+
+; --------------------------------
+; Installer Sections
 Section
-	;delete previous temp folder
 	RMDir /r $INSTDIR\Release
 	
 	SetOutPath $INSTDIR\Release
@@ -98,21 +94,22 @@ Section
 	; 	File "Release\Prerequisites\${VCREDIST}"
 	; 	ExecWait "${VCREDIST}"
 	; ${EndIf}
+
 	; ${If} ${SectionIsSelected} ${SEC04}	
 	; 	File "Release\Prerequisites\${VCREDIST2010}"
 	; 	ExecWait "${VCREDIST2010}"
 	; ${EndIf}
-	;delete Prerequisites
+
 	RMDir /r $INSTDIR\Release\Prerequisites
 	
-	;refresh path to enable npm
 	Call RefreshProcessEnvironmentPath
-	
-	;run installer
+
     Exec "$INSTDIR\Release\${OUTPUT_NAME}-v${PRODUCT_VERSION}.exe"	
 SectionEnd
 
 
+; --------------------------------
+; 
 !include LogicLib.nsh
 !include WinCore.nsh
 !ifndef NSIS_CHAR_SIZE
@@ -124,10 +121,10 @@ SectionEnd
 !ifndef ERROR_MORE_DATA
     !define ERROR_MORE_DATA 234
 !endif
-/*!ifndef KEY_READ
-    !define KEY_READ 0x20019
-!endif*/
 
+
+; --------------------------------
+; 
 Function RegReadExpandStringAlloc
     System::Store S
     Pop $R2 ; reg value
@@ -154,6 +151,9 @@ Function RegReadExpandStringAlloc
     System::Store L
 FunctionEnd
 
+
+; --------------------------------
+; 
 Function RefreshProcessEnvironmentPath
     System::Store S
     Push ${HKEY_CURRENT_USER}
@@ -189,4 +189,3 @@ Function RefreshProcessEnvironmentPath
     System::Free $0
     System::Store L
 FunctionEnd
-

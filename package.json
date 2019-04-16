@@ -1,6 +1,6 @@
 {
     "name": "isap-ailife-service",
-    "version": "1.00.06",
+    "version": "1.00.07",
     "config": {
         "displayname": "iSap AiLife Service"
     },
