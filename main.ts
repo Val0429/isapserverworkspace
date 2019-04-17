@@ -3,6 +3,7 @@ import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
 import { Print, Utility } from './custom/helpers';
 
+import './custom/shells/create-folder';
 import './custom/shells/create-index';
 import './custom/shells/create-default';
 import './custom/shells/auto-index';
