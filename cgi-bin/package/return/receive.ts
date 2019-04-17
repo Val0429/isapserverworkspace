@@ -20,6 +20,7 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
+        postSizeLimit: 10000000,
         permission: [RoleList.DirectorGeneral, RoleList.Guard],
     },
     async (data): Promise<OutputU> => {
