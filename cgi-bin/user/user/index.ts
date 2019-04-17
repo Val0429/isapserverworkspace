@@ -63,7 +63,7 @@ action.post(
  */
 type InputR = IRequest.IDataList;
 
-type OutputR = IResponse.IDataList<IResponse.IUser.IUserIndexR[]>;
+type OutputR = IResponse.IDataList<IResponse.IUser.IUserIndexR>;
 
 action.get(
     {
@@ -73,8 +73,9 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
-            let _page: number = _input.page || 1;
-            let _count: number = _input.count || 10;
+            let _paging: IRequest.IPaging = _input.paging || { page: 1, pageSize: 10 };
+            let _page: number = _paging.page || 1;
+            let _pageSize: number = _paging.pageSize || 10;
 
             let roleSystemAdministrator: Parse.Role = await new Parse.Query(Parse.Role)
                 .equalTo('name', RoleList.SystemAdministrator)
@@ -95,10 +96,11 @@ action.get(
             let total: number = await query.count().fail((e) => {
                 throw e;
             });
+            let totalPage: number = Math.ceil(total / _pageSize);
 
             let infos: IDB.UserInfo[] = await query
-                .skip((_page - 1) * _count)
-                .limit(_count)
+                .skip((_page - 1) * _pageSize)
+                .limit(_pageSize)
                 .include(['user', 'user.roles'])
                 .find()
                 .fail((e) => {
@@ -106,10 +108,13 @@ action.get(
                 });
 
             return {
-                total: total,
-                page: _page,
-                count: _count,
-                content: infos.map((value, index, array) => {
+                paging: {
+                    total: total,
+                    totalPages: totalPage,
+                    page: _page,
+                    pageSize: _pageSize,
+                },
+                results: infos.map((value, index, array) => {
                     return {
                         userId: value.getValue('user').id,
                         account: value.getValue('user').getUsername(),

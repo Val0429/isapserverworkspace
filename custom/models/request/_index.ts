@@ -4,7 +4,11 @@ import * as IUser from './user';
 
 export { IConfig, ILicense, IUser };
 
-export interface IDataList {
+export interface IPaging {
     page?: number;
-    count?: number;
+    pageSize?: number;
+}
+
+export interface IDataList {
+    paging?: IPaging;
 }

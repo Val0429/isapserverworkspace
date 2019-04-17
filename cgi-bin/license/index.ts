@@ -72,29 +72,46 @@ action.post(
 /**
  * Action Read
  */
-type InputR = null;
+type InputR = IRequest.IDataList;
 
-type OutputR = IResponse.ILicense.IIndexR[];
+type OutputR = IResponse.IDataList<IResponse.ILicense.IIndexR>;
 
 action.get(
+    { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
         try {
+            let _input: InputR = data.inputType;
+            let _paging: IRequest.IPaging = _input.paging || { page: 1, pageSize: 10 };
+            let _page: number = _paging.page || 1;
+            let _pageSize: number = _paging.pageSize || 10;
+
             let license = await licenseService.getLicense();
 
-            return license.licenses.map((value, index, array) => {
-                return {
-                    licenseKey: value.licenseKey,
-                    description: value.description,
-                    mac: value.mac,
-                    brand: value.brand,
-                    productNO: value.productNO,
-                    count: value.count,
-                    trial: value.trial,
-                    registerDate: value.registerDate,
-                    expireDate: value.expireDate,
-                    expired: value.expired,
-                };
-            });
+            let total: number = license.licenses.length;
+            let totalPage: number = Math.ceil(total / _pageSize);
+
+            return {
+                paging: {
+                    total: total,
+                    totalPages: totalPage,
+                    page: _page,
+                    pageSize: _pageSize,
+                },
+                results: license.licenses.map((value, index, array) => {
+                    return {
+                        licenseKey: value.licenseKey,
+                        description: value.description,
+                        mac: value.mac,
+                        brand: value.brand,
+                        productNO: value.productNO,
+                        count: value.count,
+                        trial: value.trial,
+                        registerDate: value.registerDate,
+                        expireDate: value.expireDate,
+                        expired: value.expired,
+                    };
+                }),
+            };
         } catch (e) {
             Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;

@@ -15,25 +15,27 @@ export default action;
  */
 type InputR = IRequest.IDataList;
 
-type OutputR = IResponse.IDataList<IResponse.IUser.IBaseIndexR[]>;
+type OutputR = IResponse.IDataList<IResponse.IUser.IBaseIndexR>;
 
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
-            let _page: number = _input.page || 1;
-            let _count: number = _input.count || 10;
+            let _paging: IRequest.IPaging = _input.paging || { page: 1, pageSize: 10 };
+            let _page: number = _paging.page || 1;
+            let _pageSize: number = _paging.pageSize || 10;
 
             let query: Parse.Query<Parse.User> = new Parse.Query(Parse.User);
 
             let total: number = await query.count().fail((e) => {
                 throw e;
             });
+            let totalPage: number = Math.ceil(total / _pageSize);
 
             let users: Parse.User[] = await query
-                .skip((_page - 1) * _count)
-                .limit(_count)
+                .skip((_page - 1) * _pageSize)
+                .limit(_pageSize)
                 .include('roles')
                 .find()
                 .fail((e) => {
@@ -41,10 +43,13 @@ action.get(
                 });
 
             return {
-                total: total,
-                page: _page,
-                count: _count,
-                content: users.map((value, index, array) => {
+                paging: {
+                    total: total,
+                    totalPages: totalPage,
+                    page: _page,
+                    pageSize: _pageSize,
+                },
+                results: users.map((value, index, array) => {
                     return {
                         userId: value.id,
                         account: value.getUsername(),
