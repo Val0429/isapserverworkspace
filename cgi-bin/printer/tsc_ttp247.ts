@@ -91,14 +91,12 @@ interface ILimit {
  * @param limit
  * @param str
  */
-function Str2Fractions(limit: ILimit, str: string): number[] {
+function Str2Fractions(limit: ILimit, str: string, score: number = 1): number[] {
     return str.split('').map((value, index, array) => {
-        if (new RegExp(limit['ch'].regex).test(value)) return limit['ch'].fraction;
-        else if (new RegExp(limit['EN'].regex).test(value)) return limit['EN'].fraction;
-        else if (new RegExp(limit['en'].regex).test(value)) return limit['en'].fraction;
-        else if (new RegExp(limit['num'].regex).test(value)) return limit['num'].fraction;
-
-        return 0;
+        if (new RegExp(limit['EN'].regex).test(value)) return limit['EN'].fraction / score;
+        else if (new RegExp(limit['en'].regex).test(value)) return limit['en'].fraction / score;
+        else if (new RegExp(limit['num'].regex).test(value)) return limit['num'].fraction / score;
+        else return limit['ch'].fraction / score;
     });
 }
 
@@ -136,7 +134,7 @@ export function FontFormat(input: IRequest.IPrinter.ITsc_ttp247R): IRequest.IPri
     const limit: ILimit = {
         ch: {
             fraction: 88,
-            regex: /[^0-9a-zA-Z]/g,
+            regex: /[]/g,
         },
         EN: {
             fraction: 55,
@@ -144,18 +142,18 @@ export function FontFormat(input: IRequest.IPrinter.ITsc_ttp247R): IRequest.IPri
         },
         en: {
             fraction: 40,
-            regex: /[a-z]/g,
+            regex: /[a-z\!\*\(\)\'\"\:\;]/g,
         },
         num: {
             fraction: 44,
-            regex: /[0-9]/g,
+            regex: /[0-9\~\_\^\&\$\-\+\?\ ]/g,
         },
     };
 
     let fractions: number[] = Str2Fractions(limit, input.visitorName);
     input.visitorName = input.visitorName.substr(0, GetPruneLength(total, fractions));
 
-    fractions = Str2Fractions(limit, input.respondentName);
+    fractions = Str2Fractions(limit, input.respondentName, 2);
     input.respondentName = input.respondentName.substr(0, GetPruneLength(total, fractions));
 
     fractions = Str2Fractions(limit, input.date);
