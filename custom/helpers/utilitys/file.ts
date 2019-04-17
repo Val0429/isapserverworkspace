@@ -55,6 +55,21 @@ export namespace File {
     }
 
     /**
+     * Append file
+     * @param filename
+     * @param data
+     */
+    export function AppendFile(filename: string, data: any): void {
+        try {
+            let realpath: string = RealPath(filename);
+
+            Fs.appendFileSync(realpath, data);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Write base64 data to file
      * @param filename
      * @param image
@@ -115,5 +130,36 @@ export namespace File {
             .replace(/^\//, '');
 
         return realpath;
+    }
+
+    /**
+     * Get file extension
+     * image/jpeg、image/png、application/pdf、audio/mp4、video/mp4、video/x-ms-wmv
+     * @param data
+     */
+    export function GetExtension(data: string): string {
+        try {
+            if (data.indexOf('image/jpeg') > -1) {
+                return 'jpeg';
+            } else if (data.indexOf('image/png') > -1) {
+                return 'png';
+            } else if (data.indexOf('image/gif') > -1) {
+                return 'gif';
+            } else if (data.indexOf('image/svg+xml') > -1) {
+                return 'svg';
+            } else if (data.indexOf('application/pdf') > -1) {
+                return 'pdf';
+            } else if (data.indexOf('audio/mp4') > -1) {
+                return 'mp4';
+            } else if (data.indexOf('video/mp4') > -1) {
+                return 'mp4';
+            } else if (data.indexOf('video/x-ms-wmv') > -1) {
+                return 'wmv';
+            } else {
+                return undefined;
+            }
+        } catch (e) {
+            throw e;
+        }
     }
 }

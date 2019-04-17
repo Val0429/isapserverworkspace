@@ -1,6 +1,5 @@
 import { Action } from 'core/cgi-package';
 import { Print } from '../../custom/helpers';
-import * as path from 'path';
 
 let action = new Action({
     loginRequired: false,
@@ -10,7 +9,7 @@ let action = new Action({
 export default action;
 
 /**
- * Action Get Server Position
+ * Action Get Server Version
  */
 type Input = null;
 type Output = string;
@@ -18,9 +17,10 @@ type Output = string;
 action.get(
     async (): Promise<Output> => {
         try {
-            let server: string = path.dirname(require.main.filename);
+            let description: string = process.env.npm_package_description;
+            let version: string = process.env.npm_package_version;
 
-            return `${server.replace(/\\/gi, '/')}/`;
+            return `${description}(v${version})`;
         } catch (e) {
             Print.Log(new Error(JSON.stringify(e)), 'error');
             throw e;

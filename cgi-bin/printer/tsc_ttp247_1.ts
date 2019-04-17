@@ -21,16 +21,21 @@ type OutputC = string;
 action.post(
     { inputType: 'InputC' },
     async (data): Promise<OutputC> => {
-        let _input: InputC = data.inputType;
+        try {
+            let _input: InputC = data.inputType;
 
-        _input.date = _input.date || '';
-        _input.locationName = _input.locationName || '';
+            _input.date = _input.date || '';
+            _input.locationName = _input.locationName || '';
 
-        _input = FontFormat(_input);
+            _input = FontFormat(_input);
 
-        Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
+            Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
 
-        return JSON.stringify(_input);
+            return JSON.stringify(_input);
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
 
@@ -44,15 +49,20 @@ type OutputR = string;
 action.get(
     { inputType: 'InputR' },
     async (data): Promise<OutputR> => {
-        let _input: InputR = data.inputType;
+        try {
+            let _input: InputR = data.inputType;
 
-        _input.date = _input.date || '';
-        _input.locationName = _input.locationName || '';
+            _input.date = _input.date || '';
+            _input.locationName = _input.locationName || '';
 
-        _input = FontFormat(_input);
+            _input = FontFormat(_input);
 
-        Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
+            Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
 
-        return JSON.stringify(_input);
+            return JSON.stringify(_input);
+        } catch (e) {
+            Print.Log(new Error(JSON.stringify(e)), 'error');
+            throw e;
+        }
     },
 );
