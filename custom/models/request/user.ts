@@ -24,6 +24,8 @@ export interface IBasePasswordU {
 export interface IUserIndexC extends IBaseLogin {
     role: RoleList.Admin | RoleList.User;
     name: string;
+    email: string;
+    phone: string;
 }
 
 export interface IUserIndexU {
@@ -31,6 +33,8 @@ export interface IUserIndexU {
     password?: string;
     role?: RoleList.Admin | RoleList.User;
     name?: string;
+    email?: string;
+    phone?: string;
 }
 
 export interface IUserIndexD {

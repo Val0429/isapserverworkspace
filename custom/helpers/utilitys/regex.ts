@@ -28,7 +28,7 @@ export namespace Regex {
      * @param str
      */
     export function IsEmail(str: string): boolean {
-        let rule: any = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+        let rule: any = /^([^@]+)@([\da-z\.-]+)\.([a-z\.]{2,6})([^\.])$/;
 
         return rule.test(str);
     }

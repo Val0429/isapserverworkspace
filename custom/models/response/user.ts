@@ -18,6 +18,8 @@ export interface IUserIndexC {
 
 export interface IUserIndexR extends IBaseIndexR {
     name: string;
+    email: string;
+    phone: string;
 }
 
 export interface IUserLogin extends IBaseLogin {

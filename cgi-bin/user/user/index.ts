@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print } from '../../../custom/helpers';
+import { Print, Regex } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -25,6 +25,13 @@ action.post(
         try {
             let _input: InputC = data.inputType;
 
+            if (!Regex.IsEmail(_input.email)) {
+                throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
+            }
+            if (!/^\+{1}[0-9]+$/.test(_input.phone)) {
+                throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
+            }
+
             let role: Parse.Role = await new Parse.Query(Parse.Role)
                 .equalTo('name', _input.role)
                 .first()
@@ -40,9 +47,11 @@ action.post(
             let info: IDB.UserInfo = new IDB.UserInfo();
 
             info.setValue('creator', data.user);
+            info.setValue('isDeleted', false);
             info.setValue('user', user);
             info.setValue('name', _input.name);
-            info.setValue('isDeleted', false);
+            info.setValue('email', _input.email);
+            info.setValue('phone', _input.phone);
 
             await info.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -118,7 +127,6 @@ action.get(
                     return {
                         objectId: value.getValue('user').id,
                         account: value.getValue('user').getUsername(),
-                        name: value.getValue('name'),
                         roles: value
                             .getValue('user')
                             .get('roles')
@@ -127,6 +135,9 @@ action.get(
                                     return value1.get('name') === RoleList[value2];
                                 });
                             }),
+                        name: value.getValue('name'),
+                        email: value.getValue('email'),
+                        phone: value.getValue('phone'),
                     };
                 }),
             };
@@ -189,6 +200,20 @@ action.put(
             }
             if (_input.name) {
                 info.setValue('name', _input.name);
+            }
+            if (_input.email) {
+                if (!Regex.IsEmail(_input.email)) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
+                }
+
+                info.setValue('email', _input.email);
+            }
+            if (_input.phone) {
+                if (!/^\+{1}[0-9]+$/.test(_input.phone)) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
+                }
+
+                info.setValue('phone', _input.phone);
             }
 
             await user.save(null, { useMasterKey: true }).fail((e) => {

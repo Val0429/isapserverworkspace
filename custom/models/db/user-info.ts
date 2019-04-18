@@ -14,6 +14,16 @@ export interface IUserInfo extends IBase {
      * 名字
      */
     name: string;
+
+    /**
+     * Email
+     */
+    email: string;
+
+    /**
+     * 電話
+     */
+    phone: string;
 }
 
 @registerSubclass()
