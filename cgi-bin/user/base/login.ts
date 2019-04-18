@@ -43,7 +43,7 @@ action.post(
 
             return {
                 sessionId: user.sessionId,
-                userId: user.user.id,
+                objectId: user.user.id,
                 roles: roles.map((value, index, array) => {
                     return Object.keys(RoleList).find((value1, index1, array1) => {
                         return value === RoleList[value1];

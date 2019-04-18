@@ -54,7 +54,7 @@ action.post(
 
             return {
                 sessionId: user.sessionId,
-                userId: user.user.id,
+                objectId: user.user.id,
                 name: info.getValue('name'),
                 roles: roles.map((value, index, array) => {
                     return Object.keys(RoleList).find((value1, index1, array1) => {

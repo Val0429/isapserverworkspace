@@ -49,7 +49,7 @@ action.post(
             });
 
             return {
-                userId: user.id,
+                objectId: user.id,
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -116,7 +116,7 @@ action.get(
                 },
                 results: infos.map((value, index, array) => {
                     return {
-                        userId: value.getValue('user').id,
+                        objectId: value.getValue('user').id,
                         account: value.getValue('user').getUsername(),
                         name: value.getValue('name'),
                         roles: value
