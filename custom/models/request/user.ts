@@ -1,7 +1,7 @@
 import { RoleList } from 'core/cgi-package';
 
 export interface IBaseIndexU {
-    userId: string;
+    objectId: string;
     password?: string;
     roles?: RoleList[];
 }
@@ -16,7 +16,7 @@ export interface IBaseLogout {
 }
 
 export interface IBasePasswordU {
-    userId?: string;
+    objectId?: string;
     previous: string;
     current: string;
 }
@@ -29,7 +29,7 @@ export interface IUserIndexC extends IBaseLogin {
 }
 
 export interface IUserIndexU {
-    userId?: string;
+    objectId?: string;
     password?: string;
     role?: RoleList.Admin | RoleList.User;
     name?: string;
@@ -38,5 +38,5 @@ export interface IUserIndexU {
 }
 
 export interface IUserIndexD {
-    userIds: string | string[];
+    objectId: string | string[];
 }

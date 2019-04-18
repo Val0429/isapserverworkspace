@@ -163,7 +163,7 @@ action.put(
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
-            let _userId: string = _input.userId || data.user.id;
+            let _userId: string = _input.objectId || data.user.id;
 
             let user: Parse.User = await new Parse.Query(Parse.User)
                 .include('roles')
@@ -240,17 +240,20 @@ type InputD = IRequest.IUser.IUserIndexD;
 type OutputD = Date;
 
 action.delete(
-    { inputType: 'InputD' },
+    {
+        inputType: 'InputD',
+        permission: [RoleList.Admin],
+    },
     async (data): Promise<OutputD> => {
         try {
             let _input: InputD = data.inputType;
-            let _userIds: string[] = [].concat(data.parameters.userIds);
+            let _objectIds: string[] = [].concat(data.parameters.objectId);
 
-            _userIds = _userIds.filter((value, index, array) => {
+            _objectIds = _objectIds.filter((value, index, array) => {
                 return array.indexOf(value) === index;
             });
 
-            let tasks: Promise<any>[] = _userIds.map<any>((value, index, array) => {
+            let tasks: Promise<any>[] = _objectIds.map<any>((value, index, array) => {
                 let user: Parse.User = new Parse.User();
                 user.id = value;
 

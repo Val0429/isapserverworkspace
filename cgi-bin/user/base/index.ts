@@ -83,7 +83,7 @@ action.put(
 
             let user: Parse.User = await new Parse.Query(Parse.User)
                 .include('roles')
-                .get(_input.userId)
+                .get(_input.objectId)
                 .fail((e) => {
                     throw e;
                 });

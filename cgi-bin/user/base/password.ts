@@ -22,7 +22,7 @@ action.put(
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
-            let _userId: string = _input.userId || data.user.id;
+            let _userId: string = _input.objectId || data.user.id;
 
             let user: Parse.User = await new Parse.Query(Parse.User).get(_userId).fail((e) => {
                 throw e;
