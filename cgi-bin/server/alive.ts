@@ -26,7 +26,7 @@ action.ws(async (data) => {
             try {
                 UserHelper.extendSessionExpires(data.session.id);
             } catch (e) {
-                Print.Log(new Error(JSON.stringify(e)), 'error');
+                Print.Log(e, new Error(), 'error');
             }
         },
     });

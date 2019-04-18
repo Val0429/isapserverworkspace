@@ -49,12 +49,12 @@ class Action {
 
                         File.AppendFile(`${this._logPath}/${this._logFile.replace(/{{date}}/g, date)}`, log);
                     } catch (e) {
-                        Print.Log(new Error(e), 'error');
+                        Print.Log(e, new Error(), 'error');
                     }
                 },
             });
         } catch (e) {
-            Print.Log(new Error(e), 'error');
+            Print.Log(e, new Error(), 'error');
         }
     };
 }

@@ -1,3 +1,4 @@
+import { Errors } from 'core/errors.gen';
 import { DateTime } from '../utilitys';
 import * as Action from '../../actions';
 
@@ -62,6 +63,7 @@ export namespace Print {
     /**
      * Print Min's log
      * @param message
+     * @param mode
      */
     export function MinLog(message: any, mode?: 'message' | 'warning' | 'info' | 'error' | 'success'): void {
         let font: FontColor = FontColor.white;
@@ -107,8 +109,10 @@ export namespace Print {
     /**
      * Print log
      * @param message
+     * @param error
+     * @param mode
      */
-    export function Log(message: Error, mode: 'message' | 'warning' | 'info' | 'error' | 'success'): void {
+    export function Log(message: any, error: Error, mode: 'message' | 'warning' | 'info' | 'error' | 'success'): void {
         let font: FontColor = FontColor.white;
         let back: BackColor = BackColor.white;
         let title: string = 'Message';
@@ -137,9 +141,13 @@ export namespace Print {
                 break;
         }
 
-        let path: string = JSON.stringify(message.stack);
+        let path: string = JSON.stringify(error.stack);
         let paths = path.match(/at .*?\(.*?\)\\n/g);
         path = paths && paths.length > 0 ? paths[0].substring(paths[0].lastIndexOf('workspace'), paths[0].lastIndexOf(')')) : '';
+
+        message = message instanceof Errors ? message.args : message;
+        message = message instanceof Error ? message.message : message;
+        message = typeof message === 'object' ? JSON.stringify(message) : message;
 
         Message(
             {
@@ -159,13 +167,13 @@ export namespace Print {
                 color: font,
             },
             {
-                message: message.message,
+                message: message,
             },
             {
                 message: `(${path})`,
             },
         );
 
-        Action.WriteLog.action$.next(`${date} ${title} ---> ${message.message} (${path})`);
+        Action.WriteLog.action$.next(`${date} ${title} ---> ${message} (${path})`);
     }
 }
