@@ -84,7 +84,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                 body = body.replace(/{{YYYYMM}}/g, DateTime.DateTime2String(value.message.YYYYMM, 'YYYY/MM'));
                             }
 
-                            Print.Log(new Error(`${config.title}: ${body}`), 'message');
+                            Print.Log(`${config.title}: ${body}`, new Error(), 'message');
 
                             return [].concat(
                                 ...(await Promise.all(
@@ -95,15 +95,15 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                                                     let fcm: Fcm = new Fcm();
                                                     let result: string = await fcm.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                    Print.Log(new Error(`Fcm: ${JSON.stringify(result)}`), 'success');
+                                                    Print.Log(`Fcm: ${JSON.stringify(result)}`, new Error(), 'success');
                                                 } else {
                                                     let apn: Apn = new Apn();
                                                     let result = await apn.Send(value1.getValue('deviceToken'), config.title, body);
 
-                                                    Print.Log(new Error(`Apn: ${JSON.stringify(result)}`), 'success');
+                                                    Print.Log(`Apn: ${JSON.stringify(result)}`, new Error(), 'success');
                                                 }
                                             } catch (e) {
-                                                Print.Log(new Error(e), 'error');
+                                                Print.Log(e, new Error(), 'error');
                                             }
                                         }
 
@@ -153,7 +153,7 @@ export let notice$: Rx.Subject<IMessageResident> = new Rx.Subject<IMessageReside
                     throw e;
                 });
             } catch (e) {
-                Print.Log(new Error(e), 'error');
+                Print.Log(e, new Error(), 'error');
             }
         },
     });

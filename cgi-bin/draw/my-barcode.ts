@@ -24,7 +24,7 @@ action.get(
             message = `http://${message}:${Config.core.port}/`;
             return Parser.Base64Str2HtmlSrc(Draw.Barcode(message, 0.5, false, 25).toString(Parser.Encoding.base64));
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },

@@ -64,7 +64,7 @@ action.get(
                 barcode: Parser.Base64Str2HtmlSrc(Draw.Barcode(resident.getValue('barcode'), 0.5, true, 25).toString(Parser.Encoding.base64)),
             };
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },

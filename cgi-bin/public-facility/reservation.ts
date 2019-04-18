@@ -87,7 +87,7 @@ action.post(
                 reservationId: reservation.id,
             };
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
@@ -162,7 +162,7 @@ action.get(
                 }),
             };
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
@@ -229,7 +229,7 @@ action.put(
 
             return new Date();
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
@@ -298,7 +298,7 @@ action.delete(
 
             return new Date();
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },

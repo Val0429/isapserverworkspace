@@ -72,7 +72,7 @@ action.post(
                 communityAddress: committee.getValue('community').getValue('address'),
             };
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
