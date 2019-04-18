@@ -9,7 +9,7 @@ var getMac = require('getmac').getMac;
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.Admin],
+    permission: [RoleList.Admin],
 });
 
 export default action;
