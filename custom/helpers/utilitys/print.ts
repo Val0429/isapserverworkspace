@@ -145,7 +145,7 @@ export namespace Print {
         let paths = path.match(/at .*?\(.*?\)\\n/g);
         path = paths && paths.length > 0 ? paths[0].substring(paths[0].lastIndexOf('workspace'), paths[0].lastIndexOf(')')) : '';
 
-        message = message instanceof Errors ? message.args : message;
+        // message = message instanceof Errors ? message.args : message;
         message = message instanceof Error ? message.message : message;
         message = typeof message === 'object' ? JSON.stringify(message) : message;
 
