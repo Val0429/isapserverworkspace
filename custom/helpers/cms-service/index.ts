@@ -164,10 +164,10 @@ export class CMSService {
 
             let nvrs: CMSService.INvr[] = devices.AllNVR.NVR.map((value, index, array) => {
                 return {
-                    id: value.$.id,
+                    id: parseInt(value.$.id),
                     channels: value.AllDevices[0].DeviceConnectorConfiguration.map((value1, index1, array1) => {
                         return {
-                            id: value1.DeviceID[0],
+                            id: parseInt(value1.DeviceID[0]),
                             name: value1.$.name,
                         };
                     }),
