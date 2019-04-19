@@ -137,24 +137,48 @@ export namespace File {
      * image/jpeg、image/png、application/pdf、audio/mp4、video/mp4、video/x-ms-wmv
      * @param data
      */
-    export function GetExtension(data: string): string {
+    export function GetExtension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
         try {
             if (data.indexOf('image/jpeg') > -1) {
-                return 'jpeg';
+                return {
+                    extension: 'jpeg',
+                    type: 'image',
+                };
             } else if (data.indexOf('image/png') > -1) {
-                return 'png';
+                return {
+                    extension: 'png',
+                    type: 'image',
+                };
             } else if (data.indexOf('image/gif') > -1) {
-                return 'gif';
+                return {
+                    extension: 'gif',
+                    type: 'image',
+                };
             } else if (data.indexOf('image/svg+xml') > -1) {
-                return 'svg';
+                return {
+                    extension: 'svg',
+                    type: 'image',
+                };
             } else if (data.indexOf('application/pdf') > -1) {
-                return 'pdf';
+                return {
+                    extension: 'pdf',
+                    type: 'application',
+                };
             } else if (data.indexOf('audio/mp4') > -1) {
-                return 'mp4';
+                return {
+                    extension: 'mp4',
+                    type: 'audio',
+                };
             } else if (data.indexOf('video/mp4') > -1) {
-                return 'mp4';
+                return {
+                    extension: 'mp4',
+                    type: 'video',
+                };
             } else if (data.indexOf('video/x-ms-wmv') > -1) {
-                return 'wmv';
+                return {
+                    extension: 'wmv',
+                    type: 'video',
+                };
             } else {
                 return undefined;
             }

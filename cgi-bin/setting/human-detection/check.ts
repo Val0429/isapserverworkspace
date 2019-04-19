@@ -33,8 +33,8 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['port error']);
             }
 
-            let extension: string = File.GetExtension(_input.imageBase64);
-            if (!extension) {
+            let extension = File.GetExtension(_input.imageBase64);
+            if (!extension || extension.type !== 'image') {
                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
             }
 
