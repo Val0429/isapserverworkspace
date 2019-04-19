@@ -1,4 +1,5 @@
 import { IAction } from '../db/_index';
+import * as Enum from '../../enums';
 
 export interface IFloorC {
     objectId: string;
@@ -22,4 +23,25 @@ export interface IAreaR {
     floorId: string;
     name: string;
     action: IAction;
+}
+
+export interface IDeviceC {
+    objectId: string;
+}
+
+export interface IDeviceR {
+    objectId: string;
+    floorId: string;
+    areaId: string;
+    type: Enum.EDeviceType;
+    cameraId: string;
+    name: string;
+    iconSrc: string;
+    iconWidth: number;
+    iconHeight: number;
+    x: number;
+    y: number;
+    angle: number;
+    visibleDistance: number;
+    visibleAngle: number;
 }
