@@ -18,6 +18,16 @@ export namespace File {
     }
 
     /**
+     * Get file path
+     * @param filename
+     */
+    export function GetPath(filename: string): string {
+        filename = filename.replace(/\/|\\/g, '/');
+        let path: string = filename.substr(0, filename.lastIndexOf('/'));
+        return RealPath(path);
+    }
+
+    /**
      * Create folder
      * @param path
      */
@@ -46,6 +56,7 @@ export namespace File {
      */
     export function WriteFile(filename: string, data: any): void {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             Fs.writeFileSync(realpath, data);
@@ -61,6 +72,7 @@ export namespace File {
      */
     export function AppendFile(filename: string, data: any): void {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             Fs.appendFileSync(realpath, data);
@@ -76,6 +88,7 @@ export namespace File {
      */
     export function WriteBase64File(filename: string, data: string) {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             let regex = /data:.*;base64, */;
