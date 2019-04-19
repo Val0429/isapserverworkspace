@@ -10,6 +10,7 @@ import './custom/shells/create-default';
 import './custom/shells/auto-index';
 
 app.use(history());
+app.use(`/images`, express.static(`workspace/custom/assets/images`));
 
 import './custom/actions';
 import './custom/services';
