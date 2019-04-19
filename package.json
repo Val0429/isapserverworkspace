@@ -13,6 +13,7 @@
     "license": "ISC",
     "dependencies": {
         "canvas": "^2.4.0",
-        "connect-history-api-fallback": "^1.6.0"
+        "connect-history-api-fallback": "^1.6.0",
+        "xml2js": "^0.4.19"
     }
 }

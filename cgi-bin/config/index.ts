@@ -80,7 +80,7 @@ action.put(
  * @param key
  * @param data
  */
-async function UpdateConfig(key: string, data: object) {
+export async function UpdateConfig(key: string, data: object) {
     /// 1) find real path of workspace config
     let result;
     let regex = /[A-Z]/g;

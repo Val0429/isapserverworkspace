@@ -1,5 +1,6 @@
 import * as Rx from 'rxjs';
 import * as HttpClient from 'request';
+import * as Xml2Js from 'xml2js';
 import {} from '../../models';
 import { Regex, Print } from '../';
 import { Base } from './base';
@@ -78,7 +79,7 @@ export class CMSService {
     public async GetSnapshot(nvr: number, channel: number, timestamp?: number): Promise<Buffer> {
         try {
             // http://172.16.10.100:7000/cgi-bin/snapshot?nvr=nvr1&channel=channel2&source=backend&timestamp=1546582859401
-            let url: string = `http://${this._config.ip}:${this._config.port}/cgi-bin/snapshot?nvr=nvr${nvr}&channel=channel${channel}`;
+            let url: string = `${this._baseUrl}/cgi-bin/snapshot?nvr=nvr${nvr}&channel=channel${channel}`;
             url += timestamp ? `&source=backend&timestamp=${timestamp}` : '';
 
             let buffer: Buffer = await new Promise<Buffer>((resolve, reject) => {
@@ -110,6 +111,70 @@ export class CMSService {
             });
 
             return buffer;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get device list
+     */
+    public async GetDeviceList(): Promise<CMSService.INvr[]> {
+        try {
+            let url: string = `${this._baseUrl}/cgi-bin/nvrconfig?action=loadalldevice`;
+
+            let result: any = await new Promise<any>((resolve, reject) => {
+                try {
+                    HttpClient.get(
+                        {
+                            url: url,
+                            encoding: null,
+                            auth: {
+                                user: this._config.account,
+                                pass: this._config.password,
+                            },
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                            }
+
+                            resolve(body);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            let parser = new Xml2Js.Parser();
+            let devices: any = await new Promise((resolve, reject) => {
+                parser.parseString(result, function(err, value) {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    resolve(value);
+                });
+            });
+
+            let nvrs: CMSService.INvr[] = devices.AllNVR.NVR.map((value, index, array) => {
+                return {
+                    id: value.$.id,
+                    channels: value.AllDevices[0].DeviceConnectorConfiguration.map((value1, index1, array1) => {
+                        return {
+                            id: value1.DeviceID[0],
+                            name: value1.$.name,
+                        };
+                    }),
+                };
+            });
+
+            return nvrs;
         } catch (e) {
             throw e;
         }
@@ -209,5 +274,21 @@ export namespace CMSService {
         channel: number;
         image: Buffer;
         timestamp: number;
+    }
+
+    /**
+     *
+     */
+    export interface INvr {
+        id: string;
+        channels: IChannel[];
+    }
+
+    /**
+     *
+     */
+    export interface IChannel {
+        id: string;
+        name: string;
     }
 }
