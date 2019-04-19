@@ -23,6 +23,7 @@ export interface IFloorD {
 
 export interface IAreaC {
     floorId: string;
+    name: string;
     action: IAction;
 }
 
@@ -32,6 +33,7 @@ export interface IAreaR {
 
 export interface IAreaU {
     objectId: string;
+    name?: string;
     action?: IAction;
 }
 

@@ -11,6 +11,11 @@ export interface ILocationArea extends IBase {
     floor: LocationFloor;
 
     /**
+     * 名稱
+     */
+    name: string;
+
+    /**
      * 動作
      */
     action: IAction;

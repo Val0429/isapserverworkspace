@@ -37,6 +37,7 @@ action.post(
             area.setValue('creator', data.user);
             area.setValue('isDeleted', false);
             area.setValue('floor', floor);
+            area.setValue('name', _input.name);
             area.setValue('action', _input.action);
 
             await area.save(null, { useMasterKey: true }).fail((e) => {
@@ -105,6 +106,7 @@ action.get(
                     return {
                         objectId: value.id,
                         floorId: value.getValue('floor').id,
+                        name: value.getValue('name'),
                         action: value.getValue('action'),
                     };
                 }),
@@ -127,7 +129,6 @@ action.put(
     {
         inputType: 'InputU',
         permission: [RoleList.Admin],
-        postSizeLimit: 10000000,
     },
     async (data): Promise<OutputU> => {
         try {
@@ -140,6 +141,9 @@ action.put(
                 throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
             }
 
+            if (_input.name) {
+                area.setValue('name', _input.name);
+            }
             if (_input.action) {
                 area.setValue('action', _input.action);
             }

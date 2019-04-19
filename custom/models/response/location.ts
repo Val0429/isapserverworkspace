@@ -20,5 +20,6 @@ export interface IAreaC {
 export interface IAreaR {
     objectId: string;
     floorId: string;
+    name: string;
     action: IAction;
 }
