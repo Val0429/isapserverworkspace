@@ -1,3 +1,5 @@
+import { IAction } from '../db/_index';
+
 export interface IFloorC {
     name: string;
     floorNo: number;
@@ -16,5 +18,23 @@ export interface IFloorU {
 }
 
 export interface IFloorD {
+    objectId: string;
+}
+
+export interface IAreaC {
+    floorId: string;
+    action: IAction;
+}
+
+export interface IAreaR {
+    floorId?: string;
+}
+
+export interface IAreaU {
+    objectId: string;
+    action?: IAction;
+}
+
+export interface IAreaD {
     objectId: string;
 }

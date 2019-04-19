@@ -1,3 +1,5 @@
+import { IAction } from '../db/_index';
+
 export interface IFloorC {
     objectId: string;
 }
@@ -9,4 +11,14 @@ export interface IFloorR {
     imageSrc: string;
     imageWidth: number;
     imageHeight: number;
+}
+
+export interface IAreaC {
+    objectId: string;
+}
+
+export interface IAreaR {
+    objectId: string;
+    floorId: string;
+    action: IAction;
 }
