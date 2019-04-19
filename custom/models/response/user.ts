@@ -22,6 +22,11 @@ export interface IUserIndexR extends IBaseIndexR {
     phone: string;
 }
 
+export interface IUserAll {
+    objectId: string;
+    name: string;
+}
+
 export interface IUserLogin extends IBaseLogin {
     name: string;
 }
