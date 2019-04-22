@@ -12,6 +12,10 @@ export interface IHumanDetectionR {
     port: number;
 }
 
+export interface IHumanDetectionCheck {
+    imageBase64: string;
+}
+
 export interface ISgsmsR {
     enable: boolean;
     url: string;

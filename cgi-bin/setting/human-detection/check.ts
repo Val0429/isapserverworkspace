@@ -15,7 +15,7 @@ export default action;
  */
 type InputC = IRequest.ISetting.IHumanDetectionCheck;
 
-type OutputC = string;
+type OutputC = IResponse.ISetting.IHumanDetectionCheck;
 
 action.post(
     {
@@ -69,7 +69,9 @@ action.post(
                 buffer = await Draw.Resize(buffer, { width: Config.humanDetection.output.width, height: Config.humanDetection.output.height }, Config.humanDetection.output.quality);
             }
 
-            return Parser.Base64Str2HtmlSrc(buffer.toString(Parser.Encoding.base64));
+            return {
+                imageBase64: Parser.Base64Str2HtmlSrc(buffer.toString(Parser.Encoding.base64)),
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
