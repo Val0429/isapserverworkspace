@@ -12,7 +12,7 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList & IRequest.ICamera.ILocation;
+type InputR = IRequest.IDataList;
 
 type OutputR = IResponse.IDataList<IResponse.ICamera.ILocation>;
 
@@ -28,30 +28,25 @@ action.get(
             let _page: number = _paging.page || 1;
             let _pageSize: number = _paging.pageSize || 10;
 
-            let query: Parse.Query<IDB.LocationDevice> = new Parse.Query(IDB.LocationDevice).equalTo('isDeleted', false);
-
-            if (_input.floorId) {
-                let floor: IDB.LocationFloor = new IDB.LocationFloor();
-                floor.id = _input.floorId;
-
-                query = query.equalTo('floor', floor);
-            }
-            if (_input.areaId) {
-                let area: IDB.LocationArea = new IDB.LocationArea();
-                area.id = _input.areaId;
-
-                query = query.equalTo('area', area);
-            }
+            let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera);
 
             let total: number = await query.count().fail((e) => {
                 throw e;
             });
             let totalPage: number = Math.ceil(total / _pageSize);
 
-            let devices: IDB.LocationDevice[] = await query
+            let cameras: IDB.Camera[] = await query
                 .skip((_page - 1) * _pageSize)
                 .limit(_pageSize)
-                .include(['floor', 'area', 'camera'])
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            let devices: IDB.LocationDevice[] = await new Parse.Query(IDB.LocationDevice)
+                .containedIn('camera', cameras)
+                .equalTo('isDeleted', false)
+                .include(['floor', 'area'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -64,17 +59,19 @@ action.get(
                     page: _page,
                     pageSize: _pageSize,
                 },
-                results: devices.map((value, index, array) => {
+                results: cameras.map((value, index, array) => {
+                    let device: IDB.LocationDevice = devices[index];
+
                     return {
-                        objectId: value.getValue('camera').id,
-                        name: value.getValue('camera').getValue('name'),
-                        floorId: value.getValue('floor').id,
-                        floorName: value.getValue('floor').getValue('name'),
-                        floorNo: value.getValue('floor').getValue('floorNo'),
-                        areaId: value.getValue('area').id,
-                        areaName: value.getValue('area').getValue('name'),
-                        deviceId: value.id,
-                        deviceName: value.getValue('name'),
+                        objectId: value.id,
+                        name: value.getValue('name'),
+                        floorId: device ? device.getValue('floor').id : '',
+                        floorName: device ? device.getValue('floor').getValue('name') : '',
+                        floorNo: device ? device.getValue('floor').getValue('floorNo') : 0,
+                        areaId: device ? device.getValue('area').id : '',
+                        areaName: device ? device.getValue('area').getValue('name') : '',
+                        deviceId: device ? device.id : '',
+                        deviceName: device ? device.getValue('name') : '',
                     };
                 }),
             };

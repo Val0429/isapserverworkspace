@@ -1,4 +1,1 @@
-export interface ILocation {
-    floorId?: string;
-    areaId?: string;
-}
+export default undefined;
