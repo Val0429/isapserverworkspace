@@ -1,7 +1,8 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
+import licenseService from 'services/license';
 
 let action = new Action({
     loginRequired: true,
@@ -15,6 +16,11 @@ export default action;
 type InputC = IRequest.ILocation.IDeviceC;
 
 type OutputC = IResponse.ILocation.IDeviceC;
+
+interface ICameraSummary {
+    mode: Enum.ECameraMode;
+    count: number;
+}
 
 action.post(
     {
@@ -33,7 +39,6 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
             }
 
-            let device: IDB.LocationDevice = undefined;
             let camera: IDB.Camera = undefined;
             if (_input.type === Enum.EDeviceType.camera) {
                 if (!_input.cameraId) {
@@ -57,6 +62,8 @@ action.post(
                 if (cameraDevice) {
                     throw Errors.throw(Errors.CustomBadRequest, ['camera was used']);
                 }
+
+                await LicenseCheck(camera);
             }
 
             let extension = File.GetExtension(_input.iconBase64);
@@ -64,7 +71,7 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
             }
 
-            device = new IDB.LocationDevice();
+            let device: IDB.LocationDevice = new IDB.LocationDevice();
 
             device.setValue('creator', data.user);
             device.setValue('isDeleted', false);
@@ -165,7 +172,7 @@ action.get(
                         floorId: value.getValue('floor').id,
                         areaId: value.getValue('area').id,
                         type: value.getValue('type'),
-                        cameraId: value.getValue('camera').id,
+                        cameraId: value.getValue('camera') ? value.getValue('camera').id : '',
                         name: value.getValue('name'),
                         iconSrc: value.getValue('iconSrc'),
                         iconWidth: value.getValue('iconWidth'),
@@ -232,7 +239,7 @@ action.put(
                     throw Errors.throw(Errors.CustomBadRequest, ['camera not found']);
                 }
 
-                if (_input.cameraId !== device.getValue('camera').id) {
+                if (!device.getValue('camera') || _input.cameraId !== device.getValue('camera').id) {
                     let cameraDevice: IDB.LocationDevice = await new Parse.Query(IDB.LocationDevice)
                         .equalTo('isDeleted', false)
                         .equalTo('camera', camera)
@@ -244,9 +251,13 @@ action.put(
                         throw Errors.throw(Errors.CustomBadRequest, ['camera was used']);
                     }
                 }
+
+                if (!device.getValue('camera')) {
+                    await LicenseCheck(camera);
+                }
             }
 
-            let extension = File.GetExtension(_input.iconBase64);
+            let extension = _input.iconBase64 ? File.GetExtension(_input.iconBase64) : { extension: 'aa', type: 'image' };
             if (!extension || extension.type !== 'image') {
                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
             }
@@ -337,3 +348,71 @@ action.delete(
         }
     },
 );
+
+/**
+ * Convert camera mode to prodect id
+ * @param mode
+ */
+function CameraMode2ProdectId(mode: Enum.ECameraMode): string {
+    try {
+        let productId: string = Config.humanDetection.productId;
+        switch (mode) {
+            case Enum.ECameraMode.peopleCounting:
+                productId = Config.peopleCounting.productId;
+                break;
+        }
+
+        return productId;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Check license
+ * @param camera
+ */
+async function LicenseCheck(camera: IDB.Camera): Promise<void> {
+    try {
+        let devices: IDB.LocationDevice[] = await new Parse.Query(IDB.LocationDevice)
+            .equalTo('isDeleted', false)
+            .equalTo('type', Enum.EDeviceType.camera)
+            .include('camera')
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+        let cameraSummarys: ICameraSummary[] = devices.reduce((prev, curr, index, array) => {
+            let cameraGroup = prev.find((value1, index1, array1) => {
+                return value1.mode === curr.getValue('camera').getValue('mode');
+            });
+            if (cameraGroup) {
+                ++cameraGroup.count;
+            } else {
+                let mode: Enum.ECameraMode = curr.getValue('camera').getValue('mode');
+
+                prev.push({
+                    mode: mode,
+                    count: 1,
+                });
+            }
+
+            return prev;
+        }, []);
+        let cameraSummary: ICameraSummary = cameraSummarys.find((value, index, array) => {
+            return value.mode === camera.getValue('mode');
+        });
+
+        let license = await licenseService.getLicense();
+        let licenseSummary = license.summary[CameraMode2ProdectId(camera.getValue('mode'))];
+
+        let limit: number = licenseSummary ? licenseSummary.totalCount : 0;
+        let count: number = cameraSummary ? cameraSummary.count : 0;
+
+        if (limit <= count) {
+            throw Errors.throw(Errors.CustomBadRequest, ['upper limit is full']);
+        }
+    } catch (e) {
+        throw e;
+    }
+}
