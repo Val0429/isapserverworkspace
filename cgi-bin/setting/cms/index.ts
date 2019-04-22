@@ -92,6 +92,7 @@ async function SyncCamera(nvrs: CMSService.INvr[]): Promise<void> {
             });
 
         let devices: IDB.LocationDevice[] = await new Parse.Query(IDB.LocationDevice)
+            .equalTo('isDeleted', false)
             .containedIn('camera', cameras)
             .find()
             .fail((e) => {
