@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print } from '../../../custom/helpers';
+import { Print, Utility } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -152,6 +152,8 @@ action.put(
                 throw e;
             });
 
+            Utility.ReStartServer();
+
             return new Date();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -189,6 +191,8 @@ action.delete(
             await area.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
+
+            Utility.ReStartServer();
 
             return new Date();
         } catch (e) {
