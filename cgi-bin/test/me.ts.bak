@@ -1,0 +1,69 @@
+import {
+    express, Request, Response, Router,
+    IRole, IUser, RoleList,
+    Action, Errors,
+    Restful, EventSubjects, sharedMongoDB, ParseObject, Announcements
+} from 'core/cgi-package';
+
+import { ScheduleActionEmail, ScheduleActionEmailResult } from 'models/schedulers/actions';
+
+var action = new Action({
+    loginRequired: false,
+    permission: [RoleList.Administrator, RoleList.SystemAdministrator]
+});
+
+export interface Input {
+    email: string;
+}
+
+action.post<Input>({
+    inputType: "Input"
+}, async (data) => {
+    let db = await sharedMongoDB();
+
+    let instance = db.collection("Announcements");
+    let query = await instance.find({
+        $or: [
+            {
+                _id: {
+                    $eq: "aOFEf3bfLv"
+                }
+            },
+            {
+                _id: {
+                    $eq: "EQMo89aHt5"
+                }
+            },
+        ]
+
+    }).sort({
+        _created_at: -1
+    });
+    let result = await query.toArray();
+
+    let ids = result.reduce( (final, value) => {
+        //final.push(value._id);
+        final.push( Announcements.createWithoutData(value._id) );
+        return final;
+    }, []);
+
+    let results = await Announcements.fetchAll(ids, {});
+    return ParseObject.toOutputJSON(results);
+
+    // return ParseObject.toOutputJSON(ids);
+
+    //return ParseObject.toOutputJSON(result);
+
+    // var instance = db.collection(collectionName);
+    // try {
+    //     if (!await instance.indexExists(indexName)) throw null;
+    // } catch(reason) {
+    //     var showname = collectionName.replace(/^\_/, '');
+    //     Log.Info("Indexing", `Make index on <${showname}.${indexName}>.`);
+    //     instance.createIndex(fieldOrSpec, {background: true, name: indexName, ...options});
+    // }
+    return "123";
+});
+/////////////////////////////////////////////////////
+
+export default action;
