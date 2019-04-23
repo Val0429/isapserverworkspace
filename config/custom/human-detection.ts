@@ -28,6 +28,7 @@ export interface Config {
     ip: string;
     port: number;
     target_score: number;
+    bufferCount: number;
     cms: ICMS;
     output: IOutput;
 }
@@ -38,8 +39,9 @@ let config: Config = {
     ip: '172.16.10.21',
     port: 8000,
     target_score: 0.5,
+    bufferCount: 5,
     cms: {
-        intervalSecond: 60,
+        intervalSecond: 300,
         bufferCount: 5,
         isLive: true,
     },

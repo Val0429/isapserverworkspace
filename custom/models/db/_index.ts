@@ -7,4 +7,6 @@ export * from './config-cms-camera';
 export * from './location-area';
 export * from './location-device';
 export * from './location-floor';
+export * from './report-human-detection-summary';
+export * from './report-human-detection';
 export * from './user-info';

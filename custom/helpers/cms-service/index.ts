@@ -2,7 +2,7 @@ import * as Rx from 'rxjs';
 import * as HttpClient from 'request';
 import * as Xml2Js from 'xml2js';
 import {} from '../../models';
-import { Regex, Print } from '../';
+import { Regex } from '../';
 import { Base } from './base';
 
 export class CMSService {
@@ -182,8 +182,13 @@ export class CMSService {
 
     /**
      * Enable Live Subject
+     * @param delayMilliSecond
+     * @param intervalMilliSecond
+     * @param bufferCount
+     * @param sources
+     * @param isLive
      */
-    public EnableLiveSubject(intervalSecond: number, sources: CMSService.ISource[], isLive: boolean = true): void {
+    public EnableLiveSubject(delayMilliSecond: number, intervalMilliSecond: number, bufferCount: number, sources: CMSService.ISource[], isLive: boolean): void {
         if (!this._isInitialization) {
             throw Base.Message.NotInitialization;
         }
@@ -193,6 +198,7 @@ export class CMSService {
         let next$: Rx.Subject<{}> = new Rx.Subject();
         let queue$: Rx.Subject<{ nvr: number; channel: number; timestamp: number }> = new Rx.Subject();
         queue$
+            .buffer(queue$.bufferCount(bufferCount).merge(Rx.Observable.interval(1000)))
             .zip(next$.startWith(0))
             .map((x) => {
                 return x[0];
@@ -200,16 +206,26 @@ export class CMSService {
             .subscribe({
                 next: async (x) => {
                     try {
-                        let image: Buffer = isLive ? await this.GetSnapshot(x.nvr, x.channel) : await this.GetSnapshot(x.nvr, x.channel, x.timestamp);
+                        await Promise.all(
+                            x.map(async (value, index, array) => {
+                                try {
+                                    let image: Buffer = isLive ? await this.GetSnapshot(value.nvr, value.channel) : await this.GetSnapshot(value.nvr, value.channel, value.timestamp);
+
+                                    this._liveStream$.next({
+                                        nvr: value.nvr,
+                                        channel: value.channel,
+                                        image: image,
+                                        timestamp: value.timestamp,
+                                    });
+                                } catch (e) {
+                                    throw e;
+                                }
+                            }),
+                        ).catch((e) => {
+                            throw e;
+                        });
 
                         next$.next();
-
-                        this._liveStream$.next({
-                            nvr: x.nvr,
-                            channel: x.channel,
-                            image: image,
-                            timestamp: x.timestamp,
-                        });
                     } catch (e) {
                         this._liveStreamStop$.error(e);
                     }
@@ -222,8 +238,9 @@ export class CMSService {
                 },
             });
 
-        Rx.Observable.interval(intervalSecond)
+        Rx.Observable.interval(intervalMilliSecond)
             .startWith(0)
+            .delay(delayMilliSecond)
             .takeUntil(this._liveStreamStop$)
             .subscribe({
                 next: (x) => {
