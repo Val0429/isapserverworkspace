@@ -60,7 +60,9 @@ action.get(
                     pageSize: _pageSize,
                 },
                 results: cameras.map((value, index, array) => {
-                    let device: IDB.LocationDevice = devices[index];
+                    let device: IDB.LocationDevice = devices.find((value1, index1, array1) => {
+                        return value1.getValue('camera').id === value.id;
+                    });
 
                     return {
                         objectId: value.id,
