@@ -53,20 +53,22 @@ action.post(
             let locations = await hd.GetAnalysis(buffer);
 
             if (locations.length > 0) {
+                let config = Config.humanDetection.output;
+
                 let rects: Draw.IRect[] = locations.map((value, index, array) => {
                     return {
                         x: value.x,
                         y: value.y,
                         width: value.width,
                         height: value.height,
-                        color: 'red',
-                        lineWidth: 7,
-                        isFill: false,
+                        color: config.rectangle.color,
+                        lineWidth: config.rectangle.lineWidth,
+                        isFill: config.rectangle.isFill,
                     };
                 });
 
                 buffer = await Draw.Rectangle(rects, buffer);
-                buffer = await Draw.Resize(buffer, { width: Config.humanDetection.output.width, height: Config.humanDetection.output.height }, Config.humanDetection.output.quality);
+                buffer = await Draw.Resize(buffer, { width: config.image.width, height: config.image.height }, config.image.isFill, config.image.isTransparent);
             }
 
             return {

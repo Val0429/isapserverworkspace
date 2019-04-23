@@ -1,36 +1,60 @@
-export interface IOutput {
+export interface IImage {
     width: number;
     height: number;
+    isFill: boolean;
+    isTransparent: boolean;
+}
+
+export interface IRectangle {
     lineWidth: number;
     color: string;
     isFill: boolean;
-    quality: number;
+}
+
+export interface IOutput {
+    image: IImage;
+    rectangle: IRectangle;
+}
+
+export interface ICMS {
+    intervalSecond: number;
+    bufferCount: number;
+    isLive: boolean;
 }
 
 export interface Config {
     productId: string;
-    intervalSecond: number;
     protocol: 'http' | 'https';
     ip: string;
     port: number;
     target_score: number;
+    cms: ICMS;
     output: IOutput;
 }
 
 let config: Config = {
-    productId: "00111",
-    intervalSecond: 300,
-    protocol: "http",
-    ip: "172.16.10.21",
+    productId: '00111',
+    protocol: 'http',
+    ip: '172.16.10.21',
     port: 8000,
-    target_score: 0.25,
+    target_score: 0.5,
+    cms: {
+        intervalSecond: 60,
+        bufferCount: 5,
+        isLive: true,
+    },
     output: {
-        width: 640,
-        height: 480,
-        lineWidth: 7,
-        color: "red",
-        isFill: false,
-        quality: 0.5
-    }
+        image: {
+            width: 640,
+            height: 480,
+            isFill: false,
+            isTransparent: false,
+        },
+        rectangle: {
+            lineWidth: 7,
+            color: 'red',
+            isFill: false,
+        },
+    },
 };
 export default config;

@@ -1,4 +1,5 @@
 import * as Canvas from 'canvas';
+import { Print } from './print';
 
 export namespace Draw {
     /**
@@ -120,23 +121,42 @@ export namespace Draw {
     }
 
     /**
-     *
+     * Image resize
      * @param buffer
      * @param size
+     * @param isFill
+     * @param isTransparent
      */
-    export async function Resize(buffer: Buffer, size: ISize, quality: number = 1): Promise<Buffer> {
+    export async function Resize(buffer: Buffer, size: ISize, isFill: boolean, isTransparent: boolean): Promise<Buffer> {
         try {
             let canvas = Canvas.createCanvas(0, 0);
             let ctx = canvas.getContext('2d');
 
             let image: Canvas.Image = await LoadImage(buffer);
 
-            canvas.width = size.width;
-            canvas.height = size.height;
+            let score1: number = size.width / image.width;
+            let score2: number = size.height / image.height;
+            let score: number = score1 > score2 ? score2 : score1;
 
-            ctx.drawImage(image, 0, 0, size.width, size.height);
+            let width: number = image.width * score;
+            let height: number = image.height * score;
+            let x: number = 0;
+            let y: number = 0;
 
-            return canvas.toBuffer('image/jpeg', { quality: quality });
+            if (isFill) {
+                canvas.width = size.width;
+                canvas.height = size.height;
+
+                x = width === size.width ? 0 : (size.width - width) / 2;
+                y = height === size.height ? 0 : (size.height - height) / 2;
+            } else {
+                canvas.width = width;
+                canvas.height = height;
+            }
+
+            ctx.drawImage(image, x, y, width, height);
+
+            return isTransparent ? canvas.toBuffer('image/png') : canvas.toBuffer('image/jpeg');
         } catch (e) {
             throw e;
         }
@@ -146,7 +166,6 @@ export namespace Draw {
      * Resize to square
      * @param buffer
      * @param size
-     * @param level
      */
     export async function Resize2Square(buffer: Buffer, size: number): Promise<Buffer> {
         try {
