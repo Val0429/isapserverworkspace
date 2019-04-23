@@ -39,6 +39,8 @@ action.post(
             area.setValue('floor', floor);
             area.setValue('name', _input.name);
             area.setValue('action', _input.action);
+            area.setValue('dataWindowX', _input.dataWindowX);
+            area.setValue('dataWindowY', _input.dataWindowY);
 
             await area.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -108,6 +110,8 @@ action.get(
                         floorId: value.getValue('floor').id,
                         name: value.getValue('name'),
                         action: value.getValue('action'),
+                        dataWindowX: value.getValue('dataWindowX'),
+                        dataWindowY: value.getValue('dataWindowY'),
                     };
                 }),
             };
@@ -146,6 +150,12 @@ action.put(
             }
             if (_input.action) {
                 area.setValue('action', _input.action);
+            }
+            if (_input.dataWindowX || _input.dataWindowX === 0) {
+                area.setValue('dataWindowX', _input.dataWindowX);
+            }
+            if (_input.dataWindowY || _input.dataWindowY === 0) {
+                area.setValue('dataWindowY', _input.dataWindowY);
             }
 
             await area.save(null, { useMasterKey: true }).fail((e) => {

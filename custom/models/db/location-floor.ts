@@ -29,6 +29,16 @@ export interface ILocationFloor extends IBase {
      * 高
      */
     imageHeight: number;
+
+    /**
+     * data window X
+     */
+    dataWindowX: number;
+
+    /**
+     * data window Y
+     */
+    dataWindowY: number;
 }
 
 @registerSubclass()

@@ -12,6 +12,8 @@ export interface IFloorR {
     imageSrc: string;
     imageWidth: number;
     imageHeight: number;
+    dataWindowX: number;
+    dataWindowY: number;
 }
 
 export interface IAreaC {
@@ -23,6 +25,8 @@ export interface IAreaR {
     floorId: string;
     name: string;
     action: IAction;
+    dataWindowX: number;
+    dataWindowY: number;
 }
 
 export interface IDeviceC {

@@ -40,6 +40,8 @@ action.post(
             floor.setValue('imageSrc', '');
             floor.setValue('imageWidth', _input.imageWidth);
             floor.setValue('imageHeight', _input.imageHeight);
+            floor.setValue('dataWindowX', _input.dataWindowX);
+            floor.setValue('dataWindowY', _input.dataWindowY);
 
             await floor.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -114,6 +116,8 @@ action.get(
                         imageSrc: value.getValue('imageSrc'),
                         imageWidth: value.getValue('imageWidth'),
                         imageHeight: value.getValue('imageHeight'),
+                        dataWindowX: value.getValue('dataWindowX'),
+                        dataWindowY: value.getValue('dataWindowY'),
                     };
                 }),
             };
@@ -168,6 +172,12 @@ action.put(
             }
             if (_input.imageHeight || _input.imageHeight === 0) {
                 floor.setValue('imageHeight', _input.imageHeight);
+            }
+            if (_input.dataWindowX || _input.dataWindowX === 0) {
+                floor.setValue('dataWindowX', _input.dataWindowX);
+            }
+            if (_input.dataWindowY || _input.dataWindowY === 0) {
+                floor.setValue('dataWindowY', _input.dataWindowY);
             }
 
             await floor.save(null, { useMasterKey: true }).fail((e) => {

@@ -7,6 +7,8 @@ export interface IFloorC {
     imageBase64: string;
     imageWidth: number;
     imageHeight: number;
+    dataWindowX: number;
+    dataWindowY: number;
 }
 
 export interface IFloorU {
@@ -16,6 +18,8 @@ export interface IFloorU {
     imageBase64?: string;
     imageWidth?: number;
     imageHeight?: number;
+    dataWindowX?: number;
+    dataWindowY?: number;
 }
 
 export interface IFloorD {
@@ -26,6 +30,8 @@ export interface IAreaC {
     floorId: string;
     name: string;
     action: IAction;
+    dataWindowX: number;
+    dataWindowY: number;
 }
 
 export interface IAreaR {
@@ -36,6 +42,8 @@ export interface IAreaU {
     objectId: string;
     name?: string;
     action?: IAction;
+    dataWindowX?: number;
+    dataWindowY?: number;
 }
 
 export interface IAreaD {

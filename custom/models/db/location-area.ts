@@ -16,6 +16,16 @@ export interface ILocationArea extends IBase {
     name: string;
 
     /**
+     * data window X
+     */
+    dataWindowX: number;
+
+    /**
+     * data window Y
+     */
+    dataWindowY: number;
+
+    /**
      * 動作
      */
     action: IAction;
