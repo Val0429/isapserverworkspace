@@ -109,6 +109,8 @@ class Service {
             } else {
                 reportHDSummary = new IDB.ReportHumanDetectionSummary();
 
+                reportHDSummary.setValue('floor', reportHD.getValue('floor'));
+                reportHDSummary.setValue('area', reportHD.getValue('area'));
                 reportHDSummary.setValue('device', reportHD.getValue('device'));
                 reportHDSummary.setValue('type', type);
                 reportHDSummary.setValue('date', date);
@@ -300,6 +302,8 @@ class Service {
 
                                     let reportHD: IDB.ReportHumanDetection = new IDB.ReportHumanDetection();
 
+                                    reportHD.setValue('floor', device.getValue('floor'));
+                                    reportHD.setValue('area', device.getValue('area'));
                                     reportHD.setValue('device', device);
                                     reportHD.setValue('date', new Date(value.timestamp));
                                     reportHD.setValue('imageSrc', '');

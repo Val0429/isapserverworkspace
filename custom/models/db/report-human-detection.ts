@@ -1,11 +1,21 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { LocationDevice } from './_index';
+import { LocationFloor, LocationArea, LocationDevice } from './_index';
 import { HumanDetection } from '../../helpers';
 
 /**
  * 報告
  */
 export interface IReportHumanDetection {
+    /**
+     * 樓層
+     */
+    floor: LocationFloor;
+
+    /**
+     * 區域
+     */
+    area: LocationArea;
+
     /**
      * 裝置
      */

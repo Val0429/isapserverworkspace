@@ -174,7 +174,6 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
         let reportHDSummarys: IDB.ReportHumanDetectionSummary[] = await new Parse.Query(IDB.ReportHumanDetectionSummary)
             .equalTo('type', Enum.ESummaryType.hour)
             .equalTo('date', date)
-            .include('device')
             .find()
             .fail((e) => {
                 throw e;
@@ -182,15 +181,15 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
 
         let summarys: IPushCount[] = reportHDSummarys.reduce<IPushCount[]>((prev, curr, index, array) => {
             let summary: IPushCount = prev.find((value1, array1, index1) => {
-                return value1.areaId === curr.getValue('device').getValue('area').id;
+                return value1.areaId === curr.getValue('area').id;
             });
             if (summary) {
                 summary.prevHourTotal += curr.getValue('total');
                 summary.prevHourCount += curr.getValue('count');
             } else {
                 prev.push({
-                    floorId: curr.getValue('device').getValue('floor').id,
-                    areaId: curr.getValue('device').getValue('area').id,
+                    floorId: curr.getValue('floor').id,
+                    areaId: curr.getValue('area').id,
                     count: 0,
                     prevHourTotal: curr.getValue('total'),
                     prevHourCount: curr.getValue('count'),

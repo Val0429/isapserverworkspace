@@ -1,11 +1,21 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { LocationDevice, ReportHumanDetection } from './_index';
+import { LocationFloor, LocationArea, LocationDevice, ReportHumanDetection } from './_index';
 import * as Enum from '../../enums';
 
 /**
  * 報告累計
  */
 export interface IReportHumanDetectionSummary {
+    /**
+     * 樓層
+     */
+    floor: LocationFloor;
+
+    /**
+     * 區域
+     */
+    area: LocationArea;
+
     /**
      * 裝置
      */
