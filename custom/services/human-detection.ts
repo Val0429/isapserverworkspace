@@ -4,6 +4,7 @@ import { IDB } from '../models';
 import { Print, CMSService, HumanDetection, File, Draw } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
+import * as DataWindow from '../../cgi-bin/data-window';
 
 class Service {
     private _cms: CMSService = undefined;
@@ -177,6 +178,12 @@ class Service {
                                 }, 0);
 
                                 // Print.Log(`${x.areaName}, Prev: ${prev}, Curr: ${curr}, ${JSON.stringify(groupDatas)}`, new Error(), 'message');
+
+                                DataWindow.push$.next({
+                                    floorId: x.floorId,
+                                    areaId: x.areaId,
+                                    count: curr,
+                                });
 
                                 Action.Smtp.action$.next({
                                     areaName: x.areaName,
