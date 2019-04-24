@@ -246,6 +246,8 @@ class Service {
             let delay: number = this.GetDelayTime();
 
             let sources: CMSService.ISource[] = this._devices.map((value, index, array) => {
+                Print.Log(`(${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}), ${value.getValue('name')}, Nvr: ${value.getValue('camera').getValue('config').nvrId}, Channel: ${value.getValue('camera').getValue('config').channelId}`, new Error(), 'info');
+
                 return {
                     nvr: value.getValue('camera').getValue('config').nvrId,
                     channels: [value.getValue('camera').getValue('config').channelId],

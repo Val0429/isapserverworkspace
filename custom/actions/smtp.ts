@@ -106,9 +106,9 @@ class Action {
                             return value.triggerMax >= x.curr && value.triggerMin <= x.curr;
                         });
 
-                        // Print.Log(`Prev: ${x.prev}(${JSON.stringify(prevRange)}), Curr: ${x.curr}(${JSON.stringify(currRange)})`, new Error(), 'info');
-
                         if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
+                            Print.Log(`Prev: ${x.prev}(${JSON.stringify(prevRange)}) -> Curr: ${x.curr}(${JSON.stringify(currRange)})`, new Error(), 'message');
+
                             if (currRange) {
                                 let users: Parse.User[] = currRange.userIds.map((value, index, array) => {
                                     let user: Parse.User = new Parse.User();
