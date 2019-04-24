@@ -127,14 +127,15 @@ action.get(
                     return {
                         objectId: value.getValue('user').id,
                         account: value.getValue('user').getUsername(),
-                        roles: value
-                            .getValue('user')
-                            .get('roles')
-                            .map((value1, index1, array1) => {
-                                return Object.keys(RoleList).find((value2, index2, array2) => {
-                                    return value1.get('name') === RoleList[value2];
-                                });
-                            }),
+                        role:
+                            value
+                                .getValue('user')
+                                .get('roles')
+                                .map((value1, index1, array1) => {
+                                    return Object.keys(RoleList).find((value2, index2, array2) => {
+                                        return value1.get('name') === RoleList[value2];
+                                    });
+                                })[0] || '',
                         name: value.getValue('name'),
                         email: value.getValue('email'),
                         phone: value.getValue('phone'),

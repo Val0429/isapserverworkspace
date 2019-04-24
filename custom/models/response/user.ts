@@ -16,7 +16,10 @@ export interface IUserIndexC {
     objectId: string;
 }
 
-export interface IUserIndexR extends IBaseIndexR {
+export interface IUserIndexR {
+    objectId: string;
+    account: string;
+    role: string;
     name: string;
     email: string;
     phone: string;
