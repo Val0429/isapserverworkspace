@@ -163,6 +163,12 @@ export class CMSService {
             });
 
             let nvrs: CMSService.INvr[] = devices.AllNVR.NVR.map((value, index, array) => {
+                let channels: CMSService.IChannel = value.AllDevices[0].DeviceConnectorConfiguration;
+
+                if (!channels) {
+                    return;
+                }
+
                 return {
                     id: parseInt(value.$.id),
                     channels: value.AllDevices[0].DeviceConnectorConfiguration.map((value1, index1, array1) => {
@@ -172,6 +178,8 @@ export class CMSService {
                         };
                     }),
                 };
+            }).filter((value, index, array) => {
+                return value;
             });
 
             return nvrs;

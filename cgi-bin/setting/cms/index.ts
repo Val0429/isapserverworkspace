@@ -130,7 +130,9 @@ async function SyncCamera(nvrs: CMSService.INvr[]): Promise<void> {
                     return [
                         value.destroy({ useMasterKey: true }),
                         ..._devices.map((value1, index1, array1) => {
-                            return value1.destroy({ useMasterKey: true });
+                            value1.setValue('isDeleted', true);
+
+                            return value1.save(null, { useMasterKey: true });
                         }),
                     ];
                 }
