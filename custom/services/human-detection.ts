@@ -10,6 +10,8 @@ class Service {
 
     private _hd: HumanDetection.ISap = undefined;
 
+    private _liveStreamGroups: Service.ILiveStreamGroup[] = [];
+
     private _devices: IDB.LocationDevice[] = undefined;
     public get devices(): IDB.LocationDevice[] {
         return this._devices;
@@ -25,6 +27,7 @@ class Service {
         try {
             await this.Search();
 
+            this.EnableLiveStreamGroup();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -122,6 +125,89 @@ class Service {
         }
     };
 
+    private EnableLiveStreamGroup = (): void => {
+        try {
+            let areaIds: string[] = this._devices.map((value, index, array) => {
+                return value.getValue('area').id;
+            });
+
+            let areas: IDB.LocationArea[] = this._devices
+                .filter((value, index, array) => {
+                    return areaIds.indexOf(value.getValue('area').id) === index;
+                })
+                .map((value, index, array) => {
+                    return value.getValue('area');
+                });
+
+            this._liveStreamGroups = areas.map((value, index, array) => {
+                let groupDatas: Service.ILiveStreamGroupData[] = [];
+
+                let liveStreamGroup$: Rx.Subject<Service.ILiveStreamGroupData> = new Rx.Subject();
+                liveStreamGroup$
+                    .map((x) => {
+                        return {
+                            areaName: value.getValue('name'),
+                            action: value.getValue('action'),
+                            ...x,
+                        };
+                    })
+                    .subscribe({
+                        next: (x) => {
+                            try {
+                                // console.log();
+                                // Print.Log(`${x.areaName}, ${JSON.stringify(x)}`, new Error(), 'message');
+
+                                let prev: number = groupDatas.reduce((prev, curr, index, array) => {
+                                    return prev + curr.count;
+                                }, 0);
+
+                                if (!groupDatas.find((n) => n.deviceId === x.deviceId)) {
+                                    groupDatas.push({
+                                        floorId: x.floorId,
+                                        areaId: x.areaId,
+                                        deviceId: x.deviceId,
+                                        count: x.count,
+                                    });
+                                } else {
+                                    groupDatas.find((n) => n.deviceId === x.deviceId).count = x.count;
+                                }
+
+                                let curr: number = groupDatas.reduce((prev, curr, index, array) => {
+                                    return prev + curr.count;
+                                }, 0);
+
+                                // Print.Log(`${x.areaName}, Prev: ${prev}, Curr: ${curr}, ${JSON.stringify(groupDatas)}`, new Error(), 'message');
+
+                                Action.Smtp.action$.next({
+                                    areaName: x.areaName,
+                                    rules: x.action.smtp,
+                                    prev: prev,
+                                    curr: curr,
+                                });
+
+                                Action.Sgsms.action$.next({
+                                    areaName: x.areaName,
+                                    rules: x.action.sgsms,
+                                    prev: prev,
+                                    curr: curr,
+                                });
+                            } catch (e) {
+                                Print.Log(e, new Error(), 'error');
+                            }
+                        },
+                    });
+
+                return {
+                    areaId: value.id,
+                    area: value,
+                    liveStreamGroup$: liveStreamGroup$,
+                };
+            });
+        } catch (e) {
+            throw e;
+        }
+    };
+
     private EnableLiveStream = (): void => {
         try {
             let cmsConfig = Config.cms;
@@ -175,9 +261,10 @@ class Service {
                                         let config = value1.getValue('camera').getValue('config');
                                         return config.nvrId === value.nvr && config.channelId === value.channel;
                                     });
-                                    if (!device) {
-                                        return;
-                                    }
+
+                                    let streamGroup = this._liveStreamGroups.find((value, index, array) => {
+                                        return value.areaId === device.getValue('area').id;
+                                    });
 
                                     let locations = await this._hd.GetAnalysis(value.image);
 
@@ -227,6 +314,13 @@ class Service {
                                     await Promise.all(tasks).catch((e) => {
                                         throw e;
                                     });
+
+                                    streamGroup.liveStreamGroup$.next({
+                                        floorId: device.getValue('floor').id,
+                                        areaId: device.getValue('area').id,
+                                        deviceId: device.id,
+                                        count: locations.length,
+                                    });
                                 }),
                             );
                         } catch (e) {
@@ -249,4 +343,17 @@ class Service {
 }
 export default new Service();
 
-namespace Service {}
+namespace Service {
+    export interface ILiveStreamGroup {
+        areaId: string;
+        area: IDB.LocationArea;
+        liveStreamGroup$: Rx.Subject<Service.ILiveStreamGroupData>;
+    }
+
+    export interface ILiveStreamGroupData {
+        floorId: string;
+        areaId: string;
+        deviceId: string;
+        count: number;
+    }
+}
