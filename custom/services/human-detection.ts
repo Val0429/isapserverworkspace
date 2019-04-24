@@ -254,9 +254,9 @@ class Service {
                 })
                 .subscribe({
                     next: async (x) => {
-                        try {
-                            await Promise.all(
-                                x.map(async (value, index, array) => {
+                        await Promise.all(
+                            x.map(async (value, index, array) => {
+                                try {
                                     let device = this._devices.find((value1, index1, array1) => {
                                         let config = value1.getValue('camera').getValue('config');
                                         return config.nvrId === value.nvr && config.channelId === value.channel;
@@ -321,11 +321,11 @@ class Service {
                                         deviceId: device.id,
                                         count: locations.length,
                                     });
-                                }),
-                            );
-                        } catch (e) {
-                            Print.Log(e, new Error(), 'error');
-                        }
+                                } catch (e) {
+                                    Print.Log(e, new Error(), 'error');
+                                }
+                            }),
+                        );
 
                         next$.next();
                     },

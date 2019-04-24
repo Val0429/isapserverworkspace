@@ -36,11 +36,11 @@ class Action {
                 })
                 .subscribe({
                     next: async (x) => {
-                        try {
-                            // if (x.length > 0) Print.Log(`${JSON.stringify(x)}`, new Error(), 'message');
+                        // if (x.length > 0) Print.Log(`${JSON.stringify(x)}`, new Error(), 'message');
 
-                            await Promise.all(
-                                x.map(async (value, index, array) => {
+                        await Promise.all(
+                            x.map(async (value, index, array) => {
+                                try {
                                     let title: string = 'Occupancy Alert';
                                     let message: string = `${value.areaName} Occupancy Count at ${value.count}.`;
 
@@ -67,11 +67,11 @@ class Action {
                                     } else {
                                         Print.Log(`${value.userInfo.getValue('name')} phone number not found`, new Error(), 'error');
                                     }
-                                }),
-                            );
-                        } catch (e) {
-                            Print.Log(e, new Error(), 'error');
-                        }
+                                } catch (e) {
+                                    Print.Log(e, new Error(), 'error');
+                                }
+                            }),
+                        );
 
                         next$.next();
                     },
