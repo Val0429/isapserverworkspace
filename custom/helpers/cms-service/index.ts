@@ -2,7 +2,7 @@ import * as Rx from 'rxjs';
 import * as HttpClient from 'request';
 import * as Xml2Js from 'xml2js';
 import {} from '../../models';
-import { Regex } from '../';
+import { Regex, Print } from '../';
 import { Base } from './base';
 
 export class CMSService {
@@ -39,6 +39,14 @@ export class CMSService {
     private _liveStream$: Rx.Subject<CMSService.ISnapshot> = new Rx.Subject();
     public get liveStream$(): Rx.Subject<CMSService.ISnapshot> {
         return this._liveStream$;
+    }
+
+    /**
+     * Live stream catch
+     */
+    private _liveStreamCatch$: Rx.Subject<string> = new Rx.Subject();
+    public get liveStreamCatch$(): Rx.Subject<string> {
+        return this._liveStreamCatch$;
     }
 
     /**
@@ -226,7 +234,7 @@ export class CMSService {
                                         timestamp: value.timestamp,
                                     });
                                 } catch (e) {
-                                    throw e;
+                                    this._liveStreamCatch$.next(`Nvr: ${value.nvr}, Channel: ${value.channel}, ${e}`);
                                 }
                             }),
                         ).catch((e) => {
@@ -235,7 +243,7 @@ export class CMSService {
 
                         next$.next();
                     } catch (e) {
-                        this._liveStreamStop$.error(e);
+                        this._liveStreamCatch$.next(e);
                     }
                 },
                 error: (e) => {

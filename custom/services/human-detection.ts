@@ -246,6 +246,11 @@ class Service {
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._cms.EnableLiveSubject(delay, hdConfig.cms.intervalSecond * 1000, hdConfig.cms.bufferCount, sources, hdConfig.cms.isLive);
+            this._cms.liveStreamCatch$.subscribe({
+                next: (x) => {
+                    Print.Log(x, new Error(), 'error');
+                },
+            });
             this._cms.liveStream$
                 .buffer(this._cms.liveStream$.bufferCount(hdConfig.bufferCount).merge(Rx.Observable.interval(1000)))
                 .zip(next$.startWith(0))
