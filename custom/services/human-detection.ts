@@ -90,16 +90,16 @@ class Service {
                 });
 
             if (reportHDSummary) {
-                let total: number = reportHDSummary.getValue('total') + reportHD.getValue('total');
+                let total: number = reportHDSummary.getValue('total') + reportHD.getValue('value');
                 let count: number = reportHDSummary.getValue('count') + 1;
 
                 reportHDSummary.setValue('total', total);
                 reportHDSummary.setValue('count', count);
 
-                if (reportHD.getValue('total') > reportHDSummary.getValue('max').getValue('total')) {
+                if (reportHD.getValue('value') > reportHDSummary.getValue('max').getValue('value')) {
                     reportHDSummary.setValue('max', reportHD);
                 }
-                if (reportHD.getValue('total') < reportHDSummary.getValue('min').getValue('total')) {
+                if (reportHD.getValue('value') < reportHDSummary.getValue('min').getValue('value')) {
                     reportHDSummary.setValue('min', reportHD);
                 }
 
@@ -114,7 +114,7 @@ class Service {
                 reportHDSummary.setValue('device', reportHD.getValue('device'));
                 reportHDSummary.setValue('type', type);
                 reportHDSummary.setValue('date', date);
-                reportHDSummary.setValue('total', reportHD.getValue('total'));
+                reportHDSummary.setValue('total', reportHD.getValue('value'));
                 reportHDSummary.setValue('count', 1);
                 reportHDSummary.setValue('max', reportHD);
                 reportHDSummary.setValue('min', reportHD);
@@ -184,7 +184,7 @@ class Service {
                                 DataWindow.push$.next({
                                     floorId: x.floorId,
                                     areaId: x.areaId,
-                                    count: curr,
+                                    total: curr,
                                 });
 
                                 Action.Smtp.action$.next({
@@ -309,7 +309,7 @@ class Service {
                                     reportHD.setValue('device', device);
                                     reportHD.setValue('date', new Date(value.timestamp));
                                     reportHD.setValue('imageSrc', '');
-                                    reportHD.setValue('total', locations.length);
+                                    reportHD.setValue('value', locations.length);
                                     reportHD.setValue('results', locations);
 
                                     await reportHD.save(null, { useMasterKey: true }).fail((e) => {

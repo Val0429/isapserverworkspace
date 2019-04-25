@@ -17,7 +17,7 @@ export default action;
 interface IPushData {
     floorId: string;
     areaId: string;
-    count: number;
+    total: number;
 }
 
 interface IPushCount extends IPushData {
@@ -84,12 +84,12 @@ action.ws(async (data) => {
                         counts.push({
                             floorId: x.floorId,
                             areaId: x.areaId,
-                            count: x.count,
+                            total: x.total,
                             prevHourTotal: 0,
                             prevHourCount: 0,
                         });
                     } else {
-                        counts.find((n) => n.areaId === x.areaId).count = x.count;
+                        counts.find((n) => n.areaId === x.areaId).total = x.total;
                     }
 
                     send$.next();
@@ -153,7 +153,7 @@ function DataFilter(counts: IPushCount[], mode: EPushMode, id: string): IPushCli
             return {
                 floorId: value.floorId,
                 areaId: value.areaId,
-                count: value.count,
+                total: value.total,
                 prevHourAverage: Math.round(average),
             };
         });
@@ -190,7 +190,7 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
                 prev.push({
                     floorId: curr.getValue('floor').id,
                     areaId: curr.getValue('area').id,
-                    count: 0,
+                    total: 0,
                     prevHourTotal: curr.getValue('total'),
                     prevHourCount: curr.getValue('count'),
                 });
@@ -220,7 +220,7 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
                     prev.push({
                         floorId: curr.floorId,
                         areaId: curr.areaId,
-                        count: curr.count,
+                        total: curr.total,
                         prevHourTotal: curr.prevHourTotal,
                         prevHourCount: curr.prevHourCount,
                     });

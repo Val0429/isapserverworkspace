@@ -32,9 +32,9 @@ export interface IReportHumanDetection {
     imageSrc: string;
 
     /**
-     * 總數
+     * 筆數
      */
-    total: number;
+    value: number;
 
     /**
      * 辨識結果
