@@ -1,11 +1,9 @@
 import * as Enum from '../../enums';
 
 export interface IHumanDetection {
-    objectId: string;
-    deviceId: string;
     date: Date;
-    imageSrc: string;
-    value: number;
+    imageSrcs: string[];
+    total: number;
 }
 
 export interface IHumanDetectionSummary {

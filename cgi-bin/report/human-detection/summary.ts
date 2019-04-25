@@ -126,46 +126,54 @@ action.get(
                     let mediumCount: number = action.length >= 2 ? action[1].triggerCount : action[0].triggerCount;
                     let highCount: number = action[0].triggerCount;
 
-                    let _startDate: Date = new Date(value.date);
-                    let _endDate: Date = new Date(value.date);
+                    let startDate: Date = new Date(value.date);
+                    let endDate: Date = new Date(value.date);
                     switch (_input.dataRangeType) {
                         case Enum.ESummaryType.hour:
-                            _endDate = new Date(_endDate.setHours(_endDate.getHours() + 1));
+                            endDate = new Date(endDate.setHours(endDate.getHours() + 1));
                             break;
                         case Enum.ESummaryType.day:
-                            _endDate = new Date(_endDate.setDate(_endDate.getDate() + 1));
+                            endDate = new Date(endDate.setDate(endDate.getDate() + 1));
                             break;
                         case Enum.ESummaryType.month:
-                            _endDate = new Date(_endDate.setMonth(_endDate.getMonth() + 1));
+                            endDate = new Date(endDate.setMonth(endDate.getMonth() + 1));
                             break;
                     }
 
-                    let reportHD: IDB.ReportHumanDetection[] = await new Parse.Query(IDB.ReportHumanDetection)
+                    let reportHDs: IDB.ReportHumanDetection[] = await new Parse.Query(IDB.ReportHumanDetection)
                         .equalTo('area', area)
-                        .greaterThanOrEqualTo('date', _startDate)
-                        .lessThan('date', _endDate)
-                        .greaterThanOrEqualTo('value', mediumCount)
+                        .greaterThanOrEqualTo('date', startDate)
+                        .lessThan('date', endDate)
+                        .descending(['date'])
                         .find()
                         .fail((e) => {
                             throw e;
                         });
 
-                    let thresholds: IResponse.IReport.IHumanDetection[] = reportHD.map((value, index, array) => {
-                        return {
-                            objectId: value.id,
-                            deviceId: value.getValue('device').id,
-                            date: value.getValue('date'),
-                            imageSrc: value.getValue('imageSrc'),
-                            value: value.getValue('value'),
-                        };
-                    });
+                    let thresholds: IResponse.IReport.IHumanDetection[] = reportHDs.reduce<IResponse.IReport.IHumanDetection[]>((prev, curr, index, array) => {
+                        let threshold = prev.find((value1, index1, array1) => {
+                            return value1.date.getTime() === curr.getValue('date').getTime();
+                        });
+                        if (threshold) {
+                            threshold.imageSrcs.push(curr.getValue('imageSrc'));
+                            threshold.total += curr.getValue('value');
+                        } else {
+                            prev.push({
+                                date: curr.getValue('date'),
+                                imageSrcs: [curr.getValue('imageSrc')],
+                                total: curr.getValue('value'),
+                            });
+                        }
+
+                        return prev;
+                    }, []);
 
                     value.mediumThresholds = thresholds.filter((value, index, array) => {
-                        return value.value >= mediumCount && value.value < highCount;
+                        return value.total >= mediumCount && value.total < highCount;
                     });
 
                     value.highThresholds = thresholds.filter((value, index, array) => {
-                        return value.value >= highCount;
+                        return value.total >= highCount;
                     });
 
                     return value;
