@@ -44,6 +44,10 @@ class Service {
                 .fail((e) => {
                     throw e;
                 });
+
+            this._devices = this.devices.filter((value, index, array) => {
+                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted');
+            });
         } catch (e) {
             throw e;
         }
