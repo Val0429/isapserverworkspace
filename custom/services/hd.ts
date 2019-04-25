@@ -72,12 +72,12 @@ function CMS(save$: Rx.Subject<IDB.IHumans>): void {
                         let tasks: Promise<any>[] = [];
 
                         if (Config.humanDetection.yolo.isEnable) {
-                            let filename: string = `Yolo3_${camera}_${now.getTime()}.png`;
+                            let filename: string = `Yolo3_${camera}_${now.getTime()}.jpeg`;
                             tasks.push(YoloAnalysis(save$, snapshot.buffer, path, filename, humans));
                         }
 
                         if (Config.humanDetection.isap.isEnable) {
-                            let filename: string = `ISap_${camera}_${now.getTime()}.png`;
+                            let filename: string = `ISap_${camera}_${now.getTime()}.jpeg`;
                             tasks.push(ISapAnalysis(save$, snapshot.buffer, path, filename, humans));
                         }
 
@@ -87,7 +87,7 @@ function CMS(save$: Rx.Subject<IDB.IHumans>): void {
 
                         success$.next();
                     } catch (e) {
-                        Print.MinLog(e, 'error');
+                        Print.Log(e, new Error(), 'error');
                     }
                 },
             });
@@ -165,6 +165,8 @@ async function YoloAnalysis(save$: Rx.Subject<IDB.IHumans>, buffer: Buffer, path
  */
 async function ISapAnalysis(save$: Rx.Subject<IDB.IHumans>, buffer: Buffer, path: string, filename: string, humans?: IDB.IHumans): Promise<HumanDetection.ILocation[]> {
     try {
+        File.WriteFile(`${path}/${filename}`, buffer);
+
         let isapHD: ISapHD = new ISapHD();
         isapHD.ip = Config.humanDetection.isap.ip;
         isapHD.port = Config.humanDetection.isap.port;
@@ -218,7 +220,8 @@ async function SaveImage(buffer: Buffer, result: HumanDetection.ILocation[]): Pr
                 width: Config.humanDetection.output.width,
                 height: Config.humanDetection.output.height,
             },
-            Config.humanDetection.output.quality,
+            true,
+            false,
         );
 
         return buffer;

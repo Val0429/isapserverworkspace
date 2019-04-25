@@ -1,7 +1,6 @@
 export * from './demographic';
 export * from './frs-service';
 export * from './humanDetection';
-export * from './printer';
 export * from './ioDevice';
 export * from './recognize';
 export * from './utilitys';

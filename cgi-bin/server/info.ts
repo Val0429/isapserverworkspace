@@ -1,5 +1,5 @@
 import { Action } from 'core/cgi-package';
-import { DateTime, Print } from '../../custom/helpers';
+import { Print } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: false,
@@ -9,7 +9,7 @@ let action = new Action({
 export default action;
 
 /**
- * Action Get Server Time
+ * Action Get Server Version
  */
 type Input = null;
 type Output = string;
@@ -17,7 +17,10 @@ type Output = string;
 action.get(
     async (): Promise<Output> => {
         try {
-            return DateTime.DateTime2String(new Date(), DateTime.Format.default);
+            let description: string = process.env.npm_package_description;
+            let version: string = process.env.npm_package_version;
+
+            return `${description}(v${version})`;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;

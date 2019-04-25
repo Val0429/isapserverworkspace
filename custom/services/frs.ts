@@ -23,15 +23,15 @@ import { Print, FRSService, FRSCore, DateTime } from '../helpers';
                 let type: string = 'Recognized';
                 let name: string = face.person_info.fullname;
 
-                Print.MinLog(`${DateTime.DateTime2String(timestamp, DateTime.Format.default)}, ${name}, ${channel}, ${faceId}`);
+                Print.Log(`${DateTime.DateTime2String(timestamp, DateTime.Format.default)}, ${name}, ${channel}, ${faceId}`, new Error(), 'message');
             } else if (face.type === FRSCore.UserType.UnRecognized) {
                 let type: string = 'UnRecognized';
                 let name: string = 'undefined';
 
-                Print.MinLog(`${DateTime.DateTime2String(timestamp, DateTime.Format.default)}, ${name}, ${channel}, ${faceId}`);
+                Print.Log(`${DateTime.DateTime2String(timestamp, DateTime.Format.default)}, ${name}, ${channel}, ${faceId}`, new Error(), 'message');
             }
         });
     } catch (e) {
-        Print.MinLog(e, 'error');
+        Print.Log(e, new Error(), 'error');
     }
 })();

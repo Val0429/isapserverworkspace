@@ -6,9 +6,14 @@ import * as IUser from './user';
 
 export { IConfig, IDemographic, IFaceCount, IOccupancy, IUser };
 
-export interface IDataList<T> {
+export interface IPaging {
     total: number;
+    totalPages: number;
     page: number;
-    count: number;
-    content: T;
+    pageSize: number;
+}
+
+export interface IDataList<T> {
+    paging: IPaging;
+    results: T[];
 }

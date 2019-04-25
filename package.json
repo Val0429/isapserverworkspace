@@ -1,18 +1,19 @@
 {
-  "name": "isap-min-service",
-  "version": "1.00.01",
-  "config": {
-    "displayname": "iSap Min Service"
-  },
-  "description": "iSap Min Service v1.00.01",
-  "scripts": {
-    "start": "npm start --prefix ./../",
-    "create-project": "git checkout --orphan"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "canvas": "^2.4.0",
-    "jsbarcode": "^3.11.0"
-  }
+    "name": "isap-min-service",
+    "version": "1.00.02",
+    "config": {
+        "displayname": "iSap Min Service"
+    },
+    "description": "iSap Min Service",
+    "scripts": {
+        "start": "npm start --prefix ./../",
+        "create-project": "git checkout --orphan"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "canvas": "^2.4.0",
+        "connect-history-api-fallback": "^1.6.0",
+        "jsbarcode": "^3.11.0"
+    }
 }

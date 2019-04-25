@@ -50,34 +50,14 @@ export namespace Db {
                 user = new Parse.User();
 
                 user.setUsername('SysAdmin');
-                user.setPassword('SysAdmin123456');
-                user.set(
-                    'roles',
-                    roles.filter((value, index, array) => {
-                        return value.getName() === RoleList.SystemAdministrator;
-                    }),
-                );
+                user.setPassword('SysAdmin12356');
+                user.set('roles', roles);
 
                 await user.save(null, { useMasterKey: true }).catch((e) => {
                     throw e;
                 });
 
-                user = new Parse.User();
-
-                user.setUsername('Admin');
-                user.setPassword('Admin123456');
-                user.set(
-                    'roles',
-                    roles.filter((value, index, array) => {
-                        return value.getName() === RoleList.Administrator;
-                    }),
-                );
-
-                await user.save(null, { useMasterKey: true }).catch((e) => {
-                    throw e;
-                });
-
-                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Users:  ' }, { message: '<SysAdmin>, <Admin>', color: Print.FontColor.cyan });
+                Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Users:  ' }, { message: '<SysAdmin>', color: Print.FontColor.cyan });
             }
         } catch (e) {
             throw e;

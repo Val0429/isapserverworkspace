@@ -5,6 +5,7 @@ var config: Partial<Config> = {
     disableCache: true,
     accessControlAllowOrigin: true,
     cgiPath: '',
+    httpDisabled: false,
     httpsEnabled: true,
     httpsPort: 4443,
 };

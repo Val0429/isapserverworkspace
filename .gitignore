@@ -5,5 +5,5 @@ node_modules/
 nsis/Release/
 
 custom/web/
-custom/assets/images/
-custom/assets/files/
+custom/license/license.xml
+custom/assets/

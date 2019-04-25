@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB, IWs } from '../../custom/models';
-import {} from '../../custom/helpers';
+import { Print } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Rx from 'rxjs';
 
@@ -17,69 +17,84 @@ export default action;
 export const pulling$: Rx.Subject<{}> = new Rx.Subject();
 
 action.ws(async (data) => {
-    let _socket: Socket = data.socket;
+    try {
+        let _socket: Socket = data.socket;
 
-    let _isLive: boolean = true;
-    let _analyst: any = '';
-    let _count: number = 0;
-    let _type: any = 'none';
+        let _isLive: boolean = true;
+        let _analyst: any = '';
+        let _count: number = 0;
+        let _type: any = 'none';
 
-    pulling$.subscribe({
-        next: async () => {
-            if (_isLive) {
-                if (_type === 'none') {
+        pulling$.subscribe({
+            next: async () => {
+                try {
+                    if (_isLive) {
+                        if (_type === 'none') {
+                            _socket.send({
+                                type: 'searchGroup',
+                                content: await GetGroup({
+                                    analyst: _analyst,
+                                    count: _count,
+                                }),
+                            } as IWs<IResponse.IOccupancy.IGroupR[]>);
+                        } else {
+                            _socket.send({
+                                type: 'searchSummary',
+                                content: await GetSummary({
+                                    analyst: _analyst,
+                                    count: _count,
+                                    type: _type,
+                                }),
+                            } as IWs<IResponse.IOccupancy.ISummaryR[]>);
+                        }
+                    }
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                    throw e;
+                }
+            },
+        });
+
+        _socket.io.on('message', async (data) => {
+            try {
+                let _input: IWs<any> = JSON.parse(data);
+
+                if (_input.type === 'changeMode') {
+                    let _content: boolean = _input.content;
+
+                    _isLive = _content;
+                } else if (_input.type === 'searchGroup') {
+                    let _content: IRequest.IOccupancy.IGroupR = _input.content;
+
+                    _analyst = _content.analyst;
+                    _count = _content.count;
+                    _type = 'none';
+
                     _socket.send({
-                        type: 'searchGroup',
-                        content: await GetGroup({
-                            analyst: _analyst,
-                            count: _count,
-                        }),
+                        type: _input.type,
+                        content: await GetGroup(_content),
                     } as IWs<IResponse.IOccupancy.IGroupR[]>);
-                } else {
+                } else if (_input.type === 'searchSummary') {
+                    let _content: IRequest.IOccupancy.ISummaryR = _input.content;
+
+                    _analyst = _content.analyst;
+                    _count = _content.count;
+                    _type = _content.type;
+
                     _socket.send({
-                        type: 'searchSummary',
-                        content: await GetSummary({
-                            analyst: _analyst,
-                            count: _count,
-                            type: _type,
-                        }),
+                        type: _input.type,
+                        content: await GetSummary(_content),
                     } as IWs<IResponse.IOccupancy.ISummaryR[]>);
                 }
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+                throw e;
             }
-        },
-    });
-
-    _socket.io.on('message', async (data) => {
-        let _input: IWs<any> = JSON.parse(data);
-
-        if (_input.type === 'changeMode') {
-            let _content: boolean = _input.content;
-
-            _isLive = _content;
-        } else if (_input.type === 'searchGroup') {
-            let _content: IRequest.IOccupancy.IGroupR = _input.content;
-
-            _analyst = _content.analyst;
-            _count = _content.count;
-            _type = 'none';
-
-            _socket.send({
-                type: _input.type,
-                content: await GetGroup(_content),
-            } as IWs<IResponse.IOccupancy.IGroupR[]>);
-        } else if (_input.type === 'searchSummary') {
-            let _content: IRequest.IOccupancy.ISummaryR = _input.content;
-
-            _analyst = _content.analyst;
-            _count = _content.count;
-            _type = _content.type;
-
-            _socket.send({
-                type: _input.type,
-                content: await GetSummary(_content),
-            } as IWs<IResponse.IOccupancy.ISummaryR[]>);
-        }
-    });
+        });
+    } catch (e) {
+        Print.Log(e, new Error(), 'error');
+        throw e;
+    }
 });
 
 /**

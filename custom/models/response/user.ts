@@ -1,17 +1,11 @@
-import { RoleList } from 'core/cgi-package';
-
-export interface IBaseIndexC {
-    userId: string;
-}
-
 export interface IBaseIndexR {
-    userId: string;
+    objectId: string;
     account: string;
-    roles: RoleList[];
+    roles: string[];
 }
 
 export interface IBaseLogin {
     sessionId: string;
-    userId: string;
+    objectId: string;
     roles: string[];
 }

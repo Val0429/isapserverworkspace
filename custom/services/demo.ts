@@ -101,7 +101,7 @@ function CMS(save$: Rx.Subject<IDB.IHuman>): void {
 
                         success$.next();
                     } catch (e) {
-                        Print.MinLog(e, 'error');
+                        Print.Log(e, new Error(), 'error');
                     }
                 },
             });
@@ -179,7 +179,7 @@ function FRS(save$: Rx.Subject<IDB.IHuman>): void {
         let tasks: Promise<any>[] = [];
 
         if (Config.demographic.isap.isEnable) {
-            let filename: string = `ISap_${camera}_${now.getTime()}.png`;
+            let filename: string = `ISap_${camera}_${now.getTime()}.jpeg`;
 
             tasks.push(ISapAnalysis(save$, buffer, path, filename, human));
         }

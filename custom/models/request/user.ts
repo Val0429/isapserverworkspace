@@ -1,21 +1,9 @@
 import { RoleList } from 'core/cgi-package';
 
-interface IUser {
-    account: string;
-    password: string;
-}
-
-export interface IBaseIndexC extends IUser {
-    roles: RoleList[];
-}
-
 export interface IBaseIndexU {
-    userId: string;
-    roles: RoleList[];
-}
-
-export interface IBaseIndexD {
-    userId: string;
+    objectId: string;
+    password?: string;
+    roles?: RoleList[];
 }
 
 export interface IBaseLogin {
@@ -28,7 +16,7 @@ export interface IBaseLogout {
 }
 
 export interface IBasePasswordU {
-    userId?: string;
+    objectId?: string;
     previous: string;
     current: string;
 }

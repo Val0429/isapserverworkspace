@@ -18,50 +18,65 @@ export default action;
 export const pulling$: Rx.Subject<{}> = new Rx.Subject();
 
 action.ws(async (data) => {
-    let _socket: Socket = data.socket;
+    try {
+        let _socket: Socket = data.socket;
 
-    let _isLive: boolean = true;
-    let _analyst: any = '';
-    let _count: number = 0;
-    let _type: any = 'none';
+        let _isLive: boolean = true;
+        let _analyst: any = '';
+        let _count: number = 0;
+        let _type: any = 'none';
 
-    pulling$.subscribe({
-        next: async () => {
-            if (_isLive) {
-                if (_type === 'none') {
+        pulling$.subscribe({
+            next: async () => {
+                try {
+                    if (_isLive) {
+                        if (_type === 'none') {
+                            _socket.send({
+                                type: 'searchSummary',
+                                content: await GetSummary({
+                                    analyst: _analyst,
+                                    type: _type,
+                                    count: _count,
+                                }),
+                            } as IWs<IResponse.IDemographic.ISummaryR[]>);
+                        }
+                    }
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                    throw e;
+                }
+            },
+        });
+
+        _socket.io.on('message', async (data) => {
+            try {
+                let _input: IWs<any> = JSON.parse(data);
+
+                if (_input.type === 'changeMode') {
+                    let _content: boolean = _input.content;
+
+                    _isLive = _content;
+                } else if (_input.type === 'searchSummary') {
+                    let _content: IRequest.IDemographic.ISummaryR = _input.content;
+
+                    _analyst = _content.analyst;
+                    _count = _content.count;
+                    _type = _content.type;
+
                     _socket.send({
-                        type: 'searchSummary',
-                        content: await GetSummary({
-                            analyst: _analyst,
-                            type: _type,
-                            count: _count,
-                        }),
+                        type: _input.type,
+                        content: await GetSummary(_content),
                     } as IWs<IResponse.IDemographic.ISummaryR[]>);
                 }
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+                throw e;
             }
-        },
-    });
-
-    _socket.io.on('message', async (data) => {
-        let _input: IWs<any> = JSON.parse(data);
-
-        if (_input.type === 'changeMode') {
-            let _content: boolean = _input.content;
-
-            _isLive = _content;
-        } else if (_input.type === 'searchSummary') {
-            let _content: IRequest.IDemographic.ISummaryR = _input.content;
-
-            _analyst = _content.analyst;
-            _count = _content.count;
-            _type = _content.type;
-
-            _socket.send({
-                type: _input.type,
-                content: await GetSummary(_content),
-            } as IWs<IResponse.IDemographic.ISummaryR[]>);
-        }
-    });
+        });
+    } catch (e) {
+        Print.Log(e, new Error(), 'error');
+        throw e;
+    }
 });
 
 /**

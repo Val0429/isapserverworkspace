@@ -28,7 +28,7 @@ export interface Config {
 
 let config: Config = {
     intervalSecond: 1,
-    source: 'cms',
+    source: 'frs',
     channels: ['Camera_01_01'],
     ageRange: '0-20-20-20',
     cameraSources: [
