@@ -139,16 +139,16 @@ action.ws(async (data) => {
  */
 function DataFilter(counts: IPushCount[], mode: EPushMode, id: string): IPushClient[] {
     try {
-        let _counts: IPushCount[] = [];
+        let _counts: IPushCount[] = counts;
 
-        if (mode === EPushMode.floor) {
-            _counts = counts.filter((value, index, array) => {
+        if (id !== '*' && mode === EPushMode.floor) {
+            _counts = _counts.filter((value, index, array) => {
                 return value.floorId === id;
             });
         }
 
         return _counts.map((value, index, array) => {
-            let average: number = value.prevHourCount / value.prevHourTotal || 0;
+            let average: number = value.prevHourTotal / value.prevHourCount || 0;
 
             return {
                 floorId: value.floorId,
@@ -201,7 +201,7 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
 
         if (counts.length === 0) {
             counts = summarys.map((value, index, array) => {
-                let average: number = value.prevHourCount / value.prevHourTotal || 0;
+                let average: number = value.prevHourTotal / value.prevHourCount || 0;
 
                 return {
                     ...value,
