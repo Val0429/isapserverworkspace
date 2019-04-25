@@ -10,6 +10,7 @@ import './custom/shells/auto-index';
 
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
+app.use(`/human_detection`, express.static(`workspace/custom/assets/human_detection`));
 
 import './custom/actions';
 import './custom/services';
