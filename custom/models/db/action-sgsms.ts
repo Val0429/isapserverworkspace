@@ -12,12 +12,7 @@ export interface IActionSgsms {
     /**
      * 觸發人數
      */
-    triggerMax: number;
-
-    /**
-     * 觸發人數
-     */
-    triggerMin: number;
+    triggerCount: number;
 }
 
 @registerSubclass()

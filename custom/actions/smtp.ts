@@ -100,10 +100,10 @@ class Action {
                         }
 
                         let prevRange = x.rules.find((value, index, array) => {
-                            return value.triggerMax >= x.prev && value.triggerMin <= x.prev;
+                            return value.triggerCount <= x.prev;
                         });
                         let currRange = x.rules.find((value, index, array) => {
-                            return value.triggerMax >= x.curr && value.triggerMin <= x.curr;
+                            return value.triggerCount <= x.curr;
                         });
 
                         if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
