@@ -41,14 +41,11 @@ class Action {
                         await Promise.all(
                             x.map(async (value, index, array) => {
                                 try {
-                                    let title: string = 'Occupancy Alert';
-                                    let message: string = `${value.areaName} Occupancy Count at ${value.count}.`;
-
                                     if (value.userInfo.getValue('phone')) {
                                         let result = await new ScheduleActionSGSMS().do({
                                             phone: value.userInfo.getValue('phone'),
-                                            from: title,
-                                            message: message,
+                                            from: value.title,
+                                            message: value.message,
                                             username: Config.sgsms.username,
                                             password: Config.sgsms.password,
                                         });
@@ -84,20 +81,16 @@ class Action {
                             return;
                         }
 
-                        let prevRange = x.rules
-                            .sort((a, b) => {
-                                return a.triggerCount > b.triggerCount ? -1 : 1;
-                            })
-                            .find((value, index, array) => {
-                                return value.triggerCount <= x.prev;
-                            });
-                        let currRange = x.rules
-                            .sort((a, b) => {
-                                return a.triggerCount > b.triggerCount ? -1 : 1;
-                            })
-                            .find((value, index, array) => {
-                                return value.triggerCount <= x.curr;
-                            });
+                        let rules = x.rules.sort((a, b) => {
+                            return a.triggerCount > b.triggerCount ? -1 : 1;
+                        });
+
+                        let prevRange = rules.find((value, index, array) => {
+                            return value.triggerCount <= x.prev;
+                        });
+                        let currRange = rules.find((value, index, array) => {
+                            return value.triggerCount <= x.curr;
+                        });
 
                         if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
                             Print.Log(`Prev: ${x.prev}(${JSON.stringify(prevRange)}) -> Curr: ${x.curr}(${JSON.stringify(currRange)})`, new Error(), 'message');
@@ -117,11 +110,18 @@ class Action {
                                         throw e;
                                     });
 
+                                let mediumCount: number = rules.length >= 2 ? rules[1].triggerCount : rules[0].triggerCount;
+                                let highCount: number = rules[0].triggerCount;
+
+                                let level: string = currRange.triggerCount === mediumCount ? 'Medium' : currRange.triggerCount === highCount ? 'High' : 'Low';
+                                let title: string = 'Occupancy Alert';
+                                let message: string = `${x.areaName} Occupancy Count at ${x.curr}. ${level} threshold exceeded.`;
+
                                 userInfos.forEach((value, index, array) => {
                                     this._sgsms$.next({
                                         userInfo: value,
-                                        areaName: x.areaName,
-                                        count: x.curr,
+                                        title: title,
+                                        message: message,
                                     });
                                 });
                             }
@@ -148,7 +148,7 @@ namespace Action {
 
     export interface ISgsmsData {
         userInfo: IDB.UserInfo;
-        areaName: string;
-        count: number;
+        title: string;
+        message: string;
     }
 }

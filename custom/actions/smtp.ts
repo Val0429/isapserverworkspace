@@ -41,9 +41,6 @@ class Action {
                         await Promise.all(
                             x.map(async (value, index, array) => {
                                 try {
-                                    let title: string = 'Occupancy Alert';
-                                    let message: string = `${value.areaName} Occupancy Count at ${value.count}.`;
-
                                     let tos: Action.ITo[] = value.userInfos
                                         .map((value1, index1, array1) => {
                                             if (!value1.getValue('email')) {
@@ -61,8 +58,8 @@ class Action {
 
                                     let result = await new ScheduleActionEmail().do({
                                         to: tos.map((x) => x.email),
-                                        subject: title,
-                                        body: message,
+                                        subject: value.title,
+                                        body: value.message,
                                     });
 
                                     switch (result) {
@@ -99,20 +96,16 @@ class Action {
                             return;
                         }
 
-                        let prevRange = x.rules
-                            .sort((a, b) => {
-                                return a.triggerCount > b.triggerCount ? -1 : 1;
-                            })
-                            .find((value, index, array) => {
-                                return value.triggerCount <= x.prev;
-                            });
-                        let currRange = x.rules
-                            .sort((a, b) => {
-                                return a.triggerCount > b.triggerCount ? -1 : 1;
-                            })
-                            .find((value, index, array) => {
-                                return value.triggerCount <= x.curr;
-                            });
+                        let rules = x.rules.sort((a, b) => {
+                            return a.triggerCount > b.triggerCount ? -1 : 1;
+                        });
+
+                        let prevRange = rules.find((value, index, array) => {
+                            return value.triggerCount <= x.prev;
+                        });
+                        let currRange = rules.find((value, index, array) => {
+                            return value.triggerCount <= x.curr;
+                        });
 
                         if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
                             Print.Log(`Prev: ${x.prev}(${JSON.stringify(prevRange)}) -> Curr: ${x.curr}(${JSON.stringify(currRange)})`, new Error(), 'message');
@@ -132,10 +125,17 @@ class Action {
                                         throw e;
                                     });
 
+                                let mediumCount: number = rules.length >= 2 ? rules[1].triggerCount : rules[0].triggerCount;
+                                let highCount: number = rules[0].triggerCount;
+
+                                let level: string = currRange.triggerCount === mediumCount ? 'Medium' : currRange.triggerCount === highCount ? 'High' : 'Low';
+                                let title: string = 'Occupancy Alert';
+                                let message: string = `${x.areaName} Occupancy Count at ${x.curr}. ${level} threshold exceeded.`;
+
                                 this._smtp$.next({
                                     userInfos: userInfos,
-                                    areaName: x.areaName,
-                                    count: x.curr,
+                                    title: title,
+                                    message: message,
                                 });
                             }
                         }
@@ -161,8 +161,8 @@ namespace Action {
 
     export interface ISmtpData {
         userInfos: IDB.UserInfo[];
-        areaName: string;
-        count: number;
+        title: string;
+        message: string;
     }
 
     export interface ITo {
