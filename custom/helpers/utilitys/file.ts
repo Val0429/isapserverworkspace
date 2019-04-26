@@ -50,6 +50,21 @@ export namespace File {
     }
 
     /**
+     * Read floder all files
+     * @param path
+     */
+    export function ReadFolder(path: string): string[] {
+        try {
+            CreateFolder(path);
+            let files: string[] = Fs.readdirSync(path);
+
+            return files;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Write file
      * @param filename
      * @param data
