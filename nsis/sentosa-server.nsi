@@ -173,7 +173,9 @@ Section
 
 	SetOutPath $INSTDIR
 	File /r *.bat
-	File /r /x license.xml /x .git /x .gitignore /x assets /x nsis ..\..\*.* 
+	File /r /x license.xml /x .git /x logs /x .gitignore /x assets /x nsis ..\..\*.* 
+
+    CreateDirectory $INSTDIR\logs
 	
 	ExecWait '"install_mongo.bat" /s'
 	
