@@ -84,12 +84,20 @@ class Action {
                             return;
                         }
 
-                        let prevRange = x.rules.find((value, index, array) => {
-                            return value.triggerCount <= x.prev;
-                        });
-                        let currRange = x.rules.find((value, index, array) => {
-                            return value.triggerCount <= x.curr;
-                        });
+                        let prevRange = x.rules
+                            .sort((a, b) => {
+                                return a.triggerCount > b.triggerCount ? -1 : 1;
+                            })
+                            .find((value, index, array) => {
+                                return value.triggerCount <= x.prev;
+                            });
+                        let currRange = x.rules
+                            .sort((a, b) => {
+                                return a.triggerCount > b.triggerCount ? -1 : 1;
+                            })
+                            .find((value, index, array) => {
+                                return value.triggerCount <= x.curr;
+                            });
 
                         if (JSON.stringify(currRange) !== JSON.stringify(prevRange)) {
                             Print.Log(`Prev: ${x.prev}(${JSON.stringify(prevRange)}) -> Curr: ${x.curr}(${JSON.stringify(currRange)})`, new Error(), 'message');
