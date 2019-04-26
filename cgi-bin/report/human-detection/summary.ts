@@ -54,7 +54,7 @@ action.get(
 
             let reportHDSummarys: IDB.ReportHumanDetectionSummary[] = await reportHDSummaryQuery
                 .limit(reportHDSummaryTotal)
-                .descending(['date'])
+                .ascending(['date'])
                 .include(['floor', 'area', 'max'])
                 .find()
                 .fail((e) => {
@@ -146,7 +146,7 @@ action.get(
                         .equalTo('area', area)
                         .greaterThanOrEqualTo('date', startDate)
                         .lessThan('date', endDate)
-                        .descending(['date'])
+                        .ascending(['date'])
                         .find()
                         .fail((e) => {
                             throw e;
