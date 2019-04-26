@@ -99,7 +99,9 @@ action.get(
                         average: Math.round(average),
                         maxId: curr.getValue('max').id,
                         maxValue: curr.getValue('max').getValue('value'),
+                        mediumThresholdCount: 0,
                         mediumThresholds: [],
+                        highThresholdCount: 0,
                         highThresholds: [],
                     });
                 }
@@ -168,10 +170,12 @@ action.get(
                         return prev;
                     }, []);
 
+                    value.mediumThresholdCount = mediumCount;
                     value.mediumThresholds = thresholds.filter((value, index, array) => {
                         return value.total >= mediumCount && value.total < highCount;
                     });
 
+                    value.highThresholdCount = highCount;
                     value.highThresholds = thresholds.filter((value, index, array) => {
                         return value.total >= highCount;
                     });

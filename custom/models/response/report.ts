@@ -19,7 +19,9 @@ export interface IHumanDetectionSummary {
     average: number;
     maxId: string;
     maxValue: number;
+    mediumThresholdCount: number;
     mediumThresholds: IHumanDetection[];
+    highThresholdCount: number;
     highThresholds: IHumanDetection[];
 }
 
