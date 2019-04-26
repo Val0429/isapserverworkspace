@@ -2,7 +2,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "Min Server"
-!define PRODUCT_VERSION "1.00.02"
+!define PRODUCT_VERSION "1.00.03"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
@@ -174,6 +174,8 @@ Section
 	SetOutPath $INSTDIR
 	File /r *.bat
 	File /r /x license.xml /x .git /x logs /x .gitignore /x assets /x nsis ..\..\*.* 
+
+    CreateDirectory $INSTDIR\logs
 	
 	ExecWait '"install_mongo.bat" /s'
 	

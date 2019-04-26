@@ -1,6 +1,6 @@
 {
     "name": "isap-min-service",
-    "version": "1.00.02",
+    "version": "1.00.03",
     "config": {
         "displayname": "iSap Min Service"
     },
