@@ -36,7 +36,7 @@ export interface Config {
 let config: Config = {
     productId: '00111',
     protocol: 'http',
-    ip: '172.16.10.21',
+    ip: '127.0.0.1',
     port: 8000,
     target_score: 0.5,
     bufferCount: 5,
