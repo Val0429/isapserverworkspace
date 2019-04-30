@@ -2,7 +2,7 @@ import * as Dgram from 'dgram';
 import * as Rx from 'rxjs';
 import * as HttpClient from 'request';
 import {} from '../../models';
-import { Regex } from '../';
+import { Print, Regex, DateTime } from '../';
 import { Base } from './base';
 
 export class Optasia {
@@ -34,14 +34,6 @@ export class Optasia {
     }
 
     /**
-     * Live stream catch
-     */
-    private _liveStreamCatch$: Rx.Subject<string> = new Rx.Subject();
-    public get liveStreamCatch$(): Rx.Subject<string> {
-        return this._liveStreamCatch$;
-    }
-
-    /**
      * Live stream stop
      */
     private _liveStreamStop$: Rx.Subject<{}> = new Rx.Subject();
@@ -68,6 +60,54 @@ export class Optasia {
 
         this._isInitialization = true;
     }
+
+    /**
+     * Enable Live Subject
+     */
+    public EnableLiveSubject(): void {
+        if (!this._isInitialization) {
+            throw Base.Message.NotInitialization;
+        }
+
+        this._liveStream$ = new Rx.Subject();
+        this._liveStreamStop$ = new Rx.Subject();
+
+        let client: Dgram.Socket = Dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+        client.bind(this._config.broadcastPort);
+
+        this._liveStreamStop$.subscribe({
+            next: (x) => {
+                client.dropMembership(this._config.broadcastIp);
+                client.close();
+            },
+        });
+
+        client.on('listening', () => {
+            client.addMembership(this._config.broadcastIp);
+            Print.Log(`${this._config.broadcastIp}:${this._config.broadcastPort} is listening`, new Error(), 'success');
+        });
+        client.on('message', (message) => {
+            if (message && message.length > 0) {
+                let result: string = message.toString();
+                let results: string[] = result.split(/ *:{4}/g);
+
+                if (results.length >= 3) {
+                    this._liveStream$.next({
+                        plateNo: results[0],
+                        date: DateTime.ToDate(results[1], 'YYYY-MM-DD HH:mm:ss'),
+                        stationId: parseInt(results[2].replace(/[^0-9]/g, '')),
+                    });
+                }
+            }
+        });
+        client.on('error', (e) => {
+            this._liveStream$.error(e);
+        });
+        client.on('close', () => {
+            this._liveStream$.complete();
+        });
+    }
 }
 
 export namespace Optasia {
@@ -82,5 +122,9 @@ export namespace Optasia {
     /**
      *
      */
-    export interface IResult {}
+    export interface IResult {
+        plateNo: string;
+        date: Date;
+        stationId: number;
+    }
 }
