@@ -33,5 +33,4 @@ export interface IDeviceR {
     visibleAngle: number;
     dataWindowX: number;
     dataWindowY: number;
-    action: any;
 }

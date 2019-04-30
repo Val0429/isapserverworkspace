@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IBase, LocationFloor, IAction, Camera } from './_index';
+import { IBase, LocationFloor, Camera } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -75,11 +75,6 @@ export interface ILocationDevice extends IBase {
      * data window Y
      */
     dataWindowY: number;
-
-    /**
-     * 動作
-     */
-    action: IAction;
 }
 
 @registerSubclass()

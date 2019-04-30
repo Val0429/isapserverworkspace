@@ -1,4 +1,3 @@
-import { IAction } from '../db/_index';
 import * as Enum from '../../enums';
 
 export interface IFloorC {
@@ -41,7 +40,6 @@ export interface IDeviceC {
     visibleAngle?: number;
     dataWindowX: number;
     dataWindowY: number;
-    action: IAction;
 }
 
 export interface IDeviceR {
@@ -64,7 +62,6 @@ export interface IDeviceU {
     visibleAngle?: number;
     dataWindowX?: number;
     dataWindowY?: number;
-    action?: IAction;
 }
 
 export interface IDeviceD {

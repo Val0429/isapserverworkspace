@@ -82,7 +82,6 @@ action.post(
             device.setValue('visibleAngle', _input.visibleAngle || 0);
             device.setValue('dataWindowX', _input.dataWindowX);
             device.setValue('dataWindowY', _input.dataWindowY);
-            device.setValue('action', _input.action);
 
             await device.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -158,14 +157,6 @@ action.get(
                     pageSize: _pageSize,
                 },
                 results: devices.map((value, index, array) => {
-                    let action: any = value.getValue('action');
-                    action.identification = action.identification.map((value1, index1, array1) => {
-                        return {
-                            ...value1,
-                            type: Enum.EIdentificationType[value1.type],
-                        };
-                    });
-
                     return {
                         objectId: value.id,
                         floorId: value.getValue('floor').id,
@@ -182,7 +173,6 @@ action.get(
                         visibleAngle: value.getValue('visibleAngle'),
                         dataWindowX: value.getValue('dataWindowX'),
                         dataWindowY: value.getValue('dataWindowY'),
-                        action: action,
                     };
                 }),
             };
@@ -299,9 +289,6 @@ action.put(
             }
             if (_input.dataWindowY || _input.dataWindowY === 0) {
                 device.setValue('dataWindowY', _input.dataWindowY);
-            }
-            if (_input.action) {
-                device.setValue('action', _input.action);
             }
 
             await device.save(null, { useMasterKey: true }).fail((e) => {
