@@ -2,19 +2,19 @@ import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper
 import * as Enum from '../../enums';
 
 /**
- * 觸發認證狀態動作
+ * 觸發名單動作
  */
-export interface IActionIdentification {
+export interface IRuleNameList {
     /**
      * 類別
      */
     type: Enum.EIdentificationType;
 
     /**
-     * 群組
+     * 名單
      */
-    names: string[];
+    name: string;
 }
 
 @registerSubclass()
-export class ActionIdentification extends ParseObject<IActionIdentification> {}
+export class RuleNameList extends ParseObject<IRuleNameList> {}

@@ -1,4 +1,5 @@
 export interface Config {
+    productId: string;
     protocol: 'http' | 'https';
     ip: string;
     port: number;
@@ -7,6 +8,7 @@ export interface Config {
 }
 
 let config: Config = {
+    productId: '',
     protocol: 'http',
     ip: '127.0.0.1',
     port: 80,
