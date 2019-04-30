@@ -171,6 +171,63 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
         let date: Date = new Date();
         date = new Date(date.setHours(date.getHours() - 1, 0, 0, 0));
 
+        let prevSummarys: IPushCount[] = await ReportSummary(date);
+
+        if (counts.length === 0) {
+            date = new Date();
+            date = new Date(date.setHours(date.getHours(), 0, 0, 0));
+
+            let currSummarys: IPushCount[] = await ReportSummary(date);
+
+            counts = prevSummarys.concat(currSummarys);
+        } else {
+            counts = prevSummarys.concat(counts);
+        }
+
+        counts = counts.reduce<IPushCount[]>((prev, curr, index, array) => {
+            let summary: IPushCount = prev.find((value1, array1, index1) => {
+                return value1.areaId === curr.areaId;
+            });
+
+            let average: number = curr.prevHourTotal / curr.prevHourCount || 0;
+
+            if (summary) {
+                summary.total = Math.round(average);
+            } else {
+                if (index >= prevSummarys.length) {
+                    prev.push({
+                        floorId: curr.floorId,
+                        areaId: curr.areaId,
+                        total: Math.round(average),
+                        prevHourTotal: 0,
+                        prevHourCount: 0,
+                    });
+                } else {
+                    prev.push({
+                        floorId: curr.floorId,
+                        areaId: curr.areaId,
+                        total: curr.total,
+                        prevHourTotal: curr.prevHourTotal,
+                        prevHourCount: curr.prevHourCount,
+                    });
+                }
+            }
+
+            return prev;
+        }, []);
+
+        return counts;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Report summary
+ * @param date
+ */
+async function ReportSummary(date: Date): Promise<IPushCount[]> {
+    try {
         let reportHDSummarys: IDB.ReportHumanDetectionSummary[] = await new Parse.Query(IDB.ReportHumanDetectionSummary)
             .equalTo('type', Enum.ESummaryType.hour)
             .equalTo('date', date)
@@ -199,38 +256,7 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
             return prev;
         }, []);
 
-        if (counts.length === 0) {
-            counts = summarys.map((value, index, array) => {
-                let average: number = value.prevHourTotal / value.prevHourCount || 0;
-
-                return {
-                    ...value,
-                    count: Math.round(average),
-                };
-            });
-        } else {
-            counts = [].concat(summarys).reduce<IPushCount[]>((prev, curr, index, array) => {
-                let summary: IPushCount = prev.find((value1, array1, index1) => {
-                    return value1.areaId === curr.areaId;
-                });
-                if (summary) {
-                    summary.prevHourTotal += curr.total;
-                    summary.prevHourCount += curr.count;
-                } else {
-                    prev.push({
-                        floorId: curr.floorId,
-                        areaId: curr.areaId,
-                        total: curr.total,
-                        prevHourTotal: curr.prevHourTotal,
-                        prevHourCount: curr.prevHourCount,
-                    });
-                }
-
-                return prev;
-            }, []);
-        }
-
-        return counts;
+        return summarys;
     } catch (e) {
         throw e;
     }
