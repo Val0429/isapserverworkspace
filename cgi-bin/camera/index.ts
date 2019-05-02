@@ -136,7 +136,7 @@ action.put(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            // Utility.ReStartServer();
 
             return new Date();
         } catch (e) {
@@ -197,7 +197,7 @@ action.delete(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            // Utility.ReStartServer();
 
             return new Date();
         } catch (e) {
