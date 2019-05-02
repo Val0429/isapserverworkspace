@@ -11,15 +11,15 @@ class Service {
     private _groups: { stationId: number; floorId: string; deviceId: string }[] = [];
 
     private _groupDatas: Service.ILiveStreamGroupData[] = [];
-    public get groupDatas(): Service.ILiveStreamGroupData[] {
-        return this._groupDatas;
-    }
 
     private _maxLength: number = 10;
 
     private _nameLists: IDB.RuleNameList[] = [];
 
     private _push$: Rx.Subject<{}> = new Rx.Subject();
+    public get push$(): Rx.Subject<{}> {
+        return this._push$;
+    }
 
     private _devices: IDB.LocationDevice[] = undefined;
     public get devices(): IDB.LocationDevice[] {

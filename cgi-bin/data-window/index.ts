@@ -82,9 +82,7 @@ action.ws(async (data) => {
                     _id = _input.content;
                 }
 
-                counts = LPRService.groupDatas;
-
-                send$.next();
+                LPRService.push$.next();
             } catch (e) {
                 Print.Log(e, new Error(), 'error');
             }
