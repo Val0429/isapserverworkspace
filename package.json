@@ -1,6 +1,6 @@
 {
     "name": "isap-printer-service",
-    "version": "1.00.03",
+    "version": "1.00.04",
     "config": {
         "displayname": "iSap Printer Service"
     },
