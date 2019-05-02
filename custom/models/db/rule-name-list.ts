@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import * as Rx from 'rxjs';
 import * as Enum from '../../enums';
 
 /**
@@ -15,6 +16,8 @@ export interface IRuleNameList {
      */
     name: string;
 }
+
+export let RuleNameList$: Rx.Subject<{}> = new Rx.Subject();
 
 @registerSubclass()
 export class RuleNameList extends ParseObject<IRuleNameList> {}

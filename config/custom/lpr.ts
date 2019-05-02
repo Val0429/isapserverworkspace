@@ -8,11 +8,11 @@ export interface Config {
 }
 
 let config: Config = {
-    productId: '',
-    protocol: 'http',
-    ip: '127.0.0.1',
+    productId: "",
+    protocol: "http",
+    ip: "127.0.0.1",
     port: 80,
-    broadcastIp: '127.0.0.1',
-    broadcastPort: 80,
+    broadcastIp: "224.255.255.255",
+    broadcastPort: 8002
 };
 export default config;

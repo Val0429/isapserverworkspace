@@ -42,6 +42,8 @@ action.post(
                 throw e;
             });
 
+            IDB.RuleNameList$.next();
+
             return {
                 objectId: name.id,
             };
@@ -148,6 +150,8 @@ action.put(
                 throw e;
             });
 
+            IDB.RuleNameList$.next();
+
             return new Date();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -179,6 +183,8 @@ action.delete(
             await name.destroy({ useMasterKey: true }).fail((e) => {
                 throw e;
             });
+
+            IDB.RuleNameList$.next();
 
             return new Date();
         } catch (e) {
