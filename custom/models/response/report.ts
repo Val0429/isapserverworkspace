@@ -25,6 +25,6 @@ export interface IHumanDetectionSummary {
     highThresholds: IHumanDetection[];
 }
 
-export interface IHumanDetectionSummaryR {
+export interface IHumanDetectionSummarys {
     summarys: IHumanDetectionSummary[];
 }

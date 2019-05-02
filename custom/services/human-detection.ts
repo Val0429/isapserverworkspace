@@ -193,14 +193,14 @@ class Service {
 
                                 Action.Smtp.action$.next({
                                     areaName: x.areaName,
-                                    rules: x.action.smtp,
+                                    rules: JSON.parse(JSON.stringify(x.action.smtp)),
                                     prev: prev,
                                     curr: curr,
                                 });
 
                                 Action.Sgsms.action$.next({
                                     areaName: x.areaName,
-                                    rules: x.action.sgsms,
+                                    rules: JSON.parse(JSON.stringify(x.action.sgsms)),
                                     prev: prev,
                                     curr: curr,
                                 });

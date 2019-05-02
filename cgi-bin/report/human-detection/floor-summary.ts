@@ -12,9 +12,9 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IReport.IHumanDetectionSummaryR;
+type InputR = IRequest.IReport.IHumanDetectionFloorSummary;
 
-type OutputR = IResponse.IReport.IHumanDetectionSummaryR;
+type OutputR = IResponse.IReport.IHumanDetectionSummarys;
 
 action.get(
     {
@@ -117,7 +117,7 @@ action.get(
                         })
                         .getValue('area');
 
-                    let action: IDB.IActionSgsms[] = area.getValue('action').sgsms;
+                    let action: IDB.IActionSgsms[] = JSON.parse(JSON.stringify(area.getValue('action').sgsms));
                     if (!action) {
                         return value;
                     }
