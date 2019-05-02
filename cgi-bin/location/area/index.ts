@@ -32,13 +32,21 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['floor not found']);
             }
 
+            let action = _input.action;
+            action.sgsms = action.sgsms.sort((a, b) => {
+                return a.triggerCount > b.triggerCount ? 1 : -1;
+            });
+            action.smtp = action.smtp.sort((a, b) => {
+                return a.triggerCount > b.triggerCount ? 1 : -1;
+            });
+
             let area: IDB.LocationArea = new IDB.LocationArea();
 
             area.setValue('creator', data.user);
             area.setValue('isDeleted', false);
             area.setValue('floor', floor);
             area.setValue('name', _input.name);
-            area.setValue('action', _input.action);
+            area.setValue('action', action);
             area.setValue('dataWindowX', _input.dataWindowX);
             area.setValue('dataWindowY', _input.dataWindowY);
 
@@ -105,11 +113,19 @@ action.get(
                     pageSize: _pageSize,
                 },
                 results: areas.map((value, index, array) => {
+                    let action = value.getValue('action');
+                    action.sgsms = action.sgsms.sort((a, b) => {
+                        return a.triggerCount > b.triggerCount ? 1 : -1;
+                    });
+                    action.smtp = action.smtp.sort((a, b) => {
+                        return a.triggerCount > b.triggerCount ? 1 : -1;
+                    });
+
                     return {
                         objectId: value.id,
                         floorId: value.getValue('floor').id,
                         name: value.getValue('name'),
-                        action: value.getValue('action'),
+                        action: action,
                         dataWindowX: value.getValue('dataWindowX'),
                         dataWindowY: value.getValue('dataWindowY'),
                     };
@@ -149,6 +165,14 @@ action.put(
                 area.setValue('name', _input.name);
             }
             if (_input.action) {
+                let action = _input.action;
+                action.sgsms = action.sgsms.sort((a, b) => {
+                    return a.triggerCount > b.triggerCount ? 1 : -1;
+                });
+                action.smtp = action.smtp.sort((a, b) => {
+                    return a.triggerCount > b.triggerCount ? 1 : -1;
+                });
+
                 area.setValue('action', _input.action);
             }
             if (_input.dataWindowX || _input.dataWindowX === 0) {
