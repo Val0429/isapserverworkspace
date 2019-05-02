@@ -116,7 +116,7 @@ export namespace Print {
         let font: FontColor = FontColor.white;
         let back: BackColor = BackColor.white;
         let title: string = 'Message';
-        let date: string = DateTime.DateTime2String(new Date());
+        let date: string = DateTime.ToString(new Date());
 
         switch (mode) {
             case 'warning':
