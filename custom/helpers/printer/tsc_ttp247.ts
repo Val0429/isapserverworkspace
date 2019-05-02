@@ -53,7 +53,7 @@ export class Tsc_Ttp247 {
      * @param date
      * http://localhost:6061/printer/tsc_ttp247?visitorName=AAA&respondentName=BBB&date=CCC&locationName=DDD
      */
-    public async PrintFetSticker(visitor: string, respondent: string, location: string, date: string = DateTime.DateTime2String(new Date(), 'MM/DD')): Promise<string> {
+    public async PrintFetSticker(visitor: string, respondent: string, location: string, date: string = DateTime.ToString(new Date(), 'MM/DD')): Promise<string> {
         try {
             if (!this._isInitialization) {
                 throw Printer.Message.DeviceNotInitialization;

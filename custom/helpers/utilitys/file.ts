@@ -18,6 +18,16 @@ export namespace File {
     }
 
     /**
+     * Get file path
+     * @param filename
+     */
+    export function GetPath(filename: string): string {
+        filename = filename.replace(/\/|\\/g, '/');
+        let path: string = filename.substr(0, filename.lastIndexOf('/'));
+        return RealPath(path);
+    }
+
+    /**
      * Create folder
      * @param path
      */
@@ -40,12 +50,28 @@ export namespace File {
     }
 
     /**
+     * Read floder all files
+     * @param path
+     */
+    export function ReadFolder(path: string): string[] {
+        try {
+            CreateFolder(path);
+            let files: string[] = Fs.readdirSync(path);
+
+            return files;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Write file
      * @param filename
      * @param data
      */
     export function WriteFile(filename: string, data: any): void {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             Fs.writeFileSync(realpath, data);
@@ -61,6 +87,7 @@ export namespace File {
      */
     export function AppendFile(filename: string, data: any): void {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             Fs.appendFileSync(realpath, data);
@@ -76,6 +103,7 @@ export namespace File {
      */
     export function WriteBase64File(filename: string, data: string) {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             let regex = /data:.*;base64, */;
@@ -137,24 +165,48 @@ export namespace File {
      * image/jpeg、image/png、application/pdf、audio/mp4、video/mp4、video/x-ms-wmv
      * @param data
      */
-    export function GetExtension(data: string): string {
+    export function GetExtension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
         try {
             if (data.indexOf('image/jpeg') > -1) {
-                return 'jpeg';
+                return {
+                    extension: 'jpeg',
+                    type: 'image',
+                };
             } else if (data.indexOf('image/png') > -1) {
-                return 'png';
+                return {
+                    extension: 'png',
+                    type: 'image',
+                };
             } else if (data.indexOf('image/gif') > -1) {
-                return 'gif';
+                return {
+                    extension: 'gif',
+                    type: 'image',
+                };
             } else if (data.indexOf('image/svg+xml') > -1) {
-                return 'svg';
+                return {
+                    extension: 'svg',
+                    type: 'image',
+                };
             } else if (data.indexOf('application/pdf') > -1) {
-                return 'pdf';
+                return {
+                    extension: 'pdf',
+                    type: 'application',
+                };
             } else if (data.indexOf('audio/mp4') > -1) {
-                return 'mp4';
+                return {
+                    extension: 'mp4',
+                    type: 'audio',
+                };
             } else if (data.indexOf('video/mp4') > -1) {
-                return 'mp4';
+                return {
+                    extension: 'mp4',
+                    type: 'video',
+                };
             } else if (data.indexOf('video/x-ms-wmv') > -1) {
-                return 'wmv';
+                return {
+                    extension: 'wmv',
+                    type: 'video',
+                };
             } else {
                 return undefined;
             }

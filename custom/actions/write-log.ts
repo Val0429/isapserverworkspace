@@ -41,7 +41,7 @@ class Action {
                         }
 
                         let now: Date = new Date();
-                        let date: string = DateTime.DateTime2String(now, 'YYYY-MM-DD');
+                        let date: string = DateTime.ToString(now, 'YYYY-MM-DD');
 
                         let log: string = x.reduce((prev, curr, index, array) => {
                             return `${prev}\r\n${curr}`;
@@ -49,12 +49,12 @@ class Action {
 
                         File.AppendFile(`${this._logPath}/${this._logFile.replace(/{{date}}/g, date)}`, log);
                     } catch (e) {
-                        Print.Log(new Error(e), 'error');
+                        Print.Log(e, new Error(), 'error');
                     }
                 },
             });
         } catch (e) {
-            Print.Log(new Error(e), 'error');
+            Print.Log(e, new Error(), 'error');
         }
     };
 }

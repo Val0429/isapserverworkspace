@@ -29,11 +29,11 @@ action.post(
 
             _input = FontFormat(_input);
 
-            Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
+            Print.MinLog(`${DateTime.ToString(new Date())}: ${JSON.stringify(_input)}`);
 
             return JSON.stringify(_input);
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
@@ -57,11 +57,11 @@ action.get(
 
             _input = FontFormat(_input);
 
-            Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
+            Print.MinLog(`${DateTime.ToString(new Date())}: ${JSON.stringify(_input)}`);
 
             return JSON.stringify(_input);
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },

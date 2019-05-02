@@ -33,11 +33,11 @@ action.post(
             tsc.Initialization();
 
             let result: string = await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _input.locationName, _input.date);
-            Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
+            Print.MinLog(`${DateTime.ToString(new Date())}: ${JSON.stringify(_input)}`);
 
             return 'OK';
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
@@ -66,11 +66,11 @@ action.get(
             tsc.Initialization();
 
             let result: string = await tsc.PrintFetSticker(_input.visitorName, _input.respondentName, _input.locationName, _input.date);
-            Print.MinLog(`${DateTime.DateTime2String(new Date())}: ${JSON.stringify(_input)}`);
+            Print.MinLog(`${DateTime.ToString(new Date())}: ${JSON.stringify(_input)}`);
 
             return 'OK';
         } catch (e) {
-            Print.Log(new Error(JSON.stringify(e)), 'error');
+            Print.Log(e, new Error(), 'error');
             throw e;
         }
     },
