@@ -14,9 +14,9 @@ export namespace DateTime {
     /**
      * Convert date to format string like C#
      * @param dateTime
-     * @param format
+     * @param format 'dddd', 'ddd', 'DD', 'D', 'hh', 'h', 'HH', 'H', 'mm', 'm', 'MMMM', 'MMM', 'MM', 'M', 'ss', 's', 'A', 'a', 'YYYY', 'YY', 'ZZ', 'Z'
      */
-    export function DateTime2String(dateTime: Date, format: Format | string = Format.default): string {
+    export function ToString(dateTime: Date, format: Format | string = Format.default): string {
         let regex: RegExp = Utility.Array2RegExp(_formats);
 
         let formats: string[] = format.match(regex) || [];
@@ -111,9 +111,9 @@ export namespace DateTime {
     /**
      * Convert string to date
      * @param str
-     * @param format
+     * @param format 'dddd', 'ddd', 'DD', 'D', 'hh', 'h', 'HH', 'H', 'mm', 'm', 'MMMM', 'MMM', 'MM', 'M', 'ss', 's', 'A', 'a', 'YYYY', 'YY', 'ZZ', 'Z'
      */
-    export function String2DateTime(str: string, format: Format | string): Date {
+    export function ToDate(str: string, format: Format | string): Date {
         let regex: RegExp = Utility.Array2RegExp(_formats);
 
         let formats: string[] = format.match(regex) || [];

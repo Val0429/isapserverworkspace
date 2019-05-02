@@ -2,9 +2,8 @@ import * as express from 'express';
 import * as history from 'connect-history-api-fallback';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
-import { Print, Utility } from './custom/helpers';
+import { Print, Utility, DateTime } from './custom/helpers';
 
-import './custom/shells/create-folder';
 import './custom/shells/create-index';
 import './custom/shells/create-default';
 import './custom/shells/auto-index';
@@ -12,11 +11,17 @@ import './custom/shells/auto-index';
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
 app.use(`/files`, express.static(`workspace/custom/assets/files`));
+app.use(`/logs`, express.static(`workspace/custom/assets/logs`));
 
 import './custom/actions';
 import './custom/services';
 
+import * as Action from './custom/actions';
+
 setTimeout(() => {
+    Action.WriteLog.action$.next('');
+    Action.WriteLog.action$.next(`${DateTime.ToString(new Date())} Success ---> Server start`);
+
     let node_env: string = !process.env.NODE_ENV || process.env.NODE_ENV !== 'development' ? 'Production' : 'Development';
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: `- ${node_env} Mode` });
 
