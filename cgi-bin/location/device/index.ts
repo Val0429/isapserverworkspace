@@ -102,7 +102,7 @@ action.post(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            // Utility.ReStartServer();
 
             return {
                 objectId: device.id,
@@ -305,7 +305,7 @@ action.put(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            // Utility.ReStartServer();
 
             return new Date();
         } catch (e) {
@@ -345,7 +345,7 @@ action.delete(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            // Utility.ReStartServer();
 
             return new Date();
         } catch (e) {
