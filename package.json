@@ -1,6 +1,6 @@
 {
     "name": "isap-lpr-service",
-    "version": "2.01.01",
+    "version": "1.00.00",
     "config": {
         "displayname": "iSap LPR Service"
     },
