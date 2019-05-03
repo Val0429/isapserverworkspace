@@ -12,11 +12,13 @@ export interface IApn {
 }
 
 export interface Config {
+    bufferCount: number;
     fcm: IFcm;
     apn: IApn;
 }
 
 let config: Config = {
+    bufferCount: 10,
     fcm: {
         serverKey: 'AAAAFGl0CKw:APA91bGahB7I0rFrDaEXUpMqb3_ib9PkXymSEu6nG-gj6wCoOQ1tQ2IQwlWwu0-lpLLy-FmVvUUqdpZkUoBcrymIzA7pC1aN08EtGJFhXptzx46ftkKkI5YjOEahO6e2dNnV9LSrVb6i',
         collapseKey: '87668557996',
