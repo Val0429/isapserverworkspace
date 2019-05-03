@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Db, Print } from '../../custom/helpers';
+import { Db, Print, Utility } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
 
@@ -63,16 +63,14 @@ action.post(
                 throw e;
             });
 
-            let manageCosts: IDB.ManageCost[] = [];
-
-            tasks = residents.map<any>((value, index, array) => {
-                let manageCost: IDB.ManageCost = new IDB.ManageCost();
-
+            let manageCosts: IDB.ManageCost[] = residents.map((value, index, array) => {
                 let parkingCost: number = parkings[index]
                     ? parkings[index].reduce((prev, curr, index, array) => {
                           return prev + curr.getValue('cost');
                       }, 0)
                     : 0;
+
+                let manageCost: IDB.ManageCost = new IDB.ManageCost();
 
                 manageCost.setValue('creator', data.user);
                 manageCost.setValue('community', _userInfo.community);
@@ -84,12 +82,30 @@ action.post(
                 manageCost.setValue('manageCost', value.getValue('manageCost'));
                 manageCost.setValue('balance', manageCost.getValue('manageCost') + manageCost.getValue('parkingCost'));
 
-                manageCosts.push(manageCost);
-
-                return manageCost.save(null, { useMasterKey: true });
+                return manageCost;
             });
 
-            await Promise.all(tasks).catch((e) => {
+            let datas: Utility.ISortData[] = manageCosts.map((value, index, array) => {
+                return {
+                    key: value.getValue('resident').getValue('address'),
+                    data: value.getValue('resident').getValue('address'),
+                };
+            });
+            datas = Utility.NatSort(datas);
+
+            let serials: string[] = datas.map((value, index, array) => {
+                return value.key;
+            });
+            await Promise.all(
+                manageCosts.map(async (value, index, array) => {
+                    let serial: number = serials.indexOf(value.getValue('resident').getValue('address'));
+                    value.setValue('serial', serial);
+
+                    await value.save(null, { useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+                }),
+            ).catch((e) => {
                 throw e;
             });
 
@@ -156,6 +172,7 @@ action.get(
             });
 
             let manageCosts: IDB.ManageCost[] = await query
+                .ascending('serial')
                 .skip((_page - 1) * _count)
                 .limit(_count)
                 .include('resident')

@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Db, Print } from '../../custom/helpers';
+import { Db, Print, Utility } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import * as Notice from '../../custom/services/notice';
 
@@ -56,9 +56,7 @@ action.post(
                     throw e;
                 });
 
-            let gass: IDB.Gas[] = [];
-
-            let tasks: Promise<any>[] = residents.map<any>((value, index, array) => {
+            let gass: IDB.Gas[] = residents.map((value, index, array) => {
                 let gas: IDB.Gas = new IDB.Gas();
 
                 gas.setValue('creator', data.user);
@@ -68,12 +66,30 @@ action.post(
                 gas.setValue('deadline', _deadline);
                 gas.setValue('degree', 0);
 
-                gass.push(gas);
-
-                return gas.save(null, { useMasterKey: true });
+                return gas;
             });
 
-            await Promise.all(tasks).catch((e) => {
+            let datas: Utility.ISortData[] = gass.map((value, index, array) => {
+                return {
+                    key: value.getValue('resident').getValue('address'),
+                    data: value.getValue('resident').getValue('address'),
+                };
+            });
+            datas = Utility.NatSort(datas);
+
+            let serials: string[] = datas.map((value, index, array) => {
+                return value.key;
+            });
+            await Promise.all(
+                gass.map(async (value, index, array) => {
+                    let serial: number = serials.indexOf(value.getValue('resident').getValue('address'));
+                    value.setValue('serial', serial);
+
+                    await value.save(null, { useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+                }),
+            ).catch((e) => {
                 throw e;
             });
 
@@ -140,6 +156,7 @@ action.get(
             });
 
             let gass: IDB.Gas[] = await query
+                .ascending('serial')
                 .skip((_page - 1) * _count)
                 .limit(_count)
                 .include('resident')

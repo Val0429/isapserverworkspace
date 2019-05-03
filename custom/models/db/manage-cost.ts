@@ -55,6 +55,11 @@ export interface IManageCost {
      * 收費人
      */
     charger: Parse.User;
+
+    /**
+     * 序號
+     */
+    serial: number;
 }
 
 @registerSubclass()

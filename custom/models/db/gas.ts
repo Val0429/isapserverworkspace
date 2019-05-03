@@ -34,6 +34,11 @@ export interface IGas {
      * 度數
      */
     degree: number;
+
+    /**
+     * 序號
+     */
+    serial: number;
 }
 
 @registerSubclass()
