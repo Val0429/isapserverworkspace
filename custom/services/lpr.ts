@@ -66,6 +66,10 @@ class Service {
                 };
             });
 
+            this._groups.forEach((value, index, array) => {
+                Print.Log(JSON.stringify(value), new Error(), 'info');
+            });
+
             let reportLPR: IDB.ReportLPR[] = await new Parse.Query(IDB.ReportLPR)
                 .containedIn('stationId', this._groups.map((n) => n.stationId))
                 .descending('date')
