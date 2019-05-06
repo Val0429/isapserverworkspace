@@ -25,3 +25,7 @@ export interface IBilling {
     total: number;
     options: IVoteOption[];
 }
+
+export interface IHistory extends IIndexR {
+    option: string;
+}
