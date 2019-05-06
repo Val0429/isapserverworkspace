@@ -43,6 +43,11 @@ action.put(
                 throw Errors.throw(Errors.CustomBadRequest, ['vote was deleted']);
             }
 
+            let now: Date = new Date();
+            if (vote.getValue('deadline').getTime() < now.getTime() || vote.getValue('status') === Enum.ReceiveStatus.received) {
+                throw Errors.throw(Errors.CustomBadRequest, ['vote was expired']);
+            }
+
             let options: string[] = vote.getValue('options').map((value, index, array) => {
                 return value.option;
             });
