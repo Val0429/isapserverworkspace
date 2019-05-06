@@ -3,7 +3,7 @@ import { FRSService } from '..';
 import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
 import { semaphore } from './../libs/semaphore';
-import { LogTitle, RecognizedUser, UnRecognizedUser, RequestLoginReason, UserType } from 'workspace/custom/helpers/frs-service/libs/core';
+import { LogTitle, RecognizedUser, UnRecognizedUser, RequestLoginReason, UserType } from 'workspace/custom/helpers/frs-service/frs-service/libs/core';
 import { Subject } from 'rxjs';
 import { FaceFeatureCompare } from './../libs/face-feature-compare';
 import { searchRecognizedFace } from '../libs/search-recognized-face';
@@ -21,14 +21,14 @@ import { Log } from 'helpers/utility';
  * 5) timeout handle
  */
 
-declare module 'workspace/custom/helpers/frs-service/libs/core' {
+declare module 'workspace/custom/helpers/frs-service/frs-service/libs/core' {
     interface IFRSConfig {
         specialScoreForUnRecognizedFace?: number;
         possibleCompanionDurationSeconds?: number;
     }
 }
 
-declare module 'workspace/custom/helpers/frs-service' {
+declare module 'workspace/custom/helpers/frs-service/frs-service' {
     interface FRSService {
         searchMatchRecords(user: RecognizedUser | UnRecognizedUser, starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
     }

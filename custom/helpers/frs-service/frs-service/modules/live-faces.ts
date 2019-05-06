@@ -7,14 +7,14 @@ import { client } from 'websocket';
 import { Log } from 'helpers/utility';
 import { filterFace } from '../libs/filter-face';
 
-declare module 'workspace/custom/helpers/frs-service/libs/core' {
+declare module 'workspace/custom/helpers/frs-service/frs-service/libs/core' {
     interface IFRSConfig {
         specialScoreForUnRecognizedFace?: number;
         throttleKeepSameFaceSeconds?: number;
     }
 }
 
-declare module 'workspace/custom/helpers/frs-service' {
+declare module 'workspace/custom/helpers/frs-service/frs-service' {
     interface FRSService {
         /// live recog & unrecog faces without filter
         sjLiveFacesEnabled: BehaviorSubject<boolean>;
@@ -149,10 +149,7 @@ class LiveFacesAdapter {
                 this.config.debug && Log.Error(LogTitle, `Live Faces Websocket Connect Failed. ${JSON.stringify(err)}`);
                 setTimeout(() => reconnect());
             });
-            cli.connect(
-                url,
-                'echo-protocol',
-            );
+            cli.connect(url, 'echo-protocol');
         };
 
         await (this.frs as any).waitForLogin();
