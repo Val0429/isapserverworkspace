@@ -1,1 +1,1 @@
-export * from './notice';
+export default undefined;

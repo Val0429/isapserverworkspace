@@ -2,7 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { File, Db, Print } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
-import * as Notice from '../../../custom/services/notice';
+import Notice from '../../../custom/actions/notice';
 
 let action = new Action({
     loginRequired: true,
