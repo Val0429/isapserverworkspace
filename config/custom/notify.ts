@@ -133,10 +133,10 @@ let config: Config = {
         body: '貴住戶您好！您預約的{{facility}}（{{dateRange}}）已為您預約，祝您使用愉快！',
     },
     [Enum.MessageType.publicFacilityReservationUpdate]: {
-        isEnable: false,
+        isEnable: true,
         aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],
-        title: '',
-        body: '',
+        title: '更新預約',
+        body: '貴住戶您好！您預約的{{facility}}（{{dateRange}}）已修改，祝您使用愉快。',
     },
     [Enum.MessageType.publicFacilityReservationDelete]: {
         isEnable: true,

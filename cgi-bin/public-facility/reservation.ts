@@ -47,6 +47,11 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['resident point not enough']);
             }
 
+            let now: Date = new Date();
+            if (_input.reservationDates.startDate.getTime() < now.getTime()) {
+                throw Errors.throw(Errors.CustomBadRequest, ['over time']);
+            }
+
             let reservation: IDB.PublicFacilityReservation = new IDB.PublicFacilityReservation();
 
             let _start: Date = _input.reservationDates.startDate.getTime() > _input.reservationDates.endDate.getTime() ? _input.reservationDates.endDate : _input.reservationDates.startDate;
@@ -202,7 +207,7 @@ action.put(
             }
 
             let now: Date = new Date();
-            if (reservation.getValue('reservationDates').startDate.getTime() < now.getTime()) {
+            if (_input.reservationDates.startDate.getTime() < now.getTime()) {
                 throw Errors.throw(Errors.CustomBadRequest, ['over time']);
             }
 
@@ -224,7 +229,10 @@ action.put(
                 resident: reservation.getValue('resident'),
                 type: Enum.MessageType.publicFacilityReservationUpdate,
                 data: reservation,
-                message: {},
+                message: {
+                    facility: reservation.getValue('facility').getValue('name'),
+                    dateRange: reservation.getValue('reservationDates'),
+                },
             });
 
             return new Date();
