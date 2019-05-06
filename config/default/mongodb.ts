@@ -2,7 +2,7 @@ import { Config } from 'config_default/mongodb';
 
 var config: Partial<Config> = {
     enable: true,
-    collection: 'Sentosa',
+    collection: 'BarDemo',
     ip: 'localhost',
     port: 27017,
 };
