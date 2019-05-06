@@ -24,11 +24,11 @@ let config: Config = {
         collapseKey: '87668557996',
     },
     apn: {
-        key: '-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgPVc6tl7pVeJEIzzFbrpxIMFl+W8QEoKqpufOz8OWDwWgCgYIKoZIzj0DAQehRANCAAQzzicm75wxl1u4hIUkzLjbuDo4SnZksQfsIxy5LaWy6WWKY3oCAhk62J1eGH9W2O/HORHGjLX0W2KO8+oqbzUN\n-----END PRIVATE KEY-----',
-        keyId: 'QPX99ZHTND',
-        teamId: '8S693EH9B2',
+        key: '-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgres6UB5+3IU+xi+OImSUzePF7fuNKY4X2YcSXrXud9ygCgYIKoZIzj0DAQehRANCAAScXmH87lCWx9T/64EmIQTYP/oEC7/BdAu6j6bMRse0C7AQ2UdqanPbWbGgNeP22Nc+CD0Fa0/ruwrFWtctCdlU\n-----END PRIVATE KEY-----',
+        keyId: 'HP9PASASQ6',
+        teamId: 'KYHZCF99L7',
         production: !process.env.NODE_ENV || process.env.NODE_ENV !== 'development',
-        topic: 'com.isap.AiLife',
+        topic: 'com.isap.Ailife.beta',
     },
 };
 export default config;
