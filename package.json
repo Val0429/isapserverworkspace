@@ -1,0 +1,19 @@
+{
+    "name": "isap-bardemo-service",
+    "version": "2.02.00",
+    "config": {
+        "displayname": "iSap BarDemo Service"
+    },
+    "description": "iSap BarDemo Service",
+    "scripts": {
+        "start": "npm start --prefix ./../",
+        "create-project": "git checkout --orphan"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "canvas": "^2.4.0",
+        "connect-history-api-fallback": "^1.6.0",
+        "xml2js": "^0.4.19"
+    }
+}
