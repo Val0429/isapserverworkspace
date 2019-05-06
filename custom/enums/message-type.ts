@@ -77,6 +77,7 @@ export enum MessageType {
     /**
      * 聯絡管委會
      */
+    listenNew,
     listenReceive,
     listenDelete,
 

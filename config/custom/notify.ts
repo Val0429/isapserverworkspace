@@ -246,6 +246,12 @@ let config: Config = {
     /**
      * 聯絡管委會
      */
+    [Enum.MessageType.listenNew]: {
+        isEnable: true,
+        aims: [Enum.ResidentCharacter.committee],
+        title: '新增聯絡管委會',
+        body: '親愛的管委會，{{address}}有訊息反應。',
+    },
     [Enum.MessageType.listenReceive]: {
         isEnable: true,
         aims: [Enum.ResidentCharacter.resident, Enum.ResidentCharacter.committee, Enum.ResidentCharacter.owner],

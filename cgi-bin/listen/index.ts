@@ -65,6 +65,24 @@ action.post(
                 });
             }
 
+            let residents: IDB.CharacterResident[] = await new Parse.Query(IDB.CharacterResident)
+                .equalTo('community', _userInfo.community)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            residents.forEach((value, index, array) => {
+                Notice.notice$.next({
+                    resident: value,
+                    type: Enum.MessageType.listenNew,
+                    data: listen,
+                    message: {
+                        address: listen.getValue('resident').getValue('address'),
+                    },
+                });
+            });
+
             return {
                 listenId: listen.id,
             };
