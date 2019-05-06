@@ -2,7 +2,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "AiLife Server"
-!define PRODUCT_VERSION "1.00.08"
+!define PRODUCT_VERSION "1.00.09"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
@@ -173,8 +173,10 @@ Section
 
 	SetOutPath $INSTDIR
 	File /r *.bat
-	File /r /x license.xml /x .git /x .gitignore /x assets /x nsis ..\..\*.* 
+	File /r /x license.xml /x .git /x logs /x .gitignore /x assets /x nsis ..\..\*.* 
 	
+    CreateDirectory $INSTDIR\logs
+    
 	ExecWait '"install_mongo.bat" /s'
 	
 	ExecWait '"install.bat" /s'
