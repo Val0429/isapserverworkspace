@@ -23,20 +23,20 @@ export interface Config {
 
 let config: Config = {
     analysis: {
-        ip: '172.16.10.155',
-        port: 8088,
-        wsport: 7077,
-        account: 'Min',
-        password: '1',
+        ip: '127.0.0.1',
+        port: 80,
+        wsport: 80,
+        account: '',
+        password: '',
         specialScoreForUnRecognizedFace: 0.7,
         throttleKeepSameFaceSeconds: 15,
     },
     manage: {
         protocol: 'http',
-        ip: '172.16.10.155',
+        ip: '127.0.0.1',
         port: 80,
-        account: 'Min',
-        password: '1',
+        account: '',
+        password: '',
     },
 };
 export default config;
