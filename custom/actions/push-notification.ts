@@ -36,17 +36,28 @@ class Action {
                                     if (value.residentInfo.getValue('isNotice')) {
                                         if (value.residentInfo.getValue('deviceType') === 'android') {
                                             let fcm: Fcm = new Fcm();
-                                            let result: string = await fcm.Send(value.residentInfo.getValue('deviceToken'), value.title, value.body);
 
-                                            Print.Log(`Fcm: ${value.residentInfo.getValue('name')} -> ${JSON.stringify(result)}`, new Error(), 'success');
+                                            try {
+                                                let result: string = await fcm.Send(value.residentInfo.getValue('deviceToken'), value.title, value.body);
+
+                                                Print.Log(`Fcm: ${value.residentInfo.getValue('name')} -> success`, new Error(), 'success');
+                                            } catch (e) {
+                                                Print.Log(`Fcm: ${value.residentInfo.getValue('name')} -> ${e}`, new Error(), 'error');
+                                            }
                                         } else {
                                             let apn: Apn = new Apn();
-                                            let result = await apn.Send(value.residentInfo.getValue('deviceToken'), value.title, value.body);
 
-                                            Print.Log(`Apn: ${value.residentInfo.getValue('name')} -> ${JSON.stringify(result)}`, new Error(), 'success');
+                                            try {
+                                                let result = await apn.Send(value.residentInfo.getValue('deviceToken'), value.title, value.body);
+                                                if (result.failed.length > 0) {
+                                                    throw result.failed[0].response.reason;
+                                                }
+
+                                                Print.Log(`Apn: ${value.residentInfo.getValue('name')} -> success`, new Error(), 'success');
+                                            } catch (e) {
+                                                Print.Log(`Apn: ${value.residentInfo.getValue('name')} -> ${e}`, new Error(), 'error');
+                                            }
                                         }
-                                    } else {
-                                        Print.Log(`${value.residentInfo.getValue('name')} -> do not receive notifications`, new Error(), 'warning');
                                     }
                                 } catch (e) {
                                     Print.Log(e, new Error(), 'error');

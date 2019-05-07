@@ -44,7 +44,7 @@ class Action {
                         let date: string = DateTime.ToString(now, 'YYYY-MM-DD');
 
                         let log: string = x.reduce((prev, curr, index, array) => {
-                            return `${prev}\r\n${curr}`;
+                            return `${prev}${curr}\r\n`;
                         }, '');
 
                         File.AppendFile(`${this._logPath}/${this._logFile.replace(/{{date}}/g, date)}`, log);

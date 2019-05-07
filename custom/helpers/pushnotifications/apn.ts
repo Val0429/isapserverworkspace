@@ -27,7 +27,7 @@ export class Apn {
      * @param body
      * @param data
      */
-    public async Send(deviceToken: string, title: string, body: string): Promise<string> {
+    public async Send(deviceToken: string, title: string, body: string): Promise<APN.Responses> {
         let note: APN.Notification = new APN.Notification();
 
         note.expiry = Math.floor(Date.now() / 1000) + 3600;
@@ -43,6 +43,6 @@ export class Apn {
             throw e;
         });
 
-        return JSON.stringify(response);
+        return response;
     }
 }
