@@ -1,1 +1,1 @@
-export default undefined;
+export * from './frs-people-counting';
