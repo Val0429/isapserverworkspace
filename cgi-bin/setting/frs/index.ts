@@ -63,13 +63,11 @@ action.put(
 
             let config = {
                 analysis: {
-                    ...Config.frs.analysis,
                     ..._input.analysis,
+                    specialScoreForUnRecognizedFace: Config.frs.analysis.specialScoreForUnRecognizedFace,
+                    throttleKeepSameFaceSeconds: Config.frs.analysis.throttleKeepSameFaceSeconds,
                 },
-                manage: {
-                    ...Config.frs.manage,
-                    ..._input.manage,
-                },
+                manage: _input.manage,
             };
 
             let frs: FRSService = new FRSService();
