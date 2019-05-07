@@ -197,7 +197,9 @@ class Service {
                                     identification: x.identification,
                                     date: x.date,
                                 });
-                                groupData.datas.length = this._maxLength;
+                                if (groupData.datas.length > 10) {
+                                    groupData.datas.length = this._maxLength;
+                                }
                             }
 
                             this._push$.next();
