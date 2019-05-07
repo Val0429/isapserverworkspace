@@ -86,7 +86,7 @@ class Service {
                                 });
                             }
 
-                            Print.MinLog(JSON.stringify(groupDatas), 'success');
+                            // Print.MinLog(JSON.stringify(groupDatas), 'success');
 
                             DataWindow.push$.next(JSON.parse(JSON.stringify(groupDatas)));
                         } catch (e) {
@@ -129,7 +129,7 @@ class Service {
                         if (streamGroup) {
                             let direction = device.getValue('direction');
 
-                            Print.MinLog(`${device.getValue('area').id}, ${Enum.EDeviceDirection[direction]}`, 'message');
+                            // Print.MinLog(`${device.getValue('area').id}, ${Enum.EDeviceDirection[direction]}`, 'message');
 
                             streamGroup.liveStreamGroup$.next({
                                 floorId: device.getValue('floor').id,
