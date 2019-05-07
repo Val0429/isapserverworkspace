@@ -25,13 +25,6 @@ action.post(
         try {
             let _input: InputC = data.inputType;
 
-            if (!Regex.IsEmail(_input.email)) {
-                throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
-            }
-            if (!/^\+{1}[0-9]+$/.test(_input.phone)) {
-                throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
-            }
-
             let role: Parse.Role = await new Parse.Query(Parse.Role)
                 .equalTo('name', _input.role)
                 .first()
@@ -50,8 +43,20 @@ action.post(
             info.setValue('isDeleted', false);
             info.setValue('user', user);
             info.setValue('name', _input.name);
-            info.setValue('email', _input.email);
-            info.setValue('phone', _input.phone);
+            if (_input.email) {
+                if (!Regex.IsEmail(_input.email)) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
+                }
+
+                info.setValue('email', _input.email);
+            }
+            if (_input.phone) {
+                if (!/^\+{1}[0-9]+$/.test(_input.phone)) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
+                }
+
+                info.setValue('phone', _input.phone);
+            }
 
             await info.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
