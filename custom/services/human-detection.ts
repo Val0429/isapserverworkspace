@@ -21,7 +21,7 @@ class Service {
     constructor() {
         setTimeout(async () => {
             await this.Initialization();
-        }, 0);
+        }, 150);
     }
 
     private Initialization = async (): Promise<void> => {

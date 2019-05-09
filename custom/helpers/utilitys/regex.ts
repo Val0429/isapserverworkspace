@@ -42,4 +42,14 @@ export namespace Regex {
 
         return rule.test(str) && parseInt(str) > 0 && parseInt(str) < 65536;
     }
+
+    /**
+     * Check string is international phone?
+     * @param str
+     */
+    export function IsInternationalPhone(str: string): boolean {
+        let rule: any = /^\+{1}[0-9]+$/;
+
+        return rule.test(str);
+    }
 }

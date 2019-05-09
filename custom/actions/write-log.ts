@@ -15,11 +15,6 @@ class Action {
         return this._logFile;
     }
 
-    private _bufferTimeSecond: number = 1000;
-    public get bufferTimeSecond(): number {
-        return this._bufferTimeSecond;
-    }
-
     private _action$: Rx.Subject<string> = new Rx.Subject();
     public get action$(): Rx.Subject<string> {
         return this._action$;
@@ -33,7 +28,7 @@ class Action {
 
     private Initialization = async (): Promise<void> => {
         try {
-            this._action$.bufferTime(this._bufferTimeSecond).subscribe({
+            this._action$.buffer(Rx.Observable.interval(1000)).subscribe({
                 next: async (x) => {
                     try {
                         if (!x || x.length <= 0) {
@@ -44,7 +39,7 @@ class Action {
                         let date: string = DateTime.ToString(now, 'YYYY-MM-DD');
 
                         let log: string = x.reduce((prev, curr, index, array) => {
-                            return `${prev}\r\n${curr}`;
+                            return `${prev}${curr}\r\n`;
                         }, '');
 
                         File.AppendFile(`${this._logPath}/${this._logFile.replace(/{{date}}/g, date)}`, log);
