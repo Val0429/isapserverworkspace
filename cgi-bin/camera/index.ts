@@ -48,7 +48,7 @@ action.get(
                 rois: camera.getValue('rois'),
                 cameraWidth: size.width,
                 cameraHeight: size.height,
-                snapshotBase64: snapshot.toString(Parser.Encoding.base64),
+                snapshotBase64: Parser.Base64Str2HtmlSrc(snapshot.toString(Parser.Encoding.base64)),
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
