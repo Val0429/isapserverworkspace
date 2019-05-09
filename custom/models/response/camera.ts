@@ -1,3 +1,5 @@
+import { Draw } from '../../helpers';
+
 export interface IAll {
     objectId: string;
     name: string;
@@ -13,4 +15,13 @@ export interface ILocation {
     areaName: string;
     deviceId: string;
     deviceName: string;
+}
+
+export interface IIndexR {
+    objectId: string;
+    name: string;
+    rois: Draw.ILocation[];
+    cameraWidth: number;
+    cameraHeight: number;
+    snapshotBase64: string;
 }

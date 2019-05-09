@@ -163,6 +163,7 @@ async function SyncCamera(nvrs: CMSService.INvr[]): Promise<void> {
                 camera.setValue('mode', Enum.ECameraMode.humanDetection);
                 camera.setValue('name', value.name);
                 camera.setValue('config', value);
+                camera.setValue('rois', []);
 
                 return camera.save(null, { useMasterKey: true });
             }

@@ -132,6 +132,29 @@ class Service {
         }
     };
 
+    private LocationFilter = (rois: Draw.ILocation[], locations: HumanDetection.ILocation[]): HumanDetection.ILocation[] => {
+        try {
+            if (!rois || rois.length === 0) {
+                return locations;
+            }
+
+            locations = locations.filter((value, index, array) => {
+                let centerX: number = value.x + value.width / 2;
+                let centerY: number = value.y + value.height / 2;
+
+                let roi = rois.find((value1, index1, array1) => {
+                    return centerX >= value1.x && centerX <= value1.x + value1.width && centerY >= value1.y && centerY <= value1.y + value1.height;
+                });
+
+                return roi;
+            });
+
+            return locations;
+        } catch (e) {
+            throw e;
+        }
+    };
+
     private EnableLiveStreamGroup = (): void => {
         try {
             let areaIds: string[] = this._devices.map((value, index, array) => {
@@ -288,6 +311,8 @@ class Service {
 
                                     let locations = await this._hd.GetAnalysis(value.image);
 
+                                    locations = this.LocationFilter(device.getValue('camera').getValue('rois'), locations);
+
                                     if (locations.length > 0) {
                                         let rects: Draw.IRect[] = locations.map((value, index, array) => {
                                             return {
@@ -379,3 +404,115 @@ namespace Service {
         count: number;
     }
 }
+
+// setTimeout(async () => {
+//     try {
+//         let cmsConfig = Config.cms;
+//         let hdConfig = Config.humanDetection;
+
+//         let hd = new HumanDetection.ISap();
+//         hd.config = {
+//             protocol: hdConfig.protocol,
+//             ip: hdConfig.ip,
+//             port: hdConfig.port,
+//         };
+//         hd.score = hdConfig.target_score;
+
+//         hd.Initialization();
+
+//         let cms = new CMSService();
+//         cms.config = {
+//             protocol: cmsConfig.protocol,
+//             ip: cmsConfig.ip,
+//             port: cmsConfig.port,
+//             account: cmsConfig.account,
+//             password: cmsConfig.password,
+//         };
+
+//         cms.Initialization();
+
+//         let rois: Draw.ILocation[] = [
+//             {
+//                 width: 500,
+//                 height: 500,
+//                 x: 200,
+//                 y: 200,
+//             },
+//             {
+//                 width: 300,
+//                 height: 500,
+//                 x: 800,
+//                 y: 150,
+//             },
+//         ];
+//         let rects: Draw.IRect[] = rois.map((value, index, array) => {
+//             return {
+//                 x: value.x,
+//                 y: value.y,
+//                 width: value.width,
+//                 height: value.height,
+//                 color: 'green',
+//                 lineWidth: 10,
+//                 isFill: false,
+//             };
+//         });
+
+//         let snapshot = await cms.GetSnapshot(1, 10);
+
+//         let locations = await hd.GetAnalysis(snapshot);
+
+//         if (locations.length > 0) {
+//             locations.forEach((value, index, array) => {
+//                 rects.push({
+//                     x: value.x,
+//                     y: value.y,
+//                     width: value.width,
+//                     height: value.height,
+//                     color: 'black',
+//                     lineWidth: hdConfig.output.rectangle.lineWidth,
+//                     isFill: hdConfig.output.rectangle.isFill,
+//                 });
+//             });
+//         }
+
+//         let _locations = LocationFilter(rois, locations);
+//         if (_locations.length > 0) {
+//             _locations.forEach((value, index, array) => {
+//                 rects.push({
+//                     x: value.x,
+//                     y: value.y,
+//                     width: value.width,
+//                     height: value.height,
+//                     color: hdConfig.output.rectangle.color,
+//                     lineWidth: hdConfig.output.rectangle.lineWidth,
+//                     isFill: hdConfig.output.rectangle.isFill,
+//                 });
+//             });
+//         }
+
+//         snapshot = await Draw.Rectangle(rects, snapshot);
+
+//         File.WriteFile('E:/aa.png', snapshot);
+//     } catch (e) {
+//         Print.MinLog(e, 'error');
+//     }
+// }, 150);
+
+// function LocationFilter(rois: Draw.ILocation[], locations: HumanDetection.ILocation[]): HumanDetection.ILocation[] {
+//     try {
+//         locations = locations.filter((value, index, array) => {
+//             let centerX: number = value.x + value.width / 2;
+//             let centerY: number = value.y + value.height / 2;
+
+//             let roi = rois.find((value1, index1, array1) => {
+//                 return centerX >= value1.x && centerX <= value1.x + value1.width && centerY >= value1.y && centerY <= value1.y + value1.height;
+//             });
+
+//             return roi;
+//         });
+
+//         return locations;
+//     } catch (e) {
+//         throw e;
+//     }
+// }
