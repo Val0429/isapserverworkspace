@@ -16,6 +16,10 @@ var userRoles: Config[] = [
 
     [21, "TenantUser", `
         /**
+         * Description to hint walk-in visitor.
+         */
+        description: string;
+        /**
          * Which company this Tenant Administrator is in.
          */
         company: Companies;

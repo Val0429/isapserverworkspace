@@ -3,7 +3,7 @@ import {
     IRole, IUser, RoleList, UserType,
     Action, Errors, Config,
     EventInvitationComplete, Events,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, ActionParam,
 } from 'core/cgi-package';
 
 import PinCode from 'services/pin-code';
@@ -30,7 +30,8 @@ interface ICInvitations extends IInvitations {
 type InputC = Restful.InputC<ICInvitations>;
 type OutputC = Restful.OutputC<ICInvitations>;
 
-action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+
+export async function doInvitation(data: ActionParam<ICInvitations>) {
     /// V0) Initiate
     let parent = data.user;
     let cancelled = false;
@@ -88,7 +89,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);
-});
+}
+action.post<InputC, OutputC>({ inputType: "InputC" }, doInvitation);
 
 /********************************
  * R: get object

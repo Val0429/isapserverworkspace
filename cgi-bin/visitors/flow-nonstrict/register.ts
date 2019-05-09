@@ -1,45 +1,72 @@
 import {
     express, Request, Response, Router,
-    IRole, IUser, RoleList,
-    Action, Errors, Person,
-    Events, EventTryRegister, EventList,
+    IRole, IUser, RoleList, Config,
+    Action, Errors, Person, ParseObject, FileHelper,
+    Events, IInvitations, Invitations, Restful, Purposes, Visitors, Companies
 } from 'core/cgi-package';
+import { doInvitation } from '../invites';
 
-export interface Input {
-    username: string;
-}
 
-export interface Output {
-    personId: string;
-}
 
-export default new Action<Input, Output>({
+var action = new Action({
     loginRequired: true,
-    inputType: "Input",
     permission: [RoleList.Kiosk]
-})
-.post(async (data) => {
-    /// Insert or Retrive
-    var person: Person = new Person({
-        username: data.parameters.username
-    });
-    var { object: person, status } = await person.fetchOrInsert();
-
-    /// Error if exists
-    if (status == "fetch") {
-        /// Double check registration complete
-        var events = await Events.fetchLast(EventList.EventRegistrationComplete, person);
-        if (events) throw Errors.throw(Errors.VisitorAlreadyExists);
-    }
-
-    /// todo: Add to Role
-    var comp = new EventTryRegister({
-        owner: data.user,
-        relatedPerson: person,
-    });
-    await Events.save(comp);
-
-    return {
-        personId: person.id
-    }
 });
+
+/// CRUD start /////////////////////////////////
+/********************************
+ * C: create object
+ ********************************/
+// parent: Parse.User;
+// visitor: Visitors;
+// dates: IInvitationDateAndPin[];
+// purpose: Purposes;
+// notify: IInvitationNotify;
+// cancelled?: boolean;
+// walkIn?: boolean;
+
+interface IRegister {
+    purpose: Purposes;
+    tenant: Parse.User;
+    name: string;
+    phone: string;
+}
+
+type InputC = Restful.InputC<IRegister>;
+type OutputC = Restful.OutputC<IInvitations>;
+
+action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+    let { purpose, name, phone, tenant: user } = data.inputType;
+    let company = user.attributes.data.company;
+    user.attributes.data.company = await new Parse.Query(Companies).get(company.objectId);
+    
+    /// calculate dayStart / dayEnd
+    let dayStart = new Date();
+    dayStart.setHours(0);
+    dayStart.setMinutes(0);
+    dayStart.setSeconds(0);
+    dayStart.setMilliseconds(0);
+    let dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayStart.getDate()+1);
+
+    let result = await doInvitation({
+        user,
+        inputType: {
+            purpose,
+            visitor: new Visitors({
+                name, phone
+            }),
+            notify: {
+                visitor: { email: false, phone: false }
+            },
+            dates: [{ start: dayStart, end: dayEnd }],
+            walkIn: true,
+        } as any,
+    } as any);
+
+    /// 2) Output
+    return ParseObject.toOutputJSON(result);
+});
+/// CRUD end ///////////////////////////////////
+
+export default action;

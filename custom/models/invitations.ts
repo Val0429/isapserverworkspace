@@ -27,5 +27,6 @@ export interface IInvitations {
     purpose: Purposes;
     notify: IInvitationNotify;
     cancelled?: boolean;
+    walkIn?: boolean;
 }
 @registerSubclass() export class Invitations extends ParseObject<IInvitations> {}
