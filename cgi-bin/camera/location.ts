@@ -12,7 +12,7 @@ export default action;
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList;
+type InputR = IRequest.IDataList & IRequest.ICamera.ILocation;
 
 type OutputR = IResponse.IDataList<IResponse.ICamera.ILocation>;
 
@@ -28,29 +28,80 @@ action.get(
             let _page: number = _paging.page || 1;
             let _pageSize: number = _paging.pageSize || 10;
 
-            let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera);
+            let total: number = 0;
+            let totalPage: number = 0;
+            let cameras: IDB.Camera[] = [];
+            let devices: IDB.LocationDevice[] = [];
+            if (_input.type === 'inMap') {
+                let query: Parse.Query<IDB.LocationDevice> = new Parse.Query(IDB.LocationDevice).equalTo('isDeleted', false);
 
-            let total: number = await query.count().fail((e) => {
-                throw e;
-            });
-            let totalPage: number = Math.ceil(total / _pageSize);
-
-            let cameras: IDB.Camera[] = await query
-                .skip((_page - 1) * _pageSize)
-                .limit(_pageSize)
-                .find()
-                .fail((e) => {
+                total = await query.count().fail((e) => {
                     throw e;
                 });
+                totalPage = Math.ceil(total / _pageSize);
 
-            let devices: IDB.LocationDevice[] = await new Parse.Query(IDB.LocationDevice)
-                .containedIn('camera', cameras)
-                .equalTo('isDeleted', false)
-                .include(['floor', 'area'])
-                .find()
-                .fail((e) => {
+                devices = await query
+                    .include(['floor', 'area', 'camera'])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                cameras = devices.map((value, index, array) => {
+                    return value.getValue('camera');
+                });
+            } else if (_input.type === 'outMap') {
+                devices = await new Parse.Query(IDB.LocationDevice)
+                    .equalTo('isDeleted', false)
+                    .equalTo('type', Enum.EDeviceType.camera)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                let ids: string[] = devices.map((value, index, array) => {
+                    return value.getValue('camera').id;
+                });
+
+                let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera).notContainedIn('objectId', ids);
+
+                total = await query.count().fail((e) => {
                     throw e;
                 });
+                totalPage = Math.ceil(total / _pageSize);
+
+                cameras = await query
+                    .skip((_page - 1) * _pageSize)
+                    .limit(_pageSize)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+            } else {
+                let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera);
+
+                total = await query.count().fail((e) => {
+                    throw e;
+                });
+                totalPage = Math.ceil(total / _pageSize);
+
+                cameras = await query
+                    .skip((_page - 1) * _pageSize)
+                    .limit(_pageSize)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                devices = await new Parse.Query(IDB.LocationDevice)
+                    .containedIn('camera', cameras)
+                    .equalTo('isDeleted', false)
+                    .include(['floor', 'area'])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+            }
 
             return {
                 paging: {
