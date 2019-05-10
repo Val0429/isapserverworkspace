@@ -29,6 +29,7 @@ export interface Config {
     port: number;
     target_score: number;
     bufferCount: number;
+    roiTest: boolean;
     cms: ICMS;
     output: IOutput;
 }
@@ -40,6 +41,7 @@ let config: Config = {
     port: 8000,
     target_score: 0.5,
     bufferCount: 5,
+    roiTest: process.env.NODE_ENV && process.env.NODE_ENV === 'development',
     cms: {
         intervalSecond: 300,
         bufferCount: 5,

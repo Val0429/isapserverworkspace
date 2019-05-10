@@ -309,13 +309,44 @@ class Service {
                                         return value.areaId === device.getValue('area').id;
                                     });
 
+                                    let rois: Draw.ILocation[] = device.getValue('camera').getValue('rois');
+                                    let rects: Draw.IRect[] = [];
+
+                                    if (hdConfig.roiTest) {
+                                        rois.forEach((value, index, array) => {
+                                            rects.push({
+                                                x: value.x,
+                                                y: value.y,
+                                                width: value.width,
+                                                height: value.height,
+                                                color: 'green',
+                                                lineWidth: 10,
+                                                isFill: false,
+                                            });
+                                        });
+                                    }
+
                                     let locations = await this._hd.GetAnalysis(value.image);
 
-                                    locations = this.LocationFilter(device.getValue('camera').getValue('rois'), locations);
+                                    if (hdConfig.roiTest && locations.length > 0) {
+                                        locations.forEach((value, index, array) => {
+                                            rects.push({
+                                                x: value.x,
+                                                y: value.y,
+                                                width: value.width,
+                                                height: value.height,
+                                                color: 'black',
+                                                lineWidth: hdConfig.output.rectangle.lineWidth,
+                                                isFill: hdConfig.output.rectangle.isFill,
+                                            });
+                                        });
+                                    }
+
+                                    locations = this.LocationFilter(rois, locations);
 
                                     if (locations.length > 0) {
-                                        let rects: Draw.IRect[] = locations.map((value, index, array) => {
-                                            return {
+                                        locations.forEach((value, index, array) => {
+                                            rects.push({
                                                 x: value.x,
                                                 y: value.y,
                                                 width: value.width,
@@ -323,11 +354,11 @@ class Service {
                                                 color: hdConfig.output.rectangle.color,
                                                 lineWidth: hdConfig.output.rectangle.lineWidth,
                                                 isFill: hdConfig.output.rectangle.isFill,
-                                            };
+                                            });
                                         });
-
-                                        value.image = await Draw.Rectangle(rects, value.image);
                                     }
+
+                                    value.image = await Draw.Rectangle(rects, value.image);
 
                                     value.image = await Draw.Resize(value.image, { width: hdConfig.output.image.width, height: hdConfig.output.image.height }, hdConfig.output.image.isFill, hdConfig.output.image.isTransparent);
 
