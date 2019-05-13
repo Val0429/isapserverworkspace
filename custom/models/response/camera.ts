@@ -1,4 +1,5 @@
 import { Draw } from '../../helpers';
+import { IConfigUniviewCamera } from '../db/_index';
 
 export interface IAll {
     objectId: string;
@@ -24,4 +25,16 @@ export interface IIndexR {
     cameraWidth: number;
     cameraHeight: number;
     snapshotBase64: string;
+}
+
+export interface IPcC {
+    objectId: string;
+}
+
+export interface IPcR {
+    objectId: string;
+    name: string;
+    mode: string;
+    type: string;
+    config: IConfigUniviewCamera;
 }
