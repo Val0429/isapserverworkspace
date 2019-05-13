@@ -358,6 +358,15 @@ class Service {
                                         });
                                     }
 
+                                    if (hdConfig.roiTest) {
+                                        let image: Buffer = await Draw.Rectangle(rects, value.image);
+                                        image = await Draw.Resize(image, { width: hdConfig.output.image.width, height: hdConfig.output.image.height }, hdConfig.output.image.isFill, hdConfig.output.image.isTransparent);
+
+                                        File.WriteFile(`/test/${device.id}_${new Date().getTime()}.${hdConfig.output.image.isTransparent ? 'png' : 'jpeg'}`, image);
+
+                                        rects.splice(0, rects.length - locations.length);
+                                    }
+
                                     value.image = await Draw.Rectangle(rects, value.image);
 
                                     value.image = await Draw.Resize(value.image, { width: hdConfig.output.image.width, height: hdConfig.output.image.height }, hdConfig.output.image.isFill, hdConfig.output.image.isTransparent);
