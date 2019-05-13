@@ -41,7 +41,7 @@ let config: Config = {
     port: 8000,
     target_score: 0.5,
     bufferCount: 5,
-    roiTest: process.env.NODE_ENV && process.env.NODE_ENV === 'development',
+    roiTest: false,
     cms: {
         intervalSecond: 300,
         bufferCount: 5,
