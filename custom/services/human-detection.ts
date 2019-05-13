@@ -46,7 +46,7 @@ class Service {
                 });
 
             this._devices = this.devices.filter((value, index, array) => {
-                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted');
+                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted') && value.getValue('camera').getValue('type') === Enum.ECameraType.cms && value.getValue('camera').getValue('mode') === Enum.ECameraMode.humanDetection;
             });
         } catch (e) {
             throw e;
@@ -273,11 +273,13 @@ class Service {
             let delay: number = this.GetDelayTime();
 
             let sources: CMSService.ISource[] = this._devices.map((value, index, array) => {
-                Print.Log(`(${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}), ${value.getValue('name')}, Nvr: ${value.getValue('camera').getValue('config').nvrId}, Channel: ${value.getValue('camera').getValue('config').channelId}`, new Error(), 'info');
+                let config = value.getValue('camera').getValue('config') as IDB.IConfigCMSCamera;
+
+                Print.Log(`(${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}), ${value.getValue('name')}, Nvr: ${config.nvrId}, Channel: ${config.channelId}`, new Error(), 'info');
 
                 return {
-                    nvr: value.getValue('camera').getValue('config').nvrId,
-                    channels: [value.getValue('camera').getValue('config').channelId],
+                    nvr: config.nvrId,
+                    channels: [config.channelId],
                 };
             });
 
@@ -301,7 +303,7 @@ class Service {
                             x.map(async (value, index, array) => {
                                 try {
                                     let device = this._devices.find((value1, index1, array1) => {
-                                        let config = value1.getValue('camera').getValue('config');
+                                        let config = value1.getValue('camera').getValue('config') as IDB.IConfigCMSCamera;
                                         return config.nvrId === value.nvr && config.channelId === value.channel;
                                     });
 

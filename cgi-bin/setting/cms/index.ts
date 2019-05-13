@@ -114,7 +114,7 @@ async function SyncCamera(nvrs: CMSService.INvr[]): Promise<void> {
         let tasks: Promise<any>[] = [].concat(
             ...cameras.map<any>((value, index, array) => {
                 let config: IDB.IConfigCMSCamera = configs.find((vlaue1, index1, array1) => {
-                    let _config: IDB.IConfigCMSCamera = value.getValue('config');
+                    let _config: IDB.IConfigCMSCamera = value.getValue('config') as IDB.IConfigCMSCamera;
 
                     return _config.nvrId === vlaue1.nvrId && _config.channelId === vlaue1.channelId;
                 });
@@ -152,7 +152,7 @@ async function SyncCamera(nvrs: CMSService.INvr[]): Promise<void> {
 
         tasks = configs.map<any>((value, index, array) => {
             let camera: IDB.Camera = cameras.find((value1, index1, array1) => {
-                let config: IDB.IConfigCMSCamera = value1.getValue('config');
+                let config: IDB.IConfigCMSCamera = value1.getValue('config') as IDB.IConfigCMSCamera;
 
                 return config.nvrId === value.nvrId && config.channelId === value.channelId;
             });

@@ -37,7 +37,9 @@ action.get(
 
             cms.Initialization();
 
-            let snapshot = await cms.GetSnapshot(camera.getValue('config').nvrId, camera.getValue('config').channelId);
+            let config = camera.getValue('config') as IDB.IConfigCMSCamera;
+
+            let snapshot = await cms.GetSnapshot(config.nvrId, config.channelId);
             let size = await Draw.ImageSize(snapshot);
 
             snapshot = await Draw.Resize(snapshot, { width: 960, height: 540 }, false, true);

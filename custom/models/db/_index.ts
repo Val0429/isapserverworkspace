@@ -4,6 +4,7 @@ export * from './action';
 export * from './base';
 export * from './camera';
 export * from './config-cms-camera';
+export * from './config-uniview-camera';
 export * from './location-area';
 export * from './location-device';
 export * from './location-floor';
