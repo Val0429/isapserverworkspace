@@ -90,7 +90,7 @@ export class FRSService {
             });
         });
     }
-    createPerson(name: string, image: string): Promise<ResponsePersonInfo> {
+    createPerson(name: string, image: string, employeeno?: string): Promise<ResponsePersonInfo> {
         const url = this.makeUrl("createperson");
         return new Promise( async (resolve, reject) => {
             await this.waitForLogin();
@@ -101,7 +101,8 @@ export class FRSService {
                 body: {
                     session_id: this.sessionId,
                     person_info: {
-                        fullname: name
+                        fullname: name,
+                        employeeno
                     },
                     image
                 }

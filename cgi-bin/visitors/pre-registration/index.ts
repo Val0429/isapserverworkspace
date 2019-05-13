@@ -10,6 +10,8 @@ import FD from 'services/face-detection';
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';
 import { Invitations } from './../../../custom/models/invitations';
 import { Companies } from './../../../custom/models/companies';
+import frs from './../../../custom/services/frs-service';
+import VisitorCode from 'workspace/custom/services/visitor-code';
 
 const filter = { status: (value) => getEnumKey(VisitorStatus, value), company: false }
 
@@ -64,16 +66,18 @@ type OutputU = Restful.OutputU<IVisitors>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
-    var { objectId, image } = data.inputType;
+    var { objectId, image, name } = data.inputType;
     var obj = await new Parse.Query(Visitors)
         .get(objectId);
     if (!obj || obj.getValue("status") === VisitorStatus.Completed) throw Errors.throw(Errors.CustomNotExists, [`Visitors <${objectId}> already registered or not exists.`]);
 
+    /// todo remove
+    if (!image) throw Errors.throw(Errors.CustomBadRequest, [`<image> is a required field.`]);
+
     /// 2.0) check image valid
-    if (image) {
-        let result = await FD.detect( (await FileHelper.downloadParseFile(image)).toString("base64") );
-        if (result.faces !== 1) throw Errors.throw(Errors.CustomBadRequest, [`Image not valid: no faces or more than one face appear on image.`]);
-    }
+    let image64 = (await FileHelper.downloadParseFile(image)).toString("base64");
+    let result = await FD.detect(image64);
+    if (result.faces !== 1) throw Errors.throw(Errors.CustomBadRequest, [`Image not valid: no faces or more than one face appear on image.`]);
 
     /// 2) Modify
     await obj.save({ ...data.inputType, status: VisitorStatus.Completed, objectId: undefined });
@@ -99,6 +103,35 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         let purpose = invitation.getValue("purpose");
         Events.save(event, {owner, invitation, company, visitor, purpose, visitorName});
     }
+
+    /// todo remove
+    /// V2.3) Special request, register into FRS after pre-registration
+    /// enroll into FRS
+    /// 1) get all groups
+    /// 1.1) find visitor group. if no go 1.2)
+    /// 1.2) create visitor group
+    /// 2) create person
+    /// 2.2) create person
+    /// 2.3) add person into group
+    /// 1)
+    let groups = await frs.getGroupList();
+    /// 1.1)
+    let groupid: string = groups.reduce<string>( (final, value) => {
+        if (final) return final;
+        if (value.name === 'Visitor') return value.group_id;
+        return final;
+    }, undefined);
+    /// 1.2)
+    if (groupid === undefined) {
+        let res = await frs.createGroup("Visitor");
+        groupid = res.group_id;
+    }
+    /// 2)
+    /// 2.2)
+    let code = await VisitorCode.next();
+    let person = await frs.createPerson(name, image64, code);
+    /// 2.3)
+    await frs.applyGroupsToPerson(person.person_id, groupid);    
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj, filter);

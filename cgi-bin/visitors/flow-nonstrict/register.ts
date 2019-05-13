@@ -30,13 +30,14 @@ interface IRegister {
     tenant: Parse.User;
     name: string;
     phone: string;
+    email: string;
 }
 
 type InputC = Restful.InputC<IRegister>;
 type OutputC = Restful.OutputC<IInvitations>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    let { purpose, name, phone, tenant: user } = data.inputType;
+    let { purpose, name, phone, email, tenant: user } = data.inputType;
     let company = user.attributes.data.company;
     user.attributes.data.company = await new Parse.Query(Companies).get(company.objectId);
     
@@ -54,7 +55,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         inputType: {
             purpose,
             visitor: new Visitors({
-                name, phone
+                name, phone, email
             }),
             notify: {
                 visitor: { email: false, phone: false }
