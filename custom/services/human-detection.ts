@@ -19,6 +19,66 @@ class Service {
     }
 
     constructor() {
+        IDB.Camera$.subscribe({
+            next: async (x) => {
+                try {
+                    if (x.mode !== Enum.ECameraMode.humanDetection || x.type !== Enum.ECameraType.cms) {
+                        return;
+                    }
+
+                    if (x.crud === 'u') {
+                        await this.Initialization();
+                    }
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
+            },
+        });
+
+        IDB.LocationFloor$.subscribe({
+            next: async (x) => {
+                try {
+                    if (x.crud === 'd') {
+                        await this.Initialization();
+                    }
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
+            },
+        });
+
+        IDB.LocationArea$.subscribe({
+            next: async (x) => {
+                try {
+                    if (x.mode !== Enum.ECameraMode.humanDetection) {
+                        return;
+                    }
+
+                    if (x.crud === 'u' || x.crud === 'd') {
+                        await this.Initialization();
+                    }
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
+            },
+        });
+
+        IDB.LocationDevice$.subscribe({
+            next: async (x) => {
+                try {
+                    if (x.mode !== Enum.ECameraMode.humanDetection) {
+                        return;
+                    }
+
+                    if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
+                        await this.Initialization();
+                    }
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
+            },
+        });
+
         setTimeout(async () => {
             await this.Initialization();
         }, 150);
@@ -26,6 +86,8 @@ class Service {
 
     private Initialization = async (): Promise<void> => {
         try {
+            this.StopLiveStream();
+
             await this.Search();
 
             this.EnableLiveStreamGroup();
@@ -35,10 +97,25 @@ class Service {
         }
     };
 
+    private StopLiveStream = (): void => {
+        try {
+            this._liveStreamGroups.forEach((value, index, array) => {
+                value.liveStreamGroup$.complete();
+            });
+
+            if (this._cms) {
+                this._cms.liveStreamStop$.next();
+            }
+        } catch (e) {
+            throw e;
+        }
+    };
+
     private Search = async (): Promise<void> => {
         try {
             this._devices = await new Parse.Query(IDB.LocationDevice)
                 .equalTo('isDeleted', false)
+                .equalTo('mode', Enum.ECameraMode.humanDetection)
                 .include(['floor', 'area', 'camera'])
                 .find()
                 .fail((e) => {
@@ -46,7 +123,12 @@ class Service {
                 });
 
             this._devices = this.devices.filter((value, index, array) => {
-                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted') && value.getValue('camera').getValue('type') === Enum.ECameraType.cms && value.getValue('camera').getValue('mode') === Enum.ECameraMode.humanDetection;
+                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted') && value.getValue('camera').getValue('type') === Enum.ECameraType.cms;
+            });
+
+            this._devices.forEach((value, index, array) => {
+                let config = value.getValue('camera').getValue('config') as IDB.IConfigCMSCamera;
+                Print.Log(`Human Detection: (${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}->${value.getValue('camera').id}), ${value.getValue('name')}, Nvr: ${config.nvrId}, Channel: ${config.channelId}`, new Error(), 'info');
             });
         } catch (e) {
             throw e;
@@ -274,8 +356,6 @@ class Service {
 
             let sources: CMSService.ISource[] = this._devices.map((value, index, array) => {
                 let config = value.getValue('camera').getValue('config') as IDB.IConfigCMSCamera;
-
-                Print.Log(`(${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}), ${value.getValue('name')}, Nvr: ${config.nvrId}, Channel: ${config.channelId}`, new Error(), 'info');
 
                 return {
                     nvr: config.nvrId,
