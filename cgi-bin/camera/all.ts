@@ -12,12 +12,13 @@ export default action;
 /**
  * Action Read
  */
-type InputR = null;
+type InputR = IRequest.ICamera.IAll;
 
 type OutputR = IResponse.ICamera.IAll[];
 
 action.get(
     {
+        inputType: 'InputR',
         permission: [RoleList.Admin, RoleList.User],
     },
     async (data): Promise<OutputR> => {
@@ -25,6 +26,10 @@ action.get(
             let _input: InputR = data.inputType;
 
             let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera);
+
+            if (_input.mode || _input.mode === 0) {
+                query.equalTo('mode', _input.mode);
+            }
 
             let total: number = await query.count();
 

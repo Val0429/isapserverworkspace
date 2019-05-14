@@ -11,8 +11,13 @@ export interface IIndexU {
     rois: Draw.ILocation[];
 }
 
+export interface IAll {
+    mode?: Enum.ECameraMode;
+}
+
 export interface ILocation {
     type?: 'all' | 'inMap' | 'outMap';
+    mode?: Enum.ECameraMode;
 }
 
 export interface IPcC {

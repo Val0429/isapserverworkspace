@@ -35,6 +35,10 @@ action.get(
             if (_input.type === 'inMap') {
                 let query: Parse.Query<IDB.LocationDevice> = new Parse.Query(IDB.LocationDevice).equalTo('isDeleted', false);
 
+                if (_input.mode || _input.mode === 0) {
+                    query.equalTo('mode', _input.mode);
+                }
+
                 total = await query.count().fail((e) => {
                     throw e;
                 });
@@ -65,6 +69,10 @@ action.get(
 
                 let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera).notContainedIn('objectId', ids);
 
+                if (_input.mode || _input.mode === 0) {
+                    query.equalTo('mode', _input.mode);
+                }
+
                 total = await query.count().fail((e) => {
                     throw e;
                 });
@@ -79,6 +87,10 @@ action.get(
                     });
             } else {
                 let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera);
+
+                if (_input.mode || _input.mode === 0) {
+                    query.equalTo('mode', _input.mode);
+                }
 
                 total = await query.count().fail((e) => {
                     throw e;
