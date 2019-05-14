@@ -39,6 +39,16 @@ export interface ILocationFloor extends IBase {
      * data window Y
      */
     dataWindowY: number;
+
+    /**
+     * data window X
+     */
+    dataWindowPcX: number;
+
+    /**
+     * data window Y
+     */
+    dataWindowPcY: number;
 }
 
 @registerSubclass()

@@ -9,6 +9,8 @@ export interface IFloorC {
     imageHeight: number;
     dataWindowX: number;
     dataWindowY: number;
+    dataWindowPcX: number;
+    dataWindowPcY: number;
 }
 
 export interface IFloorU {
@@ -20,6 +22,8 @@ export interface IFloorU {
     imageHeight?: number;
     dataWindowX?: number;
     dataWindowY?: number;
+    dataWindowPcX?: number;
+    dataWindowPcY?: number;
 }
 
 export interface IFloorD {
@@ -28,6 +32,7 @@ export interface IFloorD {
 
 export interface IAreaC {
     floorId: string;
+    mode: Enum.ECameraMode;
     name: string;
     action: IAction;
     dataWindowX: number;
@@ -36,6 +41,7 @@ export interface IAreaC {
 
 export interface IAreaR {
     floorId?: string;
+    mode?: Enum.ECameraMode;
 }
 
 export interface IAreaU {
@@ -55,9 +61,6 @@ export interface IDeviceC {
     type: Enum.EDeviceType;
     cameraId?: string;
     name: string;
-    iconBase64: string;
-    iconWidth: number;
-    iconHeight: number;
     x: number;
     y: number;
     angle?: number;
@@ -68,6 +71,7 @@ export interface IDeviceC {
 export interface IDeviceR {
     floorId?: string;
     areaId?: string;
+    mode?: Enum.ECameraMode;
 }
 
 export interface IDeviceU {
@@ -76,9 +80,6 @@ export interface IDeviceU {
     type?: Enum.EDeviceType;
     cameraId?: string;
     name?: string;
-    iconBase64?: string;
-    iconWidth?: number;
-    iconHeight?: number;
     x?: number;
     y?: number;
     angle?: number;

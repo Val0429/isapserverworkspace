@@ -14,6 +14,8 @@ export interface IFloorR {
     imageHeight: number;
     dataWindowX: number;
     dataWindowY: number;
+    dataWindowPcX: number;
+    dataWindowPcY: number;
 }
 
 export interface IAreaC {
@@ -23,6 +25,7 @@ export interface IAreaC {
 export interface IAreaR {
     objectId: string;
     floorId: string;
+    mode: string;
     name: string;
     action: IAction;
     dataWindowX: number;
@@ -38,11 +41,9 @@ export interface IDeviceR {
     floorId: string;
     areaId: string;
     type: Enum.EDeviceType;
+    mode: string;
     cameraId: string;
     name: string;
-    iconSrc: string;
-    iconWidth: number;
-    iconHeight: number;
     x: number;
     y: number;
     angle: number;

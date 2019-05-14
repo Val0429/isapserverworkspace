@@ -22,6 +22,11 @@ export interface ILocationDevice extends IBase {
     type: Enum.EDeviceType;
 
     /**
+     * 裝置類型
+     */
+    mode: Enum.ECameraMode;
+
+    /**
      * 相機
      */
     camera: Camera;
@@ -30,21 +35,6 @@ export interface ILocationDevice extends IBase {
      * 名稱
      */
     name: string;
-
-    /**
-     * 圖示
-     */
-    iconSrc: string;
-
-    /**
-     * 寬
-     */
-    iconWidth: number;
-
-    /**
-     * 高
-     */
-    iconHeight: number;
 
     /**
      * X

@@ -45,6 +45,7 @@ action.post(
             area.setValue('creator', data.user);
             area.setValue('isDeleted', false);
             area.setValue('floor', floor);
+            area.setValue('mode', _input.mode);
             area.setValue('name', _input.name);
             area.setValue('action', action);
             area.setValue('dataWindowX', _input.dataWindowX);
@@ -91,6 +92,9 @@ action.get(
 
                 query.equalTo('floor', floor);
             }
+            if (_input.mode || _input.mode === 0) {
+                query.equalTo('mode', _input.mode);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
@@ -124,6 +128,7 @@ action.get(
                     return {
                         objectId: value.id,
                         floorId: value.getValue('floor').id,
+                        mode: Enum.ECameraMode[value.getValue('mode')],
                         name: value.getValue('name'),
                         action: action,
                         dataWindowX: value.getValue('dataWindowX'),

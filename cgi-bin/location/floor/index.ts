@@ -42,6 +42,8 @@ action.post(
             floor.setValue('imageHeight', _input.imageHeight);
             floor.setValue('dataWindowX', _input.dataWindowX);
             floor.setValue('dataWindowY', _input.dataWindowY);
+            floor.setValue('dataWindowPcX', _input.dataWindowPcX);
+            floor.setValue('dataWindowPcY', _input.dataWindowPcY);
 
             await floor.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -118,6 +120,8 @@ action.get(
                         imageHeight: value.getValue('imageHeight'),
                         dataWindowX: value.getValue('dataWindowX'),
                         dataWindowY: value.getValue('dataWindowY'),
+                        dataWindowPcX: value.getValue('dataWindowPcX'),
+                        dataWindowPcY: value.getValue('dataWindowPcY'),
                     };
                 }),
             };
@@ -178,6 +182,12 @@ action.put(
             }
             if (_input.dataWindowY || _input.dataWindowY === 0) {
                 floor.setValue('dataWindowY', _input.dataWindowY);
+            }
+            if (_input.dataWindowPcX || _input.dataWindowPcX === 0) {
+                floor.setValue('dataWindowPcX', _input.dataWindowPcX);
+            }
+            if (_input.dataWindowPcY || _input.dataWindowPcY === 0) {
+                floor.setValue('dataWindowPcY', _input.dataWindowPcY);
             }
 
             await floor.save(null, { useMasterKey: true }).fail((e) => {

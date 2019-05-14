@@ -66,11 +66,6 @@ action.post(
                 await LicenseCheck(camera);
             }
 
-            let extension = File.GetExtension(_input.iconBase64);
-            if (!extension || extension.type !== 'image') {
-                throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
-            }
-
             let device: IDB.LocationDevice = new IDB.LocationDevice();
 
             device.setValue('creator', data.user);
@@ -79,24 +74,13 @@ action.post(
             device.setValue('area', area);
             device.setValue('type', _input.type);
             device.setValue('camera', camera);
+            device.setValue('mode', camera.getValue('mode'));
             device.setValue('name', _input.name);
-            device.setValue('iconSrc', '');
-            device.setValue('iconWidth', _input.iconWidth);
-            device.setValue('iconHeight', _input.iconHeight);
             device.setValue('x', _input.x);
             device.setValue('y', _input.y);
             device.setValue('angle', _input.angle || 0);
             device.setValue('visibleDistance', _input.visibleDistance || 0);
             device.setValue('visibleAngle', _input.visibleAngle || 0);
-
-            await device.save(null, { useMasterKey: true }).fail((e) => {
-                throw e;
-            });
-
-            let iconSrc: string = `${extension.type}s/${device.id}_device_${device.createdAt.getTime()}.${extension.extension}`;
-            File.WriteBase64File(`${File.assetsPath}/${iconSrc}`, _input.iconBase64);
-
-            device.setValue('iconSrc', iconSrc);
 
             await device.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -147,6 +131,9 @@ action.get(
 
                 query = query.equalTo('area', area);
             }
+            if (_input.mode || _input.mode === 0) {
+                query.equalTo('mode', _input.mode);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
@@ -174,11 +161,9 @@ action.get(
                         floorId: value.getValue('floor').id,
                         areaId: value.getValue('area').id,
                         type: value.getValue('type'),
+                        mode: Enum.ECameraMode[value.getValue('mode')],
                         cameraId: value.getValue('camera') ? value.getValue('camera').id : '',
                         name: value.getValue('name'),
-                        iconSrc: value.getValue('iconSrc'),
-                        iconWidth: value.getValue('iconWidth'),
-                        iconHeight: value.getValue('iconHeight'),
                         x: value.getValue('x'),
                         y: value.getValue('y'),
                         angle: value.getValue('angle'),
@@ -259,11 +244,6 @@ action.put(
                 }
             }
 
-            let extension = _input.iconBase64 ? File.GetExtension(_input.iconBase64) : { extension: 'aa', type: 'image' };
-            if (!extension || extension.type !== 'image') {
-                throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
-            }
-
             if (_input.areaId) {
                 device.setValue('floor', area.getValue('floor'));
                 device.setValue('area', area);
@@ -271,19 +251,10 @@ action.put(
             if (_input.type || _input.type === 0) {
                 device.setValue('type', _input.type);
                 device.setValue('camera', camera);
+                device.setValue('mode', camera.getValue('mode'));
             }
             if (_input.name) {
                 device.setValue('name', _input.name);
-            }
-            if (_input.iconBase64) {
-                let iconSrc: string = device.getValue('iconSrc');
-                File.WriteBase64File(`${File.assetsPath}/${iconSrc}`, _input.iconBase64);
-            }
-            if (_input.iconWidth || _input.iconWidth === 0) {
-                device.setValue('iconWidth', _input.iconWidth);
-            }
-            if (_input.iconHeight || _input.iconHeight === 0) {
-                device.setValue('iconHeight', _input.iconHeight);
             }
             if (_input.x || _input.x === 0) {
                 device.setValue('x', _input.x);
