@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import * as Rx from 'rxjs';
 import { IBase, LocationFloor, LocationArea, Camera } from './_index';
 import * as Enum from '../../enums';
 
@@ -61,6 +62,8 @@ export interface ILocationDevice extends IBase {
      */
     visibleAngle: number;
 }
+
+export let LocationDevice$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd'; mode: Enum.ECameraMode }> = new Rx.Subject();
 
 @registerSubclass()
 export class LocationDevice extends ParseObject<ILocationDevice> {}

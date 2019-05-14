@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import * as Rx from 'rxjs';
 import { IBase, IConfigCMSCamera, IConfigEocorpexCamera } from './_index';
 import * as Enum from '../../enums';
 import { Draw } from '../../helpers';
@@ -32,6 +33,8 @@ export interface ICamera {
      */
     rois: Draw.ILocation[];
 }
+
+export let Camera$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd'; mode: Enum.ECameraMode; type: Enum.ECameraType }> = new Rx.Subject();
 
 @registerSubclass()
 export class Camera extends ParseObject<ICamera> {}

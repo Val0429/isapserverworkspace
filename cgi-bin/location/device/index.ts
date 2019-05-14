@@ -86,6 +86,8 @@ action.post(
                 throw e;
             });
 
+            IDB.LocationDevice$.next({ crud: 'c', mode: device.getValue('mode') });
+
             // Utility.ReStartServer();
 
             return {
@@ -276,6 +278,8 @@ action.put(
                 throw e;
             });
 
+            IDB.LocationDevice$.next({ crud: 'u', mode: device.getValue('mode') });
+
             // Utility.ReStartServer();
 
             return new Date();
@@ -315,6 +319,8 @@ action.delete(
             await device.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
+
+            IDB.LocationDevice$.next({ crud: 'd', mode: device.getValue('mode') });
 
             // Utility.ReStartServer();
 

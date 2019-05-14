@@ -55,6 +55,8 @@ action.post(
                 throw e;
             });
 
+            IDB.LocationArea$.next({ crud: 'c', mode: area.getValue('mode') });
+
             return {
                 objectId: area.id,
             };
@@ -191,6 +193,8 @@ action.put(
                 throw e;
             });
 
+            IDB.LocationArea$.next({ crud: 'u', mode: area.getValue('mode') });
+
             // Utility.ReStartServer();
 
             return new Date();
@@ -230,6 +234,8 @@ action.delete(
             await area.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
+
+            IDB.LocationArea$.next({ crud: 'd', mode: area.getValue('mode') });
 
             // Utility.ReStartServer();
 

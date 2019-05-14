@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import * as Rx from 'rxjs';
 import { IBase } from './_index';
 
 /**
@@ -50,6 +51,8 @@ export interface ILocationFloor extends IBase {
      */
     dataWindowPcY: number;
 }
+
+export let LocationFloor$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
 
 @registerSubclass()
 export class LocationFloor extends ParseObject<ILocationFloor> {}

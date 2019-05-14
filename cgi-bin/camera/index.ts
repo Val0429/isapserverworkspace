@@ -88,6 +88,8 @@ action.put(
                 throw e;
             });
 
+            IDB.Camera$.next({ crud: 'u', mode: camera.getValue('mode'), type: camera.getValue('type') });
+
             return new Date();
         } catch (e) {
             Print.Log(e, new Error(), 'error');

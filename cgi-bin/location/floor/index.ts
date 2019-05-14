@@ -58,6 +58,8 @@ action.post(
                 throw e;
             });
 
+            IDB.LocationFloor$.next({ crud: 'c' });
+
             return {
                 objectId: floor.id,
             };
@@ -194,6 +196,8 @@ action.put(
                 throw e;
             });
 
+            IDB.LocationFloor$.next({ crud: 'u' });
+
             return new Date();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -231,6 +235,8 @@ action.delete(
             await floor.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
+
+            IDB.LocationFloor$.next({ crud: 'd' });
 
             // Utility.ReStartServer();
 

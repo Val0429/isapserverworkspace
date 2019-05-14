@@ -42,6 +42,8 @@ action.post(
                 throw e;
             });
 
+            IDB.Camera$.next({ crud: 'c', mode: camera.getValue('mode'), type: camera.getValue('type') });
+
             return {
                 objectId: camera.id,
             };
@@ -148,6 +150,8 @@ action.put(
                 throw e;
             });
 
+            IDB.Camera$.next({ crud: 'u', mode: camera.getValue('mode'), type: camera.getValue('type') });
+
             return new Date();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -201,6 +205,8 @@ action.delete(
             await camera.destroy({ useMasterKey: true }).fail((e) => {
                 throw e;
             });
+
+            IDB.Camera$.next({ crud: 'd', mode: camera.getValue('mode'), type: camera.getValue('type') });
 
             return new Date();
         } catch (e) {
