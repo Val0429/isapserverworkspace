@@ -72,11 +72,11 @@ action.get(
                 if (summary) {
                     let total: number = summary.total + curr.getValue('total');
                     let count: number = summary.count + curr.getValue('count');
-                    let average: number = total / count || 0;
+                    let average: number = summary.average + Math.round(total / count || 0);
 
                     summary.total = total;
                     summary.count = count;
-                    summary.average = Math.round(average);
+                    summary.average = average;
                     if (summary.maxValue < curr.getValue('max').getValue('value')) {
                         summary.maxId = curr.getValue('max').id;
                         summary.maxValue = curr.getValue('max').getValue('value');
