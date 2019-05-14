@@ -1,5 +1,5 @@
 import { Draw } from '../../helpers';
-import { IConfigUniviewCamera } from '../db/_index';
+import { IConfigEocorpexCamera } from '../db/_index';
 
 export interface IAll {
     objectId: string;
@@ -36,5 +36,5 @@ export interface IPcR {
     name: string;
     mode: string;
     type: string;
-    config: IConfigUniviewCamera;
+    config: IConfigEocorpexCamera;
 }

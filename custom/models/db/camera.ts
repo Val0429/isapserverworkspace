@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IBase, IConfigCMSCamera, IConfigUniviewCamera } from './_index';
+import { IBase, IConfigCMSCamera, IConfigEocorpexCamera } from './_index';
 import * as Enum from '../../enums';
 import { Draw } from '../../helpers';
 
@@ -25,7 +25,7 @@ export interface ICamera {
     /**
      * 設定
      */
-    config: IConfigCMSCamera | IConfigUniviewCamera;
+    config: IConfigCMSCamera | IConfigEocorpexCamera;
 
     /**
      * ROI

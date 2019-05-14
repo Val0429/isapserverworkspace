@@ -1,6 +1,6 @@
 import { Draw } from '../../helpers';
 import * as Enum from '../../enums';
-import { IConfigUniviewCamera } from '../db/_index';
+import { IConfigEocorpexCamera } from '../db/_index';
 
 export interface IIndexR {
     objectId: string;
@@ -17,13 +17,13 @@ export interface ILocation {
 
 export interface IPcC {
     name: string;
-    config: IConfigUniviewCamera;
+    config: IConfigEocorpexCamera;
 }
 
 export interface IPcU {
     objectId: string;
     name?: string;
-    config?: IConfigUniviewCamera;
+    config?: IConfigEocorpexCamera;
 }
 
 export interface IPcD {

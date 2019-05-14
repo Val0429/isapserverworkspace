@@ -1,9 +1,9 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 
 /**
- * UniView相機設定
+ * Eocorpex相機設定
  */
-export interface IConfigUniviewCamera {
+export interface IConfigEocorpexCamera {
     /**
      *
      */
@@ -31,4 +31,4 @@ export interface IConfigUniviewCamera {
 }
 
 @registerSubclass()
-export class ConfigUniviewCamera extends ParseObject<IConfigUniviewCamera> {}
+export class ConfigEocorpexCamera extends ParseObject<IConfigEocorpexCamera> {}

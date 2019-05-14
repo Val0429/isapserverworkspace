@@ -35,7 +35,7 @@ action.post(
 
             camera.setValue('name', _input.name);
             camera.setValue('mode', Enum.ECameraMode.peopleCounting);
-            camera.setValue('type', Enum.ECameraType.uniview);
+            camera.setValue('type', Enum.ECameraType.eocortex);
             camera.setValue('config', _input.config);
 
             await camera.save(null, { useMasterKey: true }).fail((e) => {
@@ -68,7 +68,7 @@ action.get(
             let _page: number = _paging.page || 1;
             let _pageSize: number = _paging.pageSize || 10;
 
-            let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera).equalTo('type', Enum.ECameraType.uniview).equalTo('mode', Enum.ECameraMode.peopleCounting);
+            let query: Parse.Query<IDB.Camera> = new Parse.Query(IDB.Camera).equalTo('type', Enum.ECameraType.eocortex).equalTo('mode', Enum.ECameraMode.peopleCounting);
 
             let total: number = await query.count().fail((e) => {
                 throw e;
@@ -96,7 +96,7 @@ action.get(
                         name: value.getValue('name'),
                         mode: Enum.ECameraMode[value.getValue('mode')],
                         type: Enum.ECameraType[value.getValue('type')],
-                        config: value.getValue('config') as IDB.IConfigUniviewCamera,
+                        config: value.getValue('config') as IDB.IConfigEocorpexCamera,
                     };
                 }),
             };
@@ -126,7 +126,7 @@ action.put(
             if (!camera) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera not found']);
             }
-            if (camera.getValue('type') !== Enum.ECameraType.uniview || camera.getValue('mode') !== Enum.ECameraMode.peopleCounting) {
+            if (camera.getValue('type') !== Enum.ECameraType.eocortex || camera.getValue('mode') !== Enum.ECameraMode.peopleCounting) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera must use in people counting']);
             }
 
@@ -175,7 +175,7 @@ action.delete(
             if (!camera) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera not found']);
             }
-            if (camera.getValue('type') !== Enum.ECameraType.uniview || camera.getValue('mode') !== Enum.ECameraMode.peopleCounting) {
+            if (camera.getValue('type') !== Enum.ECameraType.eocortex || camera.getValue('mode') !== Enum.ECameraMode.peopleCounting) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera must use in people counting']);
             }
 
