@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Utility, PeopleCounting } from '../../../custom/helpers';
+import { Print, PeopleCounting } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -34,6 +34,8 @@ action.post(
 
             pc.Initialization();
 
+            let channels: PeopleCounting.Eocortex.IChannel[] = await pc.GetDeviceList();
+
             let server: IDB.ConfigEocorpexServer = new IDB.ConfigEocorpexServer();
 
             server.setValue('protocol', _input.protocol);
@@ -46,7 +48,6 @@ action.post(
                 throw e;
             });
 
-            let channels: PeopleCounting.Eocortex.IChannel[] = await pc.GetDeviceList();
             await Promise.all(
                 channels.map(async (value, index, array) => {
                     let camera: IDB.Camera = new IDB.Camera();
@@ -69,7 +70,7 @@ action.post(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            IDB.ConfigEocorpexServer$.next({ crud: 'c' });
 
             return {
                 objectId: server.id,
@@ -84,7 +85,7 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList;
+type InputR = IRequest.IDataList & IRequest.ISetting.IPeopleCountingR;
 
 type OutputR = IResponse.IDataList<IResponse.ISetting.IPeopleCountingR>;
 
@@ -98,6 +99,10 @@ action.get(
             let _pageSize: number = _paging.pageSize || 10;
 
             let query: Parse.Query<IDB.ConfigEocorpexServer> = new Parse.Query(IDB.ConfigEocorpexServer);
+
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
@@ -180,6 +185,8 @@ action.put(
 
             pc.Initialization();
 
+            let channels: PeopleCounting.Eocortex.IChannel[] = await pc.GetDeviceList();
+
             let server: IDB.ConfigEocorpexServer = await new Parse.Query(IDB.ConfigEocorpexServer).get(_input.objectId).fail((e) => {
                 throw e;
             });
@@ -197,10 +204,9 @@ action.put(
                 throw e;
             });
 
-            let channels: PeopleCounting.Eocortex.IChannel[] = await pc.GetDeviceList();
             await SyncCamera(server, channels);
 
-            Utility.ReStartServer();
+            IDB.ConfigEocorpexServer$.next({ crud: 'u' });
 
             return new Date();
         } catch (e) {
@@ -269,7 +275,7 @@ action.delete(
                 throw e;
             });
 
-            Utility.ReStartServer();
+            IDB.ConfigEocorpexServer$.next({ crud: 'd' });
 
             return new Date();
         } catch (e) {

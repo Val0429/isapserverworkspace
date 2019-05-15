@@ -26,6 +26,10 @@ export interface IPeopleCountingC {
     password: string;
 }
 
+export interface IPeopleCountingR {
+    objectId?: string;
+}
+
 export interface IPeopleCountingU extends IPeopleCountingC {
     objectId: string;
 }
