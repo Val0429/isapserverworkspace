@@ -31,6 +31,9 @@ action.get(
             if (!camera) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera not found']);
             }
+            if (camera.getValue('type') !== Enum.ECameraType.cms) {
+                throw Errors.throw(Errors.CustomBadRequest, ['camera can not set roi']);
+            }
 
             let cms: CMSService = new CMSService();
             cms.config = Config.cms;
@@ -80,6 +83,9 @@ action.put(
             });
             if (!camera) {
                 throw Errors.throw(Errors.CustomBadRequest, ['camera not found']);
+            }
+            if (camera.getValue('type') !== Enum.ECameraType.cms) {
+                throw Errors.throw(Errors.CustomBadRequest, ['camera can not set roi']);
             }
 
             camera.setValue('rois', _input.rois);
