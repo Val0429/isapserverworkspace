@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { ConfigEocorpexServer } from './_index';
 
 /**
  * Eocorpex相機設定
@@ -7,27 +8,17 @@ export interface IConfigEocorpexCamera {
     /**
      *
      */
-    protocol: 'http' | 'https';
+    server: ConfigEocorpexServer;
 
     /**
      *
      */
-    ip: string;
+    id: string;
 
     /**
      *
      */
-    port: number;
-
-    /**
-     *
-     */
-    account: string;
-
-    /**
-     *
-     */
-    password: string;
+    name: string;
 }
 
 @registerSubclass()

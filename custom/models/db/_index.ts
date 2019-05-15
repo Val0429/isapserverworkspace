@@ -5,6 +5,7 @@ export * from './base';
 export * from './camera';
 export * from './config-cms-camera';
 export * from './config-eocorpex-camera';
+export * from './config-eocorpex-server';
 export * from './location-area';
 export * from './location-device';
 export * from './location-floor';

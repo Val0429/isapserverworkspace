@@ -16,6 +16,23 @@ export interface IHumanDetectionCheck {
     imageBase64: string;
 }
 
+export interface IPeopleCountingC {
+    objectId: string;
+}
+
+export interface IPeopleCountingR {
+    objectId: string;
+    protocol: 'http' | 'https';
+    ip: string;
+    port: number;
+    account: string;
+    password: string;
+    cameras: {
+        cameraId: string;
+        name: string;
+    }[];
+}
+
 export interface ISgsmsR {
     enable: boolean;
     url: string;

@@ -19,18 +19,3 @@ export interface ILocation {
     type?: 'all' | 'inMap' | 'outMap';
     mode?: Enum.ECameraMode;
 }
-
-export interface IPcC {
-    name: string;
-    config: IConfigEocorpexCamera;
-}
-
-export interface IPcU {
-    objectId: string;
-    name?: string;
-    config?: IConfigEocorpexCamera;
-}
-
-export interface IPcD {
-    objectId: string;
-}

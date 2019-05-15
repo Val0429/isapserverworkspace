@@ -26,15 +26,3 @@ export interface IIndexR {
     cameraHeight: number;
     snapshotBase64: string;
 }
-
-export interface IPcC {
-    objectId: string;
-}
-
-export interface IPcR {
-    objectId: string;
-    name: string;
-    mode: string;
-    type: string;
-    config: IConfigEocorpexCamera;
-}
