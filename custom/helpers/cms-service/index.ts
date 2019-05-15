@@ -69,7 +69,7 @@ export class CMSService {
             if (!this._config.ip || !Regex.IsIp(this._config.ip)) {
                 throw Base.Message.SettingIpError;
             }
-            if (!this._config.port || !Regex.IsNum(this._config.port.toString()) || this._config.port < 1 || this._config.port > 65535) {
+            if (!this._config.port || !Regex.IsPort(this._config.port.toString())) {
                 throw Base.Message.SettingPortError;
             }
         }
@@ -105,7 +105,12 @@ export class CMSService {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
                             }
 
                             resolve(body);
@@ -146,7 +151,12 @@ export class CMSService {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
                             }
 
                             resolve(body);

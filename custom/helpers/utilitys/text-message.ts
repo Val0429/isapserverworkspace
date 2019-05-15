@@ -84,7 +84,12 @@ export class Sgsms {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(`${response.statusCode}, ${response.statusMessage}`);
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
                             }
 
                             resolve(body);

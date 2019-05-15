@@ -114,7 +114,12 @@ export class FRSService {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
                             } else if (body.message.toLowerCase() !== 'ok') {
                                 return reject(body.message);
                             }
@@ -173,7 +178,12 @@ export class FRSService {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(`${response.statusCode}, ${Buffer.from(body).toString()}`);
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
                             }
 
                             resolve(body);
