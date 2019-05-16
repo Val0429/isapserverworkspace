@@ -39,7 +39,7 @@ type OutputC = Restful.OutputC<IInvitations>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let { purpose, name, phone, email, tenant: user } = data.inputType;
     let company = user.attributes.data.company;
-    user.attributes.data.company = await new Parse.Query(Companies).get(company.objectId);
+    user.attributes.data.company = await new Parse.Query(Companies).get(company.id || company.objectId);
     
     /// calculate dayStart / dayEnd
     let dayStart = new Date();
