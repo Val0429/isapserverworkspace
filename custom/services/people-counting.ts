@@ -421,11 +421,11 @@ class Service {
                 let next$: Rx.Subject<{}> = new Rx.Subject();
 
                 pc.EnableLiveSubject(0, pcConfig.intervalSecond * 1000, pcConfig.bufferCount, value.channels.map((n) => n.id));
-                // pc.liveStreamCatch$.subscribe({
-                //     next: (x) => {
-                //         Print.Log(x, new Error(), 'error');
-                //     },
-                // });
+                pc.liveStreamCatch$.subscribe({
+                    next: (x) => {
+                        Print.Log(x, new Error(), 'error');
+                    },
+                });
                 pc.liveStream$
                     .buffer(pc.liveStream$.bufferCount(pcConfig.bufferCount).merge(Rx.Observable.interval(1000)))
                     .zip(next$.startWith(0))
