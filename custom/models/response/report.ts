@@ -28,3 +28,21 @@ export interface IHumanDetectionSummary {
 export interface IHumanDetectionSummarys {
     summarys: IHumanDetectionSummary[];
 }
+
+export interface IPeopleCountingSummary {
+    objectId: string;
+    floorId: string;
+    floorName: string;
+    areaId: string;
+    areaName: string;
+    type: string;
+    date: Date;
+    in: number;
+    out: number;
+    inGrandTotal: number;
+    outGrandTotal: number;
+}
+
+export interface IPeopleCountingSummarys {
+    summarys: IPeopleCountingSummary[];
+}

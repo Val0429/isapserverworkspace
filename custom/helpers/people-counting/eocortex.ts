@@ -1,9 +1,10 @@
 import * as Rx from 'rxjs';
 import * as Crypto from 'crypto';
 import * as HttpClient from 'request';
-import { IDB } from '../../models';
-import { Regex, Print } from '../';
+import * as Xml2Js from 'xml2js';
+import { Regex, DateTime } from '../';
 import { Base } from './base';
+import { Print } from '../utilitys';
 
 export class Eocortex {
     /**
@@ -31,6 +32,11 @@ export class Eocortex {
     private _baseUrlQuery: string = '';
 
     /**
+     * Password
+     */
+    private _password: string = '';
+
+    /**
      * Initialization flag
      */
     private _isInitialization: boolean = false;
@@ -41,9 +47,17 @@ export class Eocortex {
     /**
      * Live stream
      */
-    private _liveStream$: Rx.Subject<{}> = new Rx.Subject();
-    public get liveStream$(): Rx.Subject<{}> {
+    private _liveStream$: Rx.Subject<Eocortex.ILiveStream> = new Rx.Subject();
+    public get liveStream$(): Rx.Subject<Eocortex.ILiveStream> {
         return this._liveStream$;
+    }
+
+    /**
+     * Live stream catch
+     */
+    private _liveStreamCatch$: Rx.Subject<string> = new Rx.Subject();
+    public get liveStreamCatch$(): Rx.Subject<string> {
+        return this._liveStreamCatch$;
     }
 
     /**
@@ -74,6 +88,7 @@ export class Eocortex {
         let password: string = Crypto.createHash('md5')
             .update(this._config.password)
             .digest('hex');
+        this._password = password;
         this._baseUrlQuery = `login=${this._config.account}&password=${password}`;
         this._baseUrl = `${this._config.protocol}://${this._config.ip}:${this._config.port}`;
 
@@ -129,14 +144,152 @@ export class Eocortex {
     }
 
     /**
-     * Enable Live Subject
+     * Get People Counting data
+     * @param channelId
+     * @param date
      */
-    public EnableLiveSubject(intervalSecond: number): void {
+    public async GetPeopleCounting(channelId: string, date: Date = new Date()): Promise<Eocortex.ICount> {
+        try {
+            let url: string = `${this._baseUrl}/xml`;
+
+            let result: Eocortex.ICount = await new Promise<Eocortex.ICount>((resolve, reject) => {
+                try {
+                    HttpClient.get(
+                        {
+                            url: url,
+                            encoding: null,
+                            body: `<?xml version="1.0" encoding="utf-8" ?>
+                                <query>
+                                    <server_login>${this._config.account}</server_login>
+                                    <server_pass_hash>${this._password}</server_pass_hash>
+                                    <query_name>get_people_counters</query_name>
+                                    <query_params>
+                                        <channel_id>${channelId}</channel_id>
+                                        <search_time>${DateTime.ToString(date, 'YYYY-MM-DD HH:mm:ss')}</search_time>
+                                    </query_params>
+                                </query>`,
+                        },
+                        async (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
+                            }
+
+                            let parser = new Xml2Js.Parser();
+                            let result: any = await new Promise((resolve, reject) => {
+                                parser.parseString(body, function(err, value) {
+                                    if (err) {
+                                        return reject(err);
+                                    }
+
+                                    resolve(value);
+                                });
+                            });
+
+                            if (result.result.query_result.indexOf('Error') > -1) {
+                                return reject(result.result.query_msg.join(', '));
+                            }
+
+                            resolve({
+                                in: result.result.in[0] || 0,
+                                out: result.result.out[0] || 0,
+                            });
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            return result;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Enable Live Subject
+     * @param delayMilliSecond
+     * @param intervalMilliSecond
+     * @param bufferCount
+     * @param channelIds
+     */
+    public EnableLiveSubject(delayMilliSecond: number, intervalMilliSecond: number, bufferCount: number, channelIds: string[]): void {
         if (!this._isInitialization) {
             throw Base.Message.NotInitialization;
         }
 
         this._liveStream$ = new Rx.Subject();
+
+        let next$: Rx.Subject<{}> = new Rx.Subject();
+        let queue$: Rx.Subject<{ channelId: string; date: Date }> = new Rx.Subject();
+        queue$
+            .buffer(queue$.bufferCount(bufferCount).merge(Rx.Observable.interval(1000)))
+            .zip(next$.startWith(0))
+            .map((x) => {
+                return x[0];
+            })
+            .subscribe({
+                next: async (x) => {
+                    try {
+                        await Promise.all(
+                            x.map(async (value, index, array) => {
+                                try {
+                                    let count: Eocortex.ICount = await this.GetPeopleCounting(value.channelId, value.date);
+
+                                    this._liveStream$.next({
+                                        ...value,
+                                        ...count,
+                                    });
+                                } catch (e) {
+                                    this._liveStreamCatch$.next(`Id: ${value.channelId}, ${e}`);
+                                }
+                            }),
+                        ).catch((e) => {
+                            throw e;
+                        });
+
+                        next$.next();
+                    } catch (e) {
+                        this._liveStreamCatch$.next(e);
+                    }
+                },
+                error: (e) => {
+                    this._liveStream$.error(e);
+                },
+                complete: () => {
+                    this._liveStream$.complete();
+                },
+            });
+
+        Rx.Observable.interval(intervalMilliSecond)
+            .startWith(0)
+            .delay(delayMilliSecond)
+            .takeUntil(this._liveStreamStop$)
+            .subscribe({
+                next: (x) => {
+                    let now: Date = new Date();
+                    let date: Date = new Date(now.setMilliseconds(0));
+
+                    channelIds.forEach((value, index, array) => {
+                        queue$.next({ channelId: value, date: date });
+                    });
+                },
+                error: (e) => {
+                    this._liveStream$.error(e);
+                },
+                complete: () => {
+                    this._liveStream$.complete();
+                },
+            });
     }
 }
 
@@ -176,5 +329,21 @@ export namespace Eocortex {
         UserGroup: {};
         MobileServerInfo: {};
         RtspServerInfo: {};
+    }
+
+    /**
+     *
+     */
+    export interface ICount {
+        in: number;
+        out: number;
+    }
+
+    /**
+     *
+     */
+    export interface ILiveStream extends ICount {
+        channelId: string;
+        date: Date;
     }
 }

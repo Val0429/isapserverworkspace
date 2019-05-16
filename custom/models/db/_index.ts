@@ -11,4 +11,5 @@ export * from './location-device';
 export * from './location-floor';
 export * from './report-human-detection-summary';
 export * from './report-human-detection';
+export * from './report-people-counting-summary';
 export * from './user-info';

@@ -13,3 +13,7 @@ export interface IHumanDetectionFloorSummary extends IHumanDetectionSummaryBase 
 export interface IHumanDetectionAreaSummary extends IHumanDetectionSummaryBase {
     areaIds: string | string[];
 }
+
+export interface IPeopleCountingFloorSummary extends IHumanDetectionFloorSummary {}
+
+export interface IPeopleCountingAreaSummary extends IHumanDetectionAreaSummary {}
