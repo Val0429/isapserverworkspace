@@ -116,10 +116,10 @@ action.get(
 
             let query: Parse.Query<IDB.PublicNotify> = new Parse.Query(IDB.PublicNotify).equalTo('community', _userInfo.community).equalTo('isDeleted', false);
             if (_input.start) {
-                query.greaterThanOrEqualTo('createdAt', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
+                query.greaterThanOrEqualTo('date', new Date(new Date(_input.start).setHours(0, 0, 0, 0)));
             }
             if (_input.end) {
-                query.lessThan('createdAt', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
+                query.lessThan('date', new Date(new Date(new Date(_input.end).setDate(_input.end.getDate() + 1)).setHours(0, 0, 0, 0)));
             }
 
             if (_userInfo.residentInfo) {
@@ -208,14 +208,15 @@ action.put(
             publicNotify.setValue('content', _input.content);
             publicNotify.setValue('isTop', _input.isTop);
 
-            await publicNotify.save(null, { useMasterKey: true }).fail((e) => {
-                throw e;
-            });
-
             if (_input.attachment) {
                 let attachmentSrc: string = `files/${publicNotify.id}_notify_${publicNotify.createdAt.getTime()}.${extension}`;
                 File.WriteBase64File(`${File.assetsPath}/${attachmentSrc}`, _input.attachment);
+                publicNotify.setValue('attachmentSrc', attachmentSrc);
             }
+
+            await publicNotify.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
 
             let query: Parse.Query<IDB.CharacterResident> = new Parse.Query(IDB.CharacterResident).equalTo('community', _userInfo.community);
 
