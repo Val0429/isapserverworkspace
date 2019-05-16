@@ -22,6 +22,9 @@ class Action {
 
     private Initialization = async (): Promise<void> => {
         try {
+            let fcm: Fcm = new Fcm();
+            let apn: Apn = new Apn();
+
             this._action$
                 .buffer(this._action$.bufferCount(this._bufferCount).merge(Rx.Observable.interval(1000)))
                 .zip(this._next$.startWith(0))
@@ -35,8 +38,6 @@ class Action {
                                 try {
                                     if (value.residentInfo.getValue('isNotice')) {
                                         if (value.residentInfo.getValue('deviceType') === 'android') {
-                                            let fcm: Fcm = new Fcm();
-
                                             try {
                                                 let result: string = await fcm.Send(value.residentInfo.getValue('deviceToken'), value.title, value.body);
 
@@ -45,8 +46,6 @@ class Action {
                                                 Print.Log(`Fcm: ${value.residentInfo.getValue('name')} -> ${e}`, new Error(), 'error');
                                             }
                                         } else {
-                                            let apn: Apn = new Apn();
-
                                             try {
                                                 let result = await apn.Send(value.residentInfo.getValue('deviceToken'), value.title, value.body);
                                                 if (result.failed.length > 0) {
