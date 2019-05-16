@@ -137,6 +137,7 @@ action.get(
             });
 
             let votes: IDB.Vote[] = await query
+                .descending('createdAt')
                 .skip((_page - 1) * _count)
                 .limit(_count)
                 .find()

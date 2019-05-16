@@ -137,6 +137,7 @@ action.get(
             });
 
             let reservations: IDB.PublicArticleReservation[] = await query
+                .descending('createdAt')
                 .skip((_page - 1) * _count)
                 .limit(_count)
                 .include(['resident', 'replier', 'article'])

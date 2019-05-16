@@ -116,6 +116,7 @@ action.get(
             });
 
             let packageReceives: IDB.PackageReceive[] = await query
+                .descending('createdAt')
                 .skip((_page - 1) * _count)
                 .limit(_count)
                 .include('resident')

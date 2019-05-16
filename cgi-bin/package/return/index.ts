@@ -114,6 +114,7 @@ action.get(
             });
 
             let packageReturns: IDB.PackageReturn[] = await query
+                .descending('createdAt')
                 .skip((_page - 1) * _count)
                 .limit(_count)
                 .include('resident')
