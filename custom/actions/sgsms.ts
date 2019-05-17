@@ -5,7 +5,7 @@ import { Print, Regex, Sgsms } from '../helpers';
 import * as Enum from '../enums';
 
 class Action {
-    private _config = Config.textMessage;
+    private _config = Config.sgSms;
 
     private _action$: Rx.Subject<Action.IAction> = new Rx.Subject();
     public get action$(): Rx.Subject<Action.IAction> {
@@ -22,9 +22,9 @@ class Action {
         try {
             let sgsms: Sgsms = new Sgsms();
             sgsms.config = {
-                url: this._config.sg.url,
-                account: this._config.sg.account,
-                password: this._config.sg.password,
+                url: this._config.url,
+                account: this._config.account,
+                password: this._config.password,
             };
 
             sgsms.Initialization();
@@ -44,7 +44,7 @@ class Action {
                 })
                 .subscribe({
                     next: async (x) => {
-                        if (x.length !== 0 && !this._config.sg.enable) {
+                        if (x.length !== 0 && !this._config.enable) {
                             Print.Log(`Sgsms was disabled`, new Error(), 'warning');
                         } else {
                             await Promise.all(

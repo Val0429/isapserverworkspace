@@ -30,9 +30,9 @@ action.post(
 
             let sgsms: Sgsms = new Sgsms();
             sgsms.config = {
-                url: Config.textMessage.sg.url,
-                account: Config.textMessage.sg.account,
-                password: Config.textMessage.sg.password,
+                url: Config.sgSms.url,
+                account: Config.sgSms.account,
+                password: Config.sgSms.password,
             };
 
             sgsms.Initialization();

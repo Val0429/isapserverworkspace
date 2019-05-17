@@ -23,7 +23,7 @@ action.get(
         try {
             let _input: InputR = data.inputType;
 
-            let config = Config.textMessage.sg;
+            let config = Config.sgSms;
 
             return {
                 enable: config.enable,
@@ -51,13 +51,8 @@ action.put(
         try {
             let _input: InputU = data.inputType;
 
-            let config = {
-                ...Config.textMessage,
-                sg: _input,
-            };
-
-            await UpdateConfig('textMessage', config);
-            Config['textMessage'] = { ...Config['textMessage'], ...config };
+            await UpdateConfig('sgSms', _input);
+            Config['sgSms'] = { ...Config['sgSms'], ..._input };
 
             return new Date();
         } catch (e) {
