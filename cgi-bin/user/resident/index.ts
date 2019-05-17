@@ -32,10 +32,21 @@ action.post(
                 .fail((e) => {
                     throw e;
                 });
-
             if (resident) {
                 throw Errors.throw(Errors.CustomBadRequest, ['duplicate address']);
             }
+
+            let parkings: IDB.Parking[] = await new Parse.Query(IDB.Parking)
+                .containedIn('objectId', _input.parkingIds)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+            parkings.forEach((value, index, array) => {
+                if (value.getValue('resident')) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['parking is using']);
+                }
+            });
 
             resident = new IDB.CharacterResident();
 
@@ -57,28 +68,16 @@ action.post(
                 throw e;
             });
 
-            if (_input.parkingId) {
-                try {
-                    let parking: IDB.Parking = await new Parse.Query(IDB.Parking).get(_input.parkingId).fail((e) => {
-                        throw e;
-                    });
+            if (_input.parkingIds) {
+                await Promise.all(
+                    parkings.map(async (value, index, array) => {
+                        value.setValue('resident', resident);
 
-                    if (parking.getValue('resident')) {
-                        throw Errors.throw(Errors.CustomBadRequest, ['parking is using']);
-                    }
-
-                    parking.setValue('resident', resident);
-
-                    await parking.save(null, { useMasterKey: true }).fail((e) => {
-                        throw e;
-                    });
-                } catch (e) {
-                    await resident.destroy({ useMasterKey: true }).fail((e) => {
-                        throw e;
-                    });
-
-                    throw e;
-                }
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
             }
 
             return {

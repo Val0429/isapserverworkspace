@@ -51,7 +51,7 @@ export interface ICommitteeIndexD {
 
 export interface IResidentIndexC {
     address: string;
-    parkingId?: string;
+    parkingIds?: string[];
     manageCost: number;
     pointTotal: number;
 }
