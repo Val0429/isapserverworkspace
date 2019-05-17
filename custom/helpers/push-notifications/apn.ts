@@ -51,6 +51,10 @@ export class Apn {
             throw e;
         });
 
+        if (response.failed.length > 0) {
+            throw response.failed[0].response.reason;
+        }
+
         return response;
     }
 }
