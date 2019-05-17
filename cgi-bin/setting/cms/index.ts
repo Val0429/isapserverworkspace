@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, CMSService } from '../../../custom/helpers';
+import { Print, Regex, File, CMSService } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -69,6 +69,8 @@ action.put(
 
             await UpdateConfig('cms', _input);
             Config['cms'] = { ...Config['cms'], ..._input };
+
+            File.CopyFile('workspace/config/custom/cms.ts', 'workspace/custom/assets/config/custom/cms.ts');
 
             return new Date();
         } catch (e) {

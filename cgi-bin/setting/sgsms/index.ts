@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print } from '../../../custom/helpers';
+import { Print, File } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -53,6 +53,8 @@ action.put(
 
             await UpdateConfig('sgsms', _input);
             Config['sgsms'] = { ...Config['sgsms'], ..._input };
+
+            File.CopyFile('workspace/config/default/sgsms.ts', 'workspace/custom/assets/config/default/sgsms.ts');
 
             return new Date();
         } catch (e) {

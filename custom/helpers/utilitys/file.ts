@@ -147,6 +147,25 @@ export namespace File {
     }
 
     /**
+     * Copy filename1 to filename2
+     * @param filename1
+     * @param filename2
+     */
+    export function CopyFile(filename1: string, filename2: string): void {
+        try {
+            CreateFolder(GetPath(filename1));
+            let realpath1: string = RealPath(filename1);
+
+            CreateFolder(GetPath(filename2));
+            let realpath2: string = RealPath(filename2);
+
+            Fs.copyFileSync(realpath1, realpath2);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * File path to url
      * @param filename
      */

@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex } from '../../../custom/helpers';
+import { Print, File, Regex } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -59,6 +59,8 @@ action.put(
 
             await UpdateConfig('humanDetection', _input);
             Config['humanDetection'] = { ...Config['humanDetection'], ..._input };
+
+            File.CopyFile('workspace/config/custom/human-detection.ts', 'workspace/custom/assets/config/custom/human-detection.ts');
 
             return new Date();
         } catch (e) {
