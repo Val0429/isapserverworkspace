@@ -13,10 +13,10 @@ export interface Config {
 var config: Partial<Config> = {
     bufferCount: 10,
     sg: {
-        enable: true,
-        url: "https://mx.fortdigital.net/http/send-message",
-        account: "test60",
-        password: "test60"
-    }
+        enable: false,
+        url: '',
+        account: '',
+        password: '',
+    },
 };
 export default config;

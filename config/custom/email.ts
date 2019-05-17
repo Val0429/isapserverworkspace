@@ -8,11 +8,11 @@ export interface Config {
 }
 
 var config: Partial<Config> = {
-    enable: true,
+    enable: false,
     bufferCount: 10,
-    host: "mail.isapsolution.com",
+    host: '',
     port: 25,
-    email: "services@isapsolution.com",
-    password: "Az123456"
+    email: '',
+    password: '',
 };
 export default config;
