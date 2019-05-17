@@ -20,6 +20,15 @@ class Action {
 
     private Initialization = async (): Promise<void> => {
         try {
+            let sgsms: Sgsms = new Sgsms();
+            sgsms.config = {
+                url: this._config.sg.url,
+                account: this._config.sg.account,
+                password: this._config.sg.password,
+            };
+
+            sgsms.Initialization();
+
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._action$
@@ -41,15 +50,6 @@ class Action {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let sgsms: Sgsms = new Sgsms();
-                                        sgsms.config = {
-                                            url: this._config.sg.url,
-                                            account: this._config.sg.account,
-                                            password: this._config.sg.password,
-                                        };
-
-                                        sgsms.Initialization();
-
                                         let result: string = await sgsms.Send(value.title, value.message, value.to.phone);
 
                                         Print.Log(`Sgsms: ${value.to.name} -> success`, new Error(), 'success');

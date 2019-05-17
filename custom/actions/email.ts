@@ -20,6 +20,16 @@ class Action {
 
     private Initialization = async (): Promise<void> => {
         try {
+            let email: Email = new Email();
+            email.config = {
+                host: this._config.host,
+                port: this._config.port,
+                email: this._config.email,
+                password: this._config.password,
+            };
+
+            email.Initialization();
+
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._action$
@@ -46,16 +56,6 @@ class Action {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let email: Email = new Email();
-                                        email.config = {
-                                            host: this._config.host,
-                                            port: this._config.port,
-                                            email: this._config.email,
-                                            password: this._config.password,
-                                        };
-
-                                        email.Initialization();
-
                                         let result = await email.Send(value.title, value.message, {
                                             tos: value.tos.map((x) => x.email),
                                         });
