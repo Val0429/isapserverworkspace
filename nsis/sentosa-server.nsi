@@ -2,7 +2,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "Sentosa Server"
-!define PRODUCT_VERSION "2.01.12"
+!define PRODUCT_VERSION "2.01.13"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
