@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
@@ -105,7 +105,7 @@ action.get(
                         description: value.description,
                         mac: value.mac,
                         brand: value.brand,
-                        productNO: value.productNO,
+                        productNO: ProdectId2ProductName(value.productNO),
                         count: value.count,
                         trial: value.trial,
                         registerDate: value.registerDate,
@@ -120,3 +120,22 @@ action.get(
         }
     },
 );
+
+/**
+ * Convert prodect id to product name
+ * @param productId
+ */
+function ProdectId2ProductName(productId: string): string {
+    try {
+        let name: string = 'Human Detection';
+        switch (productId) {
+            case Config.peopleCounting.productId:
+                name = 'People Counting';
+                break;
+        }
+
+        return name;
+    } catch (e) {
+        throw e;
+    }
+}
