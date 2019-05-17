@@ -21,8 +21,7 @@ interface IPushData {
 }
 
 interface IPushCount extends IPushData {
-    prevHourTotal: number;
-    prevHourCount: number;
+    prevHourAverage: number;
 }
 
 interface IPushClient extends IPushData {
@@ -85,8 +84,7 @@ action.ws(async (data) => {
                             floorId: x.floorId,
                             areaId: x.areaId,
                             total: x.total,
-                            prevHourTotal: 0,
-                            prevHourCount: 0,
+                            prevHourAverage: 0,
                         });
                     } else {
                         counts.find((n) => n.areaId === x.areaId).total = x.total;
@@ -147,16 +145,7 @@ function DataFilter(counts: IPushCount[], mode: EPushMode, id: string): IPushCli
             });
         }
 
-        return _counts.map((value, index, array) => {
-            let average: number = value.prevHourTotal / value.prevHourCount || 0;
-
-            return {
-                floorId: value.floorId,
-                areaId: value.areaId,
-                total: value.total,
-                prevHourAverage: Math.round(average),
-            };
-        });
+        return _counts;
     } catch (e) {
         throw e;
     }
@@ -189,26 +178,22 @@ async function GetPrevHourReport(counts: IPushCount[]): Promise<IPushCount[]> {
                 return value1.areaId === curr.areaId;
             });
 
-            let average: number = curr.prevHourTotal / curr.prevHourCount || 0;
-
             if (summary) {
-                summary.total = Math.round(average);
+                summary.total = curr.prevHourAverage;
             } else {
                 if (index >= prevSummarys.length) {
                     prev.push({
                         floorId: curr.floorId,
                         areaId: curr.areaId,
-                        total: Math.round(average),
-                        prevHourTotal: 0,
-                        prevHourCount: 0,
+                        total: curr.prevHourAverage,
+                        prevHourAverage: 0,
                     });
                 } else {
                     prev.push({
                         floorId: curr.floorId,
                         areaId: curr.areaId,
                         total: curr.total,
-                        prevHourTotal: curr.prevHourTotal,
-                        prevHourCount: curr.prevHourCount,
+                        prevHourAverage: curr.prevHourAverage,
                     });
                 }
             }
@@ -240,16 +225,17 @@ async function ReportSummary(date: Date): Promise<IPushCount[]> {
             let summary: IPushCount = prev.find((value1, array1, index1) => {
                 return value1.areaId === curr.getValue('area').id;
             });
+
+            let average: number = Math.round(curr.getValue('total') / curr.getValue('count') || 0);
+
             if (summary) {
-                summary.prevHourTotal += curr.getValue('total');
-                summary.prevHourCount += curr.getValue('count');
+                summary.prevHourAverage += average;
             } else {
                 prev.push({
                     floorId: curr.getValue('floor').id,
                     areaId: curr.getValue('area').id,
                     total: 0,
-                    prevHourTotal: curr.getValue('total'),
-                    prevHourCount: curr.getValue('count'),
+                    prevHourAverage: average,
                 });
             }
 
