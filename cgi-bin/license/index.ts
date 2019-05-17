@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print } from '../../custom/helpers';
+import { Print, File } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 import licenseService from 'services/license';
 import { promisify } from 'bluebird';
@@ -60,6 +60,8 @@ action.post(
                 /// 2.2) AddLicense
                 await licenseService.addLicense({ xml: key });
             }
+
+            File.CopyFile('workspace/custom/license/license.xml', 'workspace/custom/assets/license/license.xml');
 
             return new Date();
         } catch (e) {

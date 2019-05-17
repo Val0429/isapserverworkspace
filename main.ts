@@ -3,7 +3,7 @@ import * as history from 'connect-history-api-fallback';
 import * as readline from 'readline';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
-import { Print, Utility, DateTime } from './custom/helpers';
+import { Print, Utility, DateTime, File } from './custom/helpers';
 
 import './custom/shells/create-index';
 import './custom/shells/create-default';
@@ -40,4 +40,19 @@ setTimeout(() => {
         if (!Config.core.httpDisabled) Print.Message({ message: '                     -' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });
         if (Config.core.httpsEnabled) Print.Message({ message: '                     -' }, { message: `https://localhost:${Config.core.httpsPort}`, color: Print.FontColor.cyan });
     }
+
+    let files: string[] = File.ReadFolder('workspace/custom/assets/license');
+    files.forEach((value, index, array) => {
+        File.CopyFile(`workspace/custom/assets/license/${value}`, `workspace/custom/license/${value}`);
+    });
+
+    files = File.ReadFolder('workspace/custom/assets/config');
+    files.forEach((value, index, array) => {
+        let file1 = File.ReadFile(`workspace/custom/assets/config/${value}`);
+        let file2 = File.ReadFile(`workspace/config/custom/${value}`);
+
+        if (file1.toString() !== file2.toString()) {
+            File.CopyFile(`workspace/custom/assets/config/${value}`, `workspace/config/custom/${value}`);
+        }
+    });
 }, 100);

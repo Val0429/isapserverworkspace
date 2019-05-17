@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex } from '../../../custom/helpers';
+import { Print, Regex, File } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -58,6 +58,8 @@ action.put(
 
             await UpdateConfig('email', _input);
             Config['email'] = { ...Config['email'], ..._input };
+
+            File.CopyFile('workspace/config/custom/email.ts', 'workspace/custom/assets/config/email.ts');
 
             return new Date();
         } catch (e) {

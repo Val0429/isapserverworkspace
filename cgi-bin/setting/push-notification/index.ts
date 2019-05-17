@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex } from '../../../custom/helpers';
+import { Print, File } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -50,6 +50,8 @@ action.put(
 
             await UpdateConfig('pushNotification', _input);
             Config['pushNotification'] = { ...Config['pushNotification'], ..._input };
+
+            File.CopyFile('workspace/config/custom/push-notification.ts', 'workspace/custom/assets/config/push-notification.ts');
 
             return new Date();
         } catch (e) {
