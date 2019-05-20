@@ -1,7 +1,7 @@
 !include "MUI2.nsh"
 
 !define PRODUCT_NAME "AiLife Server"
-!define PRODUCT_VERSION "1.00.11"
+!define PRODUCT_VERSION "1.00.12"
 !define MONGO "mongodb-win32-x86_64-2008plus-ssl-3.6.7-rc1-signed.msi"
 !define NODE "node-v8.12.0-x64.msi"
 ; !define VCREDIST "vc_redist.x64.exe"
