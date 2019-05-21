@@ -14,3 +14,7 @@ export interface IPaging {
 export interface IDataList {
     paging?: IPaging;
 }
+
+export interface IMultiData {
+    datas: any[];
+}

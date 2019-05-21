@@ -17,3 +17,9 @@ export interface IDataList<T> {
     paging: IPaging;
     results: T[];
 }
+
+export interface IMultiData {
+    statusCode: number;
+    objectId: string;
+    message: string;
+}
