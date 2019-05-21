@@ -1,12 +1,6 @@
 import { RoleList } from 'core/cgi-package';
 import * as Enum from '../../enums';
 
-export interface IBaseIndexU {
-    objectId: string;
-    password?: string;
-    roles?: RoleList[];
-}
-
 export interface IBaseLogin {
     account: string;
     password: string;
@@ -20,6 +14,11 @@ export interface IBasePasswordU {
     objectId?: string;
     previous: string;
     current: string;
+}
+
+export interface IBaseRoleU {
+    objectId?: string;
+    roles: RoleList[];
 }
 
 export interface IUserIndexC extends IBaseLogin {
@@ -36,8 +35,4 @@ export interface IUserIndexU {
     name?: string;
     email?: string;
     phone?: string;
-}
-
-export interface IUserIndexD {
-    objectId: string | string[];
 }

@@ -18,3 +18,7 @@ export interface IDataList {
 export interface IMultiData {
     datas: any[];
 }
+
+export interface IDelete {
+    objectId: string | string[];
+}

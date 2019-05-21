@@ -18,7 +18,9 @@ type InputC = IRequest.IUser.IBaseLogin;
 type OutputC = IResponse.IUser.IUserLogin;
 
 action.post(
-    { inputType: 'InputC' },
+    {
+        inputType: 'InputC',
+    },
     async (data): Promise<OutputC> => {
         try {
             let _input: InputC = data.inputType;

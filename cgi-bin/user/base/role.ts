@@ -5,7 +5,7 @@ import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [],
+    permission: [RoleList.SystemAdministrator],
 });
 
 export default action;
@@ -13,7 +13,7 @@ export default action;
 /**
  * Action update
  */
-type InputU = IRequest.IUser.IBasePasswordU;
+type InputU = IRequest.IUser.IBaseRoleU;
 
 type OutputU = Date;
 
@@ -33,11 +33,14 @@ action.put(
                 throw Errors.throw(Errors.CustomBadRequest, ['user not found']);
             }
 
-            user = await Parse.User.logIn(user.getUsername(), _input.previous).fail((e) => {
-                throw e;
-            });
+            let roles: Parse.Role[] = await new Parse.Query(Parse.Role)
+                .containedIn('name', _input.roles)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
 
-            user.setPassword(_input.current);
+            user.set('roles', roles);
 
             await user.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;

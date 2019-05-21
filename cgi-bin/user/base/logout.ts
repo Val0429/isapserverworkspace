@@ -18,7 +18,9 @@ type InputC = IRequest.IUser.IBaseLogout;
 type OutputC = Date;
 
 action.post(
-    { inputType: 'InputC' },
+    {
+        inputType: 'InputC',
+    },
     async (data): Promise<OutputC> => {
         try {
             let _input: InputC = data.inputType;
