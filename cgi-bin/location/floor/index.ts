@@ -236,6 +236,44 @@ action.delete(
                 throw e;
             });
 
+            let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+                .equalTo('isDeleted', false)
+                .equalTo('floor', floor)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            await Promise.all(
+                areas.map(async (value, index, array) => {
+                    value.setValue('isDeleted', true);
+                    value.setValue('deleter', data.user);
+
+                    await value.save(null, { useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+                }),
+            );
+
+            let devices: IDB.LocationDevice[] = await new Parse.Query(IDB.LocationDevice)
+                .equalTo('isDeleted', false)
+                .equalTo('floor', floor)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            await Promise.all(
+                devices.map(async (value, index, array) => {
+                    value.setValue('isDeleted', true);
+                    value.setValue('deleter', data.user);
+
+                    await value.save(null, { useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+                }),
+            );
+
             IDB.LocationFloor$.next({ crud: 'd' });
 
             // Utility.ReStartServer();
