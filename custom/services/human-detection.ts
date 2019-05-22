@@ -13,74 +13,76 @@ class Service {
 
     private _liveStreamGroups: Service.ILiveStreamGroup[] = [];
 
+    private _initialization$: Rx.Subject<{}> = new Rx.Subject();
+
     private _devices: IDB.LocationDevice[] = undefined;
     public get devices(): IDB.LocationDevice[] {
         return this._devices;
     }
 
     constructor() {
-        IDB.Camera$.subscribe({
-            next: async (x) => {
-                try {
-                    if (x.mode !== Enum.ECameraMode.humanDetection || x.type !== Enum.ECameraType.cms) {
-                        return;
+        let next$: Rx.Subject<{}> = new Rx.Subject();
+        this._initialization$
+            .debounceTime(1000)
+            .zip(next$.startWith(0))
+            .subscribe({
+                next: async () => {
+                    try {
+                        await this.Initialization();
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
                     }
 
-                    if (x.crud === 'u') {
-                        await this.Initialization();
-                    }
-                } catch (e) {
-                    Print.Log(e, new Error(), 'error');
+                    next$.next();
+                },
+            });
+
+        IDB.Camera$.subscribe({
+            next: (x) => {
+                if (x.mode !== Enum.ECameraMode.humanDetection || x.type !== Enum.ECameraType.cms) {
+                    return;
+                }
+
+                if (x.crud === 'u') {
+                    this._initialization$.next();
                 }
             },
         });
 
         IDB.LocationFloor$.subscribe({
-            next: async (x) => {
-                try {
-                    if (x.crud === 'd') {
-                        await this.Initialization();
-                    }
-                } catch (e) {
-                    Print.Log(e, new Error(), 'error');
+            next: (x) => {
+                if (x.crud === 'd') {
+                    this._initialization$.next();
                 }
             },
         });
 
         IDB.LocationArea$.subscribe({
-            next: async (x) => {
-                try {
-                    if (x.mode !== Enum.ECameraMode.humanDetection) {
-                        return;
-                    }
+            next: (x) => {
+                if (x.mode !== Enum.ECameraMode.humanDetection) {
+                    return;
+                }
 
-                    if (x.crud === 'u' || x.crud === 'd') {
-                        await this.Initialization();
-                    }
-                } catch (e) {
-                    Print.Log(e, new Error(), 'error');
+                if (x.crud === 'u' || x.crud === 'd') {
+                    this._initialization$.next();
                 }
             },
         });
 
         IDB.LocationDevice$.subscribe({
-            next: async (x) => {
-                try {
-                    if (x.mode !== Enum.ECameraMode.humanDetection) {
-                        return;
-                    }
+            next: (x) => {
+                if (x.mode !== Enum.ECameraMode.humanDetection) {
+                    return;
+                }
 
-                    if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
-                        await this.Initialization();
-                    }
-                } catch (e) {
-                    Print.Log(e, new Error(), 'error');
+                if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
+                    this._initialization$.next();
                 }
             },
         });
 
-        setTimeout(async () => {
-            await this.Initialization();
+        setTimeout(() => {
+            this._initialization$.next();
         }, 150);
     }
 
@@ -379,6 +381,18 @@ class Service {
                 })
                 .subscribe({
                     next: async (x) => {
+                        if (x.length > 0) {
+                            Print.Log(
+                                `Get Snapshot ${JSON.stringify(
+                                    x.map((n) => {
+                                        return { nvrId: n.nvr, channelId: n.channel };
+                                    }),
+                                )}`,
+                                new Error(),
+                                'warning',
+                            );
+                        }
+
                         await Promise.all(
                             x.map(async (value, index, array) => {
                                 try {
