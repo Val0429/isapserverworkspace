@@ -29,7 +29,7 @@ export interface IUserIndexC extends IBaseLogin {
 }
 
 export interface IUserIndexU {
-    objectId?: string;
+    objectId: string;
     password?: string;
     role?: RoleList.Admin | RoleList.User;
     name?: string;
