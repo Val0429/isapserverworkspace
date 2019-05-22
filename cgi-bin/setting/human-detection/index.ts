@@ -57,7 +57,11 @@ action.put(
                 port: _input.port,
             };
 
-            hd.Initialization();
+            try {
+                hd.Initialization();
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [e]);
+            }
 
             await UpdateConfig('humanDetection', _input);
             Config['humanDetection'] = { ...Config['humanDetection'], ..._input };

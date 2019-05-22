@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, File } from '../../../custom/helpers';
+import { Print, Regex, Email, File } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -54,6 +54,20 @@ action.put(
 
             if (!Regex.IsEmail(_input.email)) {
                 throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
+            }
+
+            let email: Email = new Email();
+            email.config = {
+                host: Config.email.host,
+                port: Config.email.port,
+                email: Config.email.email,
+                password: Config.email.password,
+            };
+
+            try {
+                email.Initialization();
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [e]);
             }
 
             await UpdateConfig('email', _input);

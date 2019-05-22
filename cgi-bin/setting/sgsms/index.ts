@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File } from '../../../custom/helpers';
+import { Print, File, Sgsms } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
@@ -50,6 +50,19 @@ action.put(
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
+
+            let sgsms: Sgsms = new Sgsms();
+            sgsms.config = {
+                url: Config.sgSms.url,
+                account: Config.sgSms.account,
+                password: Config.sgSms.password,
+            };
+
+            try {
+                sgsms.Initialization();
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [e]);
+            }
 
             await UpdateConfig('sgSms', _input);
             Config['sgSms'] = { ...Config['sgSms'], ..._input };
