@@ -1,10 +1,9 @@
 import * as Enum from '../../enums';
 
-export interface IIndexC {
+export interface IMapIndexC {
     parentId?: string;
     name: string;
     level: Enum.ELocationLevel;
-    no: number;
     imageBase64: string;
     imageWidth: number;
     imageHeight: number;
@@ -16,16 +15,15 @@ export interface IIndexC {
     dataWindowY: number;
 }
 
-export interface IIndexR {
+export interface IMapIndexR {
     parentId?: string;
     level?: Enum.ELocationLevel;
 }
 
-export interface IIndexU {
+export interface IMapIndexU {
     objectId: string;
     name?: string;
     level?: Enum.ELocationLevel;
-    no?: number;
     imageBase64?: string;
     imageWidth?: number;
     imageHeight?: number;
@@ -35,8 +33,4 @@ export interface IIndexU {
     y?: number;
     dataWindowX?: number;
     dataWindowY?: number;
-}
-
-export interface IIndexD {
-    objectId: string;
 }

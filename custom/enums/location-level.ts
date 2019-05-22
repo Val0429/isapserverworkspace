@@ -4,5 +4,4 @@ export enum ELocationLevel {
     city,
     district,
     site,
-    floor,
 }

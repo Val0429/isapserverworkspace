@@ -1,8 +1,8 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, ParseObject, Level } from 'core/cgi-package';
 import { Tree, IGetTreeNodeR, IGetTreeNodeL } from 'models/nodes';
-import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print } from '../../custom/helpers';
-import * as Enum from '../../custom/enums';
+import { IRequest, IResponse, IDB } from '../../../custom/models';
+import { Print } from '../../../custom/helpers';
+import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
@@ -16,23 +16,23 @@ export default action;
  */
 type InputR = null;
 
-type OutputR = IResponse.ILocation.ITree;
+type OutputR = IResponse.ILocation.IMapTree;
 
 action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
 
-            let parent: IDB.Location = await IDB.Location.getRoot();
-            if (!parent) {
-                parent = await IDB.Location.setRoot(undefined);
+            let root: IDB.LocationMap = await IDB.LocationMap.getRoot();
+            if (!root) {
+                root = await IDB.LocationMap.setRoot(undefined);
             }
 
-            let locations: IDB.Location[] = await new Parse.Query(IDB.Location).find().fail((e) => {
+            let locations: IDB.LocationMap[] = await new Parse.Query(IDB.LocationMap).find().fail((e) => {
                 throw e;
             });
 
-            let datas: IResponse.ILocation.ITree[] = locations
+            let datas: IResponse.ILocation.IMapTree[] = locations
                 .map((value, index, array) => {
                     return {
                         objectId: value.id,
@@ -47,7 +47,7 @@ action.get(
                     return a.lft - b.lft;
                 });
 
-            let tree: IResponse.ILocation.ITree = datas.splice(0, 1)[0];
+            let tree: IResponse.ILocation.IMapTree = datas.splice(0, 1)[0];
 
             for (let i = datas.length - 1; i > -1; i--) {
                 datas[i].childrens = datas.filter((value, index, array) => {

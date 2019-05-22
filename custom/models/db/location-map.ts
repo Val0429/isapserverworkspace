@@ -6,7 +6,7 @@ import * as Enum from '../../enums';
 /**
  * 地區
  */
-export interface ILocation {
+export interface ILocationMap {
     /**
      * 名稱
      */
@@ -16,11 +16,6 @@ export interface ILocation {
      * 類型
      */
     level: Enum.ELocationLevel;
-
-    /**
-     * 號碼
-     */
-    no: number;
 
     /**
      * 圖片
@@ -68,11 +63,11 @@ export interface ILocation {
     dataWindowY: number;
 }
 
-export let Location$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
+export let LocationMap$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
 
 @registerSubclass({
     container: true,
 })
-export class Location extends Tree<ILocation> {
+export class LocationMap extends Tree<ILocationMap> {
     groupBy: null;
 }

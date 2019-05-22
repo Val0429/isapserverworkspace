@@ -1,13 +1,8 @@
-export interface IIndexC {
-    objectId: string;
-}
-
-export interface IIndexR {
+export interface IMapIndexR {
     objectId: string;
     parentId: string;
     name: string;
     level: string;
-    no: number;
     imageSrc: string;
     imageWidth: number;
     imageHeight: number;
@@ -19,11 +14,11 @@ export interface IIndexR {
     dataWindowY: number;
 }
 
-export interface ITree {
+export interface IMapTree {
     objectId: string;
     level: string;
     name: string;
     lft: number;
     rgt: number;
-    childrens: ITree[];
+    childrens: IMapTree[];
 }
