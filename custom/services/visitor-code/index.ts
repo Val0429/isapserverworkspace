@@ -3,6 +3,7 @@ import { MongoClient, Collection, IndexOptions, Db } from 'mongodb';
 import { makeReadyPromise } from 'helpers/utility/task-helper';
 import { serverReady } from 'core/pending-tasks';
 import { Log } from 'helpers/utility';
+import { Config } from 'core/config.gen';
 
 function shuffle(array) {
     let currentIndex = array.length, temporaryValue, randomIndex;
@@ -27,6 +28,8 @@ interface Pins {
     index: number;
     total: number;
     pin: Buffer;
+    min: number;
+    max: number;
 }
 
 export type Pin = string;
@@ -72,26 +75,35 @@ export class VisitorCode {
 
             /// Generate pin code
             let col = this.mongoDb.collection(collectionName);
-            let max = 1100000;
-            let min = 1000000;
+            let max = Config.visitorcard.rangeend;
+            let min = Config.visitorcard.rangestart;
             let totalSize = max - min;
 
             /// find exists Pins
             let pins: Pins = await col.findOne({});
-            if (pins !== null) { makeSubjectReady(pins); return; }
+            if (pins !== null) {
+                if (pins.max !== max || pins.min !== min) {
+                    /// recreate if start / end differ
+                    col.deleteOne({});
+
+                } else {
+                    makeSubjectReady(pins); return;
+                }
+            }
 
             /// if not exists, create
-            Log.Info("PinCode", "Creating...");
+            Log.Info("VisitorCode", "Creating...");
             let trace = Log.InfoTime("VisitorCode", `${digits} Digits VisitorCode Created`);
             let pinNumbers = new Array();
             for (let i=min, j=0; i<max; ++i, ++j) pinNumbers[j] = i;
-            shuffle(pinNumbers);
+            // no shuffle
+            //shuffle(pinNumbers);
             /// store into buffer
             let buf = new Buffer(totalSize*unitSize);
             for (let i=0; i<pinNumbers.length; ++i) buf.writeUInt32BE(pinNumbers[i], i*unitSize);
             /// Save into database
             col.insert({
-                index: 0, total: totalSize, pin: buf
+                index: 0, total: totalSize, min, max, pin: buf
             }, () => {
                 makeSubjectReady(pins);
                 trace.end();
