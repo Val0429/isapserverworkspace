@@ -31,7 +31,7 @@ export namespace Parser {
     export function E2ResMessage(e: any, resMessage: IResponse.IMultiData): IResponse.IMultiData {
         try {
             resMessage.statusCode = e.detail ? e.detail.statusCode : 500;
-            resMessage.message = e.args ? e.args.join('; ') : e;
+            resMessage.message = e.message ? e.message : e.args ? e.args.join('; ') : e;
 
             return resMessage;
         } catch (e) {
