@@ -141,6 +141,11 @@ export class FRSService {
         const url = this.makeUrl("getpersonlist");
         return new Promise( async (resolve, reject) => {
             await this.waitForLogin();
+            let params = {
+                session_id: this.sessionId,
+                page_size: 999,
+                skip_pages: 0
+            };
             request({
                 url,
                 method: 'POST',
@@ -156,6 +161,9 @@ export class FRSService {
                     reject(err); return;
                 }
                 if (body.message === 'Internal Server Error.') { reject(body.message); return; }
+                if (!body.person_list) {
+                    console.log('serious error', body, params, err);
+                }
                 resolve(body.person_list.persons);
             });
         });
@@ -198,7 +206,7 @@ export class FRSService {
                 body: { username: Config.frs.account, password: Config.frs.password }
             }, (err, res, body) => {
                 this.loggingIn = false;
-                if (err || !body) {
+                if (err || !body || !body.session_id) {
                     console.log(`Login FRS Server failed@${Config.frs.ip}:${Config.frs.port}. Retry in 1 second.`);
                     setTimeout(() => { tryLogin() }, 1000);
                     return;

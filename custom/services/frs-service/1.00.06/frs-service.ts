@@ -206,7 +206,7 @@ export class FRSService {
                 body: { username: Config.frs.account, password: Config.frs.password }
             }, (err, res, body) => {
                 this.loggingIn = false;
-                if (err || !body) {
+                if (err || !body || !body.session_id) {
                     console.log(`Login FRS Server failed@${Config.frs.ip}:${Config.frs.port}. Retry in 1 second.`);
                     setTimeout(() => { tryLogin() }, 1000);
                     return;
