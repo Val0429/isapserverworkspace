@@ -27,8 +27,9 @@ action.post(
         middlewares: [Middleware.MultiDataFromBody],
     },
     async (data): Promise<OutputC> => {
+        let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
+
         try {
-            let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
             let resMessages: OutputC = data.parameters.resMessages;
 
             return resMessages;
@@ -100,8 +101,9 @@ action.put(
         middlewares: [Middleware.MultiDataFromBody],
     },
     async (data): Promise<OutputU> => {
+        let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
+
         try {
-            let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
             let resMessages: OutputU = data.parameters.resMessages;
 
             return resMessages;
