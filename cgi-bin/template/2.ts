@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print } from '../../custom/helpers';
+import { Print, Parser } from '../../custom/helpers';
 import * as Middleware from '../../custom/middlewares';
 import * as Enum from '../../custom/enums';
 
@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = string;
+type InputC = string[];
 
 type OutputC = IResponse.IMultiData[];
 
@@ -31,6 +31,18 @@ action.post(
 
         try {
             let resMessages: OutputC = data.parameters.resMessages;
+
+            await Promise.all(
+                _input.map(async (value, index, array) => {
+                    try {
+                        resMessages[index].objectId = '';
+                    } catch (e) {
+                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+
+                        Print.Log(e, new Error(), 'error');
+                    }
+                }),
+            );
 
             return resMessages;
         } catch (e) {
@@ -91,7 +103,7 @@ action.get(
 /**
  * Action update
  */
-type InputU = string;
+type InputU = string[];
 
 type OutputU = IResponse.IMultiData[];
 
@@ -106,6 +118,17 @@ action.put(
         try {
             let resMessages: OutputU = data.parameters.resMessages;
 
+            await Promise.all(
+                _input.map(async (value, index, array) => {
+                    try {
+                    } catch (e) {
+                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+
+                        Print.Log(e, new Error(), 'error');
+                    }
+                }),
+            );
+
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -117,7 +140,7 @@ action.put(
 /**
  * Action Delete
  */
-type InputD = string;
+type InputD = IRequest.IDelete;
 
 type OutputD = IResponse.IMultiData[];
 
@@ -131,6 +154,17 @@ action.delete(
             let _input: InputD = data.inputType;
             let _objectIds: string[] = data.parameters.objectIds;
             let resMessages: OutputD = data.parameters.resMessages;
+
+            await Promise.all(
+                _objectIds.map(async (value, index, array) => {
+                    try {
+                    } catch (e) {
+                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+
+                        Print.Log(e, new Error(), 'error');
+                    }
+                }),
+            );
 
             return resMessages;
         } catch (e) {
