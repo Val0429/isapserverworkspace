@@ -316,6 +316,13 @@ export class Hanwha {
             throw Base.Message.NotInitialization;
         }
 
+        this._liveStreamStop$.subscribe({
+            next: () => {
+                this._liveStream$.complete();
+                this._liveStreamStop$.complete();
+            },
+        });
+
         this._liveStream$ = new Rx.Subject();
 
         let next$: Rx.Subject<{}> = new Rx.Subject();

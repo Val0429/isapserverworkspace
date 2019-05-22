@@ -1,19 +1,20 @@
 import * as Rx from 'rxjs';
+import * as Crypto from 'crypto';
 import * as HttpClient from 'request';
 import * as Xml2Js from 'xml2js';
-import {} from '../../models';
-import { Regex, Print } from '../';
+import { Regex, DateTime } from '../';
 import { Base } from './base';
+import { Print } from '../utilitys';
 
-export class CMSService {
+export class Eocortex {
     /**
      * Config
      */
-    private _config: CMSService.IConfig = undefined;
-    public get config(): CMSService.IConfig {
+    private _config: Eocortex.IConfig = undefined;
+    public get config(): Eocortex.IConfig {
         return JSON.parse(JSON.stringify(this._config));
     }
-    public set config(value: CMSService.IConfig) {
+    public set config(value: Eocortex.IConfig) {
         this._config = value;
     }
 
@@ -26,6 +27,16 @@ export class CMSService {
     }
 
     /**
+     * Base url query
+     */
+    private _baseUrlQuery: string = '';
+
+    /**
+     * Password
+     */
+    private _password: string = '';
+
+    /**
      * Initialization flag
      */
     private _isInitialization: boolean = false;
@@ -36,8 +47,8 @@ export class CMSService {
     /**
      * Live stream
      */
-    private _liveStream$: Rx.Subject<CMSService.ISnapshot> = new Rx.Subject();
-    public get liveStream$(): Rx.Subject<CMSService.ISnapshot> {
+    private _liveStream$: Rx.Subject<Eocortex.ILiveStream> = new Rx.Subject();
+    public get liveStream$(): Rx.Subject<Eocortex.ILiveStream> {
         return this._liveStream$;
     }
 
@@ -74,158 +85,131 @@ export class CMSService {
             }
         }
 
+        let password: string = Crypto.createHash('md5')
+            .update(this._config.password)
+            .digest('hex');
+        this._password = password;
+        this._baseUrlQuery = `login=${this._config.account}&password=${password}`;
         this._baseUrl = `${this._config.protocol}://${this._config.ip}:${this._config.port}`;
 
         this._isInitialization = true;
     }
 
     /**
-     * Get snapshot from cms
-     * @param nvr
-     * @param channel
-     */
-    public async GetSnapshot(nvr: number, channel: number, timestamp?: number): Promise<Buffer> {
-        try {
-            // http://172.16.10.100:7000/cgi-bin/snapshot?nvr=nvr1&channel=channel2&source=backend&timestamp=1546582859401
-            let url: string = `${this._baseUrl}/cgi-bin/snapshot?nvr=nvr${nvr}&channel=channel${channel}`;
-            url += timestamp ? `&source=backend&timestamp=${timestamp}` : '';
-
-            let buffer: Buffer = await new Promise<Buffer>((resolve, reject) => {
-                try {
-                    HttpClient.get(
-                        {
-                            url: url,
-                            encoding: null,
-                            auth: {
-                                user: this._config.account,
-                                pass: this._config.password,
-                            },
-                        },
-                        (error, response, body) => {
-                            if (error) {
-                                return reject(error);
-                            } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `${response.statusCode}, ${Buffer.from(body)
-                                        .toString()
-                                        .replace(/\r\n/g, '; ')
-                                        .replace(/\n/g, '; ')}`,
-                                );
-                            }
-
-                            resolve(body);
-                        },
-                    );
-                } catch (e) {
-                    return reject(e);
-                }
-            }).catch((e) => {
-                throw e;
-            });
-
-            return buffer;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Get device tree
-     */
-    public async GetDeviceTree(): Promise<CMSService.INvr[]> {
-        try {
-            let url: string = `${this._baseUrl}/cgi-bin/nvrconfig?action=loadalldevice`;
-
-            let result: any = await new Promise<any>((resolve, reject) => {
-                try {
-                    HttpClient.get(
-                        {
-                            url: url,
-                            encoding: null,
-                            auth: {
-                                user: this._config.account,
-                                pass: this._config.password,
-                            },
-                        },
-                        (error, response, body) => {
-                            if (error) {
-                                return reject(error);
-                            } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `${response.statusCode}, ${Buffer.from(body)
-                                        .toString()
-                                        .replace(/\r\n/g, '; ')
-                                        .replace(/\n/g, '; ')}`,
-                                );
-                            }
-
-                            resolve(body);
-                        },
-                    );
-                } catch (e) {
-                    return reject(e);
-                }
-            }).catch((e) => {
-                throw e;
-            });
-
-            let parser = new Xml2Js.Parser();
-            let devices: any = await new Promise((resolve, reject) => {
-                parser.parseString(result, function(err, value) {
-                    if (err) {
-                        return reject(err);
-                    }
-
-                    resolve(value);
-                });
-            });
-
-            let nvrs: CMSService.INvr[] = devices.AllNVR.NVR.map((value, index, array) => {
-                let channels: CMSService.IChannel = value.AllDevices[0].DeviceConnectorConfiguration;
-
-                if (!channels) {
-                    return;
-                }
-
-                return {
-                    nvrId: parseInt(value.$.id),
-                    channels: value.AllDevices[0].DeviceConnectorConfiguration.map((value1, index1, array1) => {
-                        return {
-                            name: value1.$.name,
-                            channelId: parseInt(value1.DeviceID[0]),
-                        };
-                    }),
-                };
-            }).filter((value, index, array) => {
-                return value;
-            });
-
-            return nvrs;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get device list
      */
-    public async GetDeviceList(): Promise<CMSService.IDevice[]> {
+    public async GetDeviceList(): Promise<Eocortex.IChannel[]> {
         try {
-            let nvrs = await this.GetDeviceTree();
+            let url: string = `${this._baseUrl}/configex?responseType=json&${this._baseUrlQuery}`;
 
-            let list: CMSService.IDevice[] = [].concat(
-                ...nvrs.map((value, index, array) => {
-                    return value.channels.map((value1, index1, array1) => {
-                        return {
-                            name: value1.name,
-                            nvrId: value.nvrId,
-                            channelId: value1.channelId,
-                        };
-                    });
-                }),
-            );
+            let result: Eocortex.IConfigex = await new Promise<Eocortex.IConfigex>((resolve, reject) => {
+                try {
+                    HttpClient.get(
+                        {
+                            url: url,
+                            encoding: null,
+                            json: true,
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
+                            }
 
-            return list;
+                            resolve(body);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            return result.Channels.map((value, index, array) => {
+                return {
+                    Id: value.Id,
+                    Name: value.Name,
+                };
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get People Counting data
+     * @param channelId
+     * @param date
+     */
+    public async GetPeopleCounting(channelId: string, date: Date = new Date()): Promise<Eocortex.ICount> {
+        try {
+            let url: string = `${this._baseUrl}/xml`;
+
+            let result: Eocortex.ICount = await new Promise<Eocortex.ICount>((resolve, reject) => {
+                try {
+                    HttpClient.get(
+                        {
+                            url: url,
+                            encoding: null,
+                            body: `<?xml version="1.0" encoding="utf-8" ?>
+                                <query>
+                                    <server_login>${this._config.account}</server_login>
+                                    <server_pass_hash>${this._password}</server_pass_hash>
+                                    <query_name>get_people_counters</query_name>
+                                    <query_params>
+                                        <channel_id>${channelId}</channel_id>
+                                        <search_time>${DateTime.ToString(date, 'YYYY-MM-DD HH:mm:ss')}</search_time>
+                                    </query_params>
+                                </query>`,
+                        },
+                        async (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(
+                                    `${response.statusCode}, ${Buffer.from(body)
+                                        .toString()
+                                        .replace(/\r\n/g, '; ')
+                                        .replace(/\n/g, '; ')}`,
+                                );
+                            }
+
+                            let parser = new Xml2Js.Parser();
+                            let result: any = await new Promise((resolve, reject) => {
+                                parser.parseString(body, function(err, value) {
+                                    if (err) {
+                                        return reject(err);
+                                    }
+
+                                    resolve(value);
+                                });
+                            });
+
+                            if (result.result.query_result.indexOf('Error') > -1) {
+                                return reject(result.result.query_msg.join(', '));
+                            }
+
+                            resolve({
+                                in: result.result.in[0] || 0,
+                                out: result.result.out[0] || 0,
+                            });
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            return result;
         } catch (e) {
             throw e;
         }
@@ -236,10 +220,9 @@ export class CMSService {
      * @param delayMilliSecond
      * @param intervalMilliSecond
      * @param bufferCount
-     * @param sources
-     * @param isLive
+     * @param channelIds
      */
-    public EnableLiveSubject(delayMilliSecond: number, intervalMilliSecond: number, bufferCount: number, sources: CMSService.ISource[], isLive: boolean): void {
+    public EnableLiveSubject(delayMilliSecond: number, intervalMilliSecond: number, bufferCount: number, channelIds: string[]): void {
         if (!this._isInitialization) {
             throw Base.Message.NotInitialization;
         }
@@ -255,7 +238,7 @@ export class CMSService {
         this._liveStream$ = new Rx.Subject();
 
         let next$: Rx.Subject<{}> = new Rx.Subject();
-        let queue$: Rx.Subject<{ nvr: number; channel: number; timestamp: number }> = new Rx.Subject();
+        let queue$: Rx.Subject<{ channelId: string; date: Date }> = new Rx.Subject();
         queue$
             .buffer(queue$.bufferCount(bufferCount).merge(Rx.Observable.interval(1000)))
             .zip(next$.startWith(0))
@@ -268,16 +251,14 @@ export class CMSService {
                         await Promise.all(
                             x.map(async (value, index, array) => {
                                 try {
-                                    let image: Buffer = isLive ? await this.GetSnapshot(value.nvr, value.channel) : await this.GetSnapshot(value.nvr, value.channel, value.timestamp);
+                                    let count: Eocortex.ICount = await this.GetPeopleCounting(value.channelId, value.date);
 
                                     this._liveStream$.next({
-                                        nvr: value.nvr,
-                                        channel: value.channel,
-                                        image: image,
-                                        timestamp: value.timestamp,
+                                        ...value,
+                                        ...count,
                                     });
                                 } catch (e) {
-                                    this._liveStreamCatch$.next(`Nvr: ${value.nvr}, Channel: ${value.channel}, ${e}`);
+                                    this._liveStreamCatch$.next(`Id: ${value.channelId}, ${e}`);
                                 }
                             }),
                         ).catch((e) => {
@@ -304,12 +285,10 @@ export class CMSService {
             .subscribe({
                 next: (x) => {
                     let now: Date = new Date();
-                    let timestamp: number = now.getTime();
+                    let date: Date = new Date(now.setMilliseconds(0));
 
-                    sources.forEach((value, index, array) => {
-                        value.channels.forEach((value1, index1, array1) => {
-                            queue$.next({ nvr: value.nvr, channel: value1, timestamp: timestamp });
-                        });
+                    channelIds.forEach((value, index, array) => {
+                        queue$.next({ channelId: value, date: date });
                     });
                 },
                 error: (e) => {
@@ -322,9 +301,9 @@ export class CMSService {
     }
 }
 
-export namespace CMSService {
+export namespace Eocortex {
     /**
-     *
+     * Hanwha camera config
      */
     export interface IConfig {
         protocol: 'http' | 'https';
@@ -337,43 +316,42 @@ export namespace CMSService {
     /**
      *
      */
-    export interface ISource {
-        nvr: number;
-        channels: number[];
-    }
-
-    /**
-     *
-     */
-    export interface ISnapshot {
-        nvr: number;
-        channel: number;
-        image: Buffer;
-        timestamp: number;
-    }
-
-    /**
-     *
-     */
-    export interface INvr {
-        nvrId: number;
-        channels: IChannel[];
-    }
-
-    /**
-     *
-     */
     export interface IChannel {
-        channelId: number;
-        name: string;
+        Id: string;
+        Name: string;
     }
 
     /**
      *
      */
-    export interface IDevice {
-        name: string;
-        nvrId: number;
-        channelId: number;
+    export interface IConfigex {
+        Id: string;
+        SenderId: string;
+        RevNum: number;
+        Timestamp: Date;
+        XmlProtocolVersion: number;
+        ServerVersion: string;
+        Servers: [];
+        Channels: IChannel[];
+        RootSecObject: {};
+        UserGroup: {};
+        MobileServerInfo: {};
+        RtspServerInfo: {};
+    }
+
+    /**
+     *
+     */
+    export interface ICount {
+        in: number;
+        out: number;
+    }
+
+    /**
+     *
+     */
+    export interface ILiveStream extends ICount {
+        channelId: string;
+        date: Date;
     }
 }

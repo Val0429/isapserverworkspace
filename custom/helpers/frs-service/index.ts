@@ -210,6 +210,14 @@ export class FRSService {
             throw Base.Message.NotInitialization;
         }
 
+        this._liveStreamStop$.subscribe({
+            next: () => {
+                this._liveStream$.complete();
+                this._liveStreamStop$.complete();
+                frs.stop();
+            },
+        });
+
         this._liveStream$ = new Rx.Subject();
 
         let frs: FRS = new FRS({
@@ -221,13 +229,6 @@ export class FRSService {
 
         await frs.enableLiveFaces(true).catch((e) => {
             throw e;
-        });
-
-        this._liveStreamStop$.subscribe({
-            next: (x) => {
-                this._liveStream$.complete();
-                frs.stop();
-            },
         });
 
         frs.sjLiveStream.subscribe(async (face) => {
@@ -266,8 +267,8 @@ export namespace FRSService {
         wsport: number;
         account: string;
         password: string;
-        specialScoreForUnRecognizedFace: number;
-        throttleKeepSameFaceSeconds: number;
+        specialScoreForUnRecognizedFace?: number;
+        throttleKeepSameFaceSeconds?: number;
     }
 
     /**
