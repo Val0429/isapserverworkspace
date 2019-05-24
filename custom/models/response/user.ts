@@ -21,6 +21,7 @@ export interface IUserIndexR {
     account: string;
     role: string;
     name: string;
+    employeeId: string;
     email: string;
     phone: string;
     webLestUseDate: Date;
