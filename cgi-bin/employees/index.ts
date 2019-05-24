@@ -2,8 +2,9 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Events, IEvents,
-    Restful, FileHelper, ParseObject, Employees, IEmployees
+    Restful, FileHelper, ParseObject, Employees, IEmployees, Tablets
 } from 'core/cgi-package';
+import { HikvisionTablet } from 'services/hikvision-tablet';
 
 
 var action = new Action({
@@ -22,6 +23,25 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Employees(data.inputType);
     await obj.save(null, { useMasterKey: true });
+
+    /// V1.1) Enroll into Hikvision
+    let { cardno, name, employeeno, image } = data.inputType;
+    let buffer = await FileHelper.downloadParseFile(image);
+    let tablets = await new Parse.Query(Tablets).find();
+    tablets.forEach( async (tablet) => {
+        let o = HikvisionTablet.getInstance(tablet.attributes);
+        await o.createCard({
+            cardno: cardno+"",
+            employeeno: employeeno+"",
+            name
+        });
+        await o.enrollFace({
+            cardno: cardno+"",
+            facelen: buffer.length,
+            buffer
+        });
+    });
+
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -69,6 +89,17 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Employees).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Employees <${objectId}> not exists.`]);
+
+    /// V1.1) Remove from Hikvision
+    let { cardno } = obj.attributes;
+    let tablets = await new Parse.Query(Tablets).find();
+    tablets.forEach( async (tablet) => {
+        let o = HikvisionTablet.getInstance(tablet.attributes);
+        await o.removeCard({
+            cardno: cardno+""
+        });
+    });
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output
