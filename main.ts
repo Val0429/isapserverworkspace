@@ -32,10 +32,10 @@ setTimeout(() => {
 
     Print.Message({ message: '  ', background: Print.BackColor.green }, { message: 'App running at:', color: Print.FontColor.green }, { message: `- ${description}_v${version} (${node_env} Mode)` });
 
-    let ips: Utility.IIp[] = Utility.GetIp();
+    let ips: Utility.INetwork[] = Utility.GetNetwork();
     if (ips.length > 0) {
-        if (!Config.core.httpDisabled) Print.Message({ message: '                     -' }, { message: `http://${ips[0].ip}:${Config.core.port}`, color: Print.FontColor.cyan });
-        if (Config.core.httpsEnabled) Print.Message({ message: '                     -' }, { message: `https://${ips[0].ip}:${Config.core.httpsPort}`, color: Print.FontColor.cyan });
+        if (!Config.core.httpDisabled) Print.Message({ message: '                     -' }, { message: `http://${ips[0].address}:${Config.core.port}`, color: Print.FontColor.cyan });
+        if (Config.core.httpsEnabled) Print.Message({ message: '                     -' }, { message: `https://${ips[0].address}:${Config.core.httpsPort}`, color: Print.FontColor.cyan });
     } else {
         if (!Config.core.httpDisabled) Print.Message({ message: '                     -' }, { message: `http://localhost:${Config.core.port}`, color: Print.FontColor.cyan });
         if (Config.core.httpsEnabled) Print.Message({ message: '                     -' }, { message: `https://localhost:${Config.core.httpsPort}`, color: Print.FontColor.cyan });
