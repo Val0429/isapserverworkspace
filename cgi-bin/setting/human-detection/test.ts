@@ -26,7 +26,7 @@ action.post(
         try {
             let _input: InputC = data.inputType;
 
-            let extension = File.GetExtension(_input.imageBase64);
+            let extension = File.GetBase64Extension(_input.imageBase64);
             if (!extension || extension.type !== 'image') {
                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
             }
