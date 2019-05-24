@@ -1,12 +1,12 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { ScheduleActionSGSMS, ScheduleActionSMSResult } from 'core/scheduler-loader';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, Sgsms } from '../../../custom/helpers';
+import { Print, Regex, Db, Sgsms } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -19,10 +19,13 @@ type InputC = IRequest.ISetting.ISgsmsTest;
 type OutputC = Date;
 
 action.post(
-    { inputType: 'InputC' },
+    {
+        inputType: 'InputC',
+    },
     async (data): Promise<OutputC> => {
         try {
             let _input: InputC = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             if (!Regex.IsInternationalPhone(_input.phone)) {
                 throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);

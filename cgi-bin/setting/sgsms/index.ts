@@ -1,12 +1,12 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File, Sgsms } from '../../../custom/helpers';
+import { Print, File, Db, Sgsms } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { UpdateConfig } from '../../config';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -22,6 +22,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let config = Config.sgSms;
 
@@ -46,10 +47,13 @@ type InputU = IRequest.ISetting.ISgsmsU;
 type OutputU = Date;
 
 action.put(
-    { inputType: 'InputU' },
+    {
+        inputType: 'InputU',
+    },
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let sgsms: Sgsms = new Sgsms();
             sgsms.config = {
