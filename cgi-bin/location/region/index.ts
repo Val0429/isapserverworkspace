@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
@@ -13,8 +13,6 @@ let action = new Action({
 export default action;
 
 type MultiData = IRequest.IMultiData;
-
-const size: Draw.ISize = { width: 900, height: 600 };
 
 /**
  * Action Create
@@ -35,6 +33,9 @@ action.post(
         try {
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputC = data.parameters.resMessages;
+
+            let imgConfig = Config.location.image;
+            let imgSize = { width: imgConfig.width, height: imgConfig.height };
 
             let root: IDB.LocationRegion = await CreateRoot();
 
@@ -62,7 +63,7 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
-                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), size, true, true)).toString(Parser.Encoding.base64);
+                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
 
                         let region: IDB.LocationRegion = await parent.addLeaf({
                             name: value.name,
@@ -199,6 +200,9 @@ action.put(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputU = data.parameters.resMessages;
 
+            let imgConfig = Config.location.image;
+            let imgSize = { width: imgConfig.width, height: imgConfig.height };
+
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
@@ -239,7 +243,7 @@ action.put(
                             region.setValue('level', value.level);
                         }
                         if (value.imageBase64) {
-                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), size, true, true)).toString(Parser.Encoding.base64);
+                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
                             let imageSrc: string = region.getValue('imageSrc');
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
                         }
