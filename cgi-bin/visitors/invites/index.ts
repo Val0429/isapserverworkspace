@@ -101,7 +101,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data: ActionParam<I
         .first();
 
     // 2) When Visitor do pre-register complete (or invitation complete & already pre-registered)
-    if (visitor.attributes.status === VisitorStatus.Completed && validateByInvitationDateAndPin(data.inputType.dates, new Date())) {
+    if (/*visitor.attributes.status === VisitorStatus.Completed && */validateByInvitationDateAndPin(data.inputType.dates, new Date())) {
         // 	1.1) If the day is today, do (D) (E) (B) (A).
         IssueCard({
             name, email
