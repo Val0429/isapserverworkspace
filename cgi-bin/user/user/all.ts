@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex } from '../../../custom/helpers';
+import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -18,20 +18,25 @@ type OutputR = IResponse.IUser.IUserAll[];
 
 action.get(
     {
-        permission: [RoleList.Admin, RoleList.User],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin, RoleList.User],
     },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let roleSystemAdministrator: Parse.Role = await new Parse.Query(Parse.Role)
-                .equalTo('name', RoleList.SystemAdministrator)
-                .first()
+            let roleLists: RoleList[] = [RoleList.SystemAdministrator];
+            if (_userInfo.roles.indexOf(RoleList.SuperAdministrator) < 0) {
+                roleLists.push(RoleList.SuperAdministrator);
+            }
+            let roleExcludes: Parse.Role[] = await new Parse.Query(Parse.Role)
+                .containedIn('name', roleLists)
+                .find()
                 .fail((e) => {
                     throw e;
                 });
 
-            let queryUser: Parse.Query<Parse.User> = new Parse.Query(Parse.User).notContainedIn('roles', [roleSystemAdministrator]);
+            let queryUser: Parse.Query<Parse.User> = new Parse.Query(Parse.User).notContainedIn('roles', roleExcludes);
 
             let totalUser: number = await queryUser.count().fail((e) => {
                 throw e;

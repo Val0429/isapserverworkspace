@@ -1,6 +1,6 @@
 import { Action, Events, EventLogout } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print } from '../../../custom/helpers';
+import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -24,6 +24,7 @@ action.post(
     async (data): Promise<OutputC> => {
         try {
             let _input: InputC = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             await data.session.destroy({ sessionToken: _input.sessionId }).fail((e) => {
                 throw e;

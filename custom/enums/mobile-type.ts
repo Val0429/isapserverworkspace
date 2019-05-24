@@ -1,4 +1,5 @@
 export enum EMobileType {
-    android = 1,
+    none = 1,
+    android,
     ios,
 }

@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { LocationSite, UserGroup } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -16,6 +17,11 @@ export interface IUserInfo {
     name: string;
 
     /**
+     * 員工編號
+     */
+    employeeId: string;
+
+    /**
      * Email
      */
     email: string;
@@ -23,7 +29,52 @@ export interface IUserInfo {
     /**
      * 電話
      */
-    phone: string;
+    phone?: string;
+
+    /**
+     * 手機類型
+     */
+    mobileType: Enum.EMobileType;
+
+    /**
+     * 手機令牌
+     */
+    mobileToken: string;
+
+    /**
+     * Email開關
+     */
+    isEmail: boolean;
+
+    /**
+     * 簡訊開關
+     */
+    isPhone: boolean;
+
+    /**
+     * 推播開關
+     */
+    isNotice: boolean;
+
+    /**
+     * Web 最後使用時間
+     */
+    webLestUseDate?: Date;
+
+    /**
+     * App 最後使用時間
+     */
+    appLastUseDate?: Date;
+
+    /**
+     * Managed sites
+     */
+    locations: LocationSite[];
+
+    /**
+     * User groups
+     */
+    groups: UserGroup[];
 }
 
 @registerSubclass()

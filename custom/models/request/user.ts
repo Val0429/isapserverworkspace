@@ -24,15 +24,19 @@ export interface IBaseRoleU {
 export interface IUserIndexC extends IBaseLogin {
     role: RoleList.Admin | RoleList.User;
     name: string;
-    email?: string;
+    employeeId: string;
+    email: string;
     phone?: string;
+    locationIds: string[];
+    groupIds: string[];
 }
 
 export interface IUserIndexU {
     objectId: string;
-    password?: string;
     role?: RoleList.Admin | RoleList.User;
     name?: string;
     email?: string;
     phone?: string;
+    locationIds?: string[];
+    groupIds?: string[];
 }

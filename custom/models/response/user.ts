@@ -1,4 +1,4 @@
-import { RoleList } from 'core/cgi-package';
+import { IObject } from './_index';
 
 export interface IBaseIndexR {
     objectId: string;
@@ -23,6 +23,11 @@ export interface IUserIndexR {
     name: string;
     email: string;
     phone: string;
+    webLestUseDate: Date;
+    appLastUseDate: Date;
+    locations: IObject[];
+    groups: IObject[];
+    isAppBinding: boolean;
 }
 
 export interface IUserAll {

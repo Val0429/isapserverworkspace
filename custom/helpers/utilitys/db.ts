@@ -1,6 +1,9 @@
+import { Errors } from 'core/errors.gen';
 import { RoleList } from 'core/userRoles.gen';
+import { Request } from 'express';
 import { Print } from './';
 import { IDB } from '../../models';
+import { Utility } from './utility';
 
 export namespace Db {
     /**
@@ -48,51 +51,99 @@ export namespace Db {
                     throw e;
                 });
 
-                user = new Parse.User();
+                await CreateUser('SysAdmin', 'SysAdmin12356', roles);
 
-                user.setUsername('SysAdmin');
-                user.setPassword('SysAdmin12356');
-                user.set('roles', roles);
-
-                await user.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
+                let roles1 = roles.filter((value, index, array) => {
+                    return value.getName() === RoleList.SuperAdministrator;
                 });
-
-                let info: IDB.UserInfo = new IDB.UserInfo();
-
-                info.setValue('user', user);
-                info.setValue('name', 'SysAdmin');
-
-                await info.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-
-                user = new Parse.User();
-
-                user.setUsername('Admin');
-                user.setPassword('123456');
-                user.set(
-                    'roles',
-                    roles.filter((value, index, array) => {
-                        return value.getName() === RoleList.Admin;
-                    }),
-                );
-
-                await user.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-
-                info = new IDB.UserInfo();
-
-                info.setValue('user', user);
-                info.setValue('name', 'Admin');
-
-                await info.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
+                await CreateUser('Admin', '123456', roles1);
 
                 Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Users:  ' }, { message: '<SysAdmin>, <Admin>', color: Print.FontColor.cyan });
             }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Create user
+     * @param account
+     * @param password
+     * @param roles
+     */
+    async function CreateUser(account: string, password: string, roles: Parse.Role[]): Promise<void> {
+        try {
+            let user = new Parse.User();
+
+            user.setUsername(account);
+            user.setPassword(password);
+            user.set('roles', roles);
+
+            await user.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            let info: IDB.UserInfo = new IDB.UserInfo();
+
+            info.setValue('user', user);
+            info.setValue('name', account);
+
+            await info.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    interface IUserInfo {
+        roles: string[];
+        info: IDB.UserInfo;
+        locations: IDB.LocationSite[];
+        groups: IDB.UserGroup[];
+    }
+
+    /**
+     * Get user info
+     * @param data
+     * @param from
+     */
+    export async function GetUserInfo(req: Request, user: Parse.User): Promise<IUserInfo> {
+        try {
+            let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
+                .equalTo('user', user)
+                .include(['locations', 'groups'])
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+            if (!info) {
+                throw Errors.throw(Errors.CustomBadRequest, ['user info not found']);
+            }
+
+            let roles: string[] = user.get('roles').map((value, index, array) => {
+                return value.getName();
+            });
+
+            let from = req.headers['client-from'];
+            if (from === 'app') {
+                info.setValue('appLastUseDate', new Date());
+            } else if (from === 'web') {
+                info.setValue('webLestUseDate', new Date());
+            }
+
+            await info.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            let userInfo: IUserInfo = {
+                roles: roles,
+                info: info,
+                locations: info.getValue('locations') || [],
+                groups: info.getValue('groups') || [],
+            };
+
+            return userInfo;
         } catch (e) {
             throw e;
         }

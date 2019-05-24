@@ -1,12 +1,14 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, Parser } from '../../../custom/helpers';
+import { Print, Regex, Parser, Db, Permission } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
 
 let action = new Action({
     loginRequired: true,
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -23,13 +25,13 @@ type OutputC = IResponse.IMultiData[];
 action.post(
     {
         inputType: 'MultiData',
-        permission: [RoleList.Admin],
         middlewares: [Middleware.MultiDataFromBody],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
 
         try {
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputC = data.parameters.resMessages;
 
             let roles: Parse.Role[] = await new Parse.Query(Parse.Role).find().fail((e) => {
@@ -39,6 +41,9 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
+                        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapC);
+                        Permission.ValidateRoles(availableRoles, [value.role]);
+
                         let role = roles.find((value1, index1, array1) => {
                             return value1.getName() === value.role;
                         });
@@ -46,16 +51,40 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['role not found']);
                         }
 
-                        if (value.email) {
-                            if (!Regex.IsEmail(value.email)) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
-                            }
+                        if (value.employeeId === '') {
+                            throw Errors.throw(Errors.CustomBadRequest, ['employee id can not be empty']);
                         }
-                        if (value.phone) {
-                            if (!Regex.IsInternationalPhone(value.phone)) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
-                            }
+
+                        let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
+                            .equalTo('employeeId', value.employeeId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (info) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate employee id']);
                         }
+
+                        if (!Regex.IsEmail(value.email)) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
+                        }
+                        if (value.phone && !Regex.IsInternationalPhone(value.phone)) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
+                        }
+
+                        let locations: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
+                            let location: IDB.LocationSite = new IDB.LocationSite();
+                            location.id = value1;
+
+                            return location;
+                        });
+
+                        let groups: IDB.UserGroup[] = value.groupIds.map((value1, index1, array1) => {
+                            let group: IDB.UserGroup = new IDB.UserGroup();
+                            group.id = value1;
+
+                            return group;
+                        });
 
                         let user: Parse.User = new Parse.User();
 
@@ -65,12 +94,20 @@ action.post(
 
                         resMessages[index].objectId = user.id;
 
-                        let info: IDB.UserInfo = new IDB.UserInfo();
+                        info = new IDB.UserInfo();
 
                         info.setValue('user', user);
                         info.setValue('name', value.name);
+                        info.setValue('employeeId', value.employeeId);
                         info.setValue('email', value.email);
-                        info.setValue('phone', value.phone);
+                        info.setValue('phone', value.phone || '');
+                        info.setValue('mobileType', Enum.EMobileType.none);
+                        info.setValue('mobileToken', '');
+                        info.setValue('isEmail', true);
+                        info.setValue('isPhone', true);
+                        info.setValue('isNotice', true);
+                        info.setValue('locations', locations);
+                        info.setValue('groups', groups);
 
                         await info.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -101,23 +138,27 @@ type OutputR = IResponse.IDataList<IResponse.IUser.IUserIndexR>;
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.Admin, RoleList.User],
         middlewares: [Middleware.PagingRequestDefaultValue],
     },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
 
-            let roleSystemAdministrator: Parse.Role = await new Parse.Query(Parse.Role)
-                .equalTo('name', RoleList.SystemAdministrator)
-                .first()
+            let roleLists: RoleList[] = [RoleList.SystemAdministrator];
+            if (_userInfo.roles.indexOf(RoleList.SuperAdministrator) < 0) {
+                roleLists.push(RoleList.SuperAdministrator);
+            }
+            let roleExcludes: Parse.Role[] = await new Parse.Query(Parse.Role)
+                .containedIn('name', roleLists)
+                .find()
                 .fail((e) => {
                     throw e;
                 });
 
             let users: Parse.User[] = await new Parse.Query(Parse.User)
-                .notContainedIn('roles', [roleSystemAdministrator])
+                .notContainedIn('roles', roleExcludes)
                 .find()
                 .fail((e) => {
                     throw e;
@@ -133,7 +174,7 @@ action.get(
             let infos: IDB.UserInfo[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['user', 'user.roles'])
+                .include(['user', 'user.roles', 'locations', 'groups'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -158,9 +199,24 @@ action.get(
                                     return value1.get('name') === RoleList[value2];
                                 });
                             })[0],
-                        name: value.getValue('name'),
-                        email: value.getValue('email'),
-                        phone: value.getValue('phone'),
+                        name: value.getValue('name') || '',
+                        email: value.getValue('email') || '',
+                        phone: value.getValue('phone') || '',
+                        webLestUseDate: value.getValue('webLestUseDate'),
+                        appLastUseDate: value.getValue('appLastUseDate'),
+                        locations: (value.getValue('locations') || []).map((value1, index1, array1) => {
+                            return {
+                                objectId: value1.id,
+                                name: value1.getValue('name'),
+                            };
+                        }),
+                        groups: (value.getValue('groups') || []).map((value1, index1, array1) => {
+                            return {
+                                objectId: value1.id,
+                                name: value1.getValue('name'),
+                            };
+                        }),
+                        isAppBinding: !!value.getValue('mobileType') && value.getValue('mobileType') !== Enum.EMobileType.none,
                     };
                 }),
             };
@@ -181,13 +237,13 @@ type OutputU = IResponse.IMultiData[];
 action.put(
     {
         inputType: 'MultiData',
-        permission: [RoleList.Admin],
         middlewares: [Middleware.MultiDataFromBody],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
 
         try {
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputU = data.parameters.resMessages;
 
             let roles: Parse.Role[] = await new Parse.Query(Parse.Role).find().fail((e) => {
@@ -197,36 +253,19 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let role = roles.find((value1, index1, array1) => {
-                            return value1.getName() === value.role;
-                        });
-                        if (!role) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['role not found']);
+                        if (value.email && !Regex.IsEmail(value.email)) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
+                        }
+                        if (value.phone && !Regex.IsInternationalPhone(value.phone)) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
-                        if (value.email) {
-                            if (!Regex.IsEmail(value.email)) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
-                            }
-                        }
-                        if (value.phone) {
-                            if (!Regex.IsInternationalPhone(value.phone)) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
-                            }
-                        }
-
-                        let user: Parse.User = await new Parse.Query(Parse.User)
-                            .include('roles')
-                            .get(value.objectId)
-                            .fail((e) => {
-                                throw e;
-                            });
-                        if (!user) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['user not found']);
-                        }
+                        let user: Parse.User = new Parse.User();
+                        user.id = value.objectId;
 
                         let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
                             .equalTo('user', user)
+                            .include(['user', 'user.roles'])
                             .first()
                             .fail((e) => {
                                 throw e;
@@ -235,20 +274,51 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['info not found']);
                         }
 
+                        let infoRoles = info
+                            .getValue('user')
+                            .get('roles')
+                            .map((n) => n.getName());
+                        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapU);
+                        Permission.ValidateRoles(availableRoles, infoRoles);
+
                         if (value.role) {
+                            let role = roles.find((value1, index1, array1) => {
+                                return value1.getName() === value.role;
+                            });
+                            if (!role) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['role not found']);
+                            }
+
                             user.set('roles', [role]);
                         }
-                        if (value.password) {
-                            user.setPassword(value.password);
-                        }
-                        if (value.name) {
+                        if (value.name || value.name === '') {
                             info.setValue('name', value.name);
                         }
-                        if (value.email) {
+                        if (value.email || value.email === '') {
                             info.setValue('email', value.email);
                         }
-                        if (value.phone) {
+                        if (value.phone || value.phone === '') {
                             info.setValue('phone', value.phone);
+                        }
+                        if (value.locationIds) {
+                            let locations: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
+                                let location: IDB.LocationSite = new IDB.LocationSite();
+                                location.id = value1;
+
+                                return location;
+                            });
+
+                            info.setValue('locations', locations);
+                        }
+                        if (value.groupIds) {
+                            let groups: IDB.UserGroup[] = value.groupIds.map((value1, index1, array1) => {
+                                let group: IDB.UserGroup = new IDB.UserGroup();
+                                group.id = value1;
+
+                                return group;
+                            });
+
+                            info.setValue('groups', groups);
                         }
 
                         await user.save(null, { useMasterKey: true }).fail((e) => {
@@ -284,45 +354,50 @@ type OutputD = IResponse.IMultiData[];
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.Admin],
         middlewares: [Middleware.MultiDataFromQuery],
     },
     async (data): Promise<OutputD> => {
         try {
             let _input: InputD = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _objectIds: string[] = data.parameters.objectIds;
             let resMessages: OutputD = data.parameters.resMessages;
 
-            let users: Parse.User[] = _objectIds.map((value, index, array) => {
-                let user: Parse.User = new Parse.User();
-                user.id = value;
-
-                return user;
-            });
-
-            let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
-                .containedIn('user', users)
-                .include('user')
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
-
             await Promise.all(
-                userInfos.map(async (value, index, array) => {
+                _objectIds.map(async (value, index, array) => {
                     try {
-                        await value
+                        let user: Parse.User = new Parse.User();
+                        user.id = value;
+
+                        let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
+                            .equalTo('user', user)
+                            .include(['user', 'user.roles'])
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (!info) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['info not found']);
+                        }
+
+                        let infoRoles = info
+                            .getValue('user')
+                            .get('roles')
+                            .map((n) => n.getName());
+                        let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapD);
+                        Permission.ValidateRoles(availableRoles, infoRoles);
+
+                        await info
                             .getValue('user')
                             .destroy({ useMasterKey: true })
                             .fail((e) => {
                                 throw e;
                             });
-                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                        await info.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
-                        let i: number = _objectIds.indexOf(value.getValue('user').id);
-                        resMessages[i] = Parser.E2ResMessage(e, resMessages[i]);
+                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
