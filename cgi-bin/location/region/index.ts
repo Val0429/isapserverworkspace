@@ -1,30 +1,31 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File, Parser } from '../../../custom/helpers';
+import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
 
 type MultiData = IRequest.IMultiData;
 
+const size: Draw.ISize = { width: 900, height: 600 };
+
 /**
  * Action Create
  */
-type InputC = IRequest.ILocation.IMapIndexC[];
+type InputC = IRequest.ILocation.IRegionIndexC[];
 
 type OutputC = IResponse.IMultiData[];
 
 action.post(
     {
         inputType: 'MultiData',
-        permission: [RoleList.Admin],
         postSizeLimit: 10000000,
         middlewares: [Middleware.MultiDataFromBody],
     },
@@ -32,59 +33,53 @@ action.post(
         let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
 
         try {
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputC = data.parameters.resMessages;
 
-            let root: IDB.LocationMap = await IDB.LocationMap.getRoot();
-            if (!root) {
-                root = await IDB.LocationMap.setRoot(undefined);
-            }
+            let root: IDB.LocationRegion = await CreateRoot();
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let parent: IDB.LocationMap = undefined;
+                        let parent: IDB.LocationRegion = undefined;
                         if (!value.parentId) {
                             parent = root;
                         } else {
-                            parent = await new Parse.Query(IDB.LocationMap).get(value.parentId).fail((e) => {
+                            parent = await new Parse.Query(IDB.LocationRegion).get(value.parentId).fail((e) => {
                                 throw e;
                             });
                             if (!parent) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['parent location not found']);
+                                throw Errors.throw(Errors.CustomBadRequest, ['parent region not found']);
                             }
                         }
 
-                        if (parent.getValue('level') && parent.getValue('level') >= value.level) {
-                            throw Errors.throw(Errors.CustomBadRequest, [`level must be after ${Enum.ELocationLevel[parent.getValue('level')]}`]);
+                        if (parent.getValue('level') >= value.level) {
+                            throw Errors.throw(Errors.CustomBadRequest, [`level must bigger than ${parent.getValue('level')}`]);
                         }
 
-                        let extension = File.GetExtension(value.imageBase64);
+                        let extension = File.GetBase64Extension(value.imageBase64);
                         if (!extension || extension.type !== 'image') {
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
-                        let location: IDB.LocationMap = await parent.addLeaf({
+                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), size, true, true)).toString(Parser.Encoding.base64);
+
+                        let region: IDB.LocationRegion = await parent.addLeaf({
                             name: value.name,
                             level: value.level,
                             imageSrc: '',
-                            imageWidth: value.imageWidth,
-                            imageHeight: value.imageHeight,
                             longitude: value.longitude,
                             latitude: value.latitude,
-                            x: value.x,
-                            y: value.y,
-                            dataWindowX: value.dataWindowX,
-                            dataWindowY: value.dataWindowY,
                         });
 
-                        resMessages[index].objectId = location.id;
+                        resMessages[index].objectId = region.id;
 
-                        let imageSrc: string = `${extension.type}s/${location.id}_location_${location.createdAt.getTime()}.${extension.extension}`;
+                        let imageSrc: string = `${extension.type}s/${region.id}_location_region_${region.createdAt.getTime()}.${extension.extension}`;
                         File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
 
-                        location.setValue('imageSrc', imageSrc);
+                        region.setValue('imageSrc', imageSrc);
 
-                        await location.save(null, { useMasterKey: true }).fail((e) => {
+                        await region.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
@@ -94,8 +89,6 @@ action.post(
                     }
                 }),
             );
-
-            IDB.LocationMap$.next({ crud: 'c' });
 
             return resMessages;
         } catch (e) {
@@ -108,30 +101,27 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList & IRequest.ILocation.IMapIndexR;
+type InputR = IRequest.IDataList & IRequest.ILocation.IRegionIndexR;
 
-type OutputR = IResponse.IDataList<IResponse.ILocation.IMapIndexR>;
+type OutputR = IResponse.IDataList<IResponse.ILocation.IRegionIndexR>;
 
 action.get(
     {
         inputType: 'InputR',
-        permission: [RoleList.Admin, RoleList.User],
         middlewares: [Middleware.PagingRequestDefaultValue],
     },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
 
-            let root: IDB.LocationMap = await IDB.LocationMap.getRoot();
-            if (!root) {
-                root = await IDB.LocationMap.setRoot(undefined);
-            }
+            let root: IDB.LocationRegion = await CreateRoot();
 
-            let query: Parse.Query<IDB.LocationMap> = new Parse.Query(IDB.LocationMap).notEqualTo('level', null);
+            let query: Parse.Query<IDB.LocationRegion> = new Parse.Query(IDB.LocationRegion);
 
             if (_input.parentId) {
-                let parent: IDB.LocationMap = await new Parse.Query(IDB.LocationMap).get(_input.parentId).fail((e) => {
+                let parent: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(_input.parentId).fail((e) => {
                     throw e;
                 });
                 if (!parent) {
@@ -149,7 +139,7 @@ action.get(
             });
             let totalPage: number = Math.ceil(total / _paging.pageSize);
 
-            let locations: IDB.LocationMap[] = await query
+            let regions: IDB.LocationRegion[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
                 .find()
@@ -164,8 +154,8 @@ action.get(
                     page: _paging.page,
                     pageSize: _paging.pageSize,
                 },
-                results: locations.map((value, index, array) => {
-                    let parents: IDB.LocationMap[] = array.filter((value1, index1, array1) => {
+                results: regions.map((value, index, array) => {
+                    let parents: IDB.LocationRegion[] = array.filter((value1, index1, array1) => {
                         return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
                     });
 
@@ -173,16 +163,12 @@ action.get(
                         objectId: value.id,
                         parentId: parents.length > 0 ? parents[parents.length - 1].id : _input.parentId,
                         name: value.getValue('name'),
-                        level: Enum.ELocationLevel[value.getValue('level')],
+                        level: value.getValue('level'),
                         imageSrc: value.getValue('imageSrc'),
-                        imageWidth: value.getValue('imageWidth'),
-                        imageHeight: value.getValue('imageHeight'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
-                        x: value.getValue('x'),
-                        y: value.getValue('y'),
-                        dataWindowX: value.getValue('dataWindowX'),
-                        dataWindowY: value.getValue('dataWindowY'),
+                        lft: value.getValue('lft'),
+                        rgt: value.getValue('rgt'),
                     };
                 }),
             };
@@ -196,14 +182,13 @@ action.get(
 /**
  * Action update
  */
-type InputU = IRequest.ILocation.IMapIndexU[];
+type InputU = IRequest.ILocation.IRegionIndexU[];
 
 type OutputU = IResponse.IMultiData[];
 
 action.put(
     {
         inputType: 'MultiData',
-        permission: [RoleList.Admin],
         postSizeLimit: 10000000,
         middlewares: [Middleware.MultiDataFromBody],
     },
@@ -211,78 +196,61 @@ action.put(
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
 
         try {
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputU = data.parameters.resMessages;
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let location: IDB.LocationMap = await new Parse.Query(IDB.LocationMap).get(value.objectId).fail((e) => {
+                        let region: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(value.objectId).fail((e) => {
                             throw e;
                         });
-                        if (!location) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['location not found']);
+                        if (!region) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['region not found']);
                         }
-                        if (!location.getValue('level')) {
+                        if (!region.getValue('level')) {
                             throw Errors.throw(Errors.CustomBadRequest, ['can not update root']);
                         }
 
-                        let extension = value.imageBase64 ? File.GetExtension(value.imageBase64) : { extension: 'aa', type: 'image' };
+                        let extension = value.imageBase64 ? File.GetBase64Extension(value.imageBase64) : { extension: 'aa', type: 'image' };
                         if (!extension || extension.type !== 'image') {
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
                         if (value.name) {
-                            location.setValue('name', value.name);
+                            region.setValue('name', value.name);
                         }
                         if (value.level) {
-                            if (value.level > location.getValue('level')) {
-                                let childrens: IDB.LocationMap[] = await location.getChildren();
-                                let children: IDB.LocationMap = childrens.find((value1, index1, array1) => {
+                            if (value.level > region.getValue('level')) {
+                                let children: IDB.LocationRegion = (await region.getChildren()).find((value1, index1, array1) => {
                                     return value1.getValue('level') === value.level;
                                 });
                                 if (children) {
-                                    throw Errors.throw(Errors.CustomBadRequest, [`${Enum.ELocationLevel[value.level]} was presence`]);
+                                    throw Errors.throw(Errors.CustomBadRequest, [`level ${value.level} was presence`]);
                                 }
-                            } else if (value.level < location.getValue('level')) {
-                                let parent: IDB.LocationMap = await location.getParentLeaf();
+                            } else if (value.level < region.getValue('level')) {
+                                let parent: IDB.LocationRegion = await region.getParentLeaf();
 
-                                if (parent.getValue('level') && parent.getValue('level') >= value.level) {
-                                    throw Errors.throw(Errors.CustomBadRequest, [`level must be after ${Enum.ELocationLevel[parent.getValue('level')]}`]);
+                                if (parent.getValue('level') >= value.level) {
+                                    throw Errors.throw(Errors.CustomBadRequest, [`level must bigger than ${parent.getValue('level')}`]);
                                 }
                             }
 
-                            location.setValue('level', value.level);
+                            region.setValue('level', value.level);
                         }
                         if (value.imageBase64) {
-                            let imageSrc: string = location.getValue('imageSrc');
+                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), size, true, true)).toString(Parser.Encoding.base64);
+                            let imageSrc: string = region.getValue('imageSrc');
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
                         }
-                        if (value.imageWidth || value.imageWidth === 0) {
-                            location.setValue('imageWidth', value.imageWidth);
-                        }
-                        if (value.imageHeight || value.imageHeight === 0) {
-                            location.setValue('imageHeight', value.imageHeight);
-                        }
                         if (value.longitude || value.longitude === 0) {
-                            location.setValue('longitude', value.longitude);
+                            region.setValue('longitude', value.longitude);
                         }
                         if (value.latitude || value.latitude === 0) {
-                            location.setValue('latitude', value.latitude);
-                        }
-                        if (value.x || value.x === 0) {
-                            location.setValue('x', value.x);
-                        }
-                        if (value.y || value.y === 0) {
-                            location.setValue('y', value.y);
-                        }
-                        if (value.dataWindowX || value.dataWindowX === 0) {
-                            location.setValue('dataWindowX', value.dataWindowX);
-                        }
-                        if (value.dataWindowY || value.dataWindowY === 0) {
-                            location.setValue('dataWindowY', value.dataWindowY);
+                            region.setValue('latitude', value.latitude);
                         }
 
-                        await location.save(null, { useMasterKey: true }).fail((e) => {
+                        await region.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
@@ -292,8 +260,6 @@ action.put(
                     }
                 }),
             );
-
-            IDB.LocationMap$.next({ crud: 'u' });
 
             return resMessages;
         } catch (e) {
@@ -313,32 +279,32 @@ type OutputD = IResponse.IMultiData[];
 action.delete(
     {
         inputType: 'InputD',
-        permission: [RoleList.Admin],
         middlewares: [Middleware.MultiDataFromQuery],
     },
     async (data): Promise<OutputD> => {
         try {
             let _input: InputD = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _objectIds: string[] = data.parameters.objectIds;
             let resMessages: OutputD = data.parameters.resMessages;
 
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        var location = await new Parse.Query(IDB.LocationMap).get(value).fail((e) => {
+                        var region = await new Parse.Query(IDB.LocationRegion).get(value).fail((e) => {
                             throw e;
                         });
-                        if (!location) {
-                            throw Errors.throw(Errors.CustomNotExists, ['location not found']);
+                        if (!region) {
+                            throw Errors.throw(Errors.CustomNotExists, ['region not found']);
                         }
 
-                        let locations: IDB.LocationMap[] = await location.getChildren();
+                        let childrens: IDB.LocationRegion[] = await region.getChildren();
 
-                        await location.destroy({ useMasterKey: true }).fail((e) => {
+                        await region.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
 
-                        locations.forEach((value, index, array) => {
+                        childrens.forEach((value, index, array) => {
                             if (value.getValue('imageSrc')) {
                                 try {
                                     File.DeleteFile(`${File.assetsPath}/${value.getValue('imageSrc')}`);
@@ -353,8 +319,6 @@ action.delete(
                 }),
             );
 
-            IDB.LocationMap$.next({ crud: 'd' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -362,3 +326,23 @@ action.delete(
         }
     },
 );
+
+/**
+ * Create root
+ */
+export async function CreateRoot(): Promise<IDB.LocationRegion> {
+    try {
+        let root: IDB.LocationRegion = await IDB.LocationRegion.getRoot();
+        if (!root) {
+            root = await IDB.LocationRegion.setRoot({
+                name: 'root',
+                level: 0,
+                imageSrc: '',
+            });
+        }
+
+        return root;
+    } catch (e) {
+        throw e;
+    }
+}

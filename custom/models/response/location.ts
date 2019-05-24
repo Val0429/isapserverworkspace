@@ -1,24 +1,20 @@
-export interface IMapIndexR {
+export interface IRegionIndexR {
     objectId: string;
     parentId: string;
     name: string;
-    level: string;
+    level: number;
     imageSrc: string;
-    imageWidth: number;
-    imageHeight: number;
-    longitude: number;
-    latitude: number;
-    x: number;
-    y: number;
-    dataWindowX: number;
-    dataWindowY: number;
+    longitude?: number;
+    latitude?: number;
+    lft: number;
+    rgt: number;
 }
 
-export interface IMapTree {
+export interface IRegionTree {
     objectId: string;
-    level: string;
+    level: number;
     name: string;
     lft: number;
     rgt: number;
-    childrens: IMapTree[];
+    childrens: IRegionTree[];
 }

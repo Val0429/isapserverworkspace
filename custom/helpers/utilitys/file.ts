@@ -180,11 +180,11 @@ export namespace File {
     }
 
     /**
-     * Get file extension
+     * Get base64 data extension
      * image/jpeg、image/png、application/pdf、audio/mp4、video/mp4、video/x-ms-wmv
      * @param data
      */
-    export function GetExtension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
+    export function GetBase64Extension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
         try {
             if (data.indexOf('image/jpeg') > -1) {
                 return {
@@ -229,6 +229,20 @@ export namespace File {
             } else {
                 return undefined;
             }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get base64 data
+     * @param data
+     */
+    export function GetBase64Data(data: string) {
+        try {
+            let regex = /data:.*;base64, */;
+
+            return data.replace(regex, '');
         } catch (e) {
             throw e;
         }

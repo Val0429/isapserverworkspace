@@ -1,12 +1,13 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, ParseObject, Level } from 'core/cgi-package';
 import { Tree, IGetTreeNodeR, IGetTreeNodeL } from 'models/nodes';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print } from '../../../custom/helpers';
+import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
+import { CreateRoot } from './';
 
 let action = new Action({
     loginRequired: true,
-    permission: [],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -16,28 +17,26 @@ export default action;
  */
 type InputR = null;
 
-type OutputR = IResponse.ILocation.IMapTree;
+type OutputR = IResponse.ILocation.IRegionTree;
 
 action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let root: IDB.LocationMap = await IDB.LocationMap.getRoot();
-            if (!root) {
-                root = await IDB.LocationMap.setRoot(undefined);
-            }
+            let root: IDB.LocationRegion = await CreateRoot();
 
-            let locations: IDB.LocationMap[] = await new Parse.Query(IDB.LocationMap).find().fail((e) => {
+            let locations: IDB.LocationRegion[] = await new Parse.Query(IDB.LocationRegion).find().fail((e) => {
                 throw e;
             });
 
-            let datas: IResponse.ILocation.IMapTree[] = locations
+            let datas: IResponse.ILocation.IRegionTree[] = locations
                 .map((value, index, array) => {
                     return {
                         objectId: value.id,
-                        level: value.getValue('level') ? Enum.ELocationLevel[value.getValue('level')] : 'root',
-                        name: value.getValue('name') || 'root',
+                        name: value.getValue('name'),
+                        level: value.getValue('level'),
                         lft: value.getValue('lft'),
                         rgt: value.getValue('rgt'),
                         childrens: [],
@@ -47,7 +46,7 @@ action.get(
                     return a.lft - b.lft;
                 });
 
-            let tree: IResponse.ILocation.IMapTree = datas.splice(0, 1)[0];
+            let region: IResponse.ILocation.IRegionTree = datas.splice(0, 1)[0];
 
             for (let i = datas.length - 1; i > -1; i--) {
                 datas[i].childrens = datas.filter((value, index, array) => {
@@ -63,9 +62,9 @@ action.get(
                 });
             }
 
-            tree.childrens = datas;
+            region.childrens = datas;
 
-            return tree;
+            return region;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
