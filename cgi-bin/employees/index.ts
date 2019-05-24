@@ -1,12 +1,10 @@
 import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
-    Action, Errors,
-    Restful,
-    registerSubclass,
-    ParseObject,
-    ITablets, Tablets
-} from './../../../core/cgi-package';
+    Action, Errors, Events, IEvents,
+    Restful, FileHelper, ParseObject, Employees, IEmployees
+} from 'core/cgi-package';
+
 
 var action = new Action({
     loginRequired: true,
@@ -17,12 +15,12 @@ var action = new Action({
 /********************************
  * C: create object
  ********************************/
-type InputC = Restful.InputC<ITablets>;
-type OutputC = Restful.OutputC<ITablets>;
+type InputC = Restful.InputC<IEmployees>;
+type OutputC = Restful.OutputC<IEmployees>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
-    var obj = new Tablets(data.inputType);
+    var obj = new Employees(data.inputType);
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -31,12 +29,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<ITablets>;
-type OutputR = Restful.OutputR<ITablets>;
+type InputR = Restful.InputR<IEmployees>;
+type OutputR = Restful.OutputR<IEmployees>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Tablets);
+    var query = new Parse.Query(Employees);
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -46,14 +44,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 /********************************
  * U: update object
  ********************************/
-type InputU = Restful.InputU<ITablets>;
-type OutputU = Restful.OutputU<ITablets>;
+type InputU = Restful.InputU<IEmployees>;
+type OutputU = Restful.OutputU<IEmployees>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Tablets).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Tablets <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(Employees).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Employees <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -63,14 +61,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 /********************************
  * D: delete object
  ********************************/
-type InputD = Restful.InputD<ITablets>;
-type OutputD = Restful.OutputD<ITablets>;
+type InputD = Restful.InputD<IEmployees>;
+type OutputD = Restful.OutputD<IEmployees>;
 
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Tablets).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Tablets <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(Employees).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Employees <${objectId}> not exists.`]);
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

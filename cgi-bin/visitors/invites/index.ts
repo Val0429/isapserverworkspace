@@ -12,6 +12,8 @@ import { Purposes } from './../../../custom/models/purposes';
 import { Visitors, IVisitors, VisitorStatus } from './../../../custom/models/visitors';
 
 import { ScheduleControllerEmail_PreRegistration, ScheduleControllerSMS_PreRegistration, ScheduleControllerSGSMS_PreRegistration } from './../../../custom/schedulers/controllers';
+import { validateByInvitationDateAndPin } from '../flow-strict/__api__/core';
+import { IssueCard } from '../flow-strict/__api__/issueCard';
 
 const inviteFilter = { parent: false, visitor: { company: false, status: (status) => getEnumKey(VisitorStatus, status) } };
 
@@ -53,6 +55,7 @@ export async function doInvitation(data: ActionParam<ICInvitations>) {
         .equalTo("phone", phone)
         .equalTo("email", email)
         .first();
+
     if (!visitor) {
         visitor = data.inputType.visitor;
         visitor.setValue("company", company);
@@ -90,7 +93,27 @@ export async function doInvitation(data: ActionParam<ICInvitations>) {
     /// 3) Output
     return ParseObject.toOutputJSON(obj, inviteFilter);
 }
-action.post<InputC, OutputC>({ inputType: "InputC" }, doInvitation);
+action.post<InputC, OutputC>({ inputType: "InputC" }, async (data: ActionParam<ICInvitations>) => {
+    let result = await doInvitation(data);
+    const { email, name } = data.inputType.visitor.attributes;
+    let visitor = await new Parse.Query(Visitors)
+        .equalTo("email", email)
+        .first();
+
+    // 2) When Visitor do pre-register complete (or invitation complete & already pre-registered)
+    if (visitor.attributes.status === VisitorStatus.Completed && validateByInvitationDateAndPin(data.inputType.dates, new Date())) {
+        // 	1.1) If the day is today, do (D) (E) (B) (A).
+        IssueCard({
+            name, email
+        });
+
+    } else {
+        // 	1.2) If not today, do nothing.
+
+    }
+
+    return result;
+});
 
 /********************************
  * R: get object

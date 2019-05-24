@@ -2,8 +2,10 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Person, ParseObject, FileHelper,
-    Events, EventStrictCompleteCheckIn, EventStrictCompareFace
+    Events, EventStrictCompleteCheckIn, EventStrictCompareFace, Tablets, EnrolledCards, IEnrolledCards
 } from 'core/cgi-package';
+
+import { IssueCard } from './__api__/issueCard';
 
 import frs from './../../../custom/services/frs-service';
 
@@ -47,6 +49,12 @@ export default new Action<Input, Output>({
 
     saveEvent();
 
+    let visitorEmail = visitor.getValue("email");
+    /// Issue Card
+    IssueCard({
+        name: visitorName,
+        email: visitorEmail
+    });
     
     /// enroll into FRS
     /// 1) get all groups
@@ -85,3 +93,4 @@ export default new Action<Input, Output>({
 
     return ParseObject.toOutputJSON(invitation);
 });
+

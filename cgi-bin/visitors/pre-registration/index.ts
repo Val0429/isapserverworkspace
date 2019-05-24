@@ -12,6 +12,8 @@ import { Invitations } from './../../../custom/models/invitations';
 import { Companies } from './../../../custom/models/companies';
 import frs from './../../../custom/services/frs-service';
 import VisitorCode from 'workspace/custom/services/visitor-code';
+import { validateInvitationByDate } from '../flow-strict/__api__/core';
+import { IssueCard } from '../flow-strict/__api__/issueCard';
 
 const filter = { status: (value) => getEnumKey(VisitorStatus, value), company: false }
 
@@ -89,6 +91,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         .first();
 
     /// V2.2) Special case: if invitation not exists.
+    let visitorName = obj.getValue("name");
+    let visitorEmail = obj.getValue("email");
     if (invitation) {
         let owner = invitation.getValue("parent"); 
         let visitor = obj;
@@ -99,39 +103,51 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
             company,
             visitor
         });
-        let visitorName = visitor.getValue("name");
         let purpose = invitation.getValue("purpose");
         Events.save(event, {owner, invitation, company, visitor, purpose, visitorName});
     }
 
-    /// todo remove
-    /// V2.3) Special request, register into FRS after pre-registration
-    /// enroll into FRS
-    /// 1) get all groups
-    /// 1.1) find visitor group. if no go 1.2)
-    /// 1.2) create visitor group
-    /// 2) create person
-    /// 2.2) create person
-    /// 2.3) add person into group
-    /// 1)
-    let groups = await frs.getGroupList();
-    /// 1.1)
-    let groupid: string = groups.reduce<string>( (final, value) => {
-        if (final) return final;
-        if (value.name === 'Visitor') return value.group_id;
-        return final;
-    }, undefined);
-    /// 1.2)
-    if (groupid === undefined) {
-        let res = await frs.createGroup("Visitor");
-        groupid = res.group_id;
+    // 2) When Visitor do pre-register complete (or invitation complete & already pre-registered)
+    if (validateInvitationByDate(invitation, new Date())) {
+        // 	1.1) If the day is today, do (D) (E) (B) (A).
+        IssueCard({
+            name: visitorName,
+            email: visitorEmail
+        });
+
+    } else {
+        // 	1.2) If not today, do nothing.
+
     }
-    /// 2)
-    /// 2.2)
-    let code = await VisitorCode.next();
-    let person = await frs.createPerson(name, image64, code);
-    /// 2.3)
-    await frs.applyGroupsToPerson(person.person_id, groupid);    
+
+    // /// todo remove
+    // /// V2.3) Special request, register into FRS after pre-registration
+    // /// enroll into FRS
+    // /// 1) get all groups
+    // /// 1.1) find visitor group. if no go 1.2)
+    // /// 1.2) create visitor group
+    // /// 2) create person
+    // /// 2.2) create person
+    // /// 2.3) add person into group
+    // /// 1)
+    // let groups = await frs.getGroupList();
+    // /// 1.1)
+    // let groupid: string = groups.reduce<string>( (final, value) => {
+    //     if (final) return final;
+    //     if (value.name === 'Visitor') return value.group_id;
+    //     return final;
+    // }, undefined);
+    // /// 1.2)
+    // if (groupid === undefined) {
+    //     let res = await frs.createGroup("Visitor");
+    //     groupid = res.group_id;
+    // }
+    // /// 2)
+    // /// 2.2)
+    // let code = await VisitorCode.next();
+    // let person = await frs.createPerson(name, image64, code);
+    // /// 2.3)
+    // await frs.applyGroupsToPerson(person.person_id, groupid);    
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj, filter);

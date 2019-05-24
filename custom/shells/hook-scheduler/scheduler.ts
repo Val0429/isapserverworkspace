@@ -8,6 +8,7 @@ import { O } from 'helpers/utility';
 import frs from './../../services/frs-service';
 
 import licenseService from 'services/license';
+import { IssueCardDaily } from 'workspace/cgi-bin/visitors/flow-strict/__api__/issueCard';
 export const kioskLicense = '00261';
 
 export async function makeScheduler(force: boolean = false) {
@@ -32,6 +33,7 @@ export async function makeScheduler(force: boolean = false) {
         Config.sms.enable && actions.push({ controller: `ScheduleController.SMS.${controller}` });
         Config.sgsms.enable && actions.push({ controller: `ScheduleController.SGSMS.${controller}` });
         Config.smtp.enable && actions.push({ controller: `ScheduleController.Email.${controller}` });
+        // Config.smtp.enable && event === 'EventStrictCompleteCheckIn' && actions.push({ controller: `ScheduleController.Email.CompleteCheckIn` });
 
         let scheduler = new Schedulers({
             event: EventList[event],
@@ -40,6 +42,13 @@ export async function makeScheduler(force: boolean = false) {
         schedulers.push( scheduler );
         promises.push( scheduler.save() );
     }
+
+    // /// only on email
+    // let sr = new Schedulers({
+    //     event: EventList.EventStrictCompleteCheckIn,
+    //     actions: [ { controller: `ScheduleController.Email.CompleteCheckIn` } ]
+    // });
+    // promises.push( sr.save() );
 
     await Promise.all(promises);
 
@@ -127,6 +136,11 @@ export async function makeScheduler(force: boolean = false) {
                     await frs.deletePerson(person.person_id);
                 }
             }
+
+            /// daily issue cards
+            // 3) At Everyday 00:00 or when Server Restart
+            // 	3.1) Check (A) for outdated data, and then remove (B) (A)
+            IssueCardDaily();            
 
         })();
 
