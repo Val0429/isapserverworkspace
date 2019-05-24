@@ -9,7 +9,8 @@ import { HikvisionTablet } from 'services/hikvision-tablet';
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Administrator],
+    postSizeLimit: 1024*1024
 });
 
 /// CRUD start /////////////////////////////////
