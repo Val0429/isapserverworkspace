@@ -19,7 +19,8 @@ action.get<any>({
     let workspace = readFile('../../product_version.txt');
     let server = readFile('../../../product_version.txt');
     let webclient = readFile('../../custom/web/product_version.txt');
-    return {server, workspace, webclient};
+    let installer = readFile('../../../installer_version.txt');
+    return {server, workspace, webclient, installer};
 });
 function readFile(filePath:string){
     let bom="\ufeff";
