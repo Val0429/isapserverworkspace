@@ -54,10 +54,6 @@ action.post(
                             }
                         }
 
-                        if (parent.getValue('level') >= value.level) {
-                            throw Errors.throw(Errors.CustomBadRequest, [`level must bigger than ${parent.getValue('level')}`]);
-                        }
-
                         let extension = File.GetBase64Extension(value.imageBase64);
                         if (!extension || extension.type !== 'image') {
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
@@ -65,9 +61,19 @@ action.post(
 
                         value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
 
+                        let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
+                            let tag: IDB.Tag = new IDB.Tag();
+                            tag.id = value;
+
+                            return tag;
+                        });
+
                         let region: IDB.LocationRegion = await parent.addLeaf({
+                            type: value.type,
                             name: value.name,
-                            level: value.level,
+                            customId: value.customId,
+                            address: value.address,
+                            tags: tags,
                             imageSrc: '',
                             longitude: value.longitude,
                             latitude: value.latitude,
@@ -131,9 +137,6 @@ action.get(
 
                 query.greaterThan('lft', parent.getValue('lft')).lessThan('rgt', parent.getValue('rgt'));
             }
-            if (_input.level) {
-                query.equalTo('level', _input.level);
-            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
@@ -163,13 +166,19 @@ action.get(
                     return {
                         objectId: value.id,
                         parentId: parents.length > 0 ? parents[parents.length - 1].id : _input.parentId,
+                        type: value.getValue('type'),
                         name: value.getValue('name'),
-                        level: value.getValue('level'),
+                        customId: value.getValue('customId'),
+                        address: value.getValue('address'),
+                        tags: (value.getValue('tags') || []).map((value1, index1, array1) => {
+                            return {
+                                objectId: value1.id,
+                                name: value1.getValue('name'),
+                            };
+                        }),
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
-                        lft: value.getValue('lft'),
-                        rgt: value.getValue('rgt'),
                     };
                 }),
             };
@@ -212,35 +221,33 @@ action.put(
                         if (!region) {
                             throw Errors.throw(Errors.CustomBadRequest, ['region not found']);
                         }
-                        if (!region.getValue('level')) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['can not update root']);
-                        }
 
                         let extension = value.imageBase64 ? File.GetBase64Extension(value.imageBase64) : { extension: 'aa', type: 'image' };
                         if (!extension || extension.type !== 'image') {
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
-                        if (value.name) {
+                        if (value.type || value.type === '') {
+                            region.setValue('type', value.type);
+                        }
+                        if (value.name || value.name === '') {
                             region.setValue('name', value.name);
                         }
-                        if (value.level) {
-                            if (value.level > region.getValue('level')) {
-                                let children: IDB.LocationRegion = (await region.getChildren()).find((value1, index1, array1) => {
-                                    return value1.getValue('level') === value.level;
-                                });
-                                if (children) {
-                                    throw Errors.throw(Errors.CustomBadRequest, [`level ${value.level} was presence`]);
-                                }
-                            } else if (value.level < region.getValue('level')) {
-                                let parent: IDB.LocationRegion = await region.getParentLeaf();
+                        if (value.customId || value.customId === '') {
+                            region.setValue('customId', value.customId);
+                        }
+                        if (value.address || value.address === '') {
+                            region.setValue('address', value.address);
+                        }
+                        if (value.tagIds) {
+                            let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
+                                let tag: IDB.Tag = new IDB.Tag();
+                                tag.id = value;
 
-                                if (parent.getValue('level') >= value.level) {
-                                    throw Errors.throw(Errors.CustomBadRequest, [`level must bigger than ${parent.getValue('level')}`]);
-                                }
-                            }
+                                return tag;
+                            });
 
-                            region.setValue('level', value.level);
+                            region.setValue('tags', tags);
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
@@ -340,8 +347,7 @@ export async function CreateRoot(): Promise<IDB.LocationRegion> {
         if (!root) {
             root = await IDB.LocationRegion.setRoot({
                 name: 'root',
-                level: 0,
-                imageSrc: '',
+                type: 'root',
             });
         }
 

@@ -1,6 +1,3 @@
-import { IDayRange } from '../db/_index';
-import * as Enum from '../../enums';
-
 interface IGPS {
     longitude?: number;
     latitude?: number;
@@ -8,19 +5,24 @@ interface IGPS {
 
 export interface IRegionIndexC extends IGPS {
     parentId?: string;
+    type: string;
     name: string;
-    level: number;
+    customId?: string;
+    address?: string;
+    tagIds?: string[];
     imageBase64: string;
 }
 
 export interface IRegionIndexR {
     parentId?: string;
-    level?: number;
 }
 
 export interface IRegionIndexU extends IGPS {
     objectId: string;
+    type?: string;
     name?: string;
-    level?: number;
+    customId?: string;
+    address?: string;
+    tagIds?: string[];
     imageBase64?: string;
 }

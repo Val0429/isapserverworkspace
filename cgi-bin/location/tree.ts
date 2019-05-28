@@ -1,9 +1,9 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { Tree, IGetTreeNodeR, IGetTreeNodeL } from 'models/nodes';
-import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db } from '../../../custom/helpers';
-import * as Enum from '../../../custom/enums';
-import { CreateRoot } from './';
+import { IRequest, IResponse, IDB } from '../../custom/models';
+import { Print, Db } from '../../custom/helpers';
+import * as Enum from '../../custom/enums';
+import { CreateRoot } from './region';
 
 let action = new Action({
     loginRequired: true,
@@ -17,7 +17,7 @@ export default action;
  */
 type InputR = null;
 
-type OutputR = IResponse.ILocation.IRegionTree;
+type OutputR = IResponse.ILocation.ITree;
 
 action.get(
     async (data): Promise<OutputR> => {
@@ -31,12 +31,32 @@ action.get(
                 throw e;
             });
 
-            let datas: IResponse.ILocation.IRegionTree[] = locations
+            let datas: IResponse.ILocation.ITree[] = locations
                 .map((value, index, array) => {
+                    let parents: IDB.LocationRegion[] = array.filter((value1, index1, array1) => {
+                        return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
+                    });
+
+                    let data: IResponse.ILocation.IRegionIndexR_Base = {
+                        name: value.getValue('name'),
+                        customId: value.getValue('customId'),
+                        address: value.getValue('address'),
+                        tags: (value.getValue('tags') || []).map((value1, index1, array1) => {
+                            return {
+                                objectId: value1.id,
+                                name: value1.getValue('name'),
+                            };
+                        }),
+                        imageSrc: value.getValue('imageSrc'),
+                        longitude: value.getValue('longitude'),
+                        latitude: value.getValue('latitude'),
+                    };
+
                     return {
                         objectId: value.id,
-                        name: value.getValue('name'),
-                        level: value.getValue('level'),
+                        parentId: parents.length > 0 ? parents[parents.length - 1].id : '',
+                        type: value.getValue('type'),
+                        data: data,
                         lft: value.getValue('lft'),
                         rgt: value.getValue('rgt'),
                         childrens: [],
@@ -46,7 +66,7 @@ action.get(
                     return a.lft - b.lft;
                 });
 
-            let region: IResponse.ILocation.IRegionTree = datas.splice(0, 1)[0];
+            let region: IResponse.ILocation.ITree = datas.splice(0, 1)[0];
 
             for (let i = datas.length - 1; i > -1; i--) {
                 datas[i].childrens = datas.filter((value, index, array) => {
