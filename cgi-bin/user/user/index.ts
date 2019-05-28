@@ -188,35 +188,41 @@ action.get(
                     pageSize: _paging.pageSize,
                 },
                 results: infos.map((value, index, array) => {
+                    let roles = value
+                        .getValue('user')
+                        .get('roles')
+                        .map((value1, index1, array1) => {
+                            return Object.keys(RoleList).find((value2, index2, array2) => {
+                                return value1.get('name') === RoleList[value2];
+                            });
+                        });
+
+                    let locations = (value.getValue('locations') || []).map((value1, index1, array1) => {
+                        return {
+                            objectId: value1.id,
+                            name: value1.getValue('name'),
+                        };
+                    });
+
+                    let groups = (value.getValue('groups') || []).map((value1, index1, array1) => {
+                        return {
+                            objectId: value1.id,
+                            name: value1.getValue('name'),
+                        };
+                    });
+
                     return {
                         objectId: value.getValue('user').id,
                         account: value.getValue('user').getUsername(),
-                        role: value
-                            .getValue('user')
-                            .get('roles')
-                            .map((value1, index1, array1) => {
-                                return Object.keys(RoleList).find((value2, index2, array2) => {
-                                    return value1.get('name') === RoleList[value2];
-                                });
-                            })[0],
+                        role: roles[0],
                         name: value.getValue('name') || '',
                         employeeId: value.getValue('employeeId') || '',
                         email: value.getValue('email') || '',
                         phone: value.getValue('phone') || '',
                         webLestUseDate: value.getValue('webLestUseDate'),
                         appLastUseDate: value.getValue('appLastUseDate'),
-                        locations: (value.getValue('locations') || []).map((value1, index1, array1) => {
-                            return {
-                                objectId: value1.id,
-                                name: value1.getValue('name'),
-                            };
-                        }),
-                        groups: (value.getValue('groups') || []).map((value1, index1, array1) => {
-                            return {
-                                objectId: value1.id,
-                                name: value1.getValue('name'),
-                            };
-                        }),
+                        locations: locations,
+                        groups: groups,
                         isAppBinding: !!value.getValue('mobileType') && value.getValue('mobileType') !== Enum.EMobileType.none,
                     };
                 }),

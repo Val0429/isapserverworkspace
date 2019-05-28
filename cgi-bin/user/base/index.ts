@@ -53,14 +53,16 @@ action.get(
                     pageSize: _paging.pageSize,
                 },
                 results: users.map((value, index, array) => {
+                    let roles = value.get('roles').map((value, index, array) => {
+                        return Object.keys(RoleList).find((value1, index1, array1) => {
+                            return value.get('name') === RoleList[value1];
+                        });
+                    });
+
                     return {
                         objectId: value.id,
                         account: value.getUsername(),
-                        roles: value.get('roles').map((value, index, array) => {
-                            return Object.keys(RoleList).find((value1, index1, array1) => {
-                                return value.get('name') === RoleList[value1];
-                            });
-                        }),
+                        roles: roles,
                     };
                 }),
             };

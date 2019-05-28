@@ -163,6 +163,13 @@ action.get(
                         return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
                     });
 
+                    let tags = (value.getValue('tags') || []).map((value1, index1, array1) => {
+                        return {
+                            objectId: value1.id,
+                            name: value1.getValue('name'),
+                        };
+                    });
+
                     return {
                         objectId: value.id,
                         parentId: parents.length > 0 ? parents[parents.length - 1].id : _input.parentId,
@@ -170,12 +177,7 @@ action.get(
                         name: value.getValue('name'),
                         customId: value.getValue('customId'),
                         address: value.getValue('address'),
-                        tags: (value.getValue('tags') || []).map((value1, index1, array1) => {
-                            return {
-                                objectId: value1.id,
-                                name: value1.getValue('name'),
-                            };
-                        }),
+                        tags: tags,
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
