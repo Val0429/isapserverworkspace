@@ -48,3 +48,16 @@ export interface IUserLogin extends IBaseLogin {
     groups: IObject[];
     isAppBinding: boolean;
 }
+
+export interface IGroupIndexR {
+    objectId: string;
+    name: string;
+    description: string;
+    sites: IObject[];
+    users: IObject[];
+}
+
+export interface IGroupAll {
+    objectId: string;
+    name: string;
+}

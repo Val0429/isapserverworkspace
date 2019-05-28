@@ -376,12 +376,19 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        var site = await new Parse.Query(IDB.LocationSite).get(value).fail((e) => {
+                        let site = await new Parse.Query(IDB.LocationSite).get(value).fail((e) => {
                             throw e;
                         });
                         if (!site) {
                             throw Errors.throw(Errors.CustomNotExists, ['site not found']);
                         }
+
+                        let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
+                            .containedIn('sites', [site])
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
 
                         await site.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
@@ -390,6 +397,19 @@ action.delete(
                         try {
                             File.DeleteFile(`${File.assetsPath}/${site.getValue('imageSrc')}`);
                         } catch (e) {}
+
+                        await Promise.all(
+                            groups.map(async (value1, index1, array1) => {
+                                let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
+                                    return value2.id !== value;
+                                });
+                                value1.setValue('sites', sites);
+
+                                await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }),
+                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 

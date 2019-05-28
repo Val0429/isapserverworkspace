@@ -40,3 +40,15 @@ export interface IUserIndexU {
     locationIds?: string[];
     groupIds?: string[];
 }
+
+export interface IGroupIndexC {
+    name: string;
+    description: string;
+    siteIds: string[];
+}
+
+export interface IGroupIndexU {
+    objectId: string;
+    description?: string;
+    siteIds?: string[];
+}

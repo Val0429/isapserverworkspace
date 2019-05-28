@@ -18,7 +18,7 @@ export interface IUserGroup {
     /**
      * Managed sites
      */
-    locations: LocationSite[];
+    sites: LocationSite[];
 }
 
 @registerSubclass()
