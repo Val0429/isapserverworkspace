@@ -99,7 +99,7 @@ export namespace Db {
     interface IUserInfo {
         roles: string[];
         info: IDB.UserInfo;
-        locations: IDB.LocationSite[];
+        sites: IDB.LocationSite[];
         groups: IDB.UserGroup[];
     }
 
@@ -139,7 +139,7 @@ export namespace Db {
             let userInfo: IUserInfo = {
                 roles: roles,
                 info: info,
-                locations: info.getValue('locations') || [],
+                sites: info.getValue('sites') || [],
                 groups: info.getValue('groups') || [],
             };
 

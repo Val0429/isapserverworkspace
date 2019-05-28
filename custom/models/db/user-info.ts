@@ -17,9 +17,9 @@ export interface IUserInfo {
     name: string;
 
     /**
-     * 員工編號
+     * Custom id
      */
-    employeeId: string;
+    customId: string;
 
     /**
      * Email
@@ -69,7 +69,7 @@ export interface IUserInfo {
     /**
      * Managed sites
      */
-    locations: LocationSite[];
+    sites: LocationSite[];
 
     /**
      * User groups

@@ -56,7 +56,7 @@ action.post(
                         }
 
                         let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
-                            .equalTo('employeeId', value.employeeId)
+                            .equalTo('customId', value.employeeId)
                             .first()
                             .fail((e) => {
                                 throw e;
@@ -72,11 +72,11 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
-                        let locations: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
-                            let location: IDB.LocationSite = new IDB.LocationSite();
-                            location.id = value1;
+                        let sites: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
+                            let site: IDB.LocationSite = new IDB.LocationSite();
+                            site.id = value1;
 
-                            return location;
+                            return site;
                         });
 
                         let groups: IDB.UserGroup[] = value.groupIds.map((value1, index1, array1) => {
@@ -98,7 +98,7 @@ action.post(
 
                         info.setValue('user', user);
                         info.setValue('name', value.name);
-                        info.setValue('employeeId', value.employeeId);
+                        info.setValue('customId', value.employeeId);
                         info.setValue('email', value.email);
                         info.setValue('phone', value.phone || '');
                         info.setValue('mobileType', Enum.EMobileType.none);
@@ -106,7 +106,7 @@ action.post(
                         info.setValue('isEmail', true);
                         info.setValue('isPhone', true);
                         info.setValue('isNotice', true);
-                        info.setValue('locations', locations);
+                        info.setValue('sites', sites);
                         info.setValue('groups', groups);
 
                         await info.save(null, { useMasterKey: true }).fail((e) => {
@@ -197,7 +197,7 @@ action.get(
                             });
                         });
 
-                    let locations = (value.getValue('locations') || []).map((value1, index1, array1) => {
+                    let sites = (value.getValue('sites') || []).map((value1, index1, array1) => {
                         return {
                             objectId: value1.id,
                             name: value1.getValue('name'),
@@ -216,12 +216,12 @@ action.get(
                         account: value.getValue('user').getUsername(),
                         role: roles[0],
                         name: value.getValue('name') || '',
-                        employeeId: value.getValue('employeeId') || '',
+                        employeeId: value.getValue('customId') || '',
                         email: value.getValue('email') || '',
                         phone: value.getValue('phone') || '',
                         webLestUseDate: value.getValue('webLestUseDate'),
                         appLastUseDate: value.getValue('appLastUseDate'),
-                        locations: locations,
+                        locations: sites,
                         groups: groups,
                         isAppBinding: !!value.getValue('mobileType') && value.getValue('mobileType') !== Enum.EMobileType.none,
                     };
@@ -308,14 +308,14 @@ action.put(
                             info.setValue('phone', value.phone);
                         }
                         if (value.locationIds) {
-                            let locations: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
-                                let location: IDB.LocationSite = new IDB.LocationSite();
-                                location.id = value1;
+                            let sites: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
+                                let site: IDB.LocationSite = new IDB.LocationSite();
+                                site.id = value1;
 
-                                return location;
+                                return site;
                             });
 
-                            info.setValue('locations', locations);
+                            info.setValue('sites', sites);
                         }
                         if (value.groupIds) {
                             let groups: IDB.UserGroup[] = value.groupIds.map((value1, index1, array1) => {

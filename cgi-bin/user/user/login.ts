@@ -47,7 +47,7 @@ action.post(
                 });
             });
 
-            let locations = (_userInfo.info.getValue('locations') || []).map((value1, index1, array1) => {
+            let sites = (_userInfo.info.getValue('sites') || []).map((value1, index1, array1) => {
                 return {
                     objectId: value1.id,
                     name: value1.getValue('name'),
@@ -67,12 +67,12 @@ action.post(
                 roles: roles,
                 account: user.user.getUsername(),
                 name: _userInfo.info.getValue('name') || '',
-                employeeId: _userInfo.info.getValue('employeeId') || '',
+                employeeId: _userInfo.info.getValue('customId') || '',
                 email: _userInfo.info.getValue('email') || '',
                 phone: _userInfo.info.getValue('phone') || '',
                 webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
                 appLastUseDate: _userInfo.info.getValue('appLastUseDate'),
-                locations: locations,
+                locations: sites,
                 groups: groups,
                 isAppBinding: !!_userInfo.info.getValue('mobileType') && _userInfo.info.getValue('mobileType') !== Enum.EMobileType.none,
             };
