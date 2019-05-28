@@ -37,5 +37,14 @@ export interface IUserAll {
 }
 
 export interface IUserLogin extends IBaseLogin {
+    account: string;
     name: string;
+    employeeId: string;
+    email: string;
+    phone: string;
+    webLestUseDate: Date;
+    appLastUseDate: Date;
+    locations: IObject[];
+    groups: IObject[];
+    isAppBinding: boolean;
 }

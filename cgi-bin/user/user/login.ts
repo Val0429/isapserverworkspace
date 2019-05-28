@@ -41,15 +41,40 @@ action.post(
                 throw e;
             });
 
+            let roles = _userInfo.roles.map((value, index, array) => {
+                return Object.keys(RoleList).find((value1, index1, array1) => {
+                    return value === RoleList[value1];
+                });
+            });
+
+            let locations = (_userInfo.info.getValue('locations') || []).map((value1, index1, array1) => {
+                return {
+                    objectId: value1.id,
+                    name: value1.getValue('name'),
+                };
+            });
+
+            let groups = (_userInfo.info.getValue('groups') || []).map((value1, index1, array1) => {
+                return {
+                    objectId: value1.id,
+                    name: value1.getValue('name'),
+                };
+            });
+
             return {
                 sessionId: user.sessionId,
                 objectId: user.user.id,
-                name: _userInfo.info.getValue('name'),
-                roles: _userInfo.roles.map((value, index, array) => {
-                    return Object.keys(RoleList).find((value1, index1, array1) => {
-                        return value === RoleList[value1];
-                    });
-                }),
+                roles: roles,
+                account: user.user.getUsername(),
+                name: _userInfo.info.getValue('name') || '',
+                employeeId: _userInfo.info.getValue('employeeId') || '',
+                email: _userInfo.info.getValue('email') || '',
+                phone: _userInfo.info.getValue('phone') || '',
+                webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
+                appLastUseDate: _userInfo.info.getValue('appLastUseDate'),
+                locations: locations,
+                groups: groups,
+                isAppBinding: !!_userInfo.info.getValue('mobileType') && _userInfo.info.getValue('mobileType') !== Enum.EMobileType.none,
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
