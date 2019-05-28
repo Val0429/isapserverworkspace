@@ -72,19 +72,19 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
-                        let sites: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
-                            let site: IDB.LocationSite = new IDB.LocationSite();
-                            site.id = value1;
+                        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
+                            .containedIn('objectId', value.locationIds)
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
 
-                            return site;
-                        });
-
-                        let groups: IDB.UserGroup[] = value.groupIds.map((value1, index1, array1) => {
-                            let group: IDB.UserGroup = new IDB.UserGroup();
-                            group.id = value1;
-
-                            return group;
-                        });
+                        let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
+                            .containedIn('objectId', value.groupIds)
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
 
                         let user: Parse.User = new Parse.User();
 
@@ -308,22 +308,22 @@ action.put(
                             info.setValue('phone', value.phone);
                         }
                         if (value.locationIds) {
-                            let sites: IDB.LocationSite[] = value.locationIds.map((value1, index1, array1) => {
-                                let site: IDB.LocationSite = new IDB.LocationSite();
-                                site.id = value1;
-
-                                return site;
-                            });
+                            let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
+                                .containedIn('objectId', value.locationIds)
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
 
                             info.setValue('sites', sites);
                         }
                         if (value.groupIds) {
-                            let groups: IDB.UserGroup[] = value.groupIds.map((value1, index1, array1) => {
-                                let group: IDB.UserGroup = new IDB.UserGroup();
-                                group.id = value1;
-
-                                return group;
-                            });
+                            let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
+                                .containedIn('objectId', value.groupIds)
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
 
                             info.setValue('groups', groups);
                         }

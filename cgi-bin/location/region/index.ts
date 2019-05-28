@@ -61,12 +61,12 @@ action.post(
 
                         value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
 
-                        let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
-                            let tag: IDB.Tag = new IDB.Tag();
-                            tag.id = value;
-
-                            return tag;
-                        });
+                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                            .containedIn('objectId', value.tagIds || [])
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
 
                         let region: IDB.LocationRegion = await parent.addLeaf({
                             type: value.type,
@@ -242,12 +242,12 @@ action.put(
                             region.setValue('address', value.address);
                         }
                         if (value.tagIds) {
-                            let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
-                                let tag: IDB.Tag = new IDB.Tag();
-                                tag.id = value;
-
-                                return tag;
-                            });
+                            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                                .containedIn('objectId', value.tagIds)
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
 
                             region.setValue('tags', tags);
                         }

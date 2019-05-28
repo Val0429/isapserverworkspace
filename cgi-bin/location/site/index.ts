@@ -77,12 +77,12 @@ action.post(
                             };
                         });
 
-                        let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
-                            let tag: IDB.Tag = new IDB.Tag();
-                            tag.id = value;
-
-                            return tag;
-                        });
+                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                            .containedIn('objectId', value.tagIds || [])
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
 
                         site = new IDB.LocationSite();
 
@@ -314,12 +314,12 @@ action.put(
                             site.setValue('officeHours', officeHours);
                         }
                         if (value.tagIds) {
-                            let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
-                                let tag: IDB.Tag = new IDB.Tag();
-                                tag.id = value;
-
-                                return tag;
-                            });
+                            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                                .containedIn('objectId', value.tagIds || [])
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
 
                             site.setValue('tags', tags);
                         }
