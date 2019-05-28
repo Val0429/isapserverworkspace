@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = IRequest.ILocation.IRegionIndexC[];
+type InputC = IRequest.ILocation.ISiteIndexC[];
 
 type OutputC = IResponse.IMultiData[];
 
@@ -37,29 +37,45 @@ action.post(
             let imgConfig = Config.location.image;
             let imgSize = { width: imgConfig.width, height: imgConfig.height };
 
-            let root: IDB.LocationRegion = await CreateRoot();
-
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let parent: IDB.LocationRegion = undefined;
-                        if (!value.parentId) {
-                            parent = root;
-                        } else {
-                            parent = await new Parse.Query(IDB.LocationRegion).get(value.parentId).fail((e) => {
-                                throw e;
-                            });
-                            if (!parent) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['parent region not found']);
-                            }
-                        }
-
                         let extension = File.GetBase64Extension(value.imageBase64);
                         if (!extension || extension.type !== 'image') {
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
+                        if (value.customId === '') {
+                            throw Errors.throw(Errors.CustomBadRequest, ['custom id can not be empty']);
+                        }
+
+                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
+                            .equalTo('customId', value.customId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (site) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
+                        }
+
+                        let manager: Parse.User = await new Parse.Query(Parse.User).get(value.managerId).fail((e) => {
+                            throw e;
+                        });
+                        if (!manager) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
+                        }
+
                         value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
+
+                        let officeHours: IDB.IDayRange[] = (value.officeHours || []).map((value, index, array) => {
+                            return {
+                                startDay: value.startDay,
+                                endDay: value.endDay,
+                                startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
+                                endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
+                            };
+                        });
 
                         let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
                             let tag: IDB.Tag = new IDB.Tag();
@@ -68,25 +84,34 @@ action.post(
                             return tag;
                         });
 
-                        let region: IDB.LocationRegion = await parent.addLeaf({
-                            type: value.type,
-                            name: value.name,
-                            customId: value.customId,
-                            address: value.address,
-                            tags: tags,
-                            imageSrc: '',
-                            longitude: value.longitude,
-                            latitude: value.latitude,
+                        site = new IDB.LocationSite();
+
+                        site.setValue('name', value.name);
+                        site.setValue('customId', value.customId);
+                        site.setValue('manager', manager);
+                        site.setValue('address', value.address);
+                        site.setValue('phone', value.phone);
+                        site.setValue('establishment', value.establishment);
+                        site.setValue('squareMeter', value.squareMeter);
+                        site.setValue('staffNumber', value.staffNumber);
+                        site.setValue('officeHours', officeHours);
+                        site.setValue('tags', tags);
+                        site.setValue('imageSrc', '');
+                        site.setValue('longitude', value.longitude);
+                        site.setValue('latitude', value.latitude);
+
+                        await site.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
                         });
 
-                        resMessages[index].objectId = region.id;
+                        resMessages[index].objectId = site.id;
 
-                        let imageSrc: string = `${extension.type}s/${region.id}_location_region_${region.createdAt.getTime()}.${extension.extension}`;
+                        let imageSrc: string = `${extension.type}s/${site.id}_location_site_${site.createdAt.getTime()}.${extension.extension}`;
                         File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
 
-                        region.setValue('imageSrc', imageSrc);
+                        site.setValue('imageSrc', imageSrc);
 
-                        await region.save(null, { useMasterKey: true }).fail((e) => {
+                        await site.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
@@ -108,9 +133,9 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList & IRequest.ILocation.IRegionIndexR;
+type InputR = IRequest.IDataList;
 
-type OutputR = IResponse.IDataList<IResponse.ILocation.IRegionIndexR>;
+type OutputR = IResponse.IDataList<IResponse.ILocation.ISiteIndexR>;
 
 action.get(
     {
@@ -123,29 +148,27 @@ action.get(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
 
-            let root: IDB.LocationRegion = await CreateRoot();
-
-            let query: Parse.Query<IDB.LocationRegion> = new Parse.Query(IDB.LocationRegion);
-
-            if (_input.parentId) {
-                let parent: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(_input.parentId).fail((e) => {
-                    throw e;
-                });
-                if (!parent) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['parent not found']);
-                }
-
-                query.greaterThan('lft', parent.getValue('lft')).lessThan('rgt', parent.getValue('rgt'));
-            }
+            let query: Parse.Query<IDB.LocationSite> = new Parse.Query(IDB.LocationSite);
 
             let total: number = await query.count().fail((e) => {
                 throw e;
             });
             let totalPage: number = Math.ceil(total / _paging.pageSize);
 
-            let regions: IDB.LocationRegion[] = await query
+            let sites: IDB.LocationSite[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
+                .include('region')
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            let managers: Parse.User[] = sites.map((value, index, array) => {
+                return value.getValue('manager');
+            });
+            let managerInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                .containedIn('user', managers)
                 .find()
                 .fail((e) => {
                     throw e;
@@ -158,10 +181,23 @@ action.get(
                     page: _paging.page,
                     pageSize: _paging.pageSize,
                 },
-                results: regions.map((value, index, array) => {
-                    let parents: IDB.LocationRegion[] = array.filter((value1, index1, array1) => {
-                        return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
+                results: sites.map((value, index, array) => {
+                    let region: IResponse.IObject = value.getValue('region')
+                        ? {
+                              objectId: value.getValue('region').id,
+                              name: value.getValue('region').getValue('name'),
+                          }
+                        : undefined;
+
+                    let managerInfo: IDB.UserInfo = managerInfos.find((value1, index1, array1) => {
+                        return value1.getValue('user').id === value.getValue('manager').id;
                     });
+                    let manager: IResponse.IObject = managerInfo
+                        ? {
+                              objectId: value.getValue('manager').id,
+                              name: managerInfo.getValue('name'),
+                          }
+                        : undefined;
 
                     let tags = (value.getValue('tags') || []).map((value1, index1, array1) => {
                         return {
@@ -172,11 +208,16 @@ action.get(
 
                     return {
                         objectId: value.id,
-                        parentId: parents.length > 0 ? parents[parents.length - 1].id : _input.parentId,
-                        type: value.getValue('type'),
+                        region: region,
                         name: value.getValue('name'),
                         customId: value.getValue('customId'),
+                        manager: manager,
                         address: value.getValue('address'),
+                        phone: value.getValue('phone'),
+                        establishment: value.getValue('establishment'),
+                        squareMeter: value.getValue('squareMeter'),
+                        staffNumber: value.getValue('staffNumber'),
+                        officeHours: value.getValue('officeHours'),
                         tags: tags,
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
@@ -194,7 +235,7 @@ action.get(
 /**
  * Action update
  */
-type InputU = IRequest.ILocation.IRegionIndexU[];
+type InputU = IRequest.ILocation.ISiteIndexU[];
 
 type OutputU = IResponse.IMultiData[];
 
@@ -217,11 +258,11 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let region: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(value.objectId).fail((e) => {
+                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite).get(value.objectId).fail((e) => {
                             throw e;
                         });
-                        if (!region) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['region not found']);
+                        if (!site) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['site not found']);
                         }
 
                         let extension = value.imageBase64 ? File.GetBase64Extension(value.imageBase64) : { extension: 'aa', type: 'image' };
@@ -229,17 +270,48 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
-                        if (value.type || value.type === '') {
-                            region.setValue('type', value.type);
+                        let manager: Parse.User = undefined;
+                        if (value.managerId) {
+                            manager = await new Parse.Query(Parse.User).get(value.managerId).fail((e) => {
+                                throw e;
+                            });
+                            if (!manager) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
+                            }
                         }
+
                         if (value.name || value.name === '') {
-                            region.setValue('name', value.name);
+                            site.setValue('name', value.name);
                         }
-                        if (value.customId || value.customId === '') {
-                            region.setValue('customId', value.customId);
+                        if (value.managerId) {
+                            site.setValue('manager', manager);
                         }
                         if (value.address || value.address === '') {
-                            region.setValue('address', value.address);
+                            site.setValue('address', value.address);
+                        }
+                        if (value.phone || value.phone === '') {
+                            site.setValue('phone', value.phone);
+                        }
+                        if (value.establishment) {
+                            site.setValue('establishment', value.establishment);
+                        }
+                        if (value.squareMeter || value.squareMeter === 0) {
+                            site.setValue('squareMeter', value.squareMeter);
+                        }
+                        if (value.staffNumber || value.staffNumber === 0) {
+                            site.setValue('staffNumber', value.staffNumber);
+                        }
+                        if (value.officeHours) {
+                            let officeHours: IDB.IDayRange[] = (value.officeHours || []).map((value, index, array) => {
+                                return {
+                                    startDay: value.startDay,
+                                    endDay: value.endDay,
+                                    startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
+                                    endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
+                                };
+                            });
+
+                            site.setValue('officeHours', officeHours);
                         }
                         if (value.tagIds) {
                             let tags: IDB.Tag[] = (value.tagIds || []).map((value, index, array) => {
@@ -249,21 +321,21 @@ action.put(
                                 return tag;
                             });
 
-                            region.setValue('tags', tags);
+                            site.setValue('tags', tags);
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let imageSrc: string = region.getValue('imageSrc');
+                            let imageSrc: string = site.getValue('imageSrc');
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
                         }
                         if (value.longitude || value.longitude === 0) {
-                            region.setValue('longitude', value.longitude);
+                            site.setValue('longitude', value.longitude);
                         }
                         if (value.latitude || value.latitude === 0) {
-                            region.setValue('latitude', value.latitude);
+                            site.setValue('latitude', value.latitude);
                         }
 
-                        await region.save(null, { useMasterKey: true }).fail((e) => {
+                        await site.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
@@ -304,43 +376,20 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        var region = await new Parse.Query(IDB.LocationRegion).get(value).fail((e) => {
+                        var site = await new Parse.Query(IDB.LocationSite).get(value).fail((e) => {
                             throw e;
                         });
-                        if (!region) {
-                            throw Errors.throw(Errors.CustomNotExists, ['region not found']);
+                        if (!site) {
+                            throw Errors.throw(Errors.CustomNotExists, ['site not found']);
                         }
 
-                        let childrens: IDB.LocationRegion[] = await region.getChildren();
-
-                        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('region', region)
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
-
-                        await region.destroy({ useMasterKey: true }).fail((e) => {
+                        await site.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
 
-                        childrens.forEach((value, index, array) => {
-                            if (value.getValue('imageSrc')) {
-                                try {
-                                    File.DeleteFile(`${File.assetsPath}/${value.getValue('imageSrc')}`);
-                                } catch (e) {}
-                            }
-                        });
-
-                        await Promise.all(
-                            sites.map(async (value1, index1, array1) => {
-                                value1.unset('region');
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
+                        try {
+                            File.DeleteFile(`${File.assetsPath}/${site.getValue('imageSrc')}`);
+                        } catch (e) {}
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -356,22 +405,3 @@ action.delete(
         }
     },
 );
-
-/**
- * Create root
- */
-export async function CreateRoot(): Promise<IDB.LocationRegion> {
-    try {
-        let root: IDB.LocationRegion = await IDB.LocationRegion.getRoot();
-        if (!root) {
-            root = await IDB.LocationRegion.setRoot({
-                name: 'root',
-                type: 'root',
-            });
-        }
-
-        return root;
-    } catch (e) {
-        throw e;
-    }
-}

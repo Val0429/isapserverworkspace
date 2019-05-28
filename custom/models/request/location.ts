@@ -1,3 +1,5 @@
+import { IDayRange } from '../db/_index';
+
 interface IGPS {
     longitude?: number;
     latitude?: number;
@@ -25,4 +27,42 @@ export interface IRegionIndexU extends IGPS {
     address?: string;
     tagIds?: string[];
     imageBase64?: string;
+}
+
+export interface ISiteIndexC extends IGPS {
+    name: string;
+    customId: string;
+    managerId: string;
+    address?: string;
+    phone?: string;
+    establishment?: Date;
+    squareMeter?: number;
+    staffNumber?: number;
+    officeHours?: IDayRange[];
+    tagIds?: string[];
+    imageBase64: string;
+}
+
+export interface ISiteIndexU extends IGPS {
+    objectId: string;
+    name?: string;
+    managerId?: string;
+    address?: string;
+    phone?: string;
+    establishment?: Date;
+    squareMeter?: number;
+    staffNumber?: number;
+    officeHours?: IDayRange[];
+    tagIds?: string[];
+    imageBase64?: string;
+}
+
+export interface ISiteAll {
+    type: 'all' | 'binding' | 'unbinding';
+    regionId?: string;
+}
+
+export interface ISiteBindingRegion {
+    objectId: string;
+    regionId: string;
 }
