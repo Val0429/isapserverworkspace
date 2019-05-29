@@ -19,6 +19,11 @@ export interface IRegionIndexR extends IRegionIndexR_Base {
     type: string;
 }
 
+export interface IRegionAll {
+    objectId: string;
+    name: string;
+}
+
 export interface ISiteIndexR_Base extends IGPS {
     name: string;
     customId: string;
