@@ -61,19 +61,11 @@ action.post(
 
                         value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
 
-                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-                            .containedIn('objectId', value.tagIds || [])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
-
                         let region: IDB.LocationRegion = await parent.addLeaf({
                             type: value.type,
                             name: value.name,
                             customId: value.customId,
                             address: value.address,
-                            tags: tags,
                             imageSrc: '',
                             longitude: value.longitude,
                             latitude: value.latitude,
@@ -163,13 +155,6 @@ action.get(
                         return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
                     });
 
-                    let tags = (value.getValue('tags') || []).map((value1, index1, array1) => {
-                        return {
-                            objectId: value1.id,
-                            name: value1.getValue('name'),
-                        };
-                    });
-
                     return {
                         objectId: value.id,
                         parentId: parents.length > 0 ? parents[parents.length - 1].id : _input.parentId,
@@ -177,7 +162,6 @@ action.get(
                         name: value.getValue('name'),
                         customId: value.getValue('customId'),
                         address: value.getValue('address'),
-                        tags: tags,
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
@@ -240,16 +224,6 @@ action.put(
                         }
                         if (value.address || value.address === '') {
                             region.setValue('address', value.address);
-                        }
-                        if (value.tagIds) {
-                            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-                                .containedIn('objectId', value.tagIds)
-                                .find()
-                                .fail((e) => {
-                                    throw e;
-                                });
-
-                            region.setValue('tags', tags);
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
@@ -320,6 +294,13 @@ action.delete(
                                 throw e;
                             });
 
+                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                            .containedIn('regions', [region])
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
+
                         await region.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
@@ -335,6 +316,19 @@ action.delete(
                         await Promise.all(
                             sites.map(async (value1, index1, array1) => {
                                 value1.unset('region');
+
+                                await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }),
+                        );
+
+                        await Promise.all(
+                            tags.map(async (value1, index1, array1) => {
+                                let regions: IDB.LocationRegion[] = value1.getValue('regions').filter((value2, index2, array2) => {
+                                    return value2.id !== value;
+                                });
+                                value1.setValue('regions', regions);
 
                                 await value1.save(null, { useMasterKey: true }).fail((e) => {
                                     throw e;

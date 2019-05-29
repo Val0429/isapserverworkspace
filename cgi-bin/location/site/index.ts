@@ -77,13 +77,6 @@ action.post(
                             };
                         });
 
-                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-                            .containedIn('objectId', value.tagIds || [])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
-
                         site = new IDB.LocationSite();
 
                         site.setValue('name', value.name);
@@ -95,7 +88,6 @@ action.post(
                         site.setValue('squareMeter', value.squareMeter);
                         site.setValue('staffNumber', value.staffNumber);
                         site.setValue('officeHours', officeHours);
-                        site.setValue('tags', tags);
                         site.setValue('imageSrc', '');
                         site.setValue('longitude', value.longitude);
                         site.setValue('latitude', value.latitude);
@@ -199,13 +191,6 @@ action.get(
                           }
                         : undefined;
 
-                    let tags = (value.getValue('tags') || []).map((value1, index1, array1) => {
-                        return {
-                            objectId: value1.id,
-                            name: value1.getValue('name'),
-                        };
-                    });
-
                     return {
                         objectId: value.id,
                         region: region,
@@ -218,7 +203,6 @@ action.get(
                         squareMeter: value.getValue('squareMeter'),
                         staffNumber: value.getValue('staffNumber'),
                         officeHours: value.getValue('officeHours'),
-                        tags: tags,
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
@@ -313,16 +297,6 @@ action.put(
 
                             site.setValue('officeHours', officeHours);
                         }
-                        if (value.tagIds) {
-                            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-                                .containedIn('objectId', value.tagIds || [])
-                                .find()
-                                .fail((e) => {
-                                    throw e;
-                                });
-
-                            site.setValue('tags', tags);
-                        }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
                             let imageSrc: string = site.getValue('imageSrc');
@@ -390,6 +364,13 @@ action.delete(
                                 throw e;
                             });
 
+                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                            .containedIn('sites', [site])
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
+
                         await site.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
@@ -400,6 +381,19 @@ action.delete(
 
                         await Promise.all(
                             groups.map(async (value1, index1, array1) => {
+                                let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
+                                    return value2.id !== value;
+                                });
+                                value1.setValue('sites', sites);
+
+                                await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }),
+                        );
+
+                        await Promise.all(
+                            tags.map(async (value1, index1, array1) => {
                                 let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
                                     return value2.id !== value;
                                 });

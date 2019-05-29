@@ -1,6 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import * as Rx from 'rxjs';
-import { Tag, IDayRange, LocationRegion } from './_index';
+import { IDayRange, LocationRegion } from './_index';
 
 /**
  * 地區
@@ -55,11 +55,6 @@ export interface ILocationSite {
      * 開門時間
      */
     officeHours?: IDayRange[];
-
-    /**
-     * Tag
-     */
-    tags?: Tag[];
 
     /**
      * 圖片

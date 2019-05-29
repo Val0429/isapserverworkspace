@@ -1,6 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
 import { Tree } from 'models/nodes';
-import { Tag } from './_index';
 
 /**
  * 地區
@@ -25,11 +24,6 @@ export interface ILocationRegion {
      * 地址
      */
     address?: string;
-
-    /**
-     * Tag
-     */
-    tags?: Tag[];
 
     /**
      * 圖片

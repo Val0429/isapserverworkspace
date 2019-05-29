@@ -11,7 +11,6 @@ export interface IRegionIndexC extends IGPS {
     name: string;
     customId?: string;
     address?: string;
-    tagIds?: string[];
     imageBase64: string;
 }
 
@@ -25,7 +24,6 @@ export interface IRegionIndexU extends IGPS {
     name?: string;
     customId?: string;
     address?: string;
-    tagIds?: string[];
     imageBase64?: string;
 }
 
@@ -39,7 +37,6 @@ export interface ISiteIndexC extends IGPS {
     squareMeter?: number;
     staffNumber?: number;
     officeHours?: IDayRange[];
-    tagIds?: string[];
     imageBase64: string;
 }
 
@@ -53,7 +50,6 @@ export interface ISiteIndexU extends IGPS {
     squareMeter?: number;
     staffNumber?: number;
     officeHours?: IDayRange[];
-    tagIds?: string[];
     imageBase64?: string;
 }
 

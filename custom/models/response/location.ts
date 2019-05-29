@@ -10,7 +10,6 @@ export interface IRegionIndexR_Base extends IGPS {
     name: string;
     customId: string;
     address: string;
-    tags: IObject[];
     imageSrc: string;
 }
 
@@ -30,7 +29,6 @@ export interface ISiteIndexR_Base extends IGPS {
     squareMeter: number;
     staffNumber: number;
     officeHours: IDayRange[];
-    tags: IObject[];
     imageSrc: string;
 }
 
@@ -45,11 +43,19 @@ export interface ISiteAll {
     name: string;
 }
 
+export interface ITreeRegion extends IRegionIndexR_Base {
+    tags: IObject[];
+}
+
+export interface ITreeSite extends ISiteIndexR_Base {
+    tags: IObject[];
+}
+
 export interface ITree {
     objectId: string;
     parentId: string;
     type: string;
-    data: IRegionIndexR_Base | ISiteIndexR_Base;
+    data: ITreeRegion | ITreeSite;
     lft: number;
     rgt: number;
     childrens: ITree[];
