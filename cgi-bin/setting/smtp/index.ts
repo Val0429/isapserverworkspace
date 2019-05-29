@@ -62,10 +62,10 @@ action.put(
 
             let email: Email = new Email();
             email.config = {
-                host: Config.email.host,
-                port: Config.email.port,
-                email: Config.email.email,
-                password: Config.email.password,
+                host: _input.host,
+                port: _input.port,
+                email: _input.email,
+                password: _input.password,
             };
 
             try {

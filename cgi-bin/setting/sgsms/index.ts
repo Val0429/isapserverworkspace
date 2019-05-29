@@ -57,9 +57,9 @@ action.put(
 
             let sgsms: Sgsms = new Sgsms();
             sgsms.config = {
-                url: Config.sgSms.url,
-                account: Config.sgSms.account,
-                password: Config.sgSms.password,
+                url: _input.url,
+                account: _input.account,
+                password: _input.password,
             };
 
             try {
