@@ -77,7 +77,7 @@ action.post(
                         }
 
                         let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-                            .containedIn('objectId', value.locationIds)
+                            .containedIn('objectId', value.siteIds)
                             .find()
                             .fail((e) => {
                                 throw e;
@@ -178,7 +178,7 @@ action.get(
             let infos: IDB.UserInfo[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['user', 'user.roles', 'locations', 'groups'])
+                .include(['user', 'user.roles', 'sites', 'groups'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -225,7 +225,7 @@ action.get(
                         phone: value.getValue('phone') || '',
                         webLestUseDate: value.getValue('webLestUseDate'),
                         appLastUseDate: value.getValue('appLastUseDate'),
-                        locations: sites,
+                        sites: sites,
                         groups: groups,
                         isAppBinding: !!value.getValue('mobileType') && value.getValue('mobileType') !== Enum.EMobileType.none,
                     };
@@ -311,9 +311,9 @@ action.put(
                         if (value.phone || value.phone === '') {
                             info.setValue('phone', value.phone);
                         }
-                        if (value.locationIds) {
+                        if (value.siteIds) {
                             let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-                                .containedIn('objectId', value.locationIds)
+                                .containedIn('objectId', value.siteIds)
                                 .find()
                                 .fail((e) => {
                                     throw e;

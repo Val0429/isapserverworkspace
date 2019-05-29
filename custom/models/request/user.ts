@@ -27,7 +27,7 @@ export interface IUserIndexC extends IBaseLogin {
     employeeId: string;
     email: string;
     phone?: string;
-    locationIds: string[];
+    siteIds: string[];
     groupIds: string[];
 }
 
@@ -37,7 +37,7 @@ export interface IUserIndexU {
     name?: string;
     email?: string;
     phone?: string;
-    locationIds?: string[];
+    siteIds?: string[];
     groupIds?: string[];
 }
 

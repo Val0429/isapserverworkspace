@@ -26,7 +26,7 @@ export interface IUserIndexR {
     phone: string;
     webLestUseDate: Date;
     appLastUseDate: Date;
-    locations: IObject[];
+    sites: IObject[];
     groups: IObject[];
     isAppBinding: boolean;
 }
@@ -44,7 +44,7 @@ export interface IUserLogin extends IBaseLogin {
     phone: string;
     webLestUseDate: Date;
     appLastUseDate: Date;
-    locations: IObject[];
+    sites: IObject[];
     groups: IObject[];
     isAppBinding: boolean;
 }

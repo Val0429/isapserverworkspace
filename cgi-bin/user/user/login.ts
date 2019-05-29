@@ -89,7 +89,7 @@ export async function Login(request: Request, account: string, password: string)
             phone: _userInfo.info.getValue('phone') || '',
             webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
             appLastUseDate: _userInfo.info.getValue('appLastUseDate'),
-            locations: sites,
+            sites: sites,
             groups: groups,
             isAppBinding: !!_userInfo.info.getValue('mobileType') && _userInfo.info.getValue('mobileType') !== Enum.EMobileType.none,
         };
