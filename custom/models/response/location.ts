@@ -27,19 +27,19 @@ export interface IRegionAll {
 export interface ISiteIndexR_Base extends IGPS {
     name: string;
     customId: string;
-    manager: IObject;
     address: string;
-    phone: string;
-    establishment: Date;
-    squareMeter: number;
-    staffNumber: number;
-    officeHours: IDayRange[];
     imageSrc: string;
 }
 
 export interface ISiteIndexR extends ISiteIndexR_Base {
     objectId: string;
     region: IObject;
+    manager: IObject;
+    phone: string;
+    establishment: Date;
+    squareMeter: number;
+    staffNumber: number;
+    officeHours: IDayRange[];
 }
 
 export interface ISiteAll {
