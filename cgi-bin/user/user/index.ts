@@ -51,6 +51,10 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['role not found']);
                         }
 
+                        if (!value.password || value.password.length === 0) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['password can not be empty']);
+                        }
+
                         if (value.employeeId === '') {
                             throw Errors.throw(Errors.CustomBadRequest, ['employee id can not be empty']);
                         }

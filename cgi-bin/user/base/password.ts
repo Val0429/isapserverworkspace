@@ -38,6 +38,10 @@ action.put(
                 throw e;
             });
 
+            if (!_input.current || _input.current.length === 0) {
+                throw Errors.throw(Errors.CustomBadRequest, ['password can not be empty']);
+            }
+
             user.setPassword(_input.current);
 
             await user.save(null, { useMasterKey: true }).fail((e) => {
