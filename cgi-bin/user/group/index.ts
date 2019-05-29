@@ -196,7 +196,6 @@ action.put(
                                 .fail((e) => {
                                     throw e;
                                 });
-                            Print.MinLog(JSON.stringify(sites.map((n) => n.id)));
 
                             group.setValue('sites', sites);
                         }
