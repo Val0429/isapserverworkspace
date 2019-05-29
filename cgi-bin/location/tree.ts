@@ -94,7 +94,7 @@ async function GetRegionChildrens(): Promise<IResponse.ILocation.ITree[]> {
                 .map((value1, index1, array1) => {
                     return {
                         objectId: value1.id,
-                        name: value.getValue('name'),
+                        name: value1.getValue('name'),
                     };
                 });
 
@@ -151,7 +151,7 @@ function GetSiteChildrens(region: IDB.LocationRegion, sites: IDB.LocationSite[],
                     .map((value1, index1, array1) => {
                         return {
                             objectId: value1.id,
-                            name: value.getValue('name'),
+                            name: value1.getValue('name'),
                         };
                     });
 
