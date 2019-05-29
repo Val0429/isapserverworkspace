@@ -75,6 +75,16 @@ export interface IUserInfo {
      * User groups
      */
     groups: UserGroup[];
+
+    /**
+     * Forget password verification
+     */
+    forgetVerification: string;
+
+    /**
+     * Forget passowrd expitre date
+     */
+    forgetExpireDate: Date;
 }
 
 @registerSubclass()

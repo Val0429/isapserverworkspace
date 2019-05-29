@@ -61,3 +61,5 @@ export interface IGroupAll {
     objectId: string;
     name: string;
 }
+
+export interface IForgetStep3 extends IUserLogin {}

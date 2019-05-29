@@ -52,3 +52,17 @@ export interface IGroupIndexU {
     description?: string;
     siteIds?: string[];
 }
+
+export interface IForgetStep1 {
+    account: string;
+    email: string;
+}
+
+export interface IForgetStep2 {
+    account: string;
+    verification: string;
+}
+
+export interface IForgetStep3 extends IForgetStep2 {
+    password: string;
+}
