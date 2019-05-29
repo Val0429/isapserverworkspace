@@ -7,7 +7,7 @@ import * as Enum from '../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;

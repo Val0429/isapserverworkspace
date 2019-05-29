@@ -5,6 +5,7 @@ import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
+    permission: [RoleList.SuperAdministrator, RoleList.Admin, RoleList.User],
 });
 
 export default action;
@@ -17,9 +18,6 @@ type InputR = null;
 type OutputR = IResponse.IUser.IUserAll[];
 
 action.get(
-    {
-        permission: [RoleList.SuperAdministrator, RoleList.Admin, RoleList.User],
-    },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
