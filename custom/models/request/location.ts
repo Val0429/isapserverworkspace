@@ -62,3 +62,22 @@ export interface ISiteBindingRegion {
     objectId: string;
     regionId: string;
 }
+
+export interface IAreaIndexC {
+    siteId: string;
+    name: string;
+    imageBase64: string;
+    mapBase64: string;
+}
+
+export interface IAreaIndexR {
+    siteId?: string;
+}
+
+export interface IAreaIndexU {
+    objectId: string;
+    imageBase64?: string;
+    mapBase64?: string;
+}
+
+export interface IAreaAll extends IAreaIndexR {}

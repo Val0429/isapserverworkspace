@@ -25,7 +25,9 @@ action.get(
             let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let childrens: IResponse.ILocation.ITree[] = (await GetRegionChildrens()).sort((a, b) => {
+            let childrens: IResponse.ILocation.ITree[] = (await GetRegionChildrens().catch((e) => {
+                throw e;
+            })).sort((a, b) => {
                 return a.lft - b.lft;
             });
 
@@ -79,46 +81,50 @@ async function GetRegionChildrens(): Promise<IResponse.ILocation.ITree[]> {
             throw e;
         });
 
-        let childrens: IResponse.ILocation.ITree[] = regions.map((value, index, array) => {
-            let parents: IDB.LocationRegion[] = array.filter((value1, index1, array1) => {
-                return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
-            });
-
-            let tags: IResponse.IObject[] = allTags
-                .filter((value1, index1, array1) => {
-                    let regionIds: string[] = value1.getValue('regions').map((value2, index2, array2) => {
-                        return value2.id;
-                    });
-                    return regionIds.indexOf(value.id) > -1;
-                })
-                .map((value1, index1, array1) => {
-                    return {
-                        objectId: value1.id,
-                        name: value1.getValue('name'),
-                    };
+        let childrens: IResponse.ILocation.ITree[] = await Promise.all(
+            regions.map(async (value, index, array) => {
+                let parents: IDB.LocationRegion[] = array.filter((value1, index1, array1) => {
+                    return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
                 });
 
-            let regionData: IResponse.ILocation.ITreeRegion = {
-                name: value.getValue('name'),
-                customId: value.getValue('customId'),
-                address: value.getValue('address'),
-                tags: tags,
-                imageSrc: value.getValue('imageSrc'),
-                longitude: value.getValue('longitude'),
-                latitude: value.getValue('latitude'),
-            };
+                let tags: IResponse.IObject[] = allTags
+                    .filter((value1, index1, array1) => {
+                        let regionIds: string[] = value1.getValue('regions').map((value2, index2, array2) => {
+                            return value2.id;
+                        });
+                        return regionIds.indexOf(value.id) > -1;
+                    })
+                    .map((value1, index1, array1) => {
+                        return {
+                            objectId: value1.id,
+                            name: value1.getValue('name'),
+                        };
+                    });
 
-            let siteChildrens: IResponse.ILocation.ITree[] = GetSiteChildrens(value, sites, allTags);
+                let regionData: IResponse.ILocation.ITreeRegion = {
+                    name: value.getValue('name'),
+                    customId: value.getValue('customId'),
+                    address: value.getValue('address'),
+                    tags: tags,
+                    imageSrc: value.getValue('imageSrc'),
+                    longitude: value.getValue('longitude'),
+                    latitude: value.getValue('latitude'),
+                };
 
-            return {
-                objectId: value.id,
-                parentId: parents.length > 0 ? parents[parents.length - 1].id : '',
-                type: value.getValue('type'),
-                data: regionData,
-                lft: value.getValue('lft'),
-                rgt: value.getValue('rgt'),
-                childrens: siteChildrens,
-            };
+                let siteChildrens: IResponse.ILocation.ITree[] = await GetSiteChildrens(value, sites, allTags);
+
+                return {
+                    objectId: value.id,
+                    parentId: parents.length > 0 ? parents[parents.length - 1].id : '',
+                    type: value.getValue('type'),
+                    data: regionData,
+                    lft: value.getValue('lft'),
+                    rgt: value.getValue('rgt'),
+                    childrens: siteChildrens,
+                };
+            }),
+        ).catch((e) => {
+            throw e;
         });
 
         return childrens;
@@ -134,8 +140,15 @@ async function GetRegionChildrens(): Promise<IResponse.ILocation.ITree[]> {
  * @param managerInfos
  * @param tags
  */
-function GetSiteChildrens(region: IDB.LocationRegion, sites: IDB.LocationSite[], allTags: IDB.Tag[]): IResponse.ILocation.ITree[] {
+async function GetSiteChildrens(region: IDB.LocationRegion, sites: IDB.LocationSite[], allTags: IDB.Tag[]): Promise<IResponse.ILocation.ITree[]> {
     try {
+        let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+            .containedIn('site', sites)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
         let childrens: IResponse.ILocation.ITree[] = sites
             .filter((value, index, array) => {
                 return value.getValue('region').id === region.id;
@@ -165,11 +178,49 @@ function GetSiteChildrens(region: IDB.LocationRegion, sites: IDB.LocationSite[],
                     latitude: value.getValue('latitude'),
                 };
 
+                let areaChildrens: IResponse.ILocation.ITree[] = GetAreaChildrens(region, value, areas);
+
                 return {
                     objectId: value.id,
                     parentId: region.id,
                     type: 'site',
                     data: siteData,
+                    lft: region.getValue('lft'),
+                    rgt: region.getValue('rgt'),
+                    childrens: areaChildrens,
+                };
+            });
+
+        return childrens;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Get area childrens
+ * @param region
+ * @param site
+ * @param areas
+ */
+function GetAreaChildrens(region: IDB.LocationRegion, site: IDB.LocationSite, areas: IDB.LocationArea[]): IResponse.ILocation.ITree[] {
+    try {
+        let childrens: IResponse.ILocation.ITree[] = areas
+            .filter((value, index, array) => {
+                return value.getValue('site').id === site.id;
+            })
+            .map((value, index, array) => {
+                let areaDate: IResponse.ILocation.ITreeArea = {
+                    name: value.getValue('name'),
+                    imageSrc: value.getValue('imageSrc'),
+                    mapSrc: value.getValue('mapSrc'),
+                };
+
+                return {
+                    objectId: value.id,
+                    parentId: site.id,
+                    type: 'area',
+                    data: areaDate,
                     lft: region.getValue('lft'),
                     rgt: region.getValue('rgt'),
                     childrens: [],

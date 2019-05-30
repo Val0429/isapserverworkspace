@@ -48,6 +48,23 @@ export interface ISiteAll {
     name: string;
 }
 
+export interface IAreaIndexR_Base {
+    name: string;
+    imageSrc: string;
+    mapSrc: string;
+}
+
+export interface IAreaIndexR extends IAreaIndexR_Base {
+    objectId: string;
+    site: IObject;
+}
+
+export interface IAreaAll {
+    objectId: string;
+    site: IObject;
+    name: string;
+}
+
 export interface ITreeRegion extends IRegionIndexR_Base {
     tags: IObject[];
 }
@@ -56,11 +73,13 @@ export interface ITreeSite extends ISiteIndexR_Base {
     tags: IObject[];
 }
 
+export interface ITreeArea extends IAreaIndexR_Base {}
+
 export interface ITree {
     objectId: string;
     parentId: string;
     type: string;
-    data: ITreeRegion | ITreeSite;
+    data: ITreeRegion | ITreeSite | ITreeArea;
     lft: number;
     rgt: number;
     childrens: ITree[];

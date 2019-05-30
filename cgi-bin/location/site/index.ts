@@ -357,6 +357,13 @@ action.delete(
                             throw Errors.throw(Errors.CustomNotExists, ['site not found']);
                         }
 
+                        let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+                            .equalTo('site', site)
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
+
                         let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
                             .containedIn('sites', [site])
                             .find()
@@ -378,6 +385,22 @@ action.delete(
                         try {
                             File.DeleteFile(`${File.assetsPath}/${site.getValue('imageSrc')}`);
                         } catch (e) {}
+
+                        await Promise.all(
+                            areas.map(async (value1, index1, array1) => {
+                                await value1.destroy({ useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+
+                                try {
+                                    File.DeleteFile(`${File.assetsPath}/${value1.getValue('imageSrc')}`);
+                                } catch (e) {}
+
+                                try {
+                                    File.DeleteFile(`${File.assetsPath}/${value1.getValue('mapSrc')}`);
+                                } catch (e) {}
+                            }),
+                        );
 
                         await Promise.all(
                             groups.map(async (value1, index1, array1) => {
