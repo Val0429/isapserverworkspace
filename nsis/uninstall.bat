@@ -1,2 +1,2 @@
-net stop "isap-smart-community-service"
-sc delete "isap-smart-community-service"
+net stop "isap-vms-service"
+sc delete "isap-vms-service"
