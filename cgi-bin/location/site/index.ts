@@ -59,9 +59,12 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
                         }
 
-                        let manager: Parse.User = await new Parse.Query(Parse.User).get(value.managerId).fail((e) => {
-                            throw e;
-                        });
+                        let manager: Parse.User = await new Parse.Query(Parse.User)
+                            .equalTo('objectId', value.managerId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!manager) {
                             throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
                         }
@@ -242,9 +245,12 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite).get(value.objectId).fail((e) => {
-                            throw e;
-                        });
+                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
+                            .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!site) {
                             throw Errors.throw(Errors.CustomBadRequest, ['site not found']);
                         }
@@ -256,9 +262,12 @@ action.put(
 
                         let manager: Parse.User = undefined;
                         if (value.managerId) {
-                            manager = await new Parse.Query(Parse.User).get(value.managerId).fail((e) => {
-                                throw e;
-                            });
+                            manager = await new Parse.Query(Parse.User)
+                                .equalTo('objectId', value.managerId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
                             if (!manager) {
                                 throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
                             }
@@ -350,9 +359,12 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        let site = await new Parse.Query(IDB.LocationSite).get(value).fail((e) => {
-                            throw e;
-                        });
+                        let site = await new Parse.Query(IDB.LocationSite)
+                            .equalTo('objectId', value)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!site) {
                             throw Errors.throw(Errors.CustomNotExists, ['site not found']);
                         }

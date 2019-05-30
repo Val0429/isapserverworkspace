@@ -179,9 +179,12 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let group: IDB.UserGroup = await new Parse.Query(IDB.UserGroup).get(value.objectId).fail((e) => {
-                            throw e;
-                        });
+                        let group: IDB.UserGroup = await new Parse.Query(IDB.UserGroup)
+                            .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!group) {
                             throw Errors.throw(Errors.CustomBadRequest, ['user group not found']);
                         }
@@ -241,9 +244,12 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        let group: IDB.UserGroup = await new Parse.Query(IDB.UserGroup).get(value).fail((e) => {
-                            throw e;
-                        });
+                        let group: IDB.UserGroup = await new Parse.Query(IDB.UserGroup)
+                            .equalTo('objectId', value)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!group) {
                             throw Errors.throw(Errors.CustomBadRequest, ['user group not found']);
                         }

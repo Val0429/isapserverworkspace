@@ -46,9 +46,12 @@ action.post(
                         if (!value.parentId) {
                             parent = root;
                         } else {
-                            parent = await new Parse.Query(IDB.LocationRegion).get(value.parentId).fail((e) => {
-                                throw e;
-                            });
+                            parent = await new Parse.Query(IDB.LocationRegion)
+                                .equalTo('objectId', value.parentId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
                             if (!parent) {
                                 throw Errors.throw(Errors.CustomBadRequest, ['parent region not found']);
                             }
@@ -120,9 +123,12 @@ action.get(
             let query: Parse.Query<IDB.LocationRegion> = new Parse.Query(IDB.LocationRegion);
 
             if (_input.parentId) {
-                let parent: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(_input.parentId).fail((e) => {
-                    throw e;
-                });
+                let parent: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion)
+                    .equalTo('objectId', _input.parentId)
+                    .first()
+                    .fail((e) => {
+                        throw e;
+                    });
                 if (!parent) {
                     throw Errors.throw(Errors.CustomBadRequest, ['parent not found']);
                 }
@@ -201,9 +207,12 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let region: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(value.objectId).fail((e) => {
-                            throw e;
-                        });
+                        let region: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion)
+                            .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!region) {
                             throw Errors.throw(Errors.CustomBadRequest, ['region not found']);
                         }
@@ -278,9 +287,12 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        var region = await new Parse.Query(IDB.LocationRegion).get(value).fail((e) => {
-                            throw e;
-                        });
+                        var region = await new Parse.Query(IDB.LocationRegion)
+                            .equalTo('objectId', value)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!region) {
                             throw Errors.throw(Errors.CustomNotExists, ['region not found']);
                         }

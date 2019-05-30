@@ -49,9 +49,12 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
-                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite).get(value.siteId).fail((e) => {
-                            throw e;
-                        });
+                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
+                            .equalTo('objectId', value.siteId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!site) {
                             throw Errors.throw(Errors.CustomBadRequest, ['site not found']);
                         }
@@ -216,9 +219,12 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
-                        let area: IDB.LocationArea = await new Parse.Query(IDB.LocationArea).get(value.objectId).fail((e) => {
-                            throw e;
-                        });
+                        let area: IDB.LocationArea = await new Parse.Query(IDB.LocationArea)
+                            .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!area) {
                             throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
                         }
@@ -275,9 +281,12 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        let area: IDB.LocationArea = await new Parse.Query(IDB.LocationArea).get(value).fail((e) => {
-                            throw e;
-                        });
+                        let area: IDB.LocationArea = await new Parse.Query(IDB.LocationArea)
+                            .equalTo('objectId', value)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!area) {
                             throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
                         }

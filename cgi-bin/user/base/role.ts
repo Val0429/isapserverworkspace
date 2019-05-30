@@ -30,9 +30,12 @@ action.put(
                 throw Errors.throw(Errors.CustomBadRequest, ['role can not none']);
             }
 
-            let user: Parse.User = await new Parse.Query(Parse.User).get(_userId).fail((e) => {
-                throw e;
-            });
+            let user: Parse.User = await new Parse.Query(Parse.User)
+                .equalTo('objectId', _userId)
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
             if (!user) {
                 throw Errors.throw(Errors.CustomBadRequest, ['user not found']);
             }

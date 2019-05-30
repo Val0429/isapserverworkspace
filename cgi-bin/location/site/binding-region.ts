@@ -36,9 +36,12 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite).get(value.objectId).fail((e) => {
-                            throw e;
-                        });
+                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
+                            .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!site) {
                             throw Errors.throw(Errors.CustomBadRequest, ['site not found']);
                         }
@@ -46,9 +49,12 @@ action.put(
                         if (value.regionId === '') {
                             site.unset('region');
                         } else {
-                            let region: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion).get(value.regionId).fail((e) => {
-                                throw e;
-                            });
+                            let region: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion)
+                                .equalTo('objectId', value.regionId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
                             if (!region) {
                                 throw Errors.throw(Errors.CustomBadRequest, ['region not found']);
                             }

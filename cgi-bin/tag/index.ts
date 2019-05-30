@@ -182,9 +182,12 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let tag: IDB.Tag = await new Parse.Query(IDB.Tag).get(value.objectId).fail((e) => {
-                            throw e;
-                        });
+                        let tag: IDB.Tag = await new Parse.Query(IDB.Tag)
+                            .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!tag) {
                             throw Errors.throw(Errors.CustomBadRequest, ['tag not found']);
                         }
@@ -254,9 +257,12 @@ action.delete(
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
                     try {
-                        let tag: IDB.Tag = await new Parse.Query(IDB.Tag).get(value).fail((e) => {
-                            throw e;
-                        });
+                        let tag: IDB.Tag = await new Parse.Query(IDB.Tag)
+                            .equalTo('objectId', value)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
                         if (!tag) {
                             throw Errors.throw(Errors.CustomBadRequest, ['tag not found']);
                         }
