@@ -433,6 +433,8 @@ action.delete(
 
                         await UnbindingGroupSite(site);
 
+                        await UnbindingEventCampaignSite(site);
+
                         await DeleteArea(site);
 
                         await site.destroy({ useMasterKey: true }).fail((e) => {
@@ -533,6 +535,36 @@ async function UnbindingGroupSite(site: IDB.LocationSite): Promise<void> {
 
         await Promise.all(
             groups.map(async (value, index, array) => {
+                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                    return value1.id !== site.id;
+                });
+                value.setValue('sites', sites);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Unbinding event campaign site
+ * @param site
+ */
+async function UnbindingEventCampaignSite(site: IDB.LocationSite): Promise<void> {
+    try {
+        let campaigns: IDB.EventCampaign[] = await new Parse.Query(IDB.EventCampaign)
+            .containedIn('sites', [site])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            campaigns.map(async (value, index, array) => {
                 let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
                     return value1.id !== site.id;
                 });

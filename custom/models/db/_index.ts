@@ -3,6 +3,7 @@ export * from './config-cms-camera';
 export * from './config-cms-server';
 export * from './date-range';
 export * from './day-range';
+export * from './event-campaign';
 export * from './location-area';
 export * from './location-region';
 export * from './location-site';
