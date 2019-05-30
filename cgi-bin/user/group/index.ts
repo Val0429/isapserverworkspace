@@ -254,29 +254,11 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['user group not found']);
                         }
 
-                        let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
-                            .containedIn('groups', [group])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await UnbindingUserInfoGroup(group);
 
                         await group.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
-
-                        await Promise.all(
-                            userInfos.map(async (value1, index1, array1) => {
-                                let groups: IDB.UserGroup[] = value1.getValue('groups').filter((value2, index2, array2) => {
-                                    return value2.id !== value;
-                                });
-                                value1.setValue('groups', groups);
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -292,3 +274,33 @@ action.delete(
         }
     },
 );
+
+/**
+ * Unbinding user info group
+ * @param group
+ */
+async function UnbindingUserInfoGroup(group: IDB.UserGroup): Promise<void> {
+    try {
+        let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+            .containedIn('groups', [group])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            userInfos.map(async (value, index, array) => {
+                let groups: IDB.UserGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
+                    return value1.id !== group.id;
+                });
+                value.setValue('groups', groups);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}

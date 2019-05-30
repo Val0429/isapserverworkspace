@@ -4,6 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import * as Area from '../area';
 
 let action = new Action({
     loginRequired: true,
@@ -426,33 +427,13 @@ action.delete(
                             throw Errors.throw(Errors.CustomNotExists, ['site not found']);
                         }
 
-                        let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
-                            .equalTo('site', site)
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await UnbindingOfficeHourSite(site);
 
-                        let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
-                            .containedIn('sites', [site])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await UnbindingTagSite(site);
 
-                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-                            .containedIn('sites', [site])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await UnbindingGroupSite(site);
 
-                        let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
-                            .containedIn('sites', [site])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await DeleteArea(site);
 
                         await site.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
@@ -461,61 +442,6 @@ action.delete(
                         try {
                             File.DeleteFile(`${File.assetsPath}/${site.getValue('imageSrc')}`);
                         } catch (e) {}
-
-                        await Promise.all(
-                            areas.map(async (value1, index1, array1) => {
-                                await value1.destroy({ useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-
-                                try {
-                                    File.DeleteFile(`${File.assetsPath}/${value1.getValue('imageSrc')}`);
-                                } catch (e) {}
-
-                                try {
-                                    File.DeleteFile(`${File.assetsPath}/${value1.getValue('mapSrc')}`);
-                                } catch (e) {}
-                            }),
-                        );
-
-                        await Promise.all(
-                            groups.map(async (value1, index1, array1) => {
-                                let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
-                                    return value2.id !== value;
-                                });
-                                value1.setValue('sites', sites);
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
-
-                        await Promise.all(
-                            tags.map(async (value1, index1, array1) => {
-                                let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
-                                    return value2.id !== value;
-                                });
-                                value1.setValue('sites', sites);
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
-
-                        await Promise.all(
-                            officeHours.map(async (value1, index1, array1) => {
-                                let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
-                                    return value2.id !== value;
-                                });
-                                value1.setValue('sites', sites);
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -531,3 +457,116 @@ action.delete(
         }
     },
 );
+
+/**
+ * Unbinding office hour site
+ * @param site
+ */
+async function UnbindingOfficeHourSite(site: IDB.LocationSite): Promise<void> {
+    try {
+        let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
+            .containedIn('sites', [site])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            officeHours.map(async (value, index, array) => {
+                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                    return value1.id !== site.id;
+                });
+                value.setValue('sites', sites);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Unbinding tag site
+ * @param site
+ */
+async function UnbindingTagSite(site: IDB.LocationSite): Promise<void> {
+    try {
+        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+            .containedIn('sites', [site])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            tags.map(async (value, index, array) => {
+                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                    return value1.id !== site.id;
+                });
+                value.setValue('sites', sites);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Unbinding group site
+ * @param site
+ */
+async function UnbindingGroupSite(site: IDB.LocationSite): Promise<void> {
+    try {
+        let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
+            .containedIn('sites', [site])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            groups.map(async (value, index, array) => {
+                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                    return value1.id !== site.id;
+                });
+                value.setValue('sites', sites);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Delete area
+ * @param site
+ */
+async function DeleteArea(site: IDB.LocationSite): Promise<void> {
+    try {
+        let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+            .equalTo('site', site)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            areas.map(async (value, index, array) => {
+                await Area.DeleteArea(value);
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}

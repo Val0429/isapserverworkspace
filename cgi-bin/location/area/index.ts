@@ -291,17 +291,7 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
                         }
 
-                        await area.destroy({ useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
-
-                        try {
-                            File.DeleteFile(`${File.assetsPath}/${area.getValue('imageSrc')}`);
-                        } catch (e) {}
-
-                        try {
-                            File.DeleteFile(`${File.assetsPath}/${area.getValue('mapSrc')}`);
-                        } catch (e) {}
+                        await DeleteArea(area);
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -317,3 +307,25 @@ action.delete(
         }
     },
 );
+
+/**
+ * Delete area
+ * @param objectId
+ */
+export async function DeleteArea(area: IDB.LocationArea): Promise<void> {
+    try {
+        await area.destroy({ useMasterKey: true }).fail((e) => {
+            throw e;
+        });
+
+        try {
+            File.DeleteFile(`${File.assetsPath}/${area.getValue('imageSrc')}`);
+        } catch (e) {}
+
+        try {
+            File.DeleteFile(`${File.assetsPath}/${area.getValue('mapSrc')}`);
+        } catch (e) {}
+    } catch (e) {
+        throw e;
+    }
+}

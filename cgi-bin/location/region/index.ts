@@ -299,19 +299,9 @@ action.delete(
 
                         let childrens: IDB.LocationRegion[] = await region.getChildren();
 
-                        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('region', region)
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await UnbindingSiteRegion(childrens);
 
-                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-                            .containedIn('regions', [region])
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
+                        await UnbindingTagRegion(childrens);
 
                         await region.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
@@ -324,29 +314,6 @@ action.delete(
                                 } catch (e) {}
                             }
                         });
-
-                        await Promise.all(
-                            sites.map(async (value1, index1, array1) => {
-                                value1.unset('region');
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
-
-                        await Promise.all(
-                            tags.map(async (value1, index1, array1) => {
-                                let regions: IDB.LocationRegion[] = value1.getValue('regions').filter((value2, index2, array2) => {
-                                    return value2.id !== value;
-                                });
-                                value1.setValue('regions', regions);
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -377,6 +344,67 @@ export async function CreateRoot(): Promise<IDB.LocationRegion> {
         }
 
         return root;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Unbinding site region
+ * @param regions
+ */
+async function UnbindingSiteRegion(regions: IDB.LocationRegion[]): Promise<void> {
+    try {
+        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
+            .containedIn('region', regions)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            sites.map(async (value, index, array) => {
+                value.unset('region');
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Unbinding tag region
+ * @param regions
+ */
+async function UnbindingTagRegion(regions: IDB.LocationRegion[]): Promise<void> {
+    try {
+        let regionIds: string[] = regions.map((value, index, array) => {
+            return value.id;
+        });
+
+        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+            .containedIn('regions', regions)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            tags.map(async (value, index, array) => {
+                let regions: IDB.LocationRegion[] = value.getValue('regions').filter((value1, index1, array1) => {
+                    return regionIds.indexOf(value1.id) < 0;
+                });
+                value.setValue('regions', regions);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
     } catch (e) {
         throw e;
     }
