@@ -117,9 +117,11 @@ export namespace DateTime {
         let regex: RegExp = Utility.Array2RegExp(_formats);
 
         let formats: string[] = format.match(regex) || [];
-        let strs: string[] = formats.map((value, index, array) => {
-            return str.substr(format.indexOf(value), value === 'A' || value === 'a' ? 2 : value.length);
-        });
+        let strs: string[] = formats.reduce((prev, curr, index, array) => {
+            let count: number = prev.filter((n) => _timeNames.indexOf(n) > -1).length;
+            prev.push(str.substr(format.indexOf(curr) + count, curr === 'A' || curr === 'a' ? 2 : curr.length));
+            return prev;
+        }, []);
 
         let year: number = 0;
         let month: number = 0;
