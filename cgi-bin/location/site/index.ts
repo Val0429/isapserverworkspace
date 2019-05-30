@@ -91,7 +91,6 @@ action.post(
                         site.setValue('establishment', value.establishment);
                         site.setValue('squareMeter', value.squareMeter);
                         site.setValue('staffNumber', value.staffNumber);
-                        site.setValue('officeHour', officeHour);
                         site.setValue('imageSrc', '');
                         site.setValue('longitude', value.longitude);
                         site.setValue('latitude', value.latitude);
@@ -108,6 +107,12 @@ action.post(
                         site.setValue('imageSrc', imageSrc);
 
                         await site.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+
+                        officeHour.setValue('sites', officeHour.getValue('sites').concat(site));
+
+                        await officeHour.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
@@ -154,7 +159,7 @@ action.get(
             let sites: IDB.LocationSite[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['region', 'officeHour'])
+                .include('region')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -165,6 +170,13 @@ action.get(
             });
             let managerInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
                 .containedIn('user', managers)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
+                .containedIn('sites', sites)
                 .find()
                 .fail((e) => {
                     throw e;
@@ -195,7 +207,19 @@ action.get(
                           }
                         : undefined;
 
-                    let officeHour: IResponse.IObject = value.getValue('officeHour') ? { objectId: value.getValue('officeHour').id, name: value.getValue('officeHour').getValue('name') } : undefined;
+                    let officeHour: IDB.OfficeHour = officeHours.find((value1, index1, array1) => {
+                        let siteIds: string[] = value1.getValue('sites').map((value2, index2, array2) => {
+                            return value2.id;
+                        });
+
+                        return siteIds.indexOf(value.id) > -1;
+                    });
+                    let officeHourObject: IResponse.IObject = officeHour
+                        ? {
+                              objectId: value.id,
+                              name: officeHour.getValue('name'),
+                          }
+                        : undefined;
 
                     return {
                         objectId: value.id,
@@ -208,7 +232,7 @@ action.get(
                         establishment: value.getValue('establishment'),
                         squareMeter: value.getValue('squareMeter'),
                         staffNumber: value.getValue('staffNumber'),
-                        officeHour: officeHour,
+                        officeHour: officeHourObject,
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
@@ -308,7 +332,36 @@ action.put(
                                 throw Errors.throw(Errors.CustomBadRequest, ['office hour not found']);
                             }
 
-                            site.setValue('officeHour', officeHour);
+                            let siteIds: string[] = officeHour.getValue('sites').map((value1, index1, array1) => {
+                                return value1.id;
+                            });
+
+                            if (siteIds.indexOf(value.objectId) < 0) {
+                                officeHour.setValue('sites', officeHour.getValue('sites').concat(site));
+
+                                await officeHour.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+
+                                officeHour = await new Parse.Query(IDB.OfficeHour)
+                                    .notEqualTo('objectId', value.officeHourId)
+                                    .containedIn('sites', [site])
+                                    .first()
+                                    .fail((e) => {
+                                        throw e;
+                                    });
+                                if (officeHour) {
+                                    let sites: IDB.LocationSite[] = officeHour.getValue('sites').filter((value1, index1, array1) => {
+                                        return value1.id !== value.objectId;
+                                    });
+
+                                    officeHour.setValue('sites', sites);
+
+                                    await officeHour.save(null, { useMasterKey: true }).fail((e) => {
+                                        throw e;
+                                    });
+                                }
+                            }
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
@@ -394,6 +447,13 @@ action.delete(
                                 throw e;
                             });
 
+                        let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
+                            .containedIn('sites', [site])
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
+
                         await site.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
@@ -433,6 +493,19 @@ action.delete(
 
                         await Promise.all(
                             tags.map(async (value1, index1, array1) => {
+                                let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
+                                    return value2.id !== value;
+                                });
+                                value1.setValue('sites', sites);
+
+                                await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }),
+                        );
+
+                        await Promise.all(
+                            officeHours.map(async (value1, index1, array1) => {
                                 let sites: IDB.LocationSite[] = value1.getValue('sites').filter((value2, index2, array2) => {
                                     return value2.id !== value;
                                 });

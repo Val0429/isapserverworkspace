@@ -36,7 +36,7 @@ export interface ISiteIndexC extends IGPS {
     establishment?: Date;
     squareMeter?: number;
     staffNumber?: number;
-    officeHourId?: string;
+    officeHourId: string;
     imageBase64: string;
 }
 

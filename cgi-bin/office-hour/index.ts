@@ -59,6 +59,7 @@ action.post(
 
                         officeHour.setValue('name', value.name);
                         officeHour.setValue('dayRanges', dayRanges);
+                        officeHour.setValue('sites', []);
 
                         await officeHour.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -109,13 +110,7 @@ action.get(
             let officeHours: IDB.OfficeHour[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
-
-            let allSites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-                .containedIn('officeHour', officeHours)
+                .include('sites')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -129,16 +124,12 @@ action.get(
                     pageSize: _paging.pageSize,
                 },
                 results: officeHours.map((value, index, array) => {
-                    let sites: IResponse.IObject[] = allSites
-                        .filter((value1, index1, array1) => {
-                            return value1.getValue('officeHour').id === value.id;
-                        })
-                        .map((value1, index1, array1) => {
-                            return {
-                                objectId: value1.id,
-                                name: value1.getValue('name'),
-                            };
-                        });
+                    let sites: IResponse.IObject[] = value.getValue('sites').map((value1, index1, array1) => {
+                        return {
+                            objectId: value1.id,
+                            name: value1.getValue('name'),
+                        };
+                    });
 
                     return {
                         objectId: value.id,
@@ -251,26 +242,9 @@ action.delete(
                             throw Errors.throw(Errors.CustomNotExists, ['office hour not found']);
                         }
 
-                        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('officeHour', officeHour)
-                            .find()
-                            .fail((e) => {
-                                throw e;
-                            });
-
                         await officeHour.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
-
-                        await Promise.all(
-                            sites.map(async (value1, index1, array1) => {
-                                value1.unset('officeHour');
-
-                                await value1.save(null, { useMasterKey: true }).fail((e) => {
-                                    throw e;
-                                });
-                            }),
-                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 

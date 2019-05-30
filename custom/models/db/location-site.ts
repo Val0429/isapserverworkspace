@@ -1,6 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import * as Rx from 'rxjs';
-import { OfficeHour, LocationRegion } from './_index';
+import { LocationRegion } from './_index';
 
 /**
  * 地區
@@ -50,11 +50,6 @@ export interface ILocationSite {
      * Number of staff
      */
     staffNumber?: number;
-
-    /**
-     * 開門時間
-     */
-    officeHour?: OfficeHour;
 
     /**
      * 圖片
