@@ -39,7 +39,7 @@ export interface ISiteIndexR extends ISiteIndexR_Base {
     establishment: Date;
     squareMeter: number;
     staffNumber: number;
-    officeHours: IDayRange[];
+    officeHour: IObject;
 }
 
 export interface ISiteAll {

@@ -36,7 +36,7 @@ export interface ISiteIndexC extends IGPS {
     establishment?: Date;
     squareMeter?: number;
     staffNumber?: number;
-    officeHours?: IDayRange[];
+    officeHourId?: string;
     imageBase64: string;
 }
 
@@ -49,7 +49,7 @@ export interface ISiteIndexU extends IGPS {
     establishment?: Date;
     squareMeter?: number;
     staffNumber?: number;
-    officeHours?: IDayRange[];
+    officeHourId?: string;
     imageBase64?: string;
 }
 

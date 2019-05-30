@@ -71,14 +71,15 @@ action.post(
 
                         value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
 
-                        let officeHours: IDB.IDayRange[] = (value.officeHours || []).map((value, index, array) => {
-                            return {
-                                startDay: value.startDay,
-                                endDay: value.endDay,
-                                startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
-                                endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
-                            };
-                        });
+                        let officeHour: IDB.OfficeHour = await new Parse.Query(IDB.OfficeHour)
+                            .equalTo('objectId', value.officeHourId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (!officeHour) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['office hour not found']);
+                        }
 
                         site = new IDB.LocationSite();
 
@@ -90,7 +91,7 @@ action.post(
                         site.setValue('establishment', value.establishment);
                         site.setValue('squareMeter', value.squareMeter);
                         site.setValue('staffNumber', value.staffNumber);
-                        site.setValue('officeHours', officeHours);
+                        site.setValue('officeHour', officeHour);
                         site.setValue('imageSrc', '');
                         site.setValue('longitude', value.longitude);
                         site.setValue('latitude', value.latitude);
@@ -153,7 +154,7 @@ action.get(
             let sites: IDB.LocationSite[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include('region')
+                .include(['region', 'officeHour'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -194,6 +195,8 @@ action.get(
                           }
                         : undefined;
 
+                    let officeHour: IResponse.IObject = value.getValue('officeHour') ? { objectId: value.getValue('officeHour').id, name: value.getValue('officeHour').getValue('name') } : undefined;
+
                     return {
                         objectId: value.id,
                         region: region,
@@ -205,7 +208,7 @@ action.get(
                         establishment: value.getValue('establishment'),
                         squareMeter: value.getValue('squareMeter'),
                         staffNumber: value.getValue('staffNumber'),
-                        officeHours: value.getValue('officeHours'),
+                        officeHour: officeHour,
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
@@ -294,17 +297,18 @@ action.put(
                         if (value.staffNumber || value.staffNumber === 0) {
                             site.setValue('staffNumber', value.staffNumber);
                         }
-                        if (value.officeHours) {
-                            let officeHours: IDB.IDayRange[] = (value.officeHours || []).map((value, index, array) => {
-                                return {
-                                    startDay: value.startDay,
-                                    endDay: value.endDay,
-                                    startDate: new Date(new Date(value.startDate).setFullYear(2000, 0, 1)),
-                                    endDate: new Date(new Date(value.endDate).setFullYear(2000, 0, 1)),
-                                };
-                            });
+                        if (value.officeHourId) {
+                            let officeHour: IDB.OfficeHour = await new Parse.Query(IDB.OfficeHour)
+                                .equalTo('objectId', value.officeHourId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!officeHour) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['office hour not found']);
+                            }
 
-                            site.setValue('officeHours', officeHours);
+                            site.setValue('officeHour', officeHour);
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
