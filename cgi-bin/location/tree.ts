@@ -49,7 +49,7 @@ action.get(
                 });
             }
 
-            tree.childrens = childrens;
+            tree.childrens.push(...childrens);
 
             return tree;
         } catch (e) {
