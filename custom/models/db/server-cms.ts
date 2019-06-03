@@ -6,6 +6,11 @@ import * as Rx from 'rxjs';
  */
 export interface IServerCMS {
     /**
+     * 名稱
+     */
+    name: string;
+
+    /**
      *
      */
     protocol: 'http' | 'https';

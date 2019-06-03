@@ -6,6 +6,11 @@ import * as Rx from 'rxjs';
  */
 export interface IServerFRS {
     /**
+     * 名稱
+     */
+    name: string;
+
+    /**
      *
      */
     analysis: {

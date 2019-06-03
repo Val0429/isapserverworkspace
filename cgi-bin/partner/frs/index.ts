@@ -39,6 +39,7 @@ action.post(
 
                         let server: IDB.ServerFRS = new IDB.ServerFRS();
 
+                        server.setValue('name', value.name);
                         server.setValue('analysis', value.analysis);
                         server.setValue('manage', value.manage);
 
@@ -111,6 +112,7 @@ action.get(
                 results: servers.map((value, index, array) => {
                     return {
                         objectId: value.id,
+                        name: value.getValue('name'),
                         analysis: value.getValue('analysis'),
                         manage: value.getValue('manage'),
                     };
@@ -156,6 +158,9 @@ action.put(
 
                         let devices = await GetDeviceList(value.analysis, value.manage);
 
+                        if (value.name || value.name === '') {
+                            server.setValue('name', value.name);
+                        }
                         server.setValue('analysis', value.analysis);
                         server.setValue('manage', value.manage);
 

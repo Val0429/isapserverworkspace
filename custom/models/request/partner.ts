@@ -1,4 +1,4 @@
-export interface ICMSC {
+export interface ICMSBase {
     protocol: 'http' | 'https';
     ip: string;
     port: number;
@@ -6,11 +6,16 @@ export interface ICMSC {
     password: string;
 }
 
-export interface ICMSU extends ICMSC {
-    objectId: string;
+export interface ICMSC extends ICMSBase {
+    name: string;
 }
 
-export interface IFRSC {
+export interface ICMSU extends ICMSBase {
+    objectId: string;
+    name?: string;
+}
+
+export interface IFRSBase {
     analysis: {
         ip: string;
         port: number;
@@ -27,19 +32,29 @@ export interface IFRSC {
     };
 }
 
-export interface IFRSU extends IFRSC {
-    objectId: string;
+export interface IFRSC extends IFRSBase {
+    name: string;
 }
 
-export interface IHumanDetectionC {
+export interface IFRSU extends IFRSBase {
+    objectId: string;
+    name?: string;
+}
+
+export interface IHumanDetectionBase {
     protocol: 'http' | 'https';
     ip: string;
     port: number;
     target_score: number;
 }
 
-export interface IHumanDetectionU extends IHumanDetectionC {
+export interface IHumanDetectionC extends IHumanDetectionBase {
+    name: string;
+}
+
+export interface IHumanDetectionU extends IHumanDetectionBase {
     objectId: string;
+    name?: string;
 }
 
 export interface IHumanDetectionTest {
@@ -48,15 +63,20 @@ export interface IHumanDetectionTest {
     imageBase64: string;
 }
 
-export interface IDemographicC {
+export interface IDemographicBase {
     protocol: 'http' | 'https';
     ip: string;
     port: number;
     margin: number;
 }
 
-export interface IDemographicU extends IDemographicC {
+export interface IDemographicC extends IDemographicBase {
+    name: string;
+}
+
+export interface IDemographicU extends IDemographicBase {
     objectId: string;
+    name?: string;
 }
 
 export interface IDemographicTest {

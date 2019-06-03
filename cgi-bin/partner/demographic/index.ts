@@ -41,6 +41,7 @@ action.post(
 
                         let server: IDB.ServerDemographic = new IDB.ServerDemographic();
 
+                        server.setValue('name', value.name);
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
                         server.setValue('port', value.port);
@@ -115,6 +116,7 @@ action.get(
                 results: servers.map((value, index, array) => {
                     return {
                         objectId: value.id,
+                        name: value.getValue('name'),
                         protocol: value.getValue('protocol'),
                         ip: value.getValue('ip'),
                         port: value.getValue('port'),
@@ -160,10 +162,13 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        let analysis = await GetAnalysis(value, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
+                        let analysis = await GetAnalysis(value as IDB.IServerDemographic, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
                             if (e !== 'face not found') throw e;
                         });
 
+                        if (value.name || value.name === '') {
+                            server.setValue('name', value.name);
+                        }
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
                         server.setValue('port', value.port);

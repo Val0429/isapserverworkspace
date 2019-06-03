@@ -6,6 +6,11 @@ import * as Rx from 'rxjs';
  */
 export interface IServerHumanDetection {
     /**
+     * 名稱
+     */
+    name: string;
+
+    /**
      *
      */
     protocol: 'http' | 'https';
