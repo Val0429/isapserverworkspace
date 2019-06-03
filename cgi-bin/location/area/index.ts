@@ -137,6 +137,9 @@ action.get(
 
             let query: Parse.Query<IDB.LocationArea> = new Parse.Query(IDB.LocationArea);
 
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
             if (_input.siteId) {
                 let site: IDB.LocationSite = new IDB.LocationSite();
                 site.id = _input.siteId;

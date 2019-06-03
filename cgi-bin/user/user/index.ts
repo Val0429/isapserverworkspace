@@ -161,14 +161,21 @@ action.get(
                     throw e;
                 });
 
-            let users: Parse.User[] = await new Parse.Query(Parse.User)
-                .notContainedIn('roles', roleExcludes)
+            let userExcludes: Parse.User[] = await new Parse.Query(Parse.User)
+                .containedIn('roles', roleExcludes)
                 .find()
                 .fail((e) => {
                     throw e;
                 });
 
-            let query: Parse.Query<IDB.UserInfo> = new Parse.Query(IDB.UserInfo).containedIn('user', users);
+            let query: Parse.Query<IDB.UserInfo> = new Parse.Query(IDB.UserInfo).notContainedIn('user', userExcludes);
+
+            if (_input.objectId) {
+                let user: Parse.User = new Parse.User();
+                user.id = _input.objectId;
+
+                query.equalTo('user', user);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;

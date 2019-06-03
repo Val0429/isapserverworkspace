@@ -90,6 +90,10 @@ action.get(
 
             let query: Parse.Query<IDB.UserGroup> = new Parse.Query(IDB.UserGroup);
 
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
+
             let total: number = await query.count().fail((e) => {
                 throw e;
             });

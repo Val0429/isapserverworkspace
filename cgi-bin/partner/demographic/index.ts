@@ -88,6 +88,10 @@ action.get(
 
             let query: Parse.Query<IDB.ServerDemographic> = new Parse.Query(IDB.ServerDemographic);
 
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
+
             let total: number = await query.count().fail((e) => {
                 throw e;
             });

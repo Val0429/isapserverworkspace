@@ -108,6 +108,10 @@ action.get(
 
             let query: Parse.Query<IDB.Tag> = new Parse.Query(IDB.Tag);
 
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
+
             let total: number = await query.count().fail((e) => {
                 throw e;
             });

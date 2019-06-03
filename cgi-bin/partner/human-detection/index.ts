@@ -91,6 +91,10 @@ action.get(
             });
             let totalPage: number = Math.ceil(total / _paging.pageSize);
 
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
+
             let servers: IDB.ServerHumanDetection[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)

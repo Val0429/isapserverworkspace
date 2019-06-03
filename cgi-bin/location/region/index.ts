@@ -122,6 +122,9 @@ action.get(
 
             let query: Parse.Query<IDB.LocationRegion> = new Parse.Query(IDB.LocationRegion);
 
+            if (_input.objectId) {
+                query.equalTo('objectId', _input.objectId);
+            }
             if (_input.parentId) {
                 let parent: IDB.LocationRegion = await new Parse.Query(IDB.LocationRegion)
                     .equalTo('objectId', _input.parentId)
