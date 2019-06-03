@@ -4,3 +4,4 @@ export * from './human-detection';
 export * from './people-counting';
 export * from './push-notifications';
 export * from './utilitys';
+export * from './weather';

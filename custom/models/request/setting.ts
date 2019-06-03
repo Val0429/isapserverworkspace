@@ -34,3 +34,12 @@ export interface ISmtpU {
 export interface ISmtpTest {
     email: string;
 }
+
+export interface IWeatherU {
+    secretKey: string;
+}
+
+export interface IWeatherTest {
+    longitude: number;
+    latitude: number;
+}

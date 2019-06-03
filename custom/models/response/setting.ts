@@ -1,4 +1,4 @@
-export interface IHumanDetectionR {
+import { Weather } from '../../helpers';
     protocol: 'http' | 'https';
     ip: string;
     port: number;
@@ -26,3 +26,9 @@ export interface ISmtpR {
     email: string;
     password: string;
 }
+
+export interface IWeatherR {
+    secretKey: string;
+}
+
+export interface IWeatherTest extends Weather.Darksky.IForecast {}
