@@ -46,6 +46,7 @@ action.post(
                 }
 
                 config = {
+                    name: '',
                     protocol: server.getValue('protocol'),
                     ip: server.getValue('ip'),
                     port: server.getValue('port'),
@@ -53,6 +54,7 @@ action.post(
                 };
             } else if (_input.config) {
                 config = {
+                    name: '',
                     protocol: _input.config.protocol,
                     ip: _input.config.ip,
                     port: _input.config.port,
