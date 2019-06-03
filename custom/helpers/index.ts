@@ -1,4 +1,5 @@
 export * from './cms-service';
+export * from './demographic';
 export * from './frs-service';
 export * from './human-detection';
 export * from './people-counting';

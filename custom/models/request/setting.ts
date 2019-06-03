@@ -1,13 +1,3 @@
-export interface IHumanDetectionU {
-    protocol: 'http' | 'https';
-    ip: string;
-    port: number;
-}
-
-export interface IHumanDetectionTest {
-    imageBase64: string;
-}
-
 export interface IPushNotificationU {
     enable: boolean;
 }

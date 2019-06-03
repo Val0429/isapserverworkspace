@@ -3,11 +3,12 @@ import * as IEvent from './event';
 import * as ILicense from './license';
 import * as ILocation from './location';
 import * as IOfficeHour from './office-hour';
+import * as IPartner from './partner';
 import * as ISetting from './setting';
 import * as ITag from './tag';
 import * as IUser from './user';
 
-export { IConfig, IEvent, ILicense, ILocation, IOfficeHour, ISetting, ITag, IUser };
+export { IConfig, IEvent, ILicense, ILocation, IOfficeHour, IPartner, ISetting, ITag, IUser };
 
 export interface IPaging {
     total: number;

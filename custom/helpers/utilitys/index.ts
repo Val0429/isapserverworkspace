@@ -2,6 +2,7 @@ export * from './datetime';
 export * from './db';
 export * from './draw';
 export * from './email';
+export * from './face';
 export * from './file';
 export * from './parser';
 export * from './permission';

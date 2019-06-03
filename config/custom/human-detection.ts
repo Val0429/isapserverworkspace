@@ -24,10 +24,6 @@ export interface ICMS {
 
 export interface Config {
     productId: string;
-    protocol: 'http' | 'https';
-    ip: string;
-    port: number;
-    target_score: number;
     bufferCount: number;
     roiTest: boolean;
     cms: ICMS;
@@ -36,10 +32,6 @@ export interface Config {
 
 let config: Config = {
     productId: '00111',
-    protocol: 'http',
-    ip: '127.0.0.1',
-    port: 8000,
-    target_score: 0.5,
     bufferCount: 5,
     roiTest: false,
     cms: {

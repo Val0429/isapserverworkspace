@@ -1,12 +1,4 @@
 import { Weather } from '../../helpers';
-    protocol: 'http' | 'https';
-    ip: string;
-    port: number;
-}
-
-export interface IHumanDetectionTest {
-    imageBase64: string;
-}
 
 export interface IPushNotificationR {
     enable: boolean;

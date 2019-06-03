@@ -1,6 +1,5 @@
 export * from './camera';
 export * from './config-cms-camera';
-export * from './config-cms-server';
 export * from './date-range';
 export * from './day-range';
 export * from './event-campaign';
@@ -8,6 +7,10 @@ export * from './location-area';
 export * from './location-region';
 export * from './location-site';
 export * from './office-hour';
+export * from './server-cms';
+export * from './server-demographic';
+export * from './server-frs';
+export * from './server-human-detection';
 export * from './tag';
 export * from './user-group';
 export * from './user-info';
