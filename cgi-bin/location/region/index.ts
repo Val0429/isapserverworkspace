@@ -236,8 +236,10 @@ action.put(
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let imageSrc: string = region.getValue('imageSrc');
+                            let imageSrc: string = `${extension.type}s/${region.id}_location_region_${region.createdAt.getTime()}.${extension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
+
+                            region.setValue('imageSrc', imageSrc);
                         }
                         if (value.longitude || value.longitude === 0) {
                             region.setValue('longitude', value.longitude);

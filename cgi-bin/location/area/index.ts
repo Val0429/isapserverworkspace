@@ -231,13 +231,17 @@ action.put(
 
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let imageSrc: string = area.getValue('imageSrc');
+                            let imageSrc: string = `${imageExtension.type}s/${area.id}_location_area_image_${area.createdAt.getTime()}.${imageExtension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
+
+                            area.setValue('imageSrc', imageSrc);
                         }
                         if (value.mapBase64) {
                             value.mapBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.mapBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let mapSrc: string = area.getValue('mapSrc');
+                            let mapSrc: string = `${mapExtension.type}s/${area.id}_location_area_map_${area.createdAt.getTime()}.${mapExtension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${mapSrc}`, value.mapBase64);
+
+                            area.setValue('mapSrc', mapSrc);
                         }
 
                         await area.save(null, { useMasterKey: true }).fail((e) => {

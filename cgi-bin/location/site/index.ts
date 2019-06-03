@@ -366,8 +366,10 @@ action.put(
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let imageSrc: string = site.getValue('imageSrc');
+                            let imageSrc: string = `${extension.type}s/${site.id}_location_site_${site.createdAt.getTime()}.${extension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
+
+                            site.setValue('imageSrc', imageSrc);
                         }
                         if (value.longitude || value.longitude === 0) {
                             site.setValue('longitude', value.longitude);
