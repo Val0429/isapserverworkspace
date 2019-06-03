@@ -21,18 +21,21 @@ InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 
 !macro DoUninstall UN
 Function ${UN}DoUninstall
+	#0, get old installation folder
+	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+	
 	# first, delete the uninstaller
-    Delete "$INSTDIR\uninstall.exe"
+    Delete "$R1\uninstall.exe"
  
     # second, remove the link from the start menu
     # "$SMPROGRAMS\uninstall.lnk"
 	# Delete "$SMPROGRAMS\${PRODUCT_NAME}"
-	SetOutPath $INSTDIR
+	SetOutPath $R1
 	# third, remove services	
 	ExecWait '"uninstall.bat" /s'
 	
 	# now delete installed files
-	RMDir /r $INSTDIR
+	RMDir /r $R1
 	
 	# remove registry info
 	DeleteRegKey HKLM "Software\${PRODUCT_NAME}"
