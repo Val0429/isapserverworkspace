@@ -107,6 +107,8 @@ action.post(
                 }),
             );
 
+            IDB.LocationArea$.next({ crud: 'c' });
+
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -255,6 +257,8 @@ action.put(
                 }),
             );
 
+            IDB.LocationArea$.next({ crud: 'u' });
+
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -303,6 +307,8 @@ action.delete(
                     }
                 }),
             );
+
+            IDB.LocationArea$.next({ crud: 'd' });
 
             return resMessages;
         } catch (e) {

@@ -124,6 +124,8 @@ action.post(
                 }),
             );
 
+            IDB.LocationSite$.next({ crud: 'c' });
+
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -389,6 +391,8 @@ action.put(
                 }),
             );
 
+            IDB.LocationSite$.next({ crud: 'u' });
+
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -453,6 +457,8 @@ action.delete(
                     }
                 }),
             );
+
+            IDB.LocationSite$.next({ crud: 'd' });
 
             return resMessages;
         } catch (e) {
