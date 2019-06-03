@@ -89,6 +89,12 @@ action.get(
 
             let query: Parse.Query<IDB.ServerDemographic> = new Parse.Query(IDB.ServerDemographic);
 
+            if (_input.keyword) {
+                let query1 = new Parse.Query(IDB.ServerDemographic).matches('name', new RegExp(_input.keyword), 'i');
+                let query2 = new Parse.Query(IDB.ServerDemographic).matches('ip', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2);
+            }
+
             if (_input.objectId) {
                 query.equalTo('objectId', _input.objectId);
             }

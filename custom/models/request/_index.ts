@@ -18,6 +18,7 @@ export interface IPaging {
 export interface IDataList {
     paging?: IPaging;
     objectId?: string;
+    keyword?: string;
 }
 
 export interface IMultiData {

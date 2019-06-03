@@ -87,14 +87,20 @@ action.get(
 
             let query: Parse.Query<IDB.ServerHumanDetection> = new Parse.Query(IDB.ServerHumanDetection);
 
-            let total: number = await query.count().fail((e) => {
-                throw e;
-            });
-            let totalPage: number = Math.ceil(total / _paging.pageSize);
+            if (_input.keyword) {
+                let query1 = new Parse.Query(IDB.ServerHumanDetection).matches('name', new RegExp(_input.keyword), 'i');
+                let query2 = new Parse.Query(IDB.ServerHumanDetection).matches('ip', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2);
+            }
 
             if (_input.objectId) {
                 query.equalTo('objectId', _input.objectId);
             }
+
+            let total: number = await query.count().fail((e) => {
+                throw e;
+            });
+            let totalPage: number = Math.ceil(total / _paging.pageSize);
 
             let servers: IDB.ServerHumanDetection[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)

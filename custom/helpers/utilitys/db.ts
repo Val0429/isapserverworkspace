@@ -86,6 +86,7 @@ export namespace Db {
             let info: IDB.UserInfo = new IDB.UserInfo();
 
             info.setValue('user', user);
+            info.setValue('account', account);
             info.setValue('name', account);
 
             await info.save(null, { useMasterKey: true }).fail((e) => {

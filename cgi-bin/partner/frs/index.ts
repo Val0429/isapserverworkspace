@@ -85,6 +85,12 @@ action.get(
 
             let query: Parse.Query<IDB.ServerFRS> = new Parse.Query(IDB.ServerFRS);
 
+            if (_input.keyword) {
+                let query1 = new Parse.Query(IDB.ServerFRS).matches('name', new RegExp(_input.keyword), 'i');
+                let query2 = new Parse.Query(IDB.ServerFRS).matches('manage.ip', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2);
+            }
+
             if (_input.objectId) {
                 query.equalTo('objectId', _input.objectId);
             }

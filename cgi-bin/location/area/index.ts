@@ -137,6 +137,11 @@ action.get(
 
             let query: Parse.Query<IDB.LocationArea> = new Parse.Query(IDB.LocationArea);
 
+            if (_input.keyword) {
+                let query1 = new Parse.Query(IDB.LocationArea).matches('name', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1);
+            }
+
             if (_input.objectId) {
                 query.equalTo('objectId', _input.objectId);
             }

@@ -101,6 +101,7 @@ action.post(
                         info = new IDB.UserInfo();
 
                         info.setValue('user', user);
+                        info.setValue('account', value.account);
                         info.setValue('name', value.name);
                         info.setValue('customId', value.employeeId);
                         info.setValue('email', value.email);
@@ -168,7 +169,15 @@ action.get(
                     throw e;
                 });
 
-            let query: Parse.Query<IDB.UserInfo> = new Parse.Query(IDB.UserInfo).notContainedIn('user', userExcludes);
+            let query: Parse.Query<IDB.UserInfo> = new Parse.Query(IDB.UserInfo);
+
+            if (_input.keyword) {
+                let query1 = new Parse.Query(IDB.UserInfo).matches('account', new RegExp(_input.keyword), 'i');
+                let query2 = new Parse.Query(IDB.UserInfo).matches('name', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2);
+            }
+
+            query.notContainedIn('user', userExcludes);
 
             if (_input.objectId) {
                 let user: Parse.User = new Parse.User();

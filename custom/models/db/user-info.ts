@@ -12,6 +12,11 @@ export interface IUserInfo {
     user: Parse.User;
 
     /**
+     * 帳號
+     */
+    account: string;
+
+    /**
      * 名字
      */
     name: string;
