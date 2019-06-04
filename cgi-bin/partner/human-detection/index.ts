@@ -35,10 +35,21 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let analysis = await GetAnalysis(value, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.target_score, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
 
-                        let server: IDB.ServerHumanDetection = new IDB.ServerHumanDetection();
+                        let server: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection)
+                            .equalTo('customId', value.customId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (server) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
+                        }
 
+                        server = new IDB.ServerHumanDetection();
+
+                        server.setValue('customId', value.customId);
                         server.setValue('name', value.name);
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
@@ -90,7 +101,8 @@ action.get(
             if (_input.keyword) {
                 let query1 = new Parse.Query(IDB.ServerHumanDetection).matches('name', new RegExp(_input.keyword), 'i');
                 let query2 = new Parse.Query(IDB.ServerHumanDetection).matches('ip', new RegExp(_input.keyword), 'i');
-                query = Parse.Query.or(query1, query2);
+                let query3 = new Parse.Query(IDB.ServerHumanDetection).matches('customId', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2, query3);
             }
 
             if (_input.objectId) {
@@ -120,6 +132,7 @@ action.get(
                 results: servers.map((value, index, array) => {
                     return {
                         objectId: value.id,
+                        customId: value.getValue('customId'),
                         name: value.getValue('name'),
                         protocol: value.getValue('protocol'),
                         ip: value.getValue('ip'),
@@ -166,7 +179,7 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        let analysis = await GetAnalysis(value as IDB.IServerHumanDetection, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.target_score, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
 
                         if (value.name || value.name === '') {
                             server.setValue('name', value.name);
@@ -254,19 +267,15 @@ action.delete(
  * @param config
  * @param buffer
  */
-export async function GetAnalysis(config: IDB.IServerHumanDetection, imageBase64: string): Promise<{ locations: HumanDetection.ILocation[]; buffer: Buffer }> {
+export async function GetAnalysis(config: HumanDetection.ISap.IUrlConfig, score: number, imageBase64: string): Promise<{ locations: HumanDetection.ILocation[]; buffer: Buffer }> {
     try {
         let regex = /data:.*;base64, */;
 
         let buffer: Buffer = Buffer.from(imageBase64.replace(regex, ''), Parser.Encoding.base64);
 
         let hd: HumanDetection.ISap = new HumanDetection.ISap();
-        hd.config = {
-            protocol: config.protocol,
-            ip: config.ip,
-            port: config.port,
-        };
-        hd.score = config.target_score;
+        hd.config = config;
+        hd.score = score;
 
         hd.Initialization();
 

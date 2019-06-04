@@ -35,12 +35,23 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let analysis = await GetAnalysis(value, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
                             if (e !== 'face not found') throw e;
                         });
 
-                        let server: IDB.ServerDemographic = new IDB.ServerDemographic();
+                        let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
+                            .equalTo('customId', value.customId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (server) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
+                        }
 
+                        server = new IDB.ServerDemographic();
+
+                        server.setValue('customId', value.customId);
                         server.setValue('name', value.name);
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
@@ -92,7 +103,8 @@ action.get(
             if (_input.keyword) {
                 let query1 = new Parse.Query(IDB.ServerDemographic).matches('name', new RegExp(_input.keyword), 'i');
                 let query2 = new Parse.Query(IDB.ServerDemographic).matches('ip', new RegExp(_input.keyword), 'i');
-                query = Parse.Query.or(query1, query2);
+                let query3 = new Parse.Query(IDB.ServerDemographic).matches('customId', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2, query3);
             }
 
             if (_input.objectId) {
@@ -122,6 +134,7 @@ action.get(
                 results: servers.map((value, index, array) => {
                     return {
                         objectId: value.id,
+                        customId: value.getValue('customId'),
                         name: value.getValue('name'),
                         protocol: value.getValue('protocol'),
                         ip: value.getValue('ip'),
@@ -168,7 +181,7 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        let analysis = await GetAnalysis(value as IDB.IServerDemographic, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
                             if (e !== 'face not found') throw e;
                         });
 
@@ -258,7 +271,7 @@ action.delete(
  * @param config
  * @param buffer
  */
-export async function GetAnalysis(config: IDB.IServerDemographic, imageBase64: string): Promise<Demographic.ISap.IFeature[]> {
+export async function GetAnalysis(config: Demographic.ISap.IUrlConfig, margin: number, imageBase64: string): Promise<Demographic.ISap.IFeature[]> {
     try {
         let regex = /data:.*;base64, */;
 
@@ -275,12 +288,8 @@ export async function GetAnalysis(config: IDB.IServerDemographic, imageBase64: s
         }
 
         let demo: Demographic.ISap = new Demographic.ISap();
-        demo.config = {
-            protocol: config.protocol,
-            ip: config.ip,
-            port: config.port,
-        };
-        demo.margin = config.margin;
+        demo.config = config;
+        demo.margin = margin;
 
         demo.Initialization();
 

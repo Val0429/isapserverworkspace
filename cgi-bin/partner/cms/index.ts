@@ -37,8 +37,19 @@ action.post(
                     try {
                         let devices = await GetDeviceList(value);
 
-                        let server: IDB.ServerCMS = new IDB.ServerCMS();
+                        let server: IDB.ServerCMS = await new Parse.Query(IDB.ServerCMS)
+                            .equalTo('customId', value.customId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (server) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
+                        }
 
+                        server = new IDB.ServerCMS();
+
+                        server.setValue('customId', value.customId);
                         server.setValue('name', value.name);
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
@@ -91,7 +102,8 @@ action.get(
             if (_input.keyword) {
                 let query1 = new Parse.Query(IDB.ServerCMS).matches('name', new RegExp(_input.keyword), 'i');
                 let query2 = new Parse.Query(IDB.ServerCMS).matches('ip', new RegExp(_input.keyword), 'i');
-                query = Parse.Query.or(query1, query2);
+                let query3 = new Parse.Query(IDB.ServerCMS).matches('customId', new RegExp(_input.keyword), 'i');
+                query = Parse.Query.or(query1, query2, query3);
             }
 
             if (_input.objectId) {
@@ -121,6 +133,7 @@ action.get(
                 results: servers.map((value, index, array) => {
                     return {
                         objectId: value.id,
+                        customId: value.getValue('customId'),
                         name: value.getValue('name'),
                         protocol: value.getValue('protocol'),
                         ip: value.getValue('ip'),

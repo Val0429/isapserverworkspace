@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db, Parser, File, Draw } from '../../../custom/helpers';
+import { Print, Db, Parser, File, Draw, Demographic } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { GetAnalysis } from './';
 
@@ -33,7 +33,8 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
             }
 
-            let config: IDB.IServerDemographic = undefined;
+            let config: Demographic.ISap.IUrlConfig = undefined;
+            let margin: number = 0;
             if (_input.objectId) {
                 let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
                     .equalTo('objectId', _input.objectId)
@@ -46,25 +47,23 @@ action.post(
                 }
 
                 config = {
-                    name: '',
                     protocol: server.getValue('protocol'),
                     ip: server.getValue('ip'),
                     port: server.getValue('port'),
-                    margin: server.getValue('margin'),
                 };
+                margin = server.getValue('margin');
             } else if (_input.config) {
                 config = {
-                    name: '',
                     protocol: _input.config.protocol,
                     ip: _input.config.ip,
                     port: _input.config.port,
-                    margin: _input.config.margin,
                 };
+                margin = _input.config.margin;
             } else {
                 throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
             }
 
-            let analysis = await GetAnalysis(config, _input.imageBase64);
+            let analysis = await GetAnalysis(config, margin, _input.imageBase64);
 
             return analysis.map((value, index, array) => {
                 return {

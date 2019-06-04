@@ -7,6 +7,7 @@ export interface ICMSBase {
 }
 
 export interface ICMSC extends ICMSBase {
+    customId: string;
     name: string;
 }
 
@@ -33,6 +34,7 @@ export interface IFRSBase {
 }
 
 export interface IFRSC extends IFRSBase {
+    customId: string;
     name: string;
 }
 
@@ -49,6 +51,7 @@ export interface IHumanDetectionBase {
 }
 
 export interface IHumanDetectionC extends IHumanDetectionBase {
+    customId: string;
     name: string;
 }
 
@@ -71,6 +74,7 @@ export interface IDemographicBase {
 }
 
 export interface IDemographicC extends IDemographicBase {
+    customId: string;
     name: string;
 }
 

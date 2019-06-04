@@ -1,16 +1,24 @@
 import { IRequest } from '../request';
 
-export interface ICMSR extends IRequest.IPartner.ICMSU {}
+export interface ICMSR extends IRequest.IPartner.ICMSC {
+    objectId: string;
+}
 
-export interface IFRSR extends IRequest.IPartner.IFRSU {}
+export interface IFRSR extends IRequest.IPartner.IFRSC {
+    objectId: string;
+}
 
-export interface IHumanDetectionR extends IRequest.IPartner.IHumanDetectionU {}
+export interface IHumanDetectionR extends IRequest.IPartner.IHumanDetectionC {
+    objectId: string;
+}
 
 export interface IHumanDetectionTest {
     imageBase64: string;
 }
 
-export interface IDemographicR extends IRequest.IPartner.IDemographicU {}
+export interface IDemographicR extends IRequest.IPartner.IDemographicC {
+    objectId: string;
+}
 
 export interface IDemographicTest {
     age: number;

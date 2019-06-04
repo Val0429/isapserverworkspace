@@ -6,6 +6,11 @@ import * as Rx from 'rxjs';
  */
 export interface IServerHumanDetection {
     /**
+     * Custom id
+     */
+    customId: string;
+
+    /**
      * 名稱
      */
     name: string;

@@ -33,7 +33,8 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
             }
 
-            let config: IDB.IServerHumanDetection = undefined;
+            let config: HumanDetection.ISap.IUrlConfig = undefined;
+            let score: number = 0;
             if (_input.objectId) {
                 let server: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection)
                     .equalTo('objectId', _input.objectId)
@@ -46,25 +47,23 @@ action.post(
                 }
 
                 config = {
-                    name: '',
                     protocol: server.getValue('protocol'),
                     ip: server.getValue('ip'),
                     port: server.getValue('port'),
-                    target_score: server.getValue('target_score'),
                 };
+                score = server.getValue('target_score');
             } else if (_input.config) {
                 config = {
-                    name: '',
                     protocol: _input.config.protocol,
                     ip: _input.config.ip,
                     port: _input.config.port,
-                    target_score: _input.config.target_score,
                 };
+                score = _input.config.target_score;
             } else {
                 throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
             }
 
-            let analysis = await GetAnalysis(config, _input.imageBase64);
+            let analysis = await GetAnalysis(config, score, _input.imageBase64);
 
             if (analysis.locations.length > 0) {
                 let config = Config.humanDetection.output;
