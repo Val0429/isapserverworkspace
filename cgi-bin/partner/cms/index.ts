@@ -35,7 +35,7 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let devices = await GetDeviceList(value);
+                        let devices = await GetDeviceTree(value);
 
                         let server: IDB.ServerCMS = await new Parse.Query(IDB.ServerCMS)
                             .equalTo('customId', value.customId)
@@ -181,7 +181,7 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        let devices = await GetDeviceList(value);
+                        let devices = await GetDeviceTree(value);
 
                         if (value.name || value.name === '') {
                             server.setValue('name', value.name);
@@ -266,10 +266,10 @@ action.delete(
 );
 
 /**
- * Get device list
+ * Get device list tree
  * @param config
  */
-export async function GetDeviceList(config: CMSService.IConfig): Promise<CMSService.IDevice[]> {
+export async function GetDeviceTree(config: CMSService.IConfig): Promise<CMSService.INvr[]> {
     try {
         let cms: CMSService = new CMSService();
         cms.config = {
@@ -286,7 +286,7 @@ export async function GetDeviceList(config: CMSService.IConfig): Promise<CMSServ
             throw Errors.throw(Errors.CustomBadRequest, [e]);
         }
 
-        let devices = await cms.GetDeviceList();
+        let devices = await cms.GetDeviceTree();
 
         return devices;
     } catch (e) {

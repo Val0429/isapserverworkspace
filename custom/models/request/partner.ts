@@ -16,6 +16,11 @@ export interface ICMSU extends ICMSBase {
     name?: string;
 }
 
+export interface ICMSDevice {
+    objectId?: string;
+    config?: ICMSBase;
+}
+
 export interface IFRSBase {
     analysis: {
         ip: string;
@@ -43,6 +48,11 @@ export interface IFRSU extends IFRSBase {
     name?: string;
 }
 
+export interface IFRSDevice {
+    objectId?: string;
+    config?: IFRSBase;
+}
+
 export interface IHumanDetectionBase {
     protocol: 'http' | 'https';
     ip: string;
@@ -62,7 +72,7 @@ export interface IHumanDetectionU extends IHumanDetectionBase {
 
 export interface IHumanDetectionTest {
     objectId?: string;
-    config?: IHumanDetectionC;
+    config?: IHumanDetectionBase;
     imageBase64: string;
 }
 
@@ -85,6 +95,6 @@ export interface IDemographicU extends IDemographicBase {
 
 export interface IDemographicTest {
     objectId?: string;
-    config?: IDemographicC;
+    config?: IDemographicBase;
     imageBase64: string;
 }
