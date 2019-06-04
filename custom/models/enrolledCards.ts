@@ -1,7 +1,7 @@
 import { registerSubclass, ParseObject } from './../../../helpers/parse-server/parse-helper';
 import { Invitations } from './invitations';
 
-/// Floors /////////////////////////////////////////
+/// Enroll Cards ////////////////////////////////////
 export interface IEnrolledCards {
     invitation?: Invitations;
     visitDate?: Date;

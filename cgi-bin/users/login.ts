@@ -7,10 +7,16 @@ import {
 } from 'core/cgi-package';
 
 
-export interface Input {
+interface IInputNormal {
     username: string;
     password: string;
 }
+
+interface IInputExtend {
+    sessionId: string;
+}
+
+export type Input = IInputNormal | IInputExtend;
 
 export interface Output {
     sessionId: string;
@@ -23,31 +29,40 @@ export default new Action<Input, Output>({
     inputType: "Input",
 })
 .all( async (data) => {
-    /// test: cannot login as kiosk
-    var kioskRole = await new Parse.Query(Parse.Role)
-        .equalTo("name", RoleList.Kiosk)
-        .first();
+    let sessionId: string, user: Parse.User;
+    if ('username' in data.inputType) {
+        /// test: cannot login as kiosk
+        var kioskRole = await new Parse.Query(Parse.Role)
+            .equalTo("name", RoleList.Kiosk)
+            .first();
 
-    let testuser = await new Parse.Query(Parse.User)
-        .notEqualTo("roles", kioskRole)
-        .equalTo("username", data.inputType.username).first();
-    if (!testuser) throw Errors.throw(Errors.CustomBadRequest, [`User <${data.inputType.username}> not exists or should not be a kiosk role.`]);
+        let testuser = await new Parse.Query(Parse.User)
+            .notEqualTo("roles", kioskRole)
+            .equalTo("username", data.inputType.username).first();
+        if (!testuser) throw Errors.throw(Errors.CustomBadRequest, [`User <${data.inputType.username}> not exists or should not be a kiosk role.`]);
 
-    /// Try login
-    var obj = await UserHelper.login(data.inputType);
-    let user = await new Parse.Query(Parse.User)
-        .include("roles")
-        .include("data.company")
-        .include("data.floor")
-        .get(obj.user.id);
+        /// Try login
+        var obj = await UserHelper.login(data.inputType);
+        sessionId = obj.sessionId;
+        user = await new Parse.Query(Parse.User)
+            .include("roles")
+            .include("data.company")
+            .include("data.floor")
+            .get(obj.user.id);
 
-    var ev = new EventLogin({
-        owner: user
-    });
-    Events.save(ev);
+        var ev = new EventLogin({
+            owner: user
+        });
+        Events.save(ev);
+
+    } else {
+        if (!data.session) throw Errors.throw(Errors.SessionNotExists);
+        user = data.user;
+        sessionId = data.session.getSessionToken();
+    }
 
     return ParseObject.toOutputJSON({
-        sessionId: obj.sessionId,
+        sessionId,
         serverTime: new Date(),
         user
     });
