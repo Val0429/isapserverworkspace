@@ -4,6 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Parser, Db } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import * as UserInfo from '../user';
 
 let action = new Action({
     loginRequired: true,
@@ -263,7 +264,7 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['user group not found']);
                         }
 
-                        await UnbindingUserInfoGroup(group);
+                        await UserInfo.UnbindingGroup(group);
 
                         await group.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
@@ -285,24 +286,24 @@ action.delete(
 );
 
 /**
- * Unbinding user info group
- * @param group
+ * Unbinding group site
+ * @param site
  */
-async function UnbindingUserInfoGroup(group: IDB.UserGroup): Promise<void> {
+export async function UnbindingSite(site: IDB.LocationSite): Promise<void> {
     try {
-        let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
-            .containedIn('groups', [group])
+        let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
+            .containedIn('sites', [site])
             .find()
             .fail((e) => {
                 throw e;
             });
 
         await Promise.all(
-            userInfos.map(async (value, index, array) => {
-                let groups: IDB.UserGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
-                    return value1.id !== group.id;
+            groups.map(async (value, index, array) => {
+                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                    return value1.id !== site.id;
                 });
-                value.setValue('groups', groups);
+                value.setValue('sites', sites);
 
                 await value.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;

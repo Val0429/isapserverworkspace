@@ -4,7 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as Group from '../../device/group';
+import * as DeviceGroup from '../../device/group';
 
 let action = new Action({
     loginRequired: true,
@@ -308,7 +308,7 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
                         }
 
-                        await DeleteArea(area);
+                        await Delete(area);
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -331,9 +331,9 @@ action.delete(
  * Delete area
  * @param objectId
  */
-export async function DeleteArea(area: IDB.LocationArea): Promise<void> {
+export async function Delete(area: IDB.LocationArea): Promise<void> {
     try {
-        await DeleteGroup(area);
+        await DeviceGroup.Deletes(area);
 
         await area.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
@@ -352,21 +352,21 @@ export async function DeleteArea(area: IDB.LocationArea): Promise<void> {
 }
 
 /**
- * Delete group
- * @param area
+ * Delete area
+ * @param site
  */
-export async function DeleteGroup(area: IDB.LocationArea): Promise<void> {
+export async function Deletes(site: IDB.LocationSite): Promise<void> {
     try {
-        let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
-            .equalTo('area', area)
+        let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+            .equalTo('site', site)
             .find()
             .fail((e) => {
                 throw e;
             });
 
         await Promise.all(
-            groups.map(async (value, index, array) => {
-                await Group.DeleteGroup(value);
+            areas.map(async (value, index, array) => {
+                await Delete(value);
             }),
         );
     } catch (e) {

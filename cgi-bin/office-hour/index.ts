@@ -269,3 +269,33 @@ action.delete(
         }
     },
 );
+
+/**
+ * Unbinding office hour site
+ * @param site
+ */
+export async function UnbindingSite(site: IDB.LocationSite): Promise<void> {
+    try {
+        let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
+            .containedIn('sites', [site])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            officeHours.map(async (value, index, array) => {
+                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                    return value1.id !== site.id;
+                });
+                value.setValue('sites', sites);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}

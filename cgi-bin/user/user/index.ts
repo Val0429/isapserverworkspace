@@ -438,3 +438,33 @@ action.delete(
         }
     },
 );
+
+/**
+ * Unbinding user info group
+ * @param group
+ */
+export async function UnbindingGroup(group: IDB.UserGroup): Promise<void> {
+    try {
+        let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+            .containedIn('groups', [group])
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            userInfos.map(async (value, index, array) => {
+                let groups: IDB.UserGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
+                    return value1.id !== group.id;
+                });
+                value.setValue('groups', groups);
+
+                await value.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}

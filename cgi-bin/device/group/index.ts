@@ -246,7 +246,7 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['group not found']);
                         }
 
-                        await DeleteGroup(group);
+                        await Delete(group);
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -269,11 +269,34 @@ action.delete(
  * Delete group
  * @param objectId
  */
-export async function DeleteGroup(group: IDB.DeviceGroup): Promise<void> {
+export async function Delete(group: IDB.DeviceGroup): Promise<void> {
     try {
         await group.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Delete group
+ * @param area
+ */
+export async function Deletes(area: IDB.LocationArea): Promise<void> {
+    try {
+        let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
+            .equalTo('area', area)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            groups.map(async (value, index, array) => {
+                await Delete(value);
+            }),
+        );
     } catch (e) {
         throw e;
     }

@@ -4,6 +4,8 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import * as Site from '../site';
+import * as Tag from '../../tag';
 
 let action = new Action({
     loginRequired: true,
@@ -307,23 +309,7 @@ action.delete(
                             throw Errors.throw(Errors.CustomNotExists, ['region not found']);
                         }
 
-                        let childrens: IDB.LocationRegion[] = await region.getChildren();
-
-                        await UnbindingSiteRegion(childrens);
-
-                        await UnbindingTagRegion(childrens);
-
-                        await region.destroy({ useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
-
-                        childrens.forEach((value, index, array) => {
-                            if (value.getValue('imageSrc')) {
-                                try {
-                                    File.DeleteFile(`${File.assetsPath}/${value.getValue('imageSrc')}`);
-                                } catch (e) {}
-                            }
-                        });
+                        await Delete(region);
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -360,59 +346,28 @@ export async function CreateRoot(): Promise<IDB.LocationRegion> {
 }
 
 /**
- * Unbinding site region
- * @param regions
+ * Delete region
+ * @param objectId
  */
-async function UnbindingSiteRegion(regions: IDB.LocationRegion[]): Promise<void> {
+export async function Delete(region: IDB.LocationRegion): Promise<void> {
     try {
-        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-            .containedIn('region', regions)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+        let childrens: IDB.LocationRegion[] = await region.getChildren();
 
-        await Promise.all(
-            sites.map(async (value, index, array) => {
-                value.unset('region');
-
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Unbinding tag region
- * @param regions
- */
-async function UnbindingTagRegion(regions: IDB.LocationRegion[]): Promise<void> {
-    try {
-        let regionIds: string[] = regions.map((value, index, array) => {
-            return value.id;
+        await region.destroy({ useMasterKey: true }).fail((e) => {
+            throw e;
         });
 
-        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
-            .containedIn('regions', regions)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
         await Promise.all(
-            tags.map(async (value, index, array) => {
-                let regions: IDB.LocationRegion[] = value.getValue('regions').filter((value1, index1, array1) => {
-                    return regionIds.indexOf(value1.id) < 0;
-                });
-                value.setValue('regions', regions);
+            childrens.map(async (value, index, array) => {
+                if (value.getValue('imageSrc')) {
+                    await Site.UnbindingRegion(value);
 
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
+                    await Tag.UnbindingRegion(value);
+
+                    try {
+                        File.DeleteFile(`${File.assetsPath}/${value.getValue('imageSrc')}`);
+                    } catch (e) {}
+                }
             }),
         );
     } catch (e) {
