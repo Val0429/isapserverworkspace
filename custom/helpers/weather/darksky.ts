@@ -58,7 +58,7 @@ export class Darksky {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
                                 return reject(
-                                    `${response.statusCode}, ${body
+                                    `${response.statusCode}, ${JSON.stringify(body)
                                         .toString()
                                         .replace(/\r\n/g, '; ')
                                         .replace(/\n/g, '; ')}`,

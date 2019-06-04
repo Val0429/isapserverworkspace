@@ -32,7 +32,7 @@ action.post(
 
             weather.Initialization();
 
-            let result = await weather.GetCurrent(0, 0);
+            let result = await weather.GetCurrent(_input.latitude, _input.longitude);
 
             return result;
         } catch (e) {
