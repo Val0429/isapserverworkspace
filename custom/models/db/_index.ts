@@ -2,6 +2,7 @@ export * from './camera';
 export * from './config-cms-camera';
 export * from './date-range';
 export * from './day-range';
+export * from './device-group';
 export * from './event-campaign';
 export * from './location-area';
 export * from './location-region';

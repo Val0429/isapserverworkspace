@@ -4,6 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import * as Group from '../../device/group';
 
 let action = new Action({
     loginRequired: true,
@@ -332,6 +333,8 @@ action.delete(
  */
 export async function DeleteArea(area: IDB.LocationArea): Promise<void> {
     try {
+        await DeleteGroup(area);
+
         await area.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });
@@ -343,6 +346,29 @@ export async function DeleteArea(area: IDB.LocationArea): Promise<void> {
         try {
             File.DeleteFile(`${File.assetsPath}/${area.getValue('mapSrc')}`);
         } catch (e) {}
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Delete group
+ * @param area
+ */
+export async function DeleteGroup(area: IDB.LocationArea): Promise<void> {
+    try {
+        let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
+            .equalTo('area', area)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            groups.map(async (value, index, array) => {
+                await Group.DeleteGroup(value);
+            }),
+        );
     } catch (e) {
         throw e;
     }
