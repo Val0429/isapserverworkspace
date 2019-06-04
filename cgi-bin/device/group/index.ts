@@ -89,7 +89,7 @@ action.post(
 /**
  * Action Read
  */
-type InputR = IRequest.IDataList;
+type InputR = IRequest.IDataList & IRequest.IDevice.IGroupAll;
 
 type OutputR = IResponse.IDataList<IResponse.IDevice.IGroupIndexR>;
 
@@ -113,6 +113,18 @@ action.get(
 
             if (_input.objectId) {
                 query.equalTo('objectId', _input.objectId);
+            }
+            if (_input.siteId) {
+                let site: IDB.LocationSite = new IDB.LocationSite();
+                site.id = _input.siteId;
+
+                query.equalTo('site', site);
+            }
+            if (_input.areaId) {
+                let area: IDB.LocationArea = new IDB.LocationArea();
+                area.id = _input.areaId;
+
+                query.equalTo('area', area);
             }
 
             let total: number = await query.count().fail((e) => {

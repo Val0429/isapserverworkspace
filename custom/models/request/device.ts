@@ -6,3 +6,8 @@ export interface IGroupIndexC {
 export interface IGroupIndexU {
     objectId: string;
 }
+
+export interface IGroupAll {
+    siteId?: string;
+    areaId?: string;
+}

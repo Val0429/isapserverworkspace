@@ -17,17 +17,33 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Read
  */
-type InputR = null;
+type InputR = IRequest.IDevice.IGroupAll;
 
 type OutputR = IResponse.IDevice.IGroupAll[];
 
 action.get(
+    {
+        inputType: 'InputR',
+    },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let query: Parse.Query<IDB.DeviceGroup> = new Parse.Query(IDB.DeviceGroup);
+
+            if (_input.siteId) {
+                let site: IDB.LocationSite = new IDB.LocationSite();
+                site.id = _input.siteId;
+
+                query.equalTo('site', site);
+            }
+            if (_input.areaId) {
+                let area: IDB.LocationArea = new IDB.LocationArea();
+                area.id = _input.areaId;
+
+                query.equalTo('area', area);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
