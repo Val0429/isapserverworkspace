@@ -3,6 +3,7 @@ import * as Rx from 'rxjs';
 import { IDB } from '../models';
 import { Print, Apn, Fcm } from '../helpers';
 import * as Enum from '../enums';
+import * as Main from '../../main';
 
 class Action {
     private _config = Config.pushNotification;
@@ -13,9 +14,11 @@ class Action {
     }
 
     constructor() {
-        setTimeout(async () => {
-            await this.Initialization();
-        }, 0);
+        Main.ready$.subscribe({
+            next: async () => {
+                await this.Initialization();
+            },
+        });
     }
 
     private Initialization = async (): Promise<void> => {
