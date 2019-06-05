@@ -4,6 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Parser, Db } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import * as Device from '../';
 
 let action = new Action({
     loginRequired: true,
@@ -283,6 +284,8 @@ action.delete(
  */
 export async function Delete(group: IDB.DeviceGroup): Promise<void> {
     try {
+        await Device.UnbindingGroup(group);
+
         await group.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });

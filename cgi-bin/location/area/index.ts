@@ -5,6 +5,7 @@ import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import * as DeviceGroup from '../../device/group';
+import * as Device from '../../device';
 
 let action = new Action({
     loginRequired: true,
@@ -334,6 +335,8 @@ action.delete(
 export async function Delete(area: IDB.LocationArea): Promise<void> {
     try {
         await DeviceGroup.Deletes(area);
+
+        await Device.UnbindingArea(area);
 
         await area.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
