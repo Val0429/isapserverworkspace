@@ -167,6 +167,14 @@ action.get(
                 .fail((e) => {
                     throw e;
                 });
+
+            let deviceGroups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
+                .containedIn('area', areas)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
             return {
                 paging: {
                     total: total,
@@ -180,12 +188,17 @@ action.get(
                         name: value.getValue('site').getValue('name'),
                     };
 
+                    let deviceGroupCount: number = deviceGroups.filter((value1, index1, array1) => {
+                        return value1.getValue('area').id === value.id;
+                    }).length;
+
                     return {
                         objectId: value.id,
                         site: site,
                         name: value.getValue('name'),
                         imageSrc: value.getValue('imageSrc'),
                         mapSrc: value.getValue('mapSrc'),
+                        deviceGroupCount: deviceGroupCount,
                     };
                 }),
             };

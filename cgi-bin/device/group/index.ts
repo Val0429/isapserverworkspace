@@ -141,6 +141,14 @@ action.get(
                 .fail((e) => {
                     throw e;
                 });
+
+            let allDevices: IDB.Device[] = await new Parse.Query(IDB.Device)
+                .containedIn('group', groups)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
             return {
                 paging: {
                     total: total,
@@ -159,11 +167,32 @@ action.get(
                         name: value.getValue('area').getValue('name'),
                     };
 
+                    let devices: IResponse.IDevice.IGroupIndexR_Device[] = allDevices
+                        .filter((value1, index1, array1) => {
+                            return value1.getValue('group').id === value.id;
+                        })
+                        .reduce((prev1, curr1, index1, array1) => {
+                            let device = prev1.find((value2, index2, array2) => {
+                                return value2.mode === Enum.EDeviceMode[curr1.getValue('mode')];
+                            });
+                            if (device) {
+                                device.count++;
+                            } else {
+                                prev1.push({
+                                    mode: Enum.EDeviceMode[curr1.getValue('mode')],
+                                    count: 1,
+                                });
+                            }
+
+                            return prev1;
+                        }, []);
+
                     return {
                         objectId: value.id,
                         site: site,
                         area: area,
                         name: value.getValue('name'),
+                        devices: devices,
                     };
                 }),
             };

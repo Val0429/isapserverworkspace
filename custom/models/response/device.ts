@@ -2,11 +2,17 @@ import { IObject } from './_index';
 import { Draw } from '../../helpers';
 import { ICameraHanwha } from '../db/_index';
 
+export interface IGroupIndexR_Device {
+    mode: string;
+    count: number;
+}
+
 export interface IGroupIndexR {
     objectId: string;
     site: IObject;
     area: IObject;
     name: string;
+    devices: IGroupIndexR_Device[];
 }
 
 export interface IGroupAll {

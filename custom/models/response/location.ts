@@ -40,6 +40,8 @@ export interface ISiteIndexR extends ISiteIndexR_Base {
     squareMeter: number;
     staffNumber: number;
     officeHour: IObject;
+    areaCount: number;
+    deviceGroupCount: number;
 }
 
 export interface ISiteAll {
@@ -57,6 +59,7 @@ export interface IAreaIndexR_Base {
 export interface IAreaIndexR extends IAreaIndexR_Base {
     objectId: string;
     site: IObject;
+    deviceGroupCount: number;
 }
 
 export interface IAreaAll {

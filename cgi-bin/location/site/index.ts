@@ -198,6 +198,20 @@ action.get(
                     throw e;
                 });
 
+            let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+                .containedIn('site', sites)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            let deviceGroups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
+                .containedIn('site', sites)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
             return {
                 paging: {
                     total: total,
@@ -237,6 +251,14 @@ action.get(
                           }
                         : undefined;
 
+                    let areaCount: number = areas.filter((value1, index1, array1) => {
+                        return value1.getValue('site').id === value.id;
+                    }).length;
+
+                    let deviceGroupCount: number = deviceGroups.filter((value1, index1, array1) => {
+                        return value1.getValue('site').id === value.id;
+                    }).length;
+
                     return {
                         objectId: value.id,
                         region: region,
@@ -252,6 +274,8 @@ action.get(
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
+                        areaCount: areaCount,
+                        deviceGroupCount: deviceGroupCount,
                     };
                 }),
             };
