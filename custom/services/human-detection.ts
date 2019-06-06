@@ -5,6 +5,7 @@ import { Print, CMSService, HumanDetection, File, Draw } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as DataWindow from '../../cgi-bin/data-window';
+import * as Main from '../../main';
 
 class Service {
     private _cms: CMSService = undefined;
@@ -81,9 +82,11 @@ class Service {
             },
         });
 
-        setTimeout(() => {
-            this._initialization$.next();
-        }, 150);
+        Main.ready$.subscribe({
+            next: async () => {
+                this._initialization$.next();
+            },
+        });
     }
 
     private Initialization = async (): Promise<void> => {

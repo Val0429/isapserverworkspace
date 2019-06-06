@@ -1,4 +1,9 @@
-import { autoIndex } from "helpers/shells/auto-index";
+import { autoIndex } from 'helpers/shells/auto-index';
+import * as Main from '../../main';
 
-autoIndex(`${__dirname}/../agents`);
-autoIndex(`${__dirname}/../models`);
+Main.ready$.subscribe({
+    next: async () => {
+        autoIndex(`${__dirname}/../agents`);
+        autoIndex(`${__dirname}/../models`);
+    },
+});

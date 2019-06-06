@@ -4,6 +4,7 @@ import * as Rx from 'rxjs';
 import { IDB } from '../models';
 import { Print } from '../helpers';
 import * as Enum from '../enums';
+import * as Main from '../../main';
 
 class Action {
     private _bufferCount: number = 10;
@@ -19,9 +20,11 @@ class Action {
     }
 
     constructor() {
-        setTimeout(async () => {
-            await this.Initialization();
-        }, 0);
+        Main.ready$.subscribe({
+            next: async () => {
+                await this.Initialization();
+            },
+        });
     }
 
     private Initialization = async (): Promise<void> => {

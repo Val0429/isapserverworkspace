@@ -5,6 +5,7 @@ import { Print, CMSService, HumanDetection, File, Draw, PeopleCounting } from '.
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as DataWindow from '../../cgi-bin/data-window/pc';
+import * as Main from '../../main';
 
 class Service {
     private _pcs: PeopleCounting.Eocortex[] = [];
@@ -77,9 +78,11 @@ class Service {
             },
         });
 
-        setTimeout(() => {
-            this._initialization$.next();
-        }, 150);
+        Main.ready$.subscribe({
+            next: async () => {
+                this._initialization$.next();
+            },
+        });
     }
 
     private Initialization = async (): Promise<void> => {

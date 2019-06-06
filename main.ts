@@ -1,18 +1,21 @@
 import * as express from 'express';
 import * as history from 'connect-history-api-fallback';
 import * as readline from 'readline';
+import * as Rx from 'rxjs';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
 import { Print, Utility, DateTime, File } from './custom/helpers';
 
-import './custom/shells/create-index';
-import './custom/shells/create-default';
-import './custom/shells/auto-index';
+export let ready$: Rx.Subject<{}> = new Rx.Subject();
 
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
 app.use(`/human_detection`, express.static(`workspace/custom/assets/human_detection`));
 app.use(`/logs`, express.static(`workspace/custom/assets/logs`));
+
+import './custom/shells/create-index';
+import './custom/shells/create-default';
+import './custom/shells/auto-index';
 
 import * as Action from './custom/actions';
 import './custom/services';
@@ -66,4 +69,6 @@ setTimeout(() => {
             File.CopyFile(`workspace/custom/assets/config/custom/${value}`, `workspace/config/custom/${value}`);
         }
     });
+
+    ready$.next(true);
 }, 100);
