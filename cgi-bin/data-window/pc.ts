@@ -39,13 +39,13 @@ action.ws(async (data) => {
         let counts: IPushData[] = [];
 
         let send$: Rx.Subject<IPushData[]> = new Rx.Subject();
-        send$.subscribe({
-            next: async () => {
+        send$.debounceTime(1000).subscribe({
+            next: async (x) => {
                 try {
                     if (_mode !== EPushMode.stop) {
-                        let _counts = DataFilter(counts, _mode, _id);
-                        if (_counts.length > 0) {
-                            _socket.send(_counts);
+                        let _x = DataFilter(x, _mode, _id);
+                        if (_x.length > 0) {
+                            _socket.send(_x);
                         }
                     }
                 } catch (e) {
@@ -61,10 +61,13 @@ action.ws(async (data) => {
                     if (!count) {
                         counts.push(x);
                     } else {
-                        count = x;
+                        count.in = x.in;
+                        count.out = x.out;
+                        count.inToday = x.inToday;
+                        count.outToday = x.outToday;
                     }
 
-                    send$.next();
+                    send$.next(counts);
                 } catch (e) {
                     Print.Log(e, new Error(), 'error');
                 }
@@ -85,15 +88,13 @@ action.ws(async (data) => {
                     _id = _input.content;
                 }
 
-                send$.next();
+                counts = await GetReport();
+
+                send$.next(counts);
             } catch (e) {
                 Print.Log(e, new Error(), 'error');
             }
         });
-
-        counts = await GetReport();
-
-        send$.next();
     } catch (e) {
         Print.Log(e, new Error(), 'error');
     }
@@ -107,7 +108,11 @@ action.ws(async (data) => {
  */
 function DataFilter(counts: IPushData[], mode: EPushMode, id: string): IPushData[] {
     try {
-        let _counts: IPushData[] = counts;
+        if (!counts) {
+            return [];
+        }
+
+        let _counts: IPushData[] = JSON.parse(JSON.stringify(counts));
 
         if (id !== '*' && mode === EPushMode.floor) {
             _counts = _counts.filter((value, index, array) => {
