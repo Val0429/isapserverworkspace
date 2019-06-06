@@ -1,6 +1,6 @@
 {
     "name": "isap-sentosa-service",
-    "version": "2.01.19",
+    "version": "2.01.20",
     "config": {
         "displayname": "iSap Sentosa Service"
     },
