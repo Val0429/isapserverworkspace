@@ -27,8 +27,7 @@ action.post(
             let _input: InputC = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let analysis: FRSService.IAnalysisConfig = undefined;
-            let manage: FRSService.IManageCinfig = undefined;
+            let config: FRSService.IConfig = undefined;
             if (_input.objectId) {
                 let server: IDB.ServerFRS = await new Parse.Query(IDB.ServerFRS)
                     .equalTo('objectId', _input.objectId)
@@ -40,16 +39,21 @@ action.post(
                     throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                 }
 
-                analysis = server.getValue('analysis');
-                manage = server.getValue('manage');
+                config = {
+                    protocol: server.getValue('protocol'),
+                    ip: server.getValue('ip'),
+                    port: server.getValue('port'),
+                    wsport: server.getValue('wsport'),
+                    account: server.getValue('account'),
+                    password: server.getValue('password'),
+                };
             } else if (_input.config) {
-                analysis = _input.config.analysis;
-                manage = _input.config.manage;
+                config = _input.config;
             } else {
                 throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
             }
 
-            let devices = await GetDeviceList(analysis, manage);
+            let devices = await GetDeviceList(config);
 
             return devices;
         } catch (e) {

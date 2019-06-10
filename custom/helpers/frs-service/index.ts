@@ -9,31 +9,20 @@ export class FRSService {
     /**
      * Config
      */
-    private _analysisConfig: FRSService.IAnalysisConfig = undefined;
-    public get analysisConfig(): FRSService.IAnalysisConfig {
-        return JSON.parse(JSON.stringify(this._analysisConfig));
+    private _config: FRSService.IConfig = undefined;
+    public get config(): FRSService.IConfig {
+        return JSON.parse(JSON.stringify(this._config));
     }
-    public set analysisConfig(value: FRSService.IAnalysisConfig) {
-        this._analysisConfig = value;
-    }
-
-    /**
-     * Config
-     */
-    private _manageConfig: FRSService.IManageCinfig = undefined;
-    public get manageConfig(): FRSService.IManageCinfig {
-        return JSON.parse(JSON.stringify(this._manageConfig));
-    }
-    public set manageConfig(value: FRSService.IManageCinfig) {
-        this._manageConfig = value;
+    public set config(value: FRSService.IConfig) {
+        this._config = value;
     }
 
     /**
      * Base url
      */
-    private _manageBaseUrl: string = '';
-    public get manageBaseUrl(): string {
-        return this._manageBaseUrl;
+    private _baseUrl: string = '';
+    public get baseUrl(): string {
+        return this._baseUrl;
     }
 
     /**
@@ -65,31 +54,21 @@ export class FRSService {
      */
     public Initialization(): void {
         this._isInitialization = false;
-        if (!this._analysisConfig) {
+        if (!this._config) {
             throw Base.Message.ConfigNotSetting;
         } else {
-            if (!this._analysisConfig.ip || !Regex.IsIp(this._analysisConfig.ip)) {
+            if (!this._config.ip || !Regex.IsIp(this._config.ip)) {
                 throw Base.Message.SettingIpError;
             }
-            if (!this._analysisConfig.port || !Regex.IsPort(this._analysisConfig.port.toString())) {
+            if (!this._config.port || !Regex.IsPort(this._config.port.toString())) {
                 throw Base.Message.SettingPortError;
             }
-            if (!this._analysisConfig.wsport || !Regex.IsPort(this._analysisConfig.wsport.toString())) {
-                throw Base.Message.SettingPortError;
-            }
-        }
-        if (!this._manageConfig) {
-            throw Base.Message.ConfigNotSetting;
-        } else {
-            if (!this._manageConfig.ip || !Regex.IsIp(this._manageConfig.ip)) {
-                throw Base.Message.SettingIpError;
-            }
-            if (!this._manageConfig.port || !Regex.IsPort(this._manageConfig.port.toString())) {
+            if (!this._config.wsport || !Regex.IsPort(this._config.wsport.toString())) {
                 throw Base.Message.SettingPortError;
             }
         }
 
-        this._manageBaseUrl = `${this._manageConfig.protocol}://${this._manageConfig.ip}:${this._manageConfig.port}`;
+        this._baseUrl = `${this._config.protocol}://${this._config.ip}:${this._config.port}`;
         this._isInitialization = true;
     }
 
@@ -100,7 +79,7 @@ export class FRSService {
         try {
             let sessionId: string = await this.Login();
 
-            let url: string = `${this._manageBaseUrl}/devices?sessionId=${sessionId}`;
+            let url: string = `${this._baseUrl}/devices?sessionId=${sessionId}`;
 
             let result: any = await new Promise<any>((resolve, reject) => {
                 try {
@@ -160,7 +139,7 @@ export class FRSService {
      */
     public async Login(): Promise<string> {
         try {
-            let url: string = `${this._manageBaseUrl}/users/login`;
+            let url: string = `${this._baseUrl}/users/login`;
 
             let result: FRSService.ILoginResponse = await new Promise<FRSService.ILoginResponse>((resolve, reject) => {
                 try {
@@ -170,8 +149,8 @@ export class FRSService {
                             encoding: null,
                             json: true,
                             body: {
-                                username: this._manageConfig.account,
-                                password: this._manageConfig.password,
+                                username: this._config.account,
+                                password: this._config.password,
                             },
                         },
                         (error, response, body) => {
@@ -221,7 +200,7 @@ export class FRSService {
         this._liveStream$ = new Rx.Subject();
 
         let frs: FRS = new FRS({
-            frs: this._analysisConfig,
+            frs: this._config,
             debug: true,
         });
 
@@ -261,7 +240,8 @@ export namespace FRSService {
     /**
      *
      */
-    export interface IAnalysisConfig {
+    export interface IConfig {
+        protocol: 'http' | 'https';
         ip: string;
         port: number;
         wsport: number;
@@ -269,17 +249,6 @@ export namespace FRSService {
         password: string;
         specialScoreForUnRecognizedFace?: number;
         throttleKeepSameFaceSeconds?: number;
-    }
-
-    /**
-     *
-     */
-    export interface IManageCinfig {
-        protocol: 'http' | 'https';
-        ip: string;
-        port: number;
-        account: string;
-        password: string;
     }
 
     /**

@@ -18,62 +18,32 @@ export interface IServerFRS {
     /**
      *
      */
-    analysis: {
-        /**
-         *
-         */
-        ip: string;
-
-        /**
-         *
-         */
-        port: number;
-
-        /**
-         *
-         */
-        wsport: number;
-
-        /**
-         *
-         */
-        account: string;
-
-        /**
-         *
-         */
-        password: string;
-    };
+    protocol: 'http' | 'https';
 
     /**
      *
      */
-    manage: {
-        /**
-         *
-         */
-        protocol: 'http' | 'https';
+    ip: string;
 
-        /**
-         *
-         */
-        ip: string;
+    /**
+     *
+     */
+    port: number;
 
-        /**
-         *
-         */
-        port: number;
+    /**
+     *
+     */
+    wsport: number;
 
-        /**
-         *
-         */
-        account: string;
+    /**
+     *
+     */
+    account: string;
 
-        /**
-         *
-         */
-        password: string;
-    };
+    /**
+     *
+     */
+    password: string;
 }
 
 export let ServerFRS$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();

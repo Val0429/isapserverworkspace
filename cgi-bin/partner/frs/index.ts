@@ -36,7 +36,7 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let devices = await GetDeviceList(value.analysis, value.manage);
+                        let devices = await GetDeviceList(value);
 
                         let server: IDB.ServerFRS = await new Parse.Query(IDB.ServerFRS)
                             .equalTo('customId', value.customId)
@@ -52,8 +52,12 @@ action.post(
 
                         server.setValue('customId', value.customId);
                         server.setValue('name', value.name);
-                        server.setValue('analysis', value.analysis);
-                        server.setValue('manage', value.manage);
+                        server.setValue('protocol', value.protocol);
+                        server.setValue('ip', value.ip);
+                        server.setValue('port', value.port);
+                        server.setValue('wsport', value.wsport);
+                        server.setValue('account', value.account);
+                        server.setValue('password', value.password);
 
                         await server.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -99,7 +103,7 @@ action.get(
 
             if (_input.keyword) {
                 let query1 = new Parse.Query(IDB.ServerFRS).matches('name', new RegExp(_input.keyword), 'i');
-                let query2 = new Parse.Query(IDB.ServerFRS).matches('manage.ip', new RegExp(_input.keyword), 'i');
+                let query2 = new Parse.Query(IDB.ServerFRS).matches('ip', new RegExp(_input.keyword), 'i');
                 let query3 = new Parse.Query(IDB.ServerFRS).matches('customId', new RegExp(_input.keyword), 'i');
                 query = Parse.Query.or(query1, query2, query3);
             }
@@ -133,8 +137,12 @@ action.get(
                         objectId: value.id,
                         customId: value.getValue('customId'),
                         name: value.getValue('name'),
-                        analysis: value.getValue('analysis'),
-                        manage: value.getValue('manage'),
+                        protocol: value.getValue('protocol'),
+                        ip: value.getValue('ip'),
+                        port: value.getValue('port'),
+                        wsport: value.getValue('wsport'),
+                        account: value.getValue('account'),
+                        password: value.getValue('password'),
                     };
                 }),
             };
@@ -176,13 +184,17 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        let devices = await GetDeviceList(value.analysis, value.manage);
+                        let devices = await GetDeviceList(value);
 
                         if (value.name || value.name === '') {
                             server.setValue('name', value.name);
                         }
-                        server.setValue('analysis', value.analysis);
-                        server.setValue('manage', value.manage);
+                        server.setValue('protocol', value.protocol);
+                        server.setValue('ip', value.ip);
+                        server.setValue('port', value.port);
+                        server.setValue('wsport', value.wsport);
+                        server.setValue('account', value.account);
+                        server.setValue('password', value.password);
 
                         await server.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -264,11 +276,10 @@ action.delete(
  * @param analysis
  * @param manage
  */
-export async function GetDeviceList(analysis: FRSService.IAnalysisConfig, manage: FRSService.IManageCinfig): Promise<FRSService.IDevice[]> {
+export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSService.IDevice[]> {
     try {
         let frs: FRSService = new FRSService();
-        frs.analysisConfig = analysis;
-        frs.manageConfig = manage;
+        frs.config = config;
 
         try {
             frs.Initialization();

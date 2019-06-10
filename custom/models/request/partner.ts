@@ -22,20 +22,12 @@ export interface ICMSDevice {
 }
 
 export interface IFRSBase {
-    analysis: {
-        ip: string;
-        port: number;
-        wsport: number;
-        account: string;
-        password: string;
-    };
-    manage: {
-        protocol: 'http' | 'https';
-        ip: string;
-        port: number;
-        account: string;
-        password: string;
-    };
+    protocol: 'http' | 'https';
+    ip: string;
+    port: number;
+    wsport: number;
+    account: string;
+    password: string;
 }
 
 export interface IFRSC extends IFRSBase {
