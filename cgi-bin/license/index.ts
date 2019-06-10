@@ -29,14 +29,13 @@ action.post(
         try {
             let _input: InputC = data.inputType;
 
-            let fromKey = _input as IRequest.ILicense.IIndexC_Key;
-            if (fromKey && fromKey.key) {
-                let res1: number = await licenseService.verifyLicenseKey({ key: fromKey.key });
+            if ('key' in _input && 'mac' in _input) {
+                let res1: number = await licenseService.verifyLicenseKey({ key: _input.key });
                 if (res1 <= 0) {
                     throw Errors.throw(Errors.CustomBadRequest, ['License invalid.']);
                 }
 
-                let url = `http://www.isapsolution.com/register.aspx?L=${fromKey.key}&M=${fromKey.mac.replace(/:/g, '-')}`;
+                let url = `http://www.isapsolution.com/register.aspx?L=${_input.key}&M=${_input.mac.replace(/:/g, '-')}`;
                 let res2: string = await new Promise<string>((resolve, reject) => {
                     try {
                         HttpClient.post(
@@ -69,14 +68,12 @@ action.post(
 
                 await licenseService.addLicense({ xml: res2 });
             } else {
-                let fromData = _input as IRequest.ILicense.IIndexC_Data;
-
-                let res3: boolean = (await licenseService.verifyLicenseXML({ xml: fromData.data })) as boolean;
+                let res3: boolean = (await licenseService.verifyLicenseXML({ xml: _input.data })) as boolean;
                 if (res3 === false) {
                     throw Errors.throw(Errors.CustomBadRequest, ['License invalid.']);
                 }
 
-                await licenseService.addLicense({ xml: fromData.data });
+                await licenseService.addLicense({ xml: _input.data });
             }
 
             File.CopyFile('workspace/custom/license/license.xml', 'workspace/custom/assets/license/license.xml');
