@@ -69,7 +69,10 @@ action.post(
                 throw e;
             });
 
-            return await Login(data.request, _input.account, _input.password);
+            return await Login(data, {
+                account: _input.account,
+                password: _input.password,
+            });
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;

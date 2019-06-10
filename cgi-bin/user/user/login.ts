@@ -1,4 +1,4 @@
-import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList } from 'core/cgi-package';
+import { Action, Errors, EventLogin, Events, UserHelper, ParseObject, RoleList, ActionParam } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Login
  */
-type InputC = IRequest.IUser.IBaseLogin;
+type InputC = IRequest.IUser.IBaseLogin_User | IRequest.IUser.IBaseLogin_SessionId;
 
 type OutputC = IResponse.IUser.IUserLogin;
 
@@ -26,7 +26,7 @@ action.post(
         try {
             let _input: InputC = data.inputType;
 
-            return await Login(data.request, _input.account, _input.password);
+            return await Login(data, _input);
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
@@ -37,22 +37,36 @@ action.post(
 /**
  * Login
  * @param request
- * @param account
- * @param password
+ * @param user
  */
-export async function Login(request: Request, account: string, password: string): Promise<IResponse.IUser.IUserLogin> {
+export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseLogin_User | IRequest.IUser.IBaseLogin_SessionId): Promise<IResponse.IUser.IUserLogin> {
     try {
-        let user = await UserHelper.login({
-            username: account,
-            password: password,
-        }).catch((e) => {
-            throw e;
-        });
+        let user: Parse.User = undefined;
+        let sessionId: string = '';
 
-        let _userInfo = await Db.GetUserInfo(request, user.user);
+        if ('account' in input) {
+            let login = await UserHelper.login({
+                username: input.account,
+                password: input.password,
+            }).catch((e) => {
+                throw e;
+            });
+
+            user = login.user;
+            sessionId = login.sessionId;
+        } else {
+            if (!input.sessionId) {
+                throw Errors.throw(Errors.CustomUnauthorized, ['This session is not valid or is already expired.']);
+            }
+
+            user = data.user;
+            sessionId = input.sessionId;
+        }
+
+        let _userInfo = await Db.GetUserInfo(data.request, user);
 
         let event: EventLogin = new EventLogin({
-            owner: user.user,
+            owner: user,
         });
         await Events.save(event).catch((e) => {
             throw e;
@@ -79,10 +93,10 @@ export async function Login(request: Request, account: string, password: string)
         });
 
         return {
-            sessionId: user.sessionId,
-            objectId: user.user.id,
+            sessionId: sessionId,
+            objectId: user.id,
             roles: roles,
-            account: user.user.getUsername(),
+            account: user.getUsername(),
             name: _userInfo.info.getValue('name') || '',
             employeeId: _userInfo.info.getValue('customId') || '',
             email: _userInfo.info.getValue('email') || '',

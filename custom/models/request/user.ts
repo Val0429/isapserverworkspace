@@ -1,9 +1,13 @@
 import { RoleList } from 'core/cgi-package';
 import * as Enum from '../../enums';
 
-export interface IBaseLogin {
+export interface IBaseLogin_User {
     account: string;
     password: string;
+}
+
+export interface IBaseLogin_SessionId {
+    sessionId: string;
 }
 
 export interface IBaseLogout {
@@ -21,7 +25,7 @@ export interface IBaseRoleU {
     roles: RoleList[];
 }
 
-export interface IUserIndexC extends IBaseLogin {
+export interface IUserIndexC extends IBaseLogin_User {
     role: RoleList.Admin | RoleList.User;
     name: string;
     employeeId: string;
