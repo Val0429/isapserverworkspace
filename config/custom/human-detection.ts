@@ -16,17 +16,10 @@ export interface IOutput {
     rectangle: IRectangle;
 }
 
-export interface ICMS {
-    intervalSecond: number;
-    bufferCount: number;
-    isLive: boolean;
-}
-
 export interface Config {
     productId: string;
     bufferCount: number;
     roiTest: boolean;
-    cms: ICMS;
     output: IOutput;
 }
 
@@ -34,11 +27,6 @@ let config: Config = {
     productId: '00111',
     bufferCount: 5,
     roiTest: false,
-    cms: {
-        intervalSecond: 300,
-        bufferCount: 5,
-        isLive: true,
-    },
     output: {
         image: {
             width: 640,
