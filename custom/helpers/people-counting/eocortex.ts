@@ -264,11 +264,11 @@ export class Eocortex {
                         ).catch((e) => {
                             throw e;
                         });
-
-                        next$.next();
                     } catch (e) {
                         this._liveStreamCatch$.next(e);
                     }
+
+                    next$.next();
                 },
                 error: (e) => {
                     this._liveStream$.error(e);

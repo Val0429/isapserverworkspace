@@ -41,6 +41,14 @@ export class Hanwha {
     }
 
     /**
+     * Live stream catch
+     */
+    private _liveStreamCatch$: Rx.Subject<string> = new Rx.Subject();
+    public get liveStreamCatch$(): Rx.Subject<string> {
+        return this._liveStreamCatch$;
+    }
+
+    /**
      * Live stream stop
      */
     private _liveStreamStop$: Rx.Subject<{}> = new Rx.Subject();
@@ -319,6 +327,7 @@ export class Hanwha {
         this._liveStreamStop$.subscribe({
             next: () => {
                 this._liveStream$.complete();
+                this._liveStreamCatch$.complete();
                 this._liveStreamStop$.complete();
             },
         });
@@ -336,10 +345,11 @@ export class Hanwha {
                         let counts: Hanwha.ICount[] = await this.GetDoStatus();
 
                         this._liveStream$.next(counts);
-                        next$.next();
                     } catch (e) {
-                        this._liveStreamStop$.error(e);
+                        this._liveStreamCatch$.next(e);
                     }
+
+                    next$.next();
                 },
                 error: (e) => {
                     this._liveStream$.error(e);
