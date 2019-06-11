@@ -189,6 +189,8 @@ action.delete(
                         await device.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
+
+                        IDB.Device$.next({ crud: 'd', brand: device.getValue('brand'), model: device.getValue('model') });
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -196,8 +198,6 @@ action.delete(
                     }
                 }),
             );
-
-            IDB.Device$.next({ crud: 'd' });
 
             return resMessages;
         } catch (e) {
@@ -400,6 +400,8 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             throw e;
         });
 
+        IDB.Device$.next({ crud: 'c', brand: device.getValue('brand'), model: device.getValue('model') });
+
         return device;
     } catch (e) {
         throw e;
@@ -506,6 +508,8 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
         await device.save(null, { useMasterKey: true }).fail((e) => {
             throw e;
         });
+
+        IDB.Device$.next({ crud: 'u', brand: device.getValue('brand'), model: device.getValue('model') });
 
         return device;
     } catch (e) {

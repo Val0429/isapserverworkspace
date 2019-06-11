@@ -48,8 +48,6 @@ action.post(
                 }),
             );
 
-            IDB.Device$.next({ crud: 'c' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -88,8 +86,6 @@ action.put(
                     }
                 }),
             );
-
-            IDB.Device$.next({ crud: 'u' });
 
             return resMessages;
         } catch (e) {

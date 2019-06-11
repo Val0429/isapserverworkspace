@@ -99,7 +99,7 @@ export interface IDevice {
     dataWindowY: number;
 }
 
-export let Device$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
+export let Device$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd'; brand: Enum.EDeviceBrand; model: Enum.EDeviceModelHanwha | Enum.EDeviceModelIsap }> = new Rx.Subject();
 
 @registerSubclass()
 export class Device extends ParseObject<IDevice> {}
