@@ -10,11 +10,19 @@ export class SignalObject<T = boolean>{
         this.subject = new BehaviorSubject<T>(val);
     }
 
-    public async wait( timeout : number | Date = undefined, predicate = (v => v)){
-        let result = isNullOrUndefined(timeout) ? 
-                    this.subject.filter(predicate).first().toPromise() :
-                    this.subject.filter(predicate).timeout(timeout).first().toPromise();
-        return result;
+    public async wait( timeout : number | Date = undefined, predicate = (v => v)) : Promise<T>{
+
+        let result : Promise<T>;
+        try{
+            result = isNullOrUndefined(timeout) ? 
+            this.subject.filter(predicate).first().toPromise() :
+            this.subject.filter(predicate).timeout(timeout).first().toPromise();
+        }
+        catch(err){
+            throw `Internal Error: <SignalObject<T>::wait> Timeout, ${err} `;
+        }
+                    
+        return Promise.resolve(result);
     }
 
     public set(val : T){

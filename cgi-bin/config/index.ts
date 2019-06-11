@@ -1,7 +1,7 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList, IConfig, Config, IConfigSetup,
-    Action, Errors, Floors,
+    IRole, IUser, RoleList, IConfig, Config, IConfigSetup,
+    Action, Errors,
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 

@@ -1,13 +1,13 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList,
+    IRole, IUser, RoleList,
     Action, Errors, Events, IEvents,
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
 
 var action = new Action({
-    loginRequired: false,
+    loginRequired: true,
     permission: [RoleList.Administrator]
 });
 
@@ -24,7 +24,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
-    return Restful.Pagination(query, data.inputType, Events.Query.filter(), Events.Query.tuner());
+    return Restful.Pagination(query, data.parameters, Events.Query.filter(), Events.Query.tuner());
 });
 /// CRUD end ///////////////////////////////////
 

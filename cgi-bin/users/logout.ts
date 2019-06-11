@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList,
+    IRole, IUser, RoleList,
     Action, Errors, Events, EventLogout
 } from 'core/cgi-package';
 
@@ -12,7 +12,7 @@ export interface Input {
 export default new Action<Input>({
     loginRequired: true
 })
-.post(async (data) => {
+.post({inputType: "Input"}, async (data) => {
     /// Perform Logout
     data.session.destroy({ sessionToken: data.parameters.sessionId });
 
@@ -20,4 +20,6 @@ export default new Action<Input>({
         owner: data.user
     });
     await Events.save(ev);
+
+    return "";
 });

@@ -1,6 +1,6 @@
 import {
     express, Request, Response, Router,
-    Parse, IRole, IUser, RoleList,
+    IRole, IUser, RoleList,
     Action, Errors,
     Restful, EventSubjects, ParseObject, getEnumKey, EventList
 } from 'core/cgi-package';
@@ -42,7 +42,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
-    return Restful.Pagination(query, data.inputType, filter);
+    return Restful.Pagination(query, data.parameters, filter);
 });
 
 /********************************
