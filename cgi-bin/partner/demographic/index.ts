@@ -49,6 +49,17 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
                         }
 
+                        server = await new Parse.Query(IDB.ServerDemographic)
+                            .equalTo('ip', value.ip)
+                            .equalTo('port', value.port)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (server) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate server']);
+                        }
+
                         server = new IDB.ServerDemographic();
 
                         server.setValue('customId', value.customId);
@@ -171,6 +182,10 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
+                            if (e !== 'face not found') throw e;
+                        });
+
                         let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
                             .equalTo('objectId', value.objectId)
                             .first()
@@ -181,9 +196,18 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
-                            if (e !== 'face not found') throw e;
-                        });
+                        if (value.ip !== server.getValue('ip') || value.port !== server.getValue('port')) {
+                            let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
+                                .equalTo('ip', value.ip)
+                                .equalTo('port', value.port)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (server) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['duplicate server']);
+                            }
+                        }
 
                         if (value.name || value.name === '') {
                             server.setValue('name', value.name);
