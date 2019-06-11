@@ -327,6 +327,6 @@ export async function GetAnalysis(config: Demographic.ISap.IUrlConfig, margin: n
 
         return features;
     } catch (e) {
-        throw e;
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }

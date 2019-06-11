@@ -305,16 +305,12 @@ export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSServ
         let frs: FRSService = new FRSService();
         frs.config = config;
 
-        try {
-            frs.Initialization();
-        } catch (e) {
-            throw Errors.throw(Errors.CustomBadRequest, [e]);
-        }
+        frs.Initialization();
 
         let devices = await frs.GetDeviceList();
 
         return devices;
     } catch (e) {
-        throw e;
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }

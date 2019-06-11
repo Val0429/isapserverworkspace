@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print, Parser, Db } from '../../custom/helpers';
+import { Print, Parser, Db, PeopleCounting } from '../../custom/helpers';
 import * as Middleware from '../../custom/middlewares';
 import * as Enum from '../../custom/enums';
 
@@ -270,6 +270,31 @@ async function GetPosition(areaId: string, groupId: string): Promise<IPosition> 
 }
 
 /**
+ * Get Hanwha version
+ * @param config
+ */
+async function GetHanwhaVersion(config: IDB.ICameraHanwha): Promise<string> {
+    try {
+        let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
+        hanwha.config = {
+            protocol: config.protocol,
+            ip: config.ip,
+            port: config.port,
+            account: config.account,
+            password: config.password,
+        };
+
+        hanwha.Initialization();
+
+        let version = await hanwha.GetVersion();
+
+        return version;
+    } catch (e) {
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
+    }
+}
+
+/**
  *
  * @param device
  * @param camera
@@ -389,6 +414,7 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
                 break;
             case Enum.EDeviceMode.peopleCounting:
                 if (value.brand === Enum.EDeviceBrand.hanwha) {
+                    let version = await GetHanwhaVersion(value.config);
                     device.setValue('config', value.config);
                 } else if (value.brand === Enum.EDeviceBrand.isap) {
                     device = await FRSCamera(device, value.config);
@@ -476,6 +502,7 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             device.setValue('brand', value.brand);
 
             if (value.brand === Enum.EDeviceBrand.hanwha) {
+                let version = await GetHanwhaVersion(value.config);
                 device.unset('direction');
                 device.setValue('model', value.model);
                 device.setValue('config', value.config);

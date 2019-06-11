@@ -307,16 +307,12 @@ export async function GetDeviceTree(config: CMSService.IConfig): Promise<CMSServ
             password: config.password,
         };
 
-        try {
-            cms.Initialization();
-        } catch (e) {
-            throw Errors.throw(Errors.CustomBadRequest, [e]);
-        }
+        cms.Initialization();
 
         let devices = await cms.GetDeviceTree();
 
         return devices;
     } catch (e) {
-        throw e;
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }

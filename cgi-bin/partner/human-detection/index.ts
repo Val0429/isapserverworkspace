@@ -310,6 +310,6 @@ export async function GetAnalysis(config: HumanDetection.ISap.IUrlConfig, score:
             buffer: buffer,
         };
     } catch (e) {
-        throw e;
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }
