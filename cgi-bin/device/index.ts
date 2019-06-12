@@ -55,7 +55,7 @@ action.get(
             let devices: IDB.Device[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['site', 'area', 'group', 'config.server'])
+                .include(['site', 'area', 'groups', 'config.server'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -82,12 +82,12 @@ action.get(
                           }
                         : undefined;
 
-                    let group: IResponse.IObject = value.getValue('group')
-                        ? {
-                              objectId: value.getValue('group').id,
-                              name: value.getValue('group').getValue('name'),
-                          }
-                        : undefined;
+                    let groups: IResponse.IObject[] = (value.getValue('groups') || []).map((value1, index1, array1) => {
+                        return {
+                            objectId: value1.id,
+                            name: value1.getValue('name'),
+                        };
+                    });
 
                     let config: IResponse.IDevice.ICameraCMS | IResponse.IDevice.ICameraFRS | IDB.ICameraHanwha = undefined;
                     let model: string = undefined;
@@ -130,7 +130,7 @@ action.get(
                         customId: value.getValue('customId'),
                         site: site,
                         area: area,
-                        group: group,
+                        groups: groups,
                         name: value.getValue('name'),
                         brand: Enum.EDeviceBrand[value.getValue('brand')],
                         model: model,
@@ -214,7 +214,7 @@ action.delete(
 interface IPosition {
     site: IDB.LocationSite;
     area: IDB.LocationArea;
-    group: IDB.DeviceGroup;
+    groups: IDB.DeviceGroup[];
 }
 
 /**
@@ -222,24 +222,30 @@ interface IPosition {
  * @param areaId
  * @param groupId
  */
-async function GetPosition(areaId: string, groupId: string): Promise<IPosition> {
+async function GetPosition(areaId: string, groupIds: string[]): Promise<IPosition> {
     try {
-        if (groupId) {
-            let group: IDB.DeviceGroup = await new Parse.Query(IDB.DeviceGroup)
-                .equalTo('objectId', groupId)
-                .first()
+        if (groupIds) {
+            let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
+                .containedIn('objectId', groupIds)
+                .find()
                 .fail((e) => {
                     throw e;
                 });
-            if (!group) {
-                throw Errors.throw(Errors.CustomBadRequest, ['group not found']);
+
+            let same: boolean = groups.every((value, index, array) => {
+                return value.getValue('area').id === array[0].getValue('area').id;
+            });
+            if (!same) {
+                throw Errors.throw(Errors.CustomBadRequest, ['group must in same area']);
             }
 
-            return {
-                site: group.getValue('site'),
-                area: group.getValue('area'),
-                group: group,
-            };
+            if (groups.length > 0) {
+                return {
+                    site: groups[0].getValue('site'),
+                    area: groups[0].getValue('area'),
+                    groups: groups,
+                };
+            }
         }
 
         if (areaId) {
@@ -256,14 +262,14 @@ async function GetPosition(areaId: string, groupId: string): Promise<IPosition> 
             return {
                 site: area.getValue('site'),
                 area: area,
-                group: undefined,
+                groups: undefined,
             };
         }
 
         return {
             site: undefined,
             area: undefined,
-            group: undefined,
+            groups: undefined,
         };
     } catch (e) {
         throw e;
@@ -286,6 +292,8 @@ async function GetHanwhaVersion(config: IDB.ICameraHanwha): Promise<string> {
         };
 
         hanwha.Initialization();
+
+        return '';
 
         let version = await hanwha.GetVersion();
 
@@ -370,7 +378,7 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
     try {
         // await LicenseCheck(mode)
 
-        let position = await GetPosition(value.areaId, value.groupId);
+        let position = await GetPosition(value.areaId, value.groupIds);
 
         let device: IDB.Device = await new Parse.Query(IDB.Device)
             .equalTo('customId', value.customId)
@@ -388,7 +396,7 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
         device.setValue('customId', value.customId);
         device.setValue('site', position.site);
         device.setValue('area', position.area);
-        device.setValue('group', position.group);
+        device.setValue('groups', position.groups);
         device.setValue('name', value.name);
         device.setValue('brand', value.brand);
         device.setValue('model', value.model);
@@ -444,12 +452,12 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
  */
 export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.Device> {
     try {
-        let position = await GetPosition(value.areaId, value.groupId);
+        let position = await GetPosition(value.areaId, value.groupIds);
 
         let device: IDB.Device = await new Parse.Query(IDB.Device)
             .equalTo('objectId', value.objectId)
             .equalTo('mode', mode)
-            .include('group')
+            .include('groups')
             .first()
             .fail((e) => {
                 throw e;
@@ -461,20 +469,25 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
         if (value.areaId === '') {
             device.unset('area');
             device.unset('site');
-            device.unset('group');
+            device.unset('groups');
         }
-        if (value.groupId === '') {
-            device.unset('group');
+        if (value.groupIds === []) {
+            device.unset('groups');
         }
         if (position.area) {
             device.setValue('site', position.site);
             device.setValue('area', position.area);
 
-            if (position.group) {
-                device.setValue('group', position.group);
+            if (position.groups) {
+                device.setValue('groups', position.groups);
             }
-            if (device.getValue('group') && device.getValue('group').getValue('area').id !== position.area.id) {
-                device.unset('group');
+            if (device.getValue('groups')) {
+                let group = device.getValue('groups').find((value, index, array) => {
+                    return value.getValue('area').id !== position.area.id;
+                });
+                if (group) {
+                    device.unset('groups');
+                }
             }
         }
         if (value.name || value.name === '') {
@@ -581,7 +594,7 @@ export async function UnbindingArea(area: IDB.LocationArea): Promise<void> {
 export async function UnbindingGroup(group: IDB.DeviceGroup): Promise<void> {
     try {
         let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-            .equalTo('group', group)
+            .containedIn('groups', [group])
             .find()
             .fail((e) => {
                 throw e;
@@ -589,7 +602,10 @@ export async function UnbindingGroup(group: IDB.DeviceGroup): Promise<void> {
 
         await Promise.all(
             devices.map(async (value, index, array) => {
-                value.unset('group');
+                let groups: IDB.DeviceGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
+                    return value1.id !== group.id;
+                });
+                value.setValue('groups', groups);
 
                 await value.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;

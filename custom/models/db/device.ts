@@ -26,7 +26,7 @@ export interface IDevice {
     /**
      * 群組
      */
-    group?: DeviceGroup;
+    groups?: DeviceGroup[];
 
     /**
      * 名稱

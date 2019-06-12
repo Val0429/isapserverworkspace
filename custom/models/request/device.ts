@@ -19,7 +19,7 @@ export interface IGroupAll {
 export interface IC_Base {
     customId: string;
     areaId?: string;
-    groupId?: string;
+    groupIds?: string[];
     name: string;
 }
 
@@ -77,7 +77,7 @@ export interface IIndexR {
 export interface IU_Base {
     objectId: string;
     areaId?: string;
-    groupId?: string;
+    groupIds?: string[];
     name?: string;
     x?: number;
     y?: number;

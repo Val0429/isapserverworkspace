@@ -37,7 +37,7 @@ export interface IIndexR {
     customId: string;
     site: IObject;
     area: IObject;
-    group: IObject;
+    groups: IObject[];
     name: string;
     brand: string;
     model: string;
