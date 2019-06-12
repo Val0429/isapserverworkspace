@@ -144,8 +144,11 @@ action.get(
  */
 function ProdectId2ProductName(productId: string): string {
     try {
-        let name: string = 'Human Detection';
+        let name: string = '';
         switch (productId) {
+            case Config.deviceHumanDetection.productId:
+                name = 'Human Detection';
+                break;
             case Config.devicePeopleCounting.productId:
                 name = 'People Counting';
                 break;

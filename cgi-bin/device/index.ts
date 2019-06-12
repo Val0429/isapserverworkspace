@@ -368,7 +368,7 @@ async function CMSCamera(device: IDB.Device, camera: IRequest.IDevice.ICameraCMS
  */
 export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.Device> {
     try {
-        await LicenseCheck(mode);
+        // await LicenseCheck(mode)
 
         let position = await GetPosition(value.areaId, value.groupId);
 
@@ -632,8 +632,11 @@ export async function DeleteByServer(serverId: string): Promise<void> {
  */
 function DeviceMode2ProdectId(mode: Enum.EDeviceMode): string {
     try {
-        let productId: string = Config.deviceHumanDetection.productId;
+        let productId: string = '';
         switch (mode) {
+            case Enum.EDeviceMode.humanDetection:
+                productId = Config.deviceHumanDetection.productId;
+                break;
             case Enum.EDeviceMode.peopleCounting:
                 productId = Config.devicePeopleCounting.productId;
                 break;
