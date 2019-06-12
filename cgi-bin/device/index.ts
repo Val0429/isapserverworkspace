@@ -1,9 +1,10 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, Parser, Db, PeopleCounting } from '../../custom/helpers';
 import * as Middleware from '../../custom/middlewares';
 import * as Enum from '../../custom/enums';
+import licenseService from 'services/license';
 
 let action = new Action({
     loginRequired: true,
@@ -367,6 +368,8 @@ async function CMSCamera(device: IDB.Device, camera: IRequest.IDevice.ICameraCMS
  */
 export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.Device> {
     try {
+        await LicenseCheck(mode);
+
         let position = await GetPosition(value.areaId, value.groupId);
 
         let device: IDB.Device = await new Parse.Query(IDB.Device)
@@ -618,6 +621,64 @@ export async function DeleteByServer(serverId: string): Promise<void> {
                 });
             }),
         );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Convert device mode to prodect id
+ * @param mode
+ */
+function DeviceMode2ProdectId(mode: Enum.EDeviceMode): string {
+    try {
+        let productId: string = Config.deviceHumanDetection.productId;
+        switch (mode) {
+            case Enum.EDeviceMode.peopleCounting:
+                productId = Config.devicePeopleCounting.productId;
+                break;
+            case Enum.EDeviceMode.demographic:
+                productId = Config.deviceDemographic.productId;
+                break;
+            case Enum.EDeviceMode.dwellTime:
+                productId = Config.deviceDwellTime.productId;
+                break;
+            case Enum.EDeviceMode.heatmap:
+                productId = Config.deviceHeatmap.productId;
+                break;
+            case Enum.EDeviceMode.visitor:
+                productId = Config.deviceVisitor.productId;
+                break;
+            default:
+                throw 'Unrecognized device mode';
+        }
+
+        return productId;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Check license
+ * @param mode
+ */
+async function LicenseCheck(mode: Enum.EDeviceMode): Promise<void> {
+    try {
+        let license = await licenseService.getLicense();
+        let licenseSummary = license.summary[DeviceMode2ProdectId(mode)];
+
+        let limit: number = licenseSummary ? licenseSummary.totalCount : 0;
+        let count: number = await new Parse.Query(IDB.Device)
+            .equalTo('mdoe', mode)
+            .count()
+            .fail((e) => {
+                throw e;
+            });
+
+        if (limit <= count) {
+            throw Errors.throw(Errors.CustomBadRequest, ['upper limit is full']);
+        }
     } catch (e) {
         throw e;
     }
