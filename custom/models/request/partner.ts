@@ -21,6 +21,12 @@ export interface ICMSDevice {
     config?: ICMSBase;
 }
 
+export interface ICMSSnapshot {
+    objectId: string;
+    nvrId: number;
+    channelId: number;
+}
+
 export interface IFRSBase {
     protocol: 'http' | 'https';
     ip: string;

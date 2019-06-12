@@ -4,6 +4,12 @@ export interface ICMSR extends IRequest.IPartner.ICMSC {
     objectId: string;
 }
 
+export interface ICMSSnapshot {
+    cameraWidth: number;
+    cameraHeight: number;
+    snapshotBase64: string;
+}
+
 export interface IFRSR extends IRequest.IPartner.IFRSC {
     objectId: string;
 }
