@@ -77,6 +77,7 @@ action.put(
             await UpdateConfig('email', _input);
             Config['email'] = { ...Config['email'], ..._input };
 
+            Print.Log('Write smtp config', new Error(), 'warning', { now: true });
             File.CopyFile('workspace/config/custom/email.ts', 'workspace/custom/assets/config/email.ts');
 
             return new Date();

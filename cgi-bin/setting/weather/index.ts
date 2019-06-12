@@ -62,6 +62,7 @@ action.put(
             await UpdateConfig('darksky', _input);
             Config['darksky'] = { ...Config['darksky'], ..._input };
 
+            Print.Log('Write weather config', new Error(), 'warning', { now: true });
             File.CopyFile('workspace/config/custom/darksky.ts', 'workspace/custom/assets/config/darksky.ts');
 
             return new Date();

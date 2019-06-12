@@ -6,13 +6,22 @@ import * as Enum from '../enums';
 import * as Main from '../../main';
 
 class Action {
+    /**
+     *
+     */
     private _config = Config.sgSms;
 
+    /**
+     *
+     */
     private _action$: Rx.Subject<Action.IAction> = new Rx.Subject();
     public get action$(): Rx.Subject<Action.IAction> {
         return this._action$;
     }
 
+    /**
+     *
+     */
     constructor() {
         Main.ready$.subscribe({
             next: async () => {
@@ -21,7 +30,10 @@ class Action {
         });
     }
 
-    private Initialization = async (): Promise<void> => {
+    /**
+     * Initialization
+     */
+    private async Initialization(): Promise<void> {
         try {
             let sgsms: Sgsms = new Sgsms();
             sgsms.config = {
@@ -69,7 +81,7 @@ class Action {
         } catch (e) {
             Print.Log(e, new Error(), 'error');
         }
-    };
+    }
 }
 export default new Action();
 

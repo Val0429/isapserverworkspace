@@ -55,6 +55,7 @@ action.put(
             await UpdateConfig('pushNotification', _input);
             Config['pushNotification'] = { ...Config['pushNotification'], ..._input };
 
+            Print.Log('Write push notification config', new Error(), 'warning', { now: true });
             File.CopyFile('workspace/config/custom/push-notification.ts', 'workspace/custom/assets/config/push-notification.ts');
 
             return new Date();

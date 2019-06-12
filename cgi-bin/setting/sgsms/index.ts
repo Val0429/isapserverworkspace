@@ -71,6 +71,7 @@ action.put(
             await UpdateConfig('sgSms', _input);
             Config['sgSms'] = { ...Config['sgSms'], ..._input };
 
+            Print.Log('Write sgsms config', new Error(), 'warning', { now: true });
             File.CopyFile('workspace/config/custom/sg-sms.ts', 'workspace/custom/assets/config/sg-sms.ts');
 
             return new Date();

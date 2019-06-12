@@ -123,7 +123,9 @@ export namespace File {
      */
     export function ReadFile(filename: string): Buffer {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
+
             let buffer: Buffer = Fs.readFileSync(realpath);
 
             return buffer;
@@ -138,6 +140,7 @@ export namespace File {
      */
     export function DeleteFile(filename: string): void {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             Fs.unlinkSync(realpath);
@@ -162,6 +165,36 @@ export namespace File {
             Fs.copyFileSync(realpath1, realpath2);
         } catch (e) {
             throw e;
+        }
+    }
+
+    /**
+     * Get file status
+     * @param filename
+     */
+    export function GetFileStatus(filename: string): Fs.Stats {
+        CreateFolder(GetPath(filename));
+        let realpath: string = RealPath(filename);
+
+        let status = Fs.statSync(realpath);
+
+        return status;
+    }
+
+    /**
+     * Get file alive
+     * @param filename
+     */
+    export function GetFileAlive(filename: string): boolean {
+        CreateFolder(GetPath(filename));
+        let realpath: string = RealPath(filename);
+
+        try {
+            Fs.accessSync(realpath);
+
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 

@@ -17,6 +17,8 @@ type Output = Date;
 action.get(
     async (): Promise<Output> => {
         try {
+            Print.Log('Server restart', new Error(), 'warning', { now: true });
+
             Utility.ReStartServer();
 
             return new Date();
