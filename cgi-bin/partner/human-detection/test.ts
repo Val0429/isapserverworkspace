@@ -66,7 +66,7 @@ action.post(
             let analysis = await GetAnalysis(config, score, _input.imageBase64);
 
             if (analysis.locations.length > 0) {
-                let config = Config.humanDetection.output;
+                let config = Config.deviceHumanDetection.output;
 
                 let rects: Draw.IRect[] = analysis.locations.map((value, index, array) => {
                     return {
