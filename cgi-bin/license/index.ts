@@ -146,12 +146,23 @@ function ProdectId2ProductName(productId: string): string {
     try {
         let name: string = 'Human Detection';
         switch (productId) {
-            case Config.peopleCounting.productId:
+            case Config.devicePeopleCounting.productId:
                 name = 'People Counting';
                 break;
-            case Config.demographic.productId:
+            case Config.deviceDemographic.productId:
                 name = 'Demographic';
                 break;
+            case Config.deviceDwellTime.productId:
+                name = 'Dwell Time';
+                break;
+            case Config.deviceHeatmap.productId:
+                name = 'Heatmap';
+                break;
+            case Config.deviceVisitor.productId:
+                name = 'Visitor';
+                break;
+            default:
+                throw 'Unrecognized product id';
         }
 
         return name;
