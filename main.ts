@@ -11,50 +11,38 @@ import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
 
 
-import { CCUREReader, ICCUREConfig, IDSNList, QueryContent } from './custom/modules/CCUREReader';
-import { delay } from 'bluebird';
+import {CCUREReader, ICCUREConfig, IDSNList, QueryContent} from './custom/modules/CCUREReader';
 
-let config: ICCUREConfig = {
-	"server": "172.16.10.138",
-	"port": 3537,
-	"user": "sa",
-	"password": "manager",
-	"database": "master",
-	"connectionTimeout": 15000,
+let config : ICCUREConfig = {
+	"server"       : "172.16.10.138",
+	"port"         : 3537,
+	"user"         : "sa",
+	"password"     : "manager",
+	"database"     : "master",
+	"connectionTimeout" : 15000,
 };
 
-let dsnlist: IDSNList = {
-	"CFSRV": "CFSRV",
-	"Jurnal": "JOURNAL"
+let dsnlist : IDSNList = {
+	"CFSRV" : "CFSRV",
+	"Jurnal" : "JOURNAL"
 };
 
-let reader: CCUREReader = CCUREReader.getInstance();
+let reader : CCUREReader = CCUREReader.getInstance();
 
-let conn = reader.connectAsync(config, dsnlist);
+let conn = reader.connectAsync(config,dsnlist);
 
-let tryRegion = async () => {
-	let result: Array<JSON> = await reader.queryAllAsync(QueryContent.Clearance, 5000);
-	let onReceivedRow = (row) => {  };
-	let onDoneReceive = (result) => console.log(`Received finish`, result);
-	let onError = (err) => console.log(`Error happened ${err}`);
-	reader.queryStream(QueryContent.Clearance, onReceivedRow, onDoneReceive, onError);
-}
-
-(async () => {
-	for(var i = 0 ; i < 1000000 ; i++){
-		await reader.connectAsync(config, dsnlist);
-		await tryRegion();
-		await reader.disconnectAsync();
-		delay(100);
-	}
-})().catch(err =>{
-	console.log(err);
+conn.then(async () =>{
+	let result :Array<any> = await reader.queryAllAsync(QueryContent.Clearance,5000);
+	console.log("Receive All");
+	console.log(result);
+}).then(async ()=>{
+	let onReceivedRow = (row)=> {console.log(`Received new row`,row )};
+	let onDoneReceive = (result)=> console.log(`Received finish`,result);
+	let onError = (err)=> console.log(`Error happened ${err}`);
+	reader.queryStream(QueryContent.Clearance,onReceivedRow,onDoneReceive,onError);
 });
 
 
 
 
-
-
-
-
+  

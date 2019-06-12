@@ -159,7 +159,7 @@ export class CCUREReader {
      * @param OnDone void OnDone(result) : callback when finish receive, result => number of result
      * @param OnErr void OnErr(err) : callback when error happened, err => error reason
      */
-    public queryStream(queryContent: QueryContent, OnDatareceived: (row) => void, OnDone: (result) => void, OnError = this.defaultErrCalback): void {
+    public queryStream(queryContent: QueryContent, OnDatareceived: (row : JSON, queryContent : QueryContent) => void, OnDone: (result : JSON, queryContent : QueryContent) => void, OnError = this.defaultErrCalback): void {
 
         if(this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
 
@@ -178,9 +178,9 @@ export class CCUREReader {
 
         try{
             request.query(queryCmd);
-            request.on('row', row => queryParam.OnReceivedData(row));
-            request.on('done', result => queryParam.OnDone(result));
-            request.on('error', err => queryParam.OnError(err, queryCmd));
+            request.on('row', row => queryParam.OnReceivedData(row, queryContent));
+            request.on('done', result => queryParam.OnDone(result,queryContent));
+            request.on('error', err => queryParam.OnError(err, queryCmd, queryContent));
         }
         catch(err){
             throw `Internal Error: <CCUREReader::queryStream> Query fail, ${err}`;
@@ -219,7 +219,7 @@ export class CCUREReader {
             request.on('done', result => signal.set(StateCode.Success));
             request.on('error', err => {
                 signal.set(StateCode.Error);
-                this.defaultErrCalback(err, queryCmd)
+                this.defaultErrCalback( err, queryCmd, queryContent)
             });
         }
         catch(err){
@@ -282,7 +282,7 @@ export class CCUREReader {
      * Default Callbackfunction
      * @param err error message
      */
-    protected defaultErrCalback(err, cmd) {
+    protected defaultErrCalback(err, cmd : string, queryContent : QueryContent) {
         console.log(`---------------Send Command : ${cmd} ---------------`);
         console.log(err);
     }
