@@ -10,3 +10,4 @@ export * from './print';
 export * from './regex';
 export * from './text-message';
 export * from './utility';
+export * from './ws';
