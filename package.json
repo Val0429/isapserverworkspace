@@ -5,12 +5,13 @@
     "displayname": "iSap FTS Service"
   },
   "description": "iSap FTS Service v2.01.02",
-
   "scripts": {
     "start": "npm start --prefix ./../",
     "create-project": "git checkout --orphan"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "mssql": "^5.1.0"
+  }
 }

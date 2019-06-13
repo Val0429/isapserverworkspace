@@ -3,6 +3,8 @@ import { Config } from 'core/config.gen';
 import { RoleList } from 'core/userRoles.gen';
 import { createIndex } from 'helpers/parse-server/parse-helper';
 
+console.log("Config.mongodb.enable", Config.mongodb.enable);
+
 Config.mongodb.enable &&
 ((async () => {
 

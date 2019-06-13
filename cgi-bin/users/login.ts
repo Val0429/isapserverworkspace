@@ -7,10 +7,16 @@ import {
 } from 'core/cgi-package';
 
 
-export interface Input {
+interface IInputNormal {
     username: string;
     password: string;
 }
+
+interface IInputExtend {
+    sessionId: string;
+}
+
+export type Input = IInputNormal | IInputExtend;
 
 export interface Output {
     sessionId: string;
@@ -23,50 +29,28 @@ export default new Action<Input, Output>({
     inputType: "Input",
 })
 .all( async (data) => {
-    /// Try login
-    var obj = await UserHelper.login(data.inputType);
+    let sessionId: string, user: Parse.User;
+    if ('username' in data.inputType) {
+        /// Try login
+        var obj = await UserHelper.login(data.inputType);
+        sessionId = obj.sessionId;
+        user = obj.user;
 
-    var ev = new EventLogin({
-        owner: obj.user
-    });
-    Events.save(ev);
+        var ev = new EventLogin({
+            owner: obj.user
+        });
+        Events.save(ev);
+
+    } else {
+        if (!data.session) throw Errors.throw(Errors.CustomUnauthorized, ["This session is not valid or is already expired."]);
+        user = data.user;
+        sessionId = data.session.getSessionToken();
+
+    }
 
     return ParseObject.toOutputJSON({
-        sessionId: obj.sessionId,
+        sessionId,
         serverTime: new Date(),
-        user: obj.user
+        user
     });
 });
-
-// export interface Input {
-//     username: string;
-//     password: string;
-// }
-
-// export interface Output {
-//     sessionId: string;
-//     serverTime: number;
-//     user: Parse.User;
-// }
-
-// export default new Action<Input, Output>({
-//     loginRequired: false,
-//     requiredParameters: ["username"],
-//     middlewares: []
-// })
-// .all(async (data) => {
-//     /// Try login
-//     var obj = await UserHelper.login({ ...data.parameters });
-
-//     var ev = new EventLogin({
-//         owner: obj.user
-//     });
-//     await Events.save(ev);
-
-//     return {
-//         sessionId: obj.sessionId,
-//         serverTime: new Date().valueOf(),
-//         user: ParseObject.toOutputJSON.call(obj.user, UserHelper.ruleUserRole)
-//     }
-// });
-
