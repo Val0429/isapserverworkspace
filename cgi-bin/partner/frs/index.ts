@@ -5,6 +5,7 @@ import { Print, Parser, FRSService } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import * as Device from '../../device';
+import FRS from '../../../custom/services/frs';
 
 let action = new Action({
     loginRequired: true,
@@ -302,10 +303,17 @@ action.delete(
  */
 export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSService.IDevice[]> {
     try {
-        let frs: FRSService = new FRSService();
-        frs.config = config;
+        let frs: FRSService = FRS.frss.find((value, index, array) => {
+            return value.config.ip === config.ip && value.config.port === config.port;
+        });
+        if (!frs) {
+            frs = new FRSService();
+            frs.config = config;
 
-        frs.Initialization();
+            frs.Initialization();
+
+            await frs.Login();
+        }
 
         let devices = await frs.GetDeviceList();
 
