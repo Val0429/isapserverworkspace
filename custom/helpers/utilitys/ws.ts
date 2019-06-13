@@ -75,7 +75,11 @@ export class Ws {
                     });
 
                     this._websocket.on('message', (data) => {
-                        this._message$.next(data);
+                        try {
+                            this._message$.next(JSON.parse(data));
+                        } catch (e) {
+                            this._message$.next(data);
+                        }
                     });
 
                     this._websocket.on('error', (e) => {
