@@ -89,12 +89,7 @@ export class ISap {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `${response.statusCode}, ${body
-                                        .toString()
-                                        .replace(/\r\n/g, '; ')
-                                        .replace(/\n/g, '; ')}`,
-                                );
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                             } else if (body.message.toLowerCase() !== 'ok') {
                                 return reject(body.message);
                             }

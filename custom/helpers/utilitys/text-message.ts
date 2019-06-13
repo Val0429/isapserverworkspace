@@ -78,18 +78,13 @@ export class Sgsms {
                     HttpClient.get(
                         {
                             url: url,
-                            encoding: null,
+                            json: true,
                         },
                         (error, response, body) => {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `${response.statusCode}, ${Buffer.from(body)
-                                        .toString()
-                                        .replace(/\r\n/g, '; ')
-                                        .replace(/\n/g, '; ')}`,
-                                );
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                             }
 
                             resolve(body);

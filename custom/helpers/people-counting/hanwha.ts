@@ -120,7 +120,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -132,12 +131,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(
-                                `${response.statusCode}, ${Buffer.from(body)
-                                    .toString()
-                                    .replace(/\r\n/g, '; ')
-                                    .replace(/\n/g, '; ')}`,
-                            );
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -170,7 +164,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -182,12 +175,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(
-                                `${response.statusCode}, ${Buffer.from(body)
-                                    .toString()
-                                    .replace(/\r\n/g, '; ')
-                                    .replace(/\n/g, '; ')}`,
-                            );
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -231,7 +219,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -243,12 +230,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(
-                                `${response.statusCode}, ${Buffer.from(body)
-                                    .toString()
-                                    .replace(/\r\n/g, '; ')
-                                    .replace(/\n/g, '; ')}`,
-                            );
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -281,7 +263,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -293,12 +274,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(
-                                `${response.statusCode}, ${Buffer.from(body)
-                                    .toString()
-                                    .replace(/\r\n/g, '; ')
-                                    .replace(/\n/g, '; ')}`,
-                            );
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }

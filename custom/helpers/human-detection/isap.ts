@@ -80,7 +80,6 @@ export class ISap {
                     HttpClient.post(
                         {
                             url: url,
-                            encoding: null,
                             json: true,
                             body: {
                                 image64: image.toString(Parser.Encoding.base64),
@@ -91,12 +90,7 @@ export class ISap {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `${response.statusCode}, ${Buffer.from(body)
-                                        .toString()
-                                        .replace(/\r\n/g, '; ')
-                                        .replace(/\n/g, '; ')}`,
-                                );
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                             } else if (body.messsage.toLowerCase() !== 'ok') {
                                 return reject(body.messsage);
                             }

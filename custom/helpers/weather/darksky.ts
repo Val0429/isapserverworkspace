@@ -57,12 +57,7 @@ export class Darksky {
                             if (error) {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `${response.statusCode}, ${JSON.stringify(body)
-                                        .toString()
-                                        .replace(/\r\n/g, '; ')
-                                        .replace(/\n/g, '; ')}`,
-                                );
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                             } else if (body.error) {
                                 return reject(`${body.code}, ${body.error}`);
                             }
