@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.IPartner.ICMSSnapshot;
+type InputC = IRequest.IPartner.ICMSSnapshot_ObjectId | IRequest.IPartner.ICMSSnapshot_Config;
 
 type OutputC = IResponse.IPartner.ICMSSnapshot;
 
@@ -27,24 +27,37 @@ action.post(
             let _input: InputC = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let server: IDB.ServerCMS = await new Parse.Query(IDB.ServerCMS)
-                .equalTo('objectId', _input.objectId)
-                .first()
-                .fail((e) => {
-                    throw e;
-                });
-            if (!server) {
-                throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
+            let config: CMSService.IConfig = undefined;
+            if ('objectId' in _input) {
+                let server: IDB.ServerCMS = await new Parse.Query(IDB.ServerCMS)
+                    .equalTo('objectId', _input.objectId)
+                    .first()
+                    .fail((e) => {
+                        throw e;
+                    });
+                if (!server) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
+                }
+
+                config = {
+                    protocol: server.getValue('protocol'),
+                    ip: server.getValue('ip'),
+                    port: server.getValue('port'),
+                    account: server.getValue('account'),
+                    password: server.getValue('password'),
+                };
+            } else {
+                config = {
+                    protocol: _input.config.protocol,
+                    ip: _input.config.ip,
+                    port: _input.config.port,
+                    account: _input.config.account,
+                    password: _input.config.password,
+                };
             }
 
             let cms: CMSService = new CMSService();
-            cms.config = {
-                protocol: server.getValue('protocol'),
-                ip: server.getValue('ip'),
-                port: server.getValue('port'),
-                account: server.getValue('account'),
-                password: server.getValue('password'),
-            };
+            cms.config = config;
 
             cms.Initialization();
 

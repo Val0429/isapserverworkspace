@@ -16,15 +16,25 @@ export interface ICMSU extends ICMSBase {
     name?: string;
 }
 
-export interface ICMSDevice {
-    objectId?: string;
-    config?: ICMSBase;
+export interface ICMSDevice_ObjectId {
+    objectId: string;
 }
 
-export interface ICMSSnapshot {
-    objectId: string;
+export interface ICMSDevice_Config {
+    config: ICMSBase;
+}
+
+export interface ICMSSnapshot_Base {
     nvrId: number;
     channelId: number;
+}
+
+export interface ICMSSnapshot_ObjectId extends ICMSSnapshot_Base {
+    objectId: string;
+}
+
+export interface ICMSSnapshot_Config extends ICMSSnapshot_Base {
+    config: ICMSBase;
 }
 
 export interface IFRSBase {
@@ -46,9 +56,12 @@ export interface IFRSU extends IFRSBase {
     name?: string;
 }
 
-export interface IFRSDevice {
-    objectId?: string;
-    config?: IFRSBase;
+export interface IFRSDevice_ObjectId {
+    objectId: string;
+}
+
+export interface IFRSDevice_Config {
+    config: IFRSBase;
 }
 
 export interface IHumanDetectionBase {
@@ -68,10 +81,16 @@ export interface IHumanDetectionU extends IHumanDetectionBase {
     name?: string;
 }
 
-export interface IHumanDetectionTest {
-    objectId?: string;
-    config?: IHumanDetectionBase;
+export interface IHumanDetectionTest_Base {
     imageBase64: string;
+}
+
+export interface IHumanDetectionTest_ObjectId extends IHumanDetectionTest_Base {
+    objectId: string;
+}
+
+export interface IHumanDetectionTest_Config extends IHumanDetectionTest_Base {
+    config: IHumanDetectionBase;
 }
 
 export interface IDemographicBase {
@@ -91,8 +110,14 @@ export interface IDemographicU extends IDemographicBase {
     name?: string;
 }
 
-export interface IDemographicTest {
-    objectId?: string;
-    config?: IDemographicBase;
+export interface IDemographicTest_Base {
     imageBase64: string;
+}
+
+export interface IDemographicTest_ObjectId extends IDemographicTest_Base {
+    objectId: string;
+}
+
+export interface IDemographicTest_Config extends IDemographicTest_Base {
+    config: IDemographicBase;
 }

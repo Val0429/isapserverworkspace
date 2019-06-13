@@ -262,7 +262,7 @@ async function GetPosition(areaId: string, groupIds: string[]): Promise<IPositio
             return {
                 site: area.getValue('site'),
                 area: area,
-                groups: undefined,
+                groups: groupIds.length === 0 ? [] : undefined,
             };
         }
 
@@ -469,10 +469,7 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
         if (value.areaId === '') {
             device.unset('area');
             device.unset('site');
-            device.unset('groups');
-        }
-        if (value.groupIds === []) {
-            device.unset('groups');
+            device.setValue('groups', []);
         }
         if (position.area) {
             device.setValue('site', position.site);
@@ -486,7 +483,7 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
                     return value.getValue('area').id !== position.area.id;
                 });
                 if (group) {
-                    device.unset('groups');
+                    device.setValue('groups', []);
                 }
             }
         }

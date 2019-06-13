@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.IPartner.ICMSDevice;
+type InputC = IRequest.IPartner.ICMSDevice_ObjectId | IRequest.IPartner.ICMSDevice_Config;
 
 type OutputC = CMSService.INvr[];
 
@@ -28,7 +28,7 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let config: CMSService.IConfig = undefined;
-            if (_input.objectId) {
+            if ('objectId' in _input) {
                 let server: IDB.ServerCMS = await new Parse.Query(IDB.ServerCMS)
                     .equalTo('objectId', _input.objectId)
                     .first()
@@ -46,7 +46,7 @@ action.post(
                     account: server.getValue('account'),
                     password: server.getValue('password'),
                 };
-            } else if (_input.config) {
+            } else {
                 config = {
                     protocol: _input.config.protocol,
                     ip: _input.config.ip,
@@ -54,8 +54,6 @@ action.post(
                     account: _input.config.account,
                     password: _input.config.password,
                 };
-            } else {
-                throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
             }
 
             let devices = await GetDeviceTree(config);

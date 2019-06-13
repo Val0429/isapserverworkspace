@@ -26,7 +26,7 @@ export interface IDevice {
     /**
      * 群組
      */
-    groups?: DeviceGroup[];
+    groups: DeviceGroup[];
 
     /**
      * 名稱
@@ -61,7 +61,7 @@ export interface IDevice {
     /**
      * ROI
      */
-    rois?: Draw.ILocation[];
+    rois: Draw.ILocation[];
 
     /**
      * X

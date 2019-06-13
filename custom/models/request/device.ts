@@ -18,8 +18,8 @@ export interface IGroupAll {
 
 export interface IC_Base {
     customId: string;
-    areaId?: string;
-    groupIds?: string[];
+    areaId: string;
+    groupIds: string[];
     name: string;
 }
 

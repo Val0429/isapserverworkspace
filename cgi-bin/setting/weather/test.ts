@@ -28,7 +28,11 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let weather: Weather.Darksky = new Weather.Darksky();
-            weather.secretKey = Config.darksky.secretKey;
+            if (_input.config) {
+                weather.secretKey = _input.config.secretKey;
+            } else {
+                weather.secretKey = Config.darksky.secretKey;
+            }
 
             weather.Initialization();
 

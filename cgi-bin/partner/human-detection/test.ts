@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.IPartner.IHumanDetectionTest;
+type InputC = IRequest.IPartner.IHumanDetectionTest_ObjectId | IRequest.IPartner.IHumanDetectionTest_Config;
 
 type OutputC = IResponse.IPartner.IHumanDetectionTest;
 
@@ -35,7 +35,7 @@ action.post(
 
             let config: HumanDetection.ISap.IUrlConfig = undefined;
             let score: number = 0;
-            if (_input.objectId) {
+            if ('objectId' in _input) {
                 let server: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection)
                     .equalTo('objectId', _input.objectId)
                     .first()
@@ -52,15 +52,13 @@ action.post(
                     port: server.getValue('port'),
                 };
                 score = server.getValue('target_score');
-            } else if (_input.config) {
+            } else {
                 config = {
                     protocol: _input.config.protocol,
                     ip: _input.config.ip,
                     port: _input.config.port,
                 };
                 score = _input.config.target_score;
-            } else {
-                throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
             }
 
             let analysis = await GetAnalysis(config, score, _input.imageBase64);

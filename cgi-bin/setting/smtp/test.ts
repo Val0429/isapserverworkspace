@@ -32,12 +32,21 @@ action.post(
             }
 
             let email: Email = new Email();
-            email.config = {
-                host: Config.email.host,
-                port: Config.email.port,
-                email: Config.email.email,
-                password: Config.email.password,
-            };
+            if (_input.config) {
+                email.config = {
+                    host: _input.config.host,
+                    port: _input.config.port,
+                    email: _input.config.email,
+                    password: _input.config.password,
+                };
+            } else {
+                email.config = {
+                    host: Config.email.host,
+                    port: Config.email.port,
+                    email: Config.email.email,
+                    password: Config.email.password,
+                };
+            }
 
             email.Initialization();
 

@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.IPartner.IFRSDevice;
+type InputC = IRequest.IPartner.IFRSDevice_ObjectId | IRequest.IPartner.IFRSDevice_Config;
 
 type OutputC = FRSService.IDevice[];
 
@@ -28,7 +28,7 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let config: FRSService.IConfig = undefined;
-            if (_input.objectId) {
+            if ('objectId' in _input) {
                 let server: IDB.ServerFRS = await new Parse.Query(IDB.ServerFRS)
                     .equalTo('objectId', _input.objectId)
                     .first()
@@ -47,10 +47,8 @@ action.post(
                     account: server.getValue('account'),
                     password: server.getValue('password'),
                 };
-            } else if (_input.config) {
-                config = _input.config;
             } else {
-                throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
+                config = _input.config;
             }
 
             let devices = await GetDeviceList(config);

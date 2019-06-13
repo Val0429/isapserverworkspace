@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Create
  */
-type InputC = IRequest.IPartner.IDemographicTest;
+type InputC = IRequest.IPartner.IDemographicTest_ObjectId | IRequest.IPartner.IDemographicTest_Config;
 
 type OutputC = IResponse.IPartner.IDemographicTest[];
 
@@ -35,7 +35,7 @@ action.post(
 
             let config: Demographic.ISap.IUrlConfig = undefined;
             let margin: number = 0;
-            if (_input.objectId) {
+            if ('objectId' in _input) {
                 let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
                     .equalTo('objectId', _input.objectId)
                     .first()
@@ -52,15 +52,13 @@ action.post(
                     port: server.getValue('port'),
                 };
                 margin = server.getValue('margin');
-            } else if (_input.config) {
+            } else {
                 config = {
                     protocol: _input.config.protocol,
                     ip: _input.config.ip,
                     port: _input.config.port,
                 };
                 margin = _input.config.margin;
-            } else {
-                throw Errors.throw(Errors.CustomBadRequest, ['need objectId or config']);
             }
 
             let analysis = await GetAnalysis(config, margin, _input.imageBase64);

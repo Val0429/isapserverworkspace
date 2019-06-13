@@ -32,11 +32,19 @@ action.post(
             }
 
             let sgsms: Sgsms = new Sgsms();
-            sgsms.config = {
-                url: Config.sgSms.url,
-                account: Config.sgSms.account,
-                password: Config.sgSms.password,
-            };
+            if (_input.config) {
+                sgsms.config = {
+                    url: _input.config.url,
+                    account: _input.config.account,
+                    password: _input.config.password,
+                };
+            } else {
+                sgsms.config = {
+                    url: Config.sgSms.url,
+                    account: Config.sgSms.account,
+                    password: Config.sgSms.password,
+                };
+            }
 
             sgsms.Initialization();
 
