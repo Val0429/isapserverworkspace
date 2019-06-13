@@ -143,7 +143,7 @@ action.get(
                 });
 
             let allDevices: IDB.Device[] = await new Parse.Query(IDB.Device)
-                .containedIn('group', groups)
+                .containedIn('groups', groups)
                 .find()
                 .fail((e) => {
                     throw e;
@@ -169,7 +169,10 @@ action.get(
 
                     let devices: IResponse.IDevice.IGroupIndexR_Device[] = allDevices
                         .filter((value1, index1, array1) => {
-                            return value1.getValue('group').id === value.id;
+                            let groupIds: string[] = value1.getValue('groups').map((value2, index2, array2) => {
+                                return value2.id;
+                            });
+                            return groupIds.indexOf(value.id) > -1;
                         })
                         .reduce((prev1, curr1, index1, array1) => {
                             let device = prev1.find((value2, index2, array2) => {
