@@ -20,4 +20,5 @@ export default new Action<Input>({
         owner: data.user
     });
     await Events.save(ev);
+    return {success:true};
 });
