@@ -4,6 +4,7 @@ import { ICameraHanwha } from '../db/_index';
 
 export interface IGroupIndexC {
     areaId: string;
+    mode: Enum.EDeviceMode;
     name: string;
 }
 
@@ -14,6 +15,7 @@ export interface IGroupIndexU {
 export interface IGroupAll {
     siteId?: string;
     areaId?: string;
+    mode?: Enum.EDeviceMode;
 }
 
 export interface IC_Base {

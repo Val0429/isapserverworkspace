@@ -44,6 +44,9 @@ action.get(
 
                 query.equalTo('area', area);
             }
+            if (_input.mode) {
+                query.equalTo('mode', _input.mode);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
@@ -59,6 +62,7 @@ action.get(
             return group.map((value, index, array) => {
                 return {
                     objectId: value.id,
+                    mode: Enum.EDeviceMode[value.getValue('mode')],
                     name: value.getValue('name'),
                 };
             });

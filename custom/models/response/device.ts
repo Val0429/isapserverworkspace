@@ -11,12 +11,14 @@ export interface IGroupIndexR {
     objectId: string;
     site: IObject;
     area: IObject;
+    mode: string;
     name: string;
     devices: IGroupIndexR_Device[];
 }
 
 export interface IGroupAll {
     objectId: string;
+    mode: string;
     name: string;
 }
 

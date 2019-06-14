@@ -1,7 +1,7 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import * as Rx from 'rxjs';
-import { LocationArea } from './_index';
-import { LocationSite } from './location-site';
+import { LocationSite, LocationArea } from './_index';
+import * as Enum from '../../enums';
 
 /**
  * 地區
@@ -16,6 +16,11 @@ export interface IDeviceGroup {
      * 區域
      */
     area: LocationArea;
+
+    /**
+     * 模式
+     */
+    mode: Enum.EDeviceMode;
 
     /**
      * 名稱

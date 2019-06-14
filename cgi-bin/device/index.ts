@@ -219,10 +219,11 @@ interface IPosition {
 
 /**
  * Get position
+ * @param mode
  * @param areaId
  * @param groupId
  */
-async function GetPosition(areaId: string, groupIds: string[]): Promise<IPosition> {
+async function GetPosition(mode: Enum.EDeviceMode, areaId: string, groupIds: string[]): Promise<IPosition> {
     try {
         if (groupIds) {
             let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
@@ -232,11 +233,18 @@ async function GetPosition(areaId: string, groupIds: string[]): Promise<IPositio
                     throw e;
                 });
 
-            let same: boolean = groups.every((value, index, array) => {
-                return value.getValue('area').id === array[0].getValue('area').id;
+            let group: IDB.DeviceGroup = groups.find((value, index, array) => {
+                return value.getValue('area').id !== array[0].getValue('area').id;
             });
-            if (!same) {
+            if (group) {
                 throw Errors.throw(Errors.CustomBadRequest, ['group must in same area']);
+            }
+
+            group = groups.find((value, index, array) => {
+                return value.getValue('mode') !== mode;
+            });
+            if (group) {
+                throw Errors.throw(Errors.CustomBadRequest, ['group mode must same with device']);
             }
 
             if (groups.length > 0) {
@@ -262,7 +270,7 @@ async function GetPosition(areaId: string, groupIds: string[]): Promise<IPositio
             return {
                 site: area.getValue('site'),
                 area: area,
-                groups: groupIds.length === 0 ? [] : undefined,
+                groups: groupIds && groupIds.length === 0 ? [] : undefined,
             };
         }
 
@@ -378,7 +386,7 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
     try {
         // await LicenseCheck(mode)
 
-        let position = await GetPosition(value.areaId, value.groupIds);
+        let position = await GetPosition(mode, value.areaId, value.groupIds);
 
         let device: IDB.Device = await new Parse.Query(IDB.Device)
             .equalTo('customId', value.customId)
@@ -452,7 +460,7 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
  */
 export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.Device> {
     try {
-        let position = await GetPosition(value.areaId, value.groupIds);
+        let position = await GetPosition(mode, value.areaId, value.groupIds);
 
         let device: IDB.Device = await new Parse.Query(IDB.Device)
             .equalTo('objectId', value.objectId)
@@ -477,8 +485,7 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
 
             if (position.groups) {
                 device.setValue('groups', position.groups);
-            }
-            if (device.getValue('groups')) {
+            } else if (device.getValue('groups')) {
                 let group = device.getValue('groups').find((value, index, array) => {
                     return value.getValue('area').id !== position.area.id;
                 });

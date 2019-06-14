@@ -49,6 +49,7 @@ action.post(
 
                         let group: IDB.DeviceGroup = await new Parse.Query(IDB.DeviceGroup)
                             .equalTo('area', area)
+                            .equalTo('mode', value.mode)
                             .equalTo('name', value.name)
                             .first()
                             .fail((e) => {
@@ -62,6 +63,7 @@ action.post(
 
                         group.setValue('site', area.getValue('site'));
                         group.setValue('area', area);
+                        group.setValue('mode', value.mode);
                         group.setValue('name', value.name);
 
                         await group.save(null, { useMasterKey: true }).fail((e) => {
@@ -126,6 +128,9 @@ action.get(
                 area.id = _input.areaId;
 
                 query.equalTo('area', area);
+            }
+            if (_input.mode) {
+                query.equalTo('mode', _input.mode);
             }
 
             let total: number = await query.count().fail((e) => {
@@ -194,6 +199,7 @@ action.get(
                         objectId: value.id,
                         site: site,
                         area: area,
+                        mode: Enum.EDeviceMode[value.getValue('mode')],
                         name: value.getValue('name'),
                         devices: devices,
                     };
