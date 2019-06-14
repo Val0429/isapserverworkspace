@@ -1,6 +1,6 @@
 !include "MUI2.nsh"
-!define PRODUCT_NAME "FET ACS Server"
-!define PRODUCT_VERSION "2.0.0"
+!define PRODUCT_NAME "ACS Server"
+!define PRODUCT_VERSION "1.0.0"
 !define MONGO "mongodb-win32-x86_64-enterprise-windows-64-3.6.3-signed.msi"
 !define NODE "node-v8.12.0-x64.msi"
 !define VCREDIST "vc_redist.x64.exe"
