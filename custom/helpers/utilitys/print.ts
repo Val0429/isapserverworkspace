@@ -117,10 +117,12 @@ export namespace Print {
      * @param mode
      */
     export function Log(message: any, error: Error, mode: 'message' | 'warning' | 'info' | 'error' | 'success', options?: ILogOption): void {
+        let datetime = new DateTime();
+
         let font: FontColor = FontColor.white;
         let back: BackColor = BackColor.white;
         let title: string = 'Message';
-        let date: string = DateTime.ToString(new Date());
+        let date: string = datetime.ToString(new Date());
 
         switch (mode) {
             case 'warning':

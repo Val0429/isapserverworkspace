@@ -24,7 +24,9 @@ setTimeout(() => {
     let description: string = process.env.npm_package_description;
     let version: string = process.env.npm_package_version;
 
-    Action.WriteLog.action$.next(`\r\n${DateTime.ToString(new Date())} Success ---> Server start - ${description}_v${version} (${node_env} Mode)`);
+    let datetime = new DateTime();
+
+    Action.WriteLog.action$.next(`\r\n${datetime.ToString(new Date())} Success ---> Server start - ${description}_v${version} (${node_env} Mode)`);
 
     console.log('\r\n'.repeat(process.stdout.rows));
 

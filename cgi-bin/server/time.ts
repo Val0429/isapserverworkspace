@@ -17,7 +17,9 @@ type Output = string;
 action.get(
     async (): Promise<Output> => {
         try {
-            return DateTime.ToString(new Date(), DateTime.Format.default);
+            let datetime = new DateTime();
+
+            return datetime.ToString(new Date());
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
