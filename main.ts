@@ -4,13 +4,14 @@ import * as readline from 'readline';
 import * as Rx from 'rxjs';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
-import { Print, Utility, DateTime, File } from './custom/helpers';
 
 export let ready$: Rx.Subject<{}> = new Rx.Subject();
 
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
 app.use(`/logs`, express.static(`workspace/custom/assets/logs`));
+
+import { Print, Utility, DateTime, File } from './custom/helpers';
 
 import './custom/shells/create-index';
 import './custom/shells/create-default';
