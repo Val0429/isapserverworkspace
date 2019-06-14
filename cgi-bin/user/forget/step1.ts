@@ -26,7 +26,7 @@ action.post(
             let _input: InputC = data.inputType;
 
             let user: Parse.User = await new Parse.Query(Parse.User)
-                .equalTo('username', _input.account)
+                .equalTo('username', _input.username)
                 .first()
                 .fail((e) => {
                     throw e;

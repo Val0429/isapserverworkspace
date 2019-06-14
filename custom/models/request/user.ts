@@ -2,7 +2,7 @@ import { RoleList } from 'core/cgi-package';
 import * as Enum from '../../enums';
 
 export interface IBaseLogin_User {
-    account: string;
+    username: string;
     password: string;
 }
 
@@ -58,12 +58,12 @@ export interface IGroupIndexU {
 }
 
 export interface IForgetStep1 {
-    account: string;
+    username: string;
     email: string;
 }
 
 export interface IForgetStep2 {
-    account: string;
+    username: string;
     verification: string;
 }
 

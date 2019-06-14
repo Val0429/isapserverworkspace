@@ -28,9 +28,9 @@ action.post(
             let user: Parse.User = undefined;
             let sessionId: string = '';
 
-            if ('account' in _input) {
+            if ('username' in _input) {
                 let login = await UserHelper.login({
-                    username: _input.account,
+                    username: _input.username,
                     password: _input.password,
                 }).catch((e) => {
                     throw e;

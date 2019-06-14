@@ -92,7 +92,7 @@ action.post(
 
                         let user: Parse.User = new Parse.User();
 
-                        user = await user.signUp({ username: value.account, password: value.password, roles: [role] }, { useMasterKey: true }).fail((e) => {
+                        user = await user.signUp({ username: value.username, password: value.password, roles: [role] }, { useMasterKey: true }).fail((e) => {
                             throw Errors.throw(Errors.CustomBadRequest, [e.message]);
                         });
 
@@ -101,7 +101,7 @@ action.post(
                         info = new IDB.UserInfo();
 
                         info.setValue('user', user);
-                        info.setValue('account', value.account);
+                        info.setValue('account', value.username);
                         info.setValue('name', value.name);
                         info.setValue('customId', value.employeeId);
                         info.setValue('email', value.email);
@@ -233,7 +233,7 @@ action.get(
 
                     return {
                         objectId: value.getValue('user').id,
-                        account: value.getValue('user').getUsername(),
+                        username: value.getValue('user').getUsername(),
                         role: roles[0],
                         name: value.getValue('name') || '',
                         employeeId: value.getValue('customId') || '',

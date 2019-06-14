@@ -31,7 +31,7 @@ action.post(
             }
 
             let user: Parse.User = await new Parse.Query(Parse.User)
-                .equalTo('username', _input.account)
+                .equalTo('username', _input.username)
                 .first()
                 .fail((e) => {
                     throw e;
@@ -70,7 +70,7 @@ action.post(
             });
 
             return await Login(data, {
-                account: _input.account,
+                username: _input.username,
                 password: _input.password,
             });
         } catch (e) {

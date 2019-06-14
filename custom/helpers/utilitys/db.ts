@@ -67,15 +67,15 @@ export namespace Db {
 
     /**
      * Create user
-     * @param account
+     * @param username
      * @param password
      * @param roles
      */
-    async function CreateUser(account: string, password: string, roles: Parse.Role[]): Promise<void> {
+    async function CreateUser(username: string, password: string, roles: Parse.Role[]): Promise<void> {
         try {
             let user = new Parse.User();
 
-            user.setUsername(account);
+            user.setUsername(username);
             user.setPassword(password);
             user.set('roles', roles);
 
@@ -86,8 +86,8 @@ export namespace Db {
             let info: IDB.UserInfo = new IDB.UserInfo();
 
             info.setValue('user', user);
-            info.setValue('account', account);
-            info.setValue('name', account);
+            info.setValue('account', username);
+            info.setValue('name', username);
 
             await info.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;

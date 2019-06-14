@@ -2,7 +2,7 @@ import { IObject } from './_index';
 
 export interface IBaseIndexR {
     objectId: string;
-    account: string;
+    username: string;
     roles: string[];
 }
 
@@ -18,7 +18,7 @@ export interface IUserIndexC {
 
 export interface IUserIndexR {
     objectId: string;
-    account: string;
+    username: string;
     role: string;
     name: string;
     employeeId: string;
@@ -37,7 +37,7 @@ export interface IUserAll {
 }
 
 export interface IUserLogin extends IBaseLogin {
-    account: string;
+    username: string;
     name: string;
     employeeId: string;
     email: string;

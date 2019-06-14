@@ -44,9 +44,9 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
         let user: Parse.User = undefined;
         let sessionId: string = '';
 
-        if ('account' in input) {
+        if ('username' in input) {
             let login = await UserHelper.login({
-                username: input.account,
+                username: input.username,
                 password: input.password,
             }).catch((e) => {
                 throw e;
@@ -96,7 +96,7 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
             sessionId: sessionId,
             objectId: user.id,
             roles: roles,
-            account: user.getUsername(),
+            username: user.getUsername(),
             name: _userInfo.info.getValue('name') || '',
             employeeId: _userInfo.info.getValue('customId') || '',
             email: _userInfo.info.getValue('email') || '',

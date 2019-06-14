@@ -61,7 +61,7 @@ action.get(
 
                     return {
                         objectId: value.id,
-                        account: value.getUsername(),
+                        username: value.getUsername(),
                         roles: roles,
                     };
                 }),
