@@ -1,2 +1,2 @@
-net stop "isap-fts-service"
-sc delete "isap-fts-service"
+net stop "isap-acs-service"
+sc delete "isap-acs-service"
