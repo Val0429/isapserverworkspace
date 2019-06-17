@@ -199,6 +199,11 @@ class Service {
                             devices.forEach((value, index, array) => {
                                 switch (value.getValue('mode')) {
                                     case Enum.EDeviceMode.humanDetection:
+                                        Action.HumanDetection.action$.next({
+                                            device: value,
+                                            date: new Date(x.timestamp),
+                                            image: x.image,
+                                        });
                                         break;
                                     case Enum.EDeviceMode.heatmap:
                                         break;
