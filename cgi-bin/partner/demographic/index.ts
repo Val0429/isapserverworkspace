@@ -35,9 +35,7 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
-                            if (e !== 'face not found') throw e;
-                        });
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
 
                         let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
                             .equalTo('customId', value.customId)
@@ -182,9 +180,7 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').catch((e) => {
-                            if (e !== 'face not found') throw e;
-                        });
+                        let analysis = await GetAnalysis({ protocol: value.protocol, ip: value.ip, port: value.port }, value.margin, 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
 
                         let server: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic)
                             .equalTo('objectId', value.objectId)
@@ -317,13 +313,7 @@ export async function GetAnalysis(config: Demographic.ISap.IUrlConfig, margin: n
 
         demo.Initialization();
 
-        let features = await Promise.all(
-            buffers.map(async (value, index, array) => {
-                return await demo.GetAnalysis(value);
-            }),
-        ).catch((e) => {
-            throw e;
-        });
+        let features = await demo.GetAnalysiss(buffers);
 
         return features;
     } catch (e) {

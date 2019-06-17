@@ -90,6 +90,8 @@ export class ISap {
                                 return reject(error);
                             } else if (response.statusCode !== 200) {
                                 return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.message.toLowerCase() === 'face not found') {
+                                resolve();
                             } else if (body.message.toLowerCase() !== 'ok') {
                                 return reject(body.message);
                             }
@@ -104,13 +106,44 @@ export class ISap {
                 throw e;
             });
 
-            let feature: ISap.IFeature = {
-                age: result.age,
-                gender: result.gender.toLowerCase(),
-                buffer: buffer,
-            };
+            if (result) {
+                let feature: ISap.IFeature = {
+                    age: result.age,
+                    gender: result.gender.toLowerCase(),
+                    buffer: buffer,
+                };
 
-            return feature;
+                return feature;
+            }
+
+            return undefined;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Do demographic analysiss
+     */
+    public async GetAnalysiss(buffers: Buffer[]): Promise<ISap.IFeature[]> {
+        try {
+            if (!this._isInitialization) {
+                throw Base.Message.NotInitialization;
+            }
+
+            let features: ISap.IFeature[] = await Promise.all(
+                buffers.map(async (value, index, array) => {
+                    return await this.GetAnalysis(value);
+                }),
+            ).catch((e) => {
+                throw e;
+            });
+
+            features = features.filter((value, index, array) => {
+                return !!value;
+            });
+
+            return features;
         } catch (e) {
             throw e;
         }
