@@ -11,6 +11,8 @@ export * from './location-region';
 export * from './location-site';
 export * from './office-hour';
 export * from './report-base';
+export * from './report-demographic-summary';
+export * from './report-demographic';
 export * from './report-human-detection-summary';
 export * from './report-human-detection';
 export * from './server-cms';

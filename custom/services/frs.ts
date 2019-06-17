@@ -175,6 +175,11 @@ class Service {
                                         case Enum.EDeviceMode.dwellTime:
                                             break;
                                         case Enum.EDeviceMode.demographic:
+                                            Action.Demographic.action$.next({
+                                                device: value,
+                                                date: x.date,
+                                                image: x.image,
+                                            });
                                             break;
                                         case Enum.EDeviceMode.visitor:
                                             break;
