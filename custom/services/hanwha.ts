@@ -138,8 +138,16 @@ class Service {
                 hanwha.liveStream$.subscribe({
                     next: async (x) => {
                         try {
+                            let count = x.length > 0 ? x[0] : { in: 0, out: 0 };
+
                             switch (value.getValue('mode')) {
                                 case Enum.EDeviceMode.peopleCounting:
+                                    Action.PeopleCountingMerge.action$.next({
+                                        device: value,
+                                        date: new Date(),
+                                        in: count.in,
+                                        out: count.out,
+                                    });
                                     break;
                                 default:
                                     throw `${value.id}(device) mode not found`;

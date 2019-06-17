@@ -171,6 +171,10 @@ class Service {
                                 devices.forEach((value, index, array) => {
                                     switch (value.getValue('mode')) {
                                         case Enum.EDeviceMode.peopleCounting:
+                                            Action.PeopleCountingSeparation.action$.next({
+                                                device: value,
+                                                date: x.date,
+                                            });
                                             break;
                                         case Enum.EDeviceMode.dwellTime:
                                             break;
