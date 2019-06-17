@@ -479,8 +479,6 @@ action.delete(
                 }),
             );
 
-            IDB.LocationSite$.next({ crud: 'd' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -512,6 +510,8 @@ export async function Delete(site: IDB.LocationSite): Promise<void> {
         try {
             File.DeleteFile(`${File.assetsPath}/${site.getValue('imageSrc')}`);
         } catch (e) {}
+
+        IDB.LocationSite$.next({ crud: 'd' });
     } catch (e) {
         throw e;
     }
@@ -537,6 +537,8 @@ export async function UnbindingRegion(region: IDB.LocationRegion): Promise<void>
                 await value.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;
                 });
+
+                IDB.LocationSite$.next({ crud: 'u' });
             }),
         );
     } catch (e) {

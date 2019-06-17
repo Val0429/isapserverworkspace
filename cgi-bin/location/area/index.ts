@@ -331,8 +331,6 @@ action.delete(
                 }),
             );
 
-            IDB.LocationArea$.next({ crud: 'd' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -362,6 +360,8 @@ export async function Delete(area: IDB.LocationArea): Promise<void> {
         try {
             File.DeleteFile(`${File.assetsPath}/${area.getValue('mapSrc')}`);
         } catch (e) {}
+
+        IDB.LocationArea$.next({ crud: 'd' });
     } catch (e) {
         throw e;
     }

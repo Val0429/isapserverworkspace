@@ -306,8 +306,6 @@ action.delete(
                 }),
             );
 
-            IDB.DeviceGroup$.next({ crud: 'd' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -327,6 +325,8 @@ export async function Delete(group: IDB.DeviceGroup): Promise<void> {
         await group.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });
+
+        IDB.DeviceGroup$.next({ crud: 'd' });
     } catch (e) {
         throw e;
     }

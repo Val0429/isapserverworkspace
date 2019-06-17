@@ -624,6 +624,8 @@ export async function UnbindingArea(area: IDB.LocationArea): Promise<void> {
                 await value.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;
                 });
+
+                IDB.Device$.next({ crud: 'u', brand: value.getValue('brand'), model: value.getValue('model') });
             }),
         );
     } catch (e) {
@@ -654,6 +656,8 @@ export async function UnbindingGroup(group: IDB.DeviceGroup): Promise<void> {
                 await value.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;
                 });
+
+                IDB.Device$.next({ crud: 'u', brand: value.getValue('brand'), model: value.getValue('model') });
             }),
         );
     } catch (e) {
@@ -679,6 +683,8 @@ export async function DeleteByServer(serverId: string): Promise<void> {
                 await value.destroy({ useMasterKey: true }).fail((e) => {
                     throw e;
                 });
+
+                IDB.Device$.next({ crud: 'd', brand: value.getValue('brand'), model: value.getValue('model') });
             }),
         );
     } catch (e) {
