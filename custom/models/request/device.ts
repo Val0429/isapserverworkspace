@@ -39,6 +39,7 @@ export interface ICameraCMS {
 
 export interface IDemographicC extends IC_Base {
     config: ICameraFRS;
+    demoServerId: string;
 }
 
 export interface IDwellTimeC extends IC_Base {
@@ -53,6 +54,7 @@ export interface IHeatmapC extends IC_Base {
 
 export interface IHumanDetectionC extends IC_Base {
     config: ICameraCMS;
+    hdServerId: string;
     rois: Draw.ILocation[];
 }
 
@@ -92,6 +94,7 @@ export interface IU_Base {
 
 export interface IDemographicU extends IU_Base {
     config?: ICameraFRS;
+    demoServerId?: string;
 }
 
 export interface IDwellTimeU extends IU_Base {
@@ -106,6 +109,7 @@ export interface IHeatmapU extends IU_Base {
 
 export interface IHumanDetectionU extends IU_Base {
     config?: ICameraCMS;
+    hdServerId?: string;
     rois?: Draw.ILocation[];
 }
 

@@ -55,7 +55,7 @@ action.get(
             let devices: IDB.Device[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['site', 'area', 'groups', 'config.server'])
+                .include(['site', 'area', 'groups', 'config.server', 'demoServer', 'hdServer'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -79,6 +79,20 @@ action.get(
                         ? {
                               objectId: value.getValue('area').id,
                               name: value.getValue('area').getValue('name'),
+                          }
+                        : undefined;
+
+                    let demoServer: IResponse.IObject = value.getValue('demoServer')
+                        ? {
+                              objectId: value.getValue('demoServer').id,
+                              name: value.getValue('demoServer').getValue('name'),
+                          }
+                        : undefined;
+
+                    let hdServer: IResponse.IObject = value.getValue('hdServer')
+                        ? {
+                              objectId: value.getValue('hdServer').id,
+                              name: value.getValue('hdServer').getValue('name'),
                           }
                         : undefined;
 
@@ -136,6 +150,8 @@ action.get(
                         model: model,
                         mode: Enum.EDeviceMode[value.getValue('mode')],
                         config: config,
+                        demoServer: demoServer,
+                        hdServer: hdServer,
                         direction: value.getValue('direction') ? Enum.EDeviceDirection[value.getValue('direction')] : undefined,
                         rois: value.getValue('rois'),
                         x: value.getValue('x'),
@@ -421,14 +437,24 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
 
         switch (mode) {
             case Enum.EDeviceMode.demographic:
+                let demoServer: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic).equalTo('objectId', value.demoServerId).first();
+                if (!demoServer) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['demographic server not found']);
+                }
+                device.setValue('demoServer', demoServer);
             case Enum.EDeviceMode.visitor:
                 device = await FRSCamera(device, value.config);
                 break;
             case Enum.EDeviceMode.dwellTime:
                 device = await FRSCamera(device, value.config);
                 break;
-            case Enum.EDeviceMode.heatmap:
             case Enum.EDeviceMode.humanDetection:
+                let hdServer: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection).equalTo('objectId', value.hdServerId).first();
+                if (!hdServer) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['human detection server not found']);
+                }
+                device.setValue('hdServer', hdServer);
+            case Enum.EDeviceMode.heatmap:
                 device = await CMSCamera(device, value.config);
                 break;
             case Enum.EDeviceMode.peopleCounting:
@@ -529,6 +555,20 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             } else if (value.brand === Enum.EDeviceBrand.isap) {
                 device = await FRSCamera(device, value.config);
             }
+        }
+        if (value.demoServerId) {
+            let demoServer: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic).equalTo('objectId', value.demoServerId).first();
+            if (!demoServer) {
+                throw Errors.throw(Errors.CustomBadRequest, ['demographic server not found']);
+            }
+            device.setValue('demoServer', demoServer);
+        }
+        if (value.hdServerId) {
+            let hdServer: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection).equalTo('objectId', value.hdServerId).first();
+            if (!hdServer) {
+                throw Errors.throw(Errors.CustomBadRequest, ['human detection server not found']);
+            }
+            device.setValue('hdServer', hdServer);
         }
         if (value.config) {
             switch (mode) {

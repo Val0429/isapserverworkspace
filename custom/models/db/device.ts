@@ -1,6 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import * as Rx from 'rxjs';
-import { LocationSite, LocationArea, DeviceGroup, ICameraCMS, ICameraFRS, ICameraHanwha } from './_index';
+import { LocationSite, LocationArea, DeviceGroup, ICameraCMS, ICameraFRS, ICameraHanwha, ServerDemographic, ServerHumanDetection } from './_index';
 import * as Enum from '../../enums';
 import { Draw } from '../../helpers';
 
@@ -52,6 +52,16 @@ export interface IDevice {
      * 設定
      */
     config: ICameraCMS | ICameraFRS | ICameraHanwha;
+
+    /**
+     * Demographic server
+     */
+    demoServer: ServerDemographic;
+
+    /**
+     * Human Detection server
+     */
+    hdServer: ServerHumanDetection;
 
     /**
      * 方向

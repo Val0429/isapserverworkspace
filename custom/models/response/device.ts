@@ -45,6 +45,8 @@ export interface IIndexR {
     model: string;
     mode: string;
     config: ICameraCMS | ICameraFRS | ICameraHanwha;
+    demoServer: IObject;
+    hdServer: IObject;
     direction: string;
     rois: Draw.ILocation[];
     x: number;
