@@ -126,7 +126,7 @@ class Service {
 
             this._devices.forEach((value, index, array) => {
                 let config: IDB.ICameraCMS = value.getValue('config') as IDB.ICameraCMS;
-                Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}`, new Error(), 'info');
+                Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
             });
         } catch (e) {
             throw e;
