@@ -108,7 +108,6 @@ class Action {
 
                 currSummary.setValue('site', base.site);
                 currSummary.setValue('area', base.area);
-                currSummary.setValue('groups', base.groups);
                 currSummary.setValue('device', base.device);
                 currSummary.setValue('type', type);
                 currSummary.setValue('date', currDate);
@@ -154,7 +153,6 @@ class Action {
                                         let base: IDB.IReportBase = {
                                             site: site,
                                             area: area,
-                                            groups: groups,
                                             device: device,
                                             date: value.date,
                                         };

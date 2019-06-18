@@ -15,11 +15,6 @@ export interface IReportBase {
     area: LocationArea;
 
     /**
-     * 裝置群組
-     */
-    groups: DeviceGroup[];
-
-    /**
      * 裝置
      */
     device: Device;

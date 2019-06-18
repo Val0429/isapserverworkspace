@@ -157,7 +157,6 @@ class Action {
 
                 reportSummary.setValue('site', report.getValue('site'));
                 reportSummary.setValue('area', report.getValue('area'));
-                reportSummary.setValue('groups', report.getValue('groups'));
                 reportSummary.setValue('device', report.getValue('device'));
                 reportSummary.setValue('type', type);
                 reportSummary.setValue('date', date);
@@ -308,7 +307,6 @@ class Action {
 
                                         report.setValue('site', site);
                                         report.setValue('area', area);
-                                        report.setValue('groups', groups);
                                         report.setValue('device', device);
                                         report.setValue('date', value.date);
                                         report.setValue('imageSrc', '');
