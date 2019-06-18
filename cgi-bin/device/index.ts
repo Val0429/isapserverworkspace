@@ -317,8 +317,6 @@ async function GetHanwhaVersion(config: IDB.ICameraHanwha): Promise<string> {
 
         hanwha.Initialization();
 
-        return '';
-
         let version = await hanwha.GetVersion();
 
         return version;
