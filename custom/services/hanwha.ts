@@ -99,10 +99,14 @@ class Service {
                     throw e;
                 });
 
-            this._devices.forEach((value, index, array) => {
-                let config: IDB.ICameraHanwha = value.getValue('config') as IDB.ICameraHanwha;
-                Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.ip}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
-            });
+            this._devices
+                .sort((a, b) => {
+                    return b.getValue('mode') - a.getValue('mode');
+                })
+                .forEach((value, index, array) => {
+                    let config: IDB.ICameraHanwha = value.getValue('config') as IDB.ICameraHanwha;
+                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.ip}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
+                });
         } catch (e) {
             throw e;
         }
