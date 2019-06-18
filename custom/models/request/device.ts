@@ -28,7 +28,6 @@ export interface IC_Base {
 export interface ICameraFRS {
     serverId: string;
     sourceid: string;
-    location: string;
 }
 
 export interface ICameraCMS {

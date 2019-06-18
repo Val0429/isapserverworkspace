@@ -25,7 +25,6 @@ export interface IGroupAll {
 export interface ICameraFRS {
     server: IObject;
     sourceid: string;
-    location: string;
 }
 
 export interface ICameraCMS {

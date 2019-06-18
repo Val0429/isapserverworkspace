@@ -128,7 +128,6 @@ action.get(
                                             name: frsConfig.server.getValue('name'),
                                         },
                                         sourceid: frsConfig.sourceid,
-                                        location: frsConfig.location,
                                     };
                                     break;
                             }
@@ -345,7 +344,6 @@ async function FRSCamera(device: IDB.Device, camera: IRequest.IDevice.ICameraFRS
         let config: IDB.ICameraFRS = {
             server: server,
             sourceid: camera.sourceid,
-            location: camera.location,
         };
 
         device.setValue('brand', Enum.EDeviceBrand.isap);

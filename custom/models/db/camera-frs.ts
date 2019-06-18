@@ -13,9 +13,4 @@ export interface ICameraFRS {
      *
      */
     sourceid: string;
-
-    /**
-     *
-     */
-    location: string;
 }
