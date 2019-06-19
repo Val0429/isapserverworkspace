@@ -23,3 +23,4 @@ export * from './server-human-detection';
 export * from './tag';
 export * from './user-group';
 export * from './user-info';
+export * from './weather';
