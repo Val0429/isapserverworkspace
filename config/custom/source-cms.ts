@@ -11,7 +11,7 @@ export interface Config {
 let config: Config = {
     snapshot: {
         intervalSecond: 300,
-        bufferCount: 5,
+        bufferCount: 10,
         isLive: true,
     },
 };
