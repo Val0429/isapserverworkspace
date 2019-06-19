@@ -4,7 +4,7 @@ import * as Path from 'path';
 import * as Fs from 'fs';
 import { promisify } from 'bluebird';
 import { IRequest, IResponse } from '../../custom/models';
-import { Print } from '../../custom/helpers';
+import { Print, Db } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
@@ -25,6 +25,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let configs: OutputR;
             if (_input.key === '*') {
@@ -59,6 +60,7 @@ action.put(
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             for (let key in _input.data) {
                 /// update data

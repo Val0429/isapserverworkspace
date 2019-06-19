@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Parser, CMSService } from '../../../custom/helpers';
+import { Print, Db, Parser, CMSService } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import * as Device from '../../device';
@@ -29,6 +29,7 @@ action.post(
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
+        let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
         try {
             let resMessages: OutputC = data.parameters.resMessages;
@@ -107,6 +108,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
 
             let query: Parse.Query<IDB.ServerCMS> = new Parse.Query(IDB.ServerCMS);
@@ -176,6 +178,7 @@ action.put(
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
+        let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
         try {
             let resMessages: OutputU = data.parameters.resMessages;
@@ -253,6 +256,7 @@ action.delete(
     async (data): Promise<OutputD> => {
         try {
             let _input: InputD = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _objectIds: string[] = data.parameters.objectIds;
             let resMessages: OutputD = data.parameters.resMessages;
 

@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print } from '../../../custom/helpers';
+import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 
 let action = new Action({
@@ -24,6 +24,7 @@ action.put(
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _userId: string = _input.objectId || data.user.id;
 
             if (_input.roles.length === 0) {

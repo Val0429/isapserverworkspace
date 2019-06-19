@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print, File } from '../../custom/helpers';
+import { Print, File, Db } from '../../custom/helpers';
 import * as Middleware from '../../custom/middlewares';
 import * as Enum from '../../custom/enums';
 import * as HttpClient from 'request';
@@ -28,6 +28,7 @@ action.post(
     async (data): Promise<OutputC> => {
         try {
             let _input: InputC = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             if ('key' in _input && 'mac' in _input) {
                 let res1: number = await licenseService.verifyLicenseKey({ key: _input.key });
@@ -101,6 +102,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
+            let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
 
             let license = await licenseService.getLicense();
