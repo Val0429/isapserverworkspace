@@ -36,7 +36,9 @@ export class Darksky {
     }
 
     /**
-     * Get current
+     * Get current (℃)
+     * @param latitude
+     * @param longitude
      */
     public async GetCurrent(latitude: number, longitude: number): Promise<Darksky.IForecast_Currently> {
         try {
@@ -79,7 +81,7 @@ export class Darksky {
                 currently: {
                     icon: result.currently.icon,
                     precipProbability: result.currently.precipProbability,
-                    temperature: result.currently.temperature,
+                    temperature: this.F2C(result.currently.temperature),
                     humidity: result.currently.humidity,
                     cloudCover: result.currently.cloudCover,
                     uvIndex: result.currently.uvIndex,
@@ -92,7 +94,9 @@ export class Darksky {
     }
 
     /**
-     * Get daily
+     * Get daily (℃)
+     * @param latitude
+     * @param longitude
      */
     public async GetDay(latitude: number, longitude: number): Promise<Darksky.IForecast_Daily> {
         try {
@@ -139,14 +143,42 @@ export class Darksky {
                 daily: {
                     icon: result.daily.data[0].icon,
                     precipProbability: result.daily.data[0].precipProbability,
-                    temperatureMin: result.daily.data[0].temperatureMin,
-                    temperatureMax: result.daily.data[0].temperatureMax,
+                    temperatureMin: this.F2C(result.daily.data[0].temperatureMin),
+                    temperatureMax: this.F2C(result.daily.data[0].temperatureMax),
                     humidity: result.daily.data[0].humidity,
                     cloudCover: result.daily.data[0].cloudCover,
                     uvIndex: result.daily.data[0].uvIndex,
                     visibility: result.daily.data[0].visibility,
                 },
             };
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Convert ℉ to ℃
+     */
+    public F2C(temperature: number) {
+        try {
+            temperature = (5 / 9) * (temperature - 32);
+            temperature = Math.round(temperature * 10) / 10;
+
+            return temperature;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Convert ℃ to ℉
+     */
+    public C2F(temperature: number) {
+        try {
+            temperature = temperature * (9 / 5) + 32;
+            temperature = Math.round(temperature * 10) / 10;
+
+            return temperature;
         } catch (e) {
             throw e;
         }
