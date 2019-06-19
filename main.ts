@@ -4,7 +4,8 @@ import { app } from 'core/main.gen';
 // import './custom/schedulers/index';
 import './custom/shells/create-index';
 
-import './custom/services/hr-service';
+// import './custom/services/hr-service';
+import './custom/services';
 
 import * as express from 'express';
 app.use('/files', express.static(`${__dirname}/custom/files`));

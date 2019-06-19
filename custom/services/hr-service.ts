@@ -7,7 +7,7 @@ import { ScheduleActionEmail } from 'core/scheduler-loader';
 import * as mongo from 'mongodb';
 import * as msSQL from 'mssql';
 
-import { SiPassAccountService } from './../modules/acs/sipass';
+import { HumanResourceService } from './acs/HumanResource';
 
 
 export class HRService {
@@ -20,7 +20,8 @@ export class HRService {
 
     private sqlClient: msSQL.connection ;
 
-    private siPassDevice: SiPassAccountService;
+    private humanResource: HumanResourceService ;
+
     private LastUpdate = {
         "vieChangeMemberLog": 0,
         "vieREMemberLog": 0
@@ -29,7 +30,7 @@ export class HRService {
     constructor() {
         var me = this;
 
-        this.siPassDevice = new SiPassAccountService();
+        this.humanResource = new HumanResourceService();
 
         this.waitTimer = setTimeout(() => {
             me.doHumanResourcesSync();
@@ -37,47 +38,40 @@ export class HRService {
     }
 
     async doHumanResourcesSync() {
-        Log.Info(`${this.constructor.name}`, `2.0 Timer Check`);
+        Log.Info(`${this.constructor.name}`, `0.0 Timer Check`);
 
         var me = this;
         let now: Date = new Date();
 
         clearTimeout(this.waitTimer);
 
-        if ((now.getHours() == 0) && (now.getMinutes() == 0)) {
+        // if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
+        if (now.getMinutes() != 0) {
             // 1.0 create database connection
-            Log.Info(`${this.constructor.name}`, `2.1 create mongo database connection`);
+            Log.Info(`${this.constructor.name}`, `1.0 create mongo database connection`);
             // (async () => {
             const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
             this.mongoClient = await mongo.MongoClient.connect(url);
             this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
             // })();
 
-            Log.Info(`${this.constructor.name}`, `2.2 create mssql database connection`);
-            const config = {
-                user: 'sa',
-                password: '5j/cj86aup6eji6j04njo4e',
-                server: 'localhost\\DATAEXPRESS',
-                database: 'FET_HR'
-            }
-            this.sqlClient = await msSQL.connect(config);
-
-
-            // 2.0 import data
+            // 2.0 initial MSSQL Connection
+            Log.Info(`${this.constructor.name}`, `2.0 initial MSSQL Connection`);
+            this.humanResource.connect();
+            
+            // 3.0 Cleae Temp Data
+            Log.Info(`${this.constructor.name}`, `3.0 Cleae Temp Data`);
             let EmpNo: string[] = [];
             Log.Info(`${this.constructor.name}`, `2.1 clear temp/log tables`);
             this.mongoDb.collection("i_vieChangeMemberLog").deleteMany({});
-            // this.mongoDb.collection("i_vieHQMemberLog").deleteMany({});
             this.mongoDb.collection("i_vieREMemberLog").deleteMany({});
+            // this.mongoDb.collection("i_vieHQMemberLog").deleteMany({});
 
 
-            Log.Info(`${this.constructor.name}`, `2.2 import sync data`);
+            // 4.0 Get Import data
+            Log.Info(`${this.constructor.name}`, `4.0 Get Import data`);
 
-            // vieChangeMemberLog
-            let res = await this.sqlClient.request()
-                .input('SeqNo', msSQL.Int, this.LastUpdate.vieChangeMemberLog)
-                .query('select * from vieChangeMemberLog where SeqNo >= @SeqNo order by SeqNo');
-
+            let res = await this.humanResource.getViewChangeMemberLog(this.LastUpdate.vieChangeMemberLog);
             // { recordsets: [ [ [Object], [Object], [Object] ] ],
             //     recordset:
             //      [ { SeqNo: 1,
@@ -85,24 +79,27 @@ export class HRService {
 
             for (let idx = 0; idx < res["recordset"].length; idx++) {
                 let record = res["recordset"][idx];
-
-                // let log = new Parse.Object("i_vieChangeMemberLog");
-                // await log.save(record);
                 me.LastUpdate.vieChangeMemberLog = record["SeqNo"];
                 EmpNo.push(record["EmpNo"]);
             };
 
             // vieChangeMemberLog
-            res = await this.sqlClient.request()
-                .input('AddDate', msSQL.VarChar(10), "2018/12/31")
-                .query('select * from vieHQMemberLog where AddDate > @AddDate order by SeqNo');
+            let d = new Date();
+                d.setDate(d.getDate() - 90);
+            
+            let month = d.getMonth() < 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
+            let day   = d.getDate()  < 10 ? '0' + d.getDate() : d.getDate();
+            let str = `${d.getFullYear()}-${month}-${day}`;
+            str = "2018/12/31"
 
+            res = await this.humanResource.getViewHQMemberLog( str );
             // { recordsets: [ [ [Object], [Object], [Object] ] ],
             //     recordset:
             //      [ { SeqNo: 1,
             //          CompCode: '01',
 
-            // record not in the previous log list
+            // 4.2.1 record not in the previous log list
+            Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);            
             let newSeqNoList = [];
             for (let idx = 0; idx < res["recordset"].length; idx++) {
                 let record = res["recordset"][idx];
@@ -123,8 +120,9 @@ export class HRService {
                 }
             };
 
-            // record not in the new log list
-            let records = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", "2018/12/31").find();
+            // 4.2.2 record not in the new log list
+            Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);            
+            let records = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", str).find();
             for (let idx = 0; idx < records.length; idx++) {
                 let record = records[idx];
 
@@ -133,11 +131,8 @@ export class HRService {
                 }
             }
 
-            // vieREMemberLog
-            res = await this.sqlClient.request()
-                .input('SeqNo', msSQL.Int, this.LastUpdate.vieREMemberLog)
-                .query('select * from vieREMemberLog where SeqNo >= @SeqNo order by SeqNo');
-
+            // 4.3 vieREMemberLog
+            res = await this.humanResource.getViewREMemberLog(this.LastUpdate.vieREMemberLog);
             // { recordsets: [ [ [Object], [Object], [Object] ] ],
             //     recordset:
             //      [ { SeqNo: 1,
@@ -150,18 +145,11 @@ export class HRService {
                 EmpNo.push(record["EmpNo"]);
             };
 
-            // 4.0 request human information
-            Log.Info(`${this.constructor.name}`, `4.0 request human information`);
+            // 4.4 request human information
+            Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
 
             if (EmpNo.length >= 1) {
-                let strEmp = "";
-
-                EmpNo.forEach(no => {
-                    strEmp += (",'" + no + "'");
-                });
-
-                res = await this.sqlClient.request()
-                    .query(`select * from vieMember where EmpNo in (''${strEmp}) order by CompCode, EmpNo`);
+                res = await this.humanResource.getViewMember(EmpNo);
 
                 for (let idx = 0; idx < res["recordset"].length; idx++) {
                     let record = res["recordset"][idx];
@@ -172,7 +160,7 @@ export class HRService {
                 }
             }
 
-            Log.Info(`${this.constructor.name}`, `2.3 request device adapter data`);
+            // Log.Info(`${this.constructor.name}`, `2.3 request device adapter data`);
 
 
             // 5.1 write data to SiPass database

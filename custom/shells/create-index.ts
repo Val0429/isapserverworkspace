@@ -3,8 +3,6 @@ import { Config } from 'core/config.gen';
 import { RoleList } from 'core/userRoles.gen';
 import { createIndex } from 'helpers/parse-server/parse-helper';
 
-console.log("Config.mongodb.enable", Config.mongodb.enable);
-
 Config.mongodb.enable &&
 ((async () => {
 
@@ -42,6 +40,7 @@ Config.mongodb.enable &&
         }
         console.log("Default Role created.");
     }
+
 
     /// Create default users
     let user = await new Parse.Query(Parse.User)

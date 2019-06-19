@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "delay": "^4.3.0",
     "mssql": "^5.1.0"
   }
 }
