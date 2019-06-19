@@ -38,7 +38,7 @@ export class Darksky {
     /**
      * Get current
      */
-    public async GetCurrent(latitude: number, longitude: number): Promise<Darksky.IForecast> {
+    public async GetCurrent(latitude: number, longitude: number): Promise<Darksky.IForecast_Currently> {
         try {
             if (!this._isInitialization) {
                 throw Base.Message.NotInitialization;
@@ -90,6 +90,67 @@ export class Darksky {
             throw e;
         }
     }
+
+    /**
+     * Get daily
+     */
+    public async GetDay(latitude: number, longitude: number): Promise<Darksky.IForecast_Daily> {
+        try {
+            if (!this._isInitialization) {
+                throw Base.Message.NotInitialization;
+            }
+
+            let url: string = `${this._baseUrl}/forecast/${this._secretKey}/${latitude},${longitude}?exclude=currently,minutely,hourly,alerts,flags`;
+
+            let result: any = await new Promise<any>((resolve, reject) => {
+                try {
+                    HttpClient.get(
+                        {
+                            url: url,
+                            json: true,
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.error) {
+                                return reject(`${body.code}, ${body.error}`);
+                            }
+
+                            resolve(body);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            if (!result.daily.data[0]) {
+                throw 'can not get daily data';
+            }
+
+            return {
+                latitude: result.latitude,
+                longitude: result.longitude,
+                timezone: result.timezone,
+                daily: {
+                    icon: result.daily.data[0].icon,
+                    precipProbability: result.daily.data[0].precipProbability,
+                    temperatureMin: result.daily.data[0].temperatureMin,
+                    temperatureMax: result.daily.data[0].temperatureMax,
+                    humidity: result.daily.data[0].humidity,
+                    cloudCover: result.daily.data[0].cloudCover,
+                    uvIndex: result.daily.data[0].uvIndex,
+                    visibility: result.daily.data[0].visibility,
+                },
+            };
+        } catch (e) {
+            throw e;
+        }
+    }
 }
 
 export namespace Darksky {
@@ -100,7 +161,20 @@ export namespace Darksky {
         latitude: number;
         longitude: number;
         timezone: string;
+    }
+
+    /**
+     *
+     */
+    export interface IForecast_Currently extends IForecast {
         currently: ICurrently;
+    }
+
+    /**
+     *
+     */
+    export interface IForecast_Daily extends IForecast {
+        daily: IDaily;
     }
 
     /**
@@ -110,6 +184,20 @@ export namespace Darksky {
         icon: string;
         precipProbability: number;
         temperature: number;
+        humidity: number;
+        cloudCover: number;
+        uvIndex: number;
+        visibility: number;
+    }
+
+    /**
+     *
+     */
+    export interface IDaily {
+        icon: string;
+        precipProbability: number;
+        temperatureMin: number;
+        temperatureMax: number;
         humidity: number;
         cloudCover: number;
         uvIndex: number;
