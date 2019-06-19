@@ -63,7 +63,7 @@ action.put(
             Config['darksky'] = { ...Config['darksky'], ..._input };
 
             Print.Log('Write weather config', new Error(), 'warning', { now: true });
-            File.CopyFile('workspace/config/custom/darksky.ts', 'workspace/custom/assets/config/darksky.ts');
+            File.WriteFile('workspace/custom/assets/config/darksky.json', JSON.stringify(_input));
 
             return new Date();
         } catch (e) {

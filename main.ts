@@ -4,6 +4,7 @@ import * as readline from 'readline';
 import * as Rx from 'rxjs';
 import { app } from 'core/main.gen';
 import { Config } from 'core/config.gen';
+import { UpdateConfig } from './cgi-bin/config';
 
 export let ready$: Rx.Subject<{}> = new Rx.Subject();
 
@@ -53,12 +54,16 @@ setTimeout(() => {
     });
 
     files = File.ReadFolder('workspace/custom/assets/config');
-    files.forEach((value, index, array) => {
-        let file1 = File.ReadFile(`workspace/custom/assets/config/${value}`);
-        let file2 = File.ReadFile(`workspace/config/custom/${value}`);
+    files.forEach(async (value, index, array) => {
+        let type = value.substring(0, value.indexOf('.'));
 
-        if (file1.toString() !== file2.toString()) {
-            File.CopyFile(`workspace/custom/assets/config/${value}`, `workspace/config/custom/${value}`);
+        let config1 = JSON.parse(File.ReadFile(`workspace/custom/assets/config/${value}`).toString());
+        let config2 = Config[type];
+
+        for (var key in config1) {
+            if (config2[key] && config2[key] !== config1[key]) {
+                await UpdateConfig(type, config1);
+            }
         }
     });
 

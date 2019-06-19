@@ -56,7 +56,7 @@ action.put(
             Config['pushNotification'] = { ...Config['pushNotification'], ..._input };
 
             Print.Log('Write push notification config', new Error(), 'warning', { now: true });
-            File.CopyFile('workspace/config/custom/push-notification.ts', 'workspace/custom/assets/config/push-notification.ts');
+            File.WriteFile('workspace/custom/assets/config/push-notification.json', JSON.stringify(_input));
 
             return new Date();
         } catch (e) {

@@ -72,7 +72,7 @@ action.put(
             Config['sgSms'] = { ...Config['sgSms'], ..._input };
 
             Print.Log('Write sgsms config', new Error(), 'warning', { now: true });
-            File.CopyFile('workspace/config/custom/sg-sms.ts', 'workspace/custom/assets/config/sg-sms.ts');
+            File.WriteFile('workspace/custom/assets/config/sg-sms.json', JSON.stringify(_input));
 
             return new Date();
         } catch (e) {

@@ -78,7 +78,7 @@ action.put(
             Config['email'] = { ...Config['email'], ..._input };
 
             Print.Log('Write smtp config', new Error(), 'warning', { now: true });
-            File.CopyFile('workspace/config/custom/email.ts', 'workspace/custom/assets/config/email.ts');
+            File.WriteFile('workspace/custom/assets/config/email.json', JSON.stringify(_input));
 
             return new Date();
         } catch (e) {
