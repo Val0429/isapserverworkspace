@@ -689,6 +689,60 @@ export async function DeleteByServer(serverId: string): Promise<void> {
 }
 
 /**
+ * Delete device by demographic server
+ * @param demoServer
+ */
+export async function DeleteByDemoServer(demoServer: IDB.ServerDemographic): Promise<void> {
+    try {
+        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
+            .equalTo('demoServer', demoServer)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            devices.map(async (value, index, array) => {
+                await value.destroy({ useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+
+                IDB.Device$.next({ crud: 'd', brand: value.getValue('brand'), model: value.getValue('model') });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Delete device by human detection server
+ * @param hdServer
+ */
+export async function DeleteByHDServer(hdServer: IDB.ServerHumanDetection): Promise<void> {
+    try {
+        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
+            .equalTo('hdServer', hdServer)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        await Promise.all(
+            devices.map(async (value, index, array) => {
+                await value.destroy({ useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+
+                IDB.Device$.next({ crud: 'd', brand: value.getValue('brand'), model: value.getValue('model') });
+            }),
+        );
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
  * Convert device mode to prodect id
  * @param mode
  */
