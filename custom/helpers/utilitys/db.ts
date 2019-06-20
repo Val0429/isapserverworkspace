@@ -101,6 +101,7 @@ export namespace Db {
         roles: string[];
         info: IDB.UserInfo;
         sites: IDB.LocationSite[];
+        siteIds: string[];
     }
 
     /**
@@ -149,10 +150,15 @@ export namespace Db {
                 return siteIds.indexOf(value.id) === index;
             });
 
+            siteIds = sites.map((value, index, array) => {
+                return value.id;
+            });
+
             let userInfo: IUserInfo = {
                 roles: roles,
                 info: info,
                 sites: sites,
+                siteIds: siteIds,
             };
 
             return userInfo;
