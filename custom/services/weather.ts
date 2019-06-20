@@ -78,10 +78,20 @@ class Service {
                                     try {
                                         let daily = await darksky.GetDay(value.site.getValue('latitude'), value.site.getValue('longitude'));
 
-                                        let weather: IDB.Weather = new IDB.Weather();
+                                        let weather: IDB.Weather = await new Parse.Query(IDB.Weather)
+                                            .equalTo('site', value.site)
+                                            .equalTo('date', value.date)
+                                            .first()
+                                            .fail((e) => {
+                                                throw e;
+                                            });
+                                        if (!weather) {
+                                            weather = new IDB.Weather();
 
-                                        weather.setValue('site', value.site);
-                                        weather.setValue('date', value.date);
+                                            weather.setValue('site', value.site);
+                                            weather.setValue('date', value.date);
+                                        }
+
                                         weather.setValue('icon', daily.daily.icon);
                                         weather.setValue('temperatureMin', daily.daily.temperatureMin);
                                         weather.setValue('temperatureMax', daily.daily.temperatureMax);
@@ -105,7 +115,6 @@ class Service {
                 });
 
             let delay: number = this.GetDelayTime();
-            Rx.Observable.interval(24 * 60 * 60 * 1000)
             Rx.Observable.interval(this._config.hourlyFrequency * 60 * 60 * 1000)
                 .startWith(0)
                 .delay(delay)
