@@ -76,6 +76,10 @@ class Action {
                 case Enum.ESummaryType.month:
                     date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
                     break;
+                case Enum.ESummaryType.season:
+                    let season = Math.ceil((date.getMonth() + 1) / 3);
+                    date = new Date(new Date(new Date(date.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
+                    break;
             }
 
             let reportSummary: IDB.ReportPeopleCountingSummary = await new Parse.Query(IDB.ReportPeopleCountingSummary)
@@ -150,6 +154,7 @@ class Action {
                                         tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.hour));
                                         tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.day));
                                         tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.month));
+                                        tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.season));
 
                                         await Promise.all(tasks).catch((e) => {
                                             throw e;

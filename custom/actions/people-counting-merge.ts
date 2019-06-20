@@ -81,6 +81,11 @@ class Action {
                     currDate = new Date(new Date(currDate.setDate(1)).setHours(0, 0, 0, 0));
                     prevDate = new Date(new Date(currDate).setMonth(currDate.getMonth() - 1));
                     break;
+                case Enum.ESummaryType.season:
+                    let season = Math.ceil((currDate.getMonth() + 1) / 3);
+                    currDate = new Date(new Date(new Date(currDate.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
+                    prevDate = new Date(new Date(currDate).setMonth(currDate.getMonth() - 3));
+                    break;
             }
 
             let query: Parse.Query<IDB.ReportPeopleCountingSummary> = new Parse.Query(IDB.ReportPeopleCountingSummary).equalTo('device', base.device).equalTo('type', type);
@@ -167,6 +172,7 @@ class Action {
                                         tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.hour));
                                         tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.day));
                                         tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.month));
+                                        tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.season));
 
                                         await Promise.all(tasks).catch((e) => {
                                             throw e;
