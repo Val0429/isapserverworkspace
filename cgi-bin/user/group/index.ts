@@ -50,7 +50,7 @@ action.post(
                         group.setValue('description', value.description);
                         group.setValue('sites', sites);
 
-                        group.save(null, { useMasterKey: true }).fail((e) => {
+                        await group.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
 
@@ -213,7 +213,7 @@ action.put(
                             group.setValue('sites', sites);
                         }
 
-                        group.save(null, { useMasterKey: true }).fail((e) => {
+                        await group.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     } catch (e) {
