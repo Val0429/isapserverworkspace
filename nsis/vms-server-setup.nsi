@@ -21,18 +21,21 @@ InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 
 !macro DoUninstall UN
 Function ${UN}DoUninstall
+	#0, get old installation folder
+	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+	
 	# first, delete the uninstaller
-    Delete "$INSTDIR\uninstall.exe"
+    Delete "$R1\uninstall.exe"
  
     # second, remove the link from the start menu
     # "$SMPROGRAMS\uninstall.lnk"
 	# Delete "$SMPROGRAMS\${PRODUCT_NAME}"
-	SetOutPath $INSTDIR
+	SetOutPath $R1
 	# third, remove services	
 	ExecWait '"uninstall.bat" /s'
 	
 	# now delete installed files
-	RMDir /r $INSTDIR
+	RMDir /r $R1
 	
 	# remove registry info
 	DeleteRegKey HKLM "Software\${PRODUCT_NAME}"
@@ -43,7 +46,6 @@ FunctionEnd
 
 	
 Function .onInit
-
 
   ReadRegStr $R0 HKLM "${ARP}" "UninstallString"
   StrCmp $R0 "" done
@@ -87,7 +89,7 @@ ShowInstDetails show
 ;Pages
 
   !insertmacro MUI_PAGE_LICENSE "License.txt"
-  !insertmacro MUI_PAGE_COMPONENTS 
+  ;!insertmacro MUI_PAGE_COMPONENTS 
   
 ;Section "Run npm start before installing service" SEC01
 	
@@ -154,5 +156,8 @@ UninstallText "This will uninstall ${PRODUCT_NAME}. Press uninstall to continue.
 # uninstaller section start
 Section "uninstall"
   Call un.DoUninstall  
+  
+  ExecWait 'net stop "Evis MongoDb"'
+  ExecWait 'sc Delete "Evis MongoDb"'
 # uninstaller section end
 SectionEnd
