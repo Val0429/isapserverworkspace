@@ -43,7 +43,7 @@ class Service {
     private GetDelayTime(): number {
         try {
             let now: Date = new Date();
-            let target: Date = new Date(new Date(new Date(now).setDate(now.getDate() + 1)).setHours(0, 0, 0, 0));
+            let target: Date = new Date(new Date(new Date(now).setHours(Math.ceil(now.getHours() / this._config.hourlyFrequency) * this._config.hourlyFrequency)).setMinutes(0, 0, 0));
             let delay: number = target.getTime() - now.getTime();
 
             return delay;
@@ -106,6 +106,7 @@ class Service {
 
             let delay: number = this.GetDelayTime();
             Rx.Observable.interval(24 * 60 * 60 * 1000)
+            Rx.Observable.interval(this._config.hourlyFrequency * 60 * 60 * 1000)
                 .startWith(0)
                 .delay(delay)
                 .subscribe({
