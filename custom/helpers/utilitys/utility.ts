@@ -192,4 +192,19 @@ export namespace Utility {
             throw e;
         }
     }
+
+    /**
+     * Math round
+     * @param x
+     * @param position
+     */
+    export function Round(x: number, position: number): number {
+        try {
+            let multiple: number = Math.pow(10, position);
+
+            return Math.round(x * multiple) / multiple;
+        } catch (e) {
+            throw e;
+        }
+    }
 }
