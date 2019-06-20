@@ -1,4 +1,5 @@
 import { app } from 'core/main.gen';
+import { Config } from 'core/config.gen';
 
 import './custom/schedulers/index';
 import './custom/shells/create-index';
@@ -10,39 +11,30 @@ import { ModBusService, ModbusDescriptions } from './custom/services/modbus-serv
 import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
 
+import {CCUREService} from './custom/modules/acs/CCURE'
 
-import {CCUREReader, ICCUREConfig, IDSNList, QueryContent} from './custom/modules/CCUREReader';
+let _service : CCUREService = new CCUREService();
 
-let config : ICCUREConfig = {
-	"server"       : "172.16.10.138",
-	"port"         : 3537,
-	"user"         : "sa",
-	"password"     : "manager",
-	"database"     : "master",
-	"connectionTimeout" : 15000,
-};
 
-let dsnlist : IDSNList = {
-	"CFSRV" : "CFSRV",
-	"Jurnal" : "JOURNAL"
-};
+_service.Login();
 
-let reader : CCUREReader = CCUREReader.getInstance();
-
-let conn = reader.connectAsync(config,dsnlist);
-
-conn.then(async () =>{
-	let result :Array<any> = await reader.queryAllAsync(QueryContent.Clearance,5000);
-	console.log("Receive All");
+/*
+_service.GetAllAccessReport().then((result)=>{
 	console.log(result);
-}).then(async ()=>{
-	let onReceivedRow = (row)=> {console.log(`Received new row`,row )};
-	let onDoneReceive = (result)=> console.log(`Received finish`,result);
-	let onError = (err)=> console.log(`Error happened ${err}`);
-	reader.queryStream(QueryContent.Clearance,onReceivedRow,onDoneReceive,onError);
+})
+
+_service.GetPerson("personId=30853",(rows,ctx)=>{
+	console.log(rows.length);
+	console.log(rows);
+});*/
+
+_service.GetNewAccessReport().then((res)=>console.log(res));
+
+_service.GetNameById("3404").then(res=>console.log("Result",res)).then(()=>{
+	_service.GetNameById("3404").then(res=>console.log("Result",res));
 });
 
 
 
 
-  
+
