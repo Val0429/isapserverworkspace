@@ -39,7 +39,7 @@ action.post(
                         let date: Date = new Date(new Date(value.date).setMinutes(0, 0, 0));
 
                         let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('objectId', value.siteId)
+                            .equalTo('customId', value.customId)
                             .first()
                             .fail((e) => {
                                 throw e;

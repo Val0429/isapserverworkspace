@@ -1,5 +1,5 @@
 export interface ISalesRecordC {
-    siteId: string;
+    customId: string;
     date: Date;
     revenue: number;
     transaction: number;
