@@ -61,7 +61,7 @@ setTimeout(() => {
         let config2 = Config[type];
 
         for (var key in config1) {
-            if (config2[key] && config2[key] !== config1[key]) {
+            if ((config2[key] || config2[key] === '') && config2[key] !== config1[key]) {
                 await UpdateConfig(type, config1);
             }
         }
