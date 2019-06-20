@@ -28,7 +28,7 @@ import { IEnrolledCards, EnrolledCards } from 'workspace/custom/models/enrolledC
 import { Tablets } from 'workspace/custom/models/tablets';
 
 type IIssueCard = Pick<IEnrolledCards, "name" | "email" | "invitation">;
-export async function IssueCard(data: IIssueCard) {
+export async function IssueCard(data: IIssueCard): Promise<EnrolledCards> {
     let { name, email, invitation } = data;
 
     /// (D)
@@ -59,7 +59,8 @@ export async function IssueCard(data: IIssueCard) {
         }
     }
     /// (A)
-    enroll.save();
+    await enroll.save();
+    return enroll;
 }
 
 export async function IssueCardDaily() {

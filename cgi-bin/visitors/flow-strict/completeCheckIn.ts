@@ -10,14 +10,16 @@ import { IssueCard } from './__api__/issueCard';
 import frs from './../../../custom/services/frs-service';
 
 import { Pin } from 'services/pin-code';
-import { Invitations, IInvitationDateAndPin } from './../../../custom/models/invitations';
+import { Invitations, IInvitations, IInvitationDateAndPin } from './../../../custom/models/invitations';
 import { tryCheckInWithPinCode } from './__api__/core';
 
 export interface Input {
     pin: Pin;
 }
 
-export type Output = Invitations;
+export type Output = IInvitations & {
+    qrcode: Parse.File;
+};
 
 export default new Action<Input, Output>({
     loginRequired: true,
@@ -51,7 +53,7 @@ export default new Action<Input, Output>({
 
     let visitorEmail = visitor.getValue("email");
     /// Issue Card
-    IssueCard({
+    let enrollCard = await IssueCard({
         name: visitorName,
         email: visitorEmail
     });
@@ -91,6 +93,9 @@ export default new Action<Input, Output>({
     /// 2.3)
     await frs.applyGroupsToPerson(person.person_id, groupid);
 
-    return ParseObject.toOutputJSON(invitation);
+    return ParseObject.toOutputJSON({
+        ...invitation.attributes,
+        qrcode: enrollCard.attributes.qrcode
+    });
 });
 
