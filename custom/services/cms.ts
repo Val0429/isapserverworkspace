@@ -177,14 +177,24 @@ class Service {
                     .filter((value1, index1, array1) => {
                         return (value1.getValue('config') as IDB.ICameraFRS).server.id === value.id;
                     })
-                    .map((value, index, array) => {
-                        let config = value.getValue('config') as IDB.ICameraCMS;
+                    .reduce<CMSService.ISource[]>((prev, curr, index, array) => {
+                        let config = curr.getValue('config') as IDB.ICameraCMS;
+                        let source = prev.find((value1, index1, array1) => {
+                            return value1.nvr === config.nvrId;
+                        });
+                        if (source) {
+                            if (source.channels.indexOf(config.channelId) < 0) {
+                                source.channels.push(config.channelId);
+                            }
+                        } else {
+                            prev.push({
+                                nvr: config.nvrId,
+                                channels: [config.channelId],
+                            });
+                        }
 
-                        return {
-                            nvr: config.nvrId,
-                            channels: [config.channelId],
-                        };
-                    });
+                        return prev;
+                    }, []);
 
                 cms.EnableLiveSubject(delay, cmsConfig.snapshot.intervalSecond * 1000, cmsConfig.snapshot.bufferCount, sources, cmsConfig.snapshot.isLive);
                 cms.liveStreamCatch$.subscribe({
