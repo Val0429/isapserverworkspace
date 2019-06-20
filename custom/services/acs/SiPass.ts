@@ -37,7 +37,7 @@ export class SiPassAdapter {
         this.siPassTimeScheule = new siPassClient.SiPassTimeScheuleService();
         this.siPassDbService = new siPassClient.SiPassDbService();
 
-        
+
         this.siPassDbConnectInfo = new siPassClient.SiPassDbConnectInfo({
             "server": "sipasssrv",
             "port": 1433,
@@ -48,17 +48,15 @@ export class SiPassAdapter {
         });
     }
 
-    async getRecords(bH: string, bM: string, bS: string, eH: string, eM: string, eS: string) {
-        
+    async getRecords(date: string, bH: string, bM: string, bS: string, eH: string, eM: string, eS: string) {
+
         await this.siPassDbService.DbConnect(this.siPassDbConnectInfo);
 
-        let rowlist = await this.siPassDbService.QueryAuditTrail({ date: '', beginHour: bH, beginMin: bM, beginSec: bS, endHour: eH, endMin: eM, endSec: eS });
+        let rowlist = await this.siPassDbService.QueryAuditTrail({ date: date, beginHour: bH, beginMin: bM, beginSec: bS, endHour: eH, endMin: eM, endSec: eS });
 
-        await this.siPassDbService.DbDisconnect(this.siPassDbConnectInfo);
+        // await this.siPassDbService.DbDisconnect(this.siPassDbConnectInfo);
 
-        console.log("====================================================");
-        console.log(rowlist);
-        return JSON.parse(rowlist+"");
+        return rowlist;
     }
 
     async Login() {
@@ -74,7 +72,7 @@ export class SiPassAdapter {
 
         return ret["Token"];
     }
-    
+
     async getTimeSchedule() {
         Log.Info(`${this.constructor.name}`, `getTimeSchedule`);
 
@@ -171,8 +169,8 @@ export class SiPassAdapter {
         // }
         return JSON.parse(a)["Records"];
     }
-    
-    async getAccessGroup( groupToken: string) {
+
+    async getAccessGroup(groupToken: string) {
         Log.Info(`${this.constructor.name}`, `getAccessGroup ${groupToken}`);
 
         let a = await this.siPassPermission.GetPermissionTable(this.siPassHrParam, { token: groupToken });
@@ -190,7 +188,7 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
 
-    async postAccessGroup( accessGroup: siPassClient.IAccessGroupObject) {
+    async postAccessGroup(accessGroup: siPassClient.IAccessGroupObject) {
         Log.Info(`${this.constructor.name}`, `postAccessGroup ${accessGroup}`);
 
         let a = await this.siPassPermission.CreatePermissionTable(this.siPassHrParam, accessGroup);
@@ -198,7 +196,7 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
 
-    async putAccessGroup( accessGroup: siPassClient.IAccessGroupObject) {
+    async putAccessGroup(accessGroup: siPassClient.IAccessGroupObject) {
         Log.Info(`${this.constructor.name}`, `putAccessGroup ${accessGroup}`);
 
         let a = await this.siPassPermission.UpdatePermissionTable(this.siPassHrParam, accessGroup);
@@ -206,7 +204,7 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
 
-    async getAccessLevel( accessToken: string) {
+    async getAccessLevel(accessToken: string) {
         Log.Info(`${this.constructor.name}`, `getAccessLevel ${accessToken}`);
 
         let a = await this.siPassPermission.GetPermission(this.siPassHrParam, { token: accessToken });
@@ -282,7 +280,7 @@ export class SiPassAdapter {
         // return ParseObject.toOutputJSON(ret) ;
     }
 
-    async postAccessLevel( accessLevel: siPassClient.IAccessLevelObject) {
+    async postAccessLevel(accessLevel: siPassClient.IAccessLevelObject) {
         Log.Info(`${this.constructor.name}`, `postAccessGroup ${accessLevel}`);
 
         let a = await this.siPassPermission.CreatePermission(this.siPassHrParam, accessLevel);
@@ -290,7 +288,7 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
 
-    async putAccessLevel( accessLevel: siPassClient.IAccessLevelObject) {
+    async putAccessLevel(accessLevel: siPassClient.IAccessLevelObject) {
         Log.Info(`${this.constructor.name}`, `putAccessLevel ${accessLevel}`);
 
         let a = await this.siPassPermission.UpdatePermission(this.siPassHrParam, accessLevel);
@@ -331,7 +329,7 @@ export class SiPassAdapter {
     }
 
     async getWorkGroup(groupToken: String) {
-        Log.Info(`${this.constructor.name}`, `getWorkGroup ${groupToken}`  );
+        Log.Info(`${this.constructor.name}`, `getWorkGroup ${groupToken}`);
 
         let a = await this.siPassPermission.GetWrokGroup(this.siPassHrParam, { token: +groupToken });
         // console.log("===================    Get GetWrokGroup   ========== ", groupToken);
@@ -388,7 +386,7 @@ export class SiPassAdapter {
         // return ParseObject.toOutputJSON(oo);
     }
 
-    async postWorkGroup( workGroup: siPassClient.IWorkGroupObject ) {
+    async postWorkGroup(workGroup: siPassClient.IWorkGroupObject) {
         Log.Info(`${this.constructor.name}`, `postAccessGroup ${workGroup}`);
 
         let a = await this.siPassPermission.CreateWorkGroup(this.siPassHrParam, workGroup);
@@ -396,7 +394,7 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
 
-    async putWorkGroup( workGroup: siPassClient.IWorkGroupObject ) {
+    async putWorkGroup(workGroup: siPassClient.IWorkGroupObject) {
         Log.Info(`${this.constructor.name}`, `putWorkGroup ${workGroup}`);
 
         let a = await this.siPassPermission.UpdateWorkGroup(this.siPassHrParam, workGroup);
@@ -418,12 +416,12 @@ export class SiPassAdapter {
         //         }
         //     ],
         // }
-        
+
         return JSON.parse(a)["Records"];
     }
 
-    async getCardHolder( holderToken: string) {
-        Log.Info(`${this.constructor.name}`, `getCardHolder ${holderToken}`  );
+    async getCardHolder(holderToken: string) {
+        Log.Info(`${this.constructor.name}`, `getCardHolder ${holderToken}`);
 
         let a = await this.siPassPersion.GetPerson(this.siPassHrParam, { token: holderToken });
 
@@ -660,16 +658,16 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
 
-    async postCardHolder( cardholeder: siPassClient.ICardholderObject ) {
-        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`  );
+    async postCardHolder(cardholeder: siPassClient.ICardholderObject) {
+        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
 
         let a = await this.siPassPersion.CreatePerson(this.siPassHrParam, cardholeder);
 
         return JSON.parse(a);
     }
 
-    async putCardHolder( cardholeder: siPassClient.ICardholderObject ) {
-        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`  );
+    async putCardHolder(cardholeder: siPassClient.ICardholderObject) {
+        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
 
         let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder);
 
