@@ -101,7 +101,6 @@ export namespace Db {
         roles: string[];
         info: IDB.UserInfo;
         sites: IDB.LocationSite[];
-        groups: IDB.UserGroup[];
     }
 
     /**
@@ -137,11 +136,23 @@ export namespace Db {
                 throw e;
             });
 
+            let sites: IDB.LocationSite[] = (info.getValue('sites') || []).concat(
+                ...(info.getValue('groups') || []).map((value, index, array) => {
+                    return value.getValue('sites');
+                }),
+            );
+
+            let siteIds: string[] = sites.map((value, index, array) => {
+                return value.id;
+            });
+            sites = sites.filter((value, index, array) => {
+                return siteIds.indexOf(value.id) === index;
+            });
+
             let userInfo: IUserInfo = {
                 roles: roles,
                 info: info,
-                sites: info.getValue('sites') || [],
-                groups: info.getValue('groups') || [],
+                sites: sites,
             };
 
             return userInfo;
