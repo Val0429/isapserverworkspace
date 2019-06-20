@@ -56,6 +56,8 @@ export class SiPassAdapter {
 
         await this.siPassDbService.DbDisconnect(this.siPassDbConnectInfo);
 
+        console.log("====================================================");
+        console.log(rowlist);
         return JSON.parse(rowlist+"");
     }
 
