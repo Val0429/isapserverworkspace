@@ -1,3 +1,5 @@
+import { IResponse } from '../../models';
+
 export namespace Parser {
     /**
      * Encoding of Buffer modules
@@ -108,5 +110,21 @@ export namespace Parser {
         });
 
         return str;
+    }
+    
+     /**
+     * Convert e to response message
+     * @param e
+     * @param resMessage
+     */
+    export function E2ResMessage(e: any, resMessage: IResponse.IMultiData): IResponse.IMultiData {
+        try {
+            resMessage.statusCode = e.detail ? e.detail.statusCode : 500;
+            resMessage.message = e.message ? e.message : e.args ? e.args.join('; ') : e;
+
+            return resMessage;
+        } catch (e) {
+            throw e;
+        }
     }
 }

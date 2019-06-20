@@ -10,7 +10,7 @@ import * as mongo from 'mongodb';
 // import * as siPassClient from '../modules/acs/sipass';
 // import { IAccessLevelObject, IAccessGroupObject, ICardholderAccessRule, IWorkGroupObject } from '../modules/acs/sipass';
 
-import { CCUREReader } from '../modules/acs/ccure800';
+// import { CCUREReader } from '../modules/acs/ccure800';
 
 import { Reader, Door, Elevator, DoorGroup, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, AccessPolicy } from '../../custom/models'
 import { RegularExpressionLiteral, ThrowStatement } from 'ts-simple-ast';
@@ -29,7 +29,7 @@ export class ACSService {
     private mongoDb: mongo.Db;
 
     // CCure800
-    private ccur800: CCUREReader;
+    // private ccur800: CCUREReader;
 
     // SiPass
     private adSiPass: SiPassAdapter;

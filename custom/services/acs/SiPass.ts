@@ -7,11 +7,14 @@ import * as siPassClient from '../../modules/acs/sipass';
 export class SiPassAdapter {
     // SiPass
     private siPassHrParam: siPassClient.SiPassHrApiGlobalParameter;
+    private siPassDbConnectInfo: siPassClient.SiPassDbConnectInfo;
+
     private siPassAccount: siPassClient.SiPassHrAccountService;
     private siPassDevice: siPassClient.SiPassDeviceService;
     private siPassPersion: siPassClient.SiPassPersonService;
     private siPassPermission: siPassClient.SiPassPermissionService;
     private siPassTimeScheule: siPassClient.SiPassTimeScheuleService;
+    private siPassDbService: siPassClient.SiPassDbService;
 
     constructor() {
         Log.Info(`${this.constructor.name}`, `constructor`);
@@ -19,12 +22,12 @@ export class SiPassAdapter {
         var me = this;
 
         this.siPassHrParam = new siPassClient.SiPassHrApiGlobalParameter({
-            "userName": "siemens",
-            "password": "!QAZ1qaz",
-            "uniqueId": "590db17a8468659361f13072d0e198b7290ce7a1",
-            "domain": "sipasssrv",
-            "port": "8745",
-            "sessionId": ""
+            "userName": Config.sipassconnect.user,
+            "password": Config.sipassconnect.password,
+            "uniqueId": Config.sipassconnect.uniqueId,
+            "domain": Config.sipassconnect.server,
+            "port": `${Config.sipassconnect.port}`,
+            "sessionId": Config.sipassconnect.sessionId
         });
 
         this.siPassAccount = new siPassClient.SiPassHrAccountService(this.siPassHrParam);
@@ -32,6 +35,30 @@ export class SiPassAdapter {
         this.siPassPersion = new siPassClient.SiPassPersonService();
         this.siPassPermission = new siPassClient.SiPassPermissionService();
         this.siPassTimeScheule = new siPassClient.SiPassTimeScheuleService();
+        this.siPassDbService = new siPassClient.SiPassDbService();
+
+        
+        this.siPassDbConnectInfo = new siPassClient.SiPassDbConnectInfo({
+            "server": "sipasssrv",
+            "port": 1433,
+            "user": "manager",
+            "password": "manager",
+            "database": "asco4",
+            "connectionTimeout": 15000
+        });
+    }
+
+    async getRecords(bH: string, bM: string, bS: string, eH: string, eM: string, eS: string) {
+        
+        await this.siPassDbService.DbConnect(this.siPassDbConnectInfo);
+
+        let rowlist = await this.siPassDbService.QueryAuditTrail({ date: '', beginHour: bH, beginMin: bM, beginSec: bS, endHour: eH, endMin: eM, endSec: eS });
+
+        await this.siPassDbService.DbDisconnect(this.siPassDbConnectInfo);
+
+        console.log("====================================================");
+        console.log(rowlist);
+        return JSON.parse(rowlist+"");
     }
 
     async Login() {

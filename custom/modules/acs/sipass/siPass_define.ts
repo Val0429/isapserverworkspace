@@ -342,6 +342,25 @@ export interface IConnectionInfo {
     sessionId: string;
 }
 
+export interface IQueryTimeRange {
+    date: string;
+    beginHour: string; //   03
+    beginMin: string;  //   13
+    beginSec: string;  //   23
+    endHour: string;
+    endMin: string;
+    endSec: string;    
+}
+
+export interface IDbConnectionInfo {
+    server :string;
+    port : number;
+    user :string;
+    password: string;
+    database: string;
+    connectionTimeout: number;
+}
+
 export class SiPassHrApiGlobalParameter {
 
     public userName: string;
@@ -382,5 +401,25 @@ export class SiPassMsApiGlobalParameter {
         this.domain = data.domain;
         this.port = data.port;
         this.sessionId = data.sessionId;
+    }
+}
+
+
+export class SiPassDbConnectInfo{
+    public server :string;
+    public port : number;
+    public user :string;
+    public password: string;
+    public database: string;
+    public connectionTimeout: number;
+
+    constructor(data: IDbConnectionInfo) {
+
+        this.server = data.server;
+        this.port = data.port;
+        this.user = data.user;
+        this.password = data.password;
+        this.database = data.database;
+        this.connectionTimeout = data.connectionTimeout;
     }
 }
