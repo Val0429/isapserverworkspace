@@ -25,10 +25,11 @@ export class HumanResourceService {
         Log.Info(`${this.constructor.name}`, `connect`);
 
         let config = {
-            user: 'sa',
-            password: '5j/cj86aup6eji6j04njo4e',
-            server: 'localhost\\DATAEXPRESS',
-            database: 'FET_HR'
+            user: Config.humanresource.user,
+            password: Config.humanresource.password,
+            server: Config.humanresource.server,
+            port: Config.humanresource.port,
+            database: Config.humanresource.database
         }
 
         this.sqlClient = await msSQL.connect(config);
