@@ -18,7 +18,7 @@ export interface Config {
 
 let config: Config = {
     productId: '',
-    bufferCount: 10,
+    bufferCount: 5,
     ageRange: '0-20-10-10-10-10',
     output: {
         image: {
