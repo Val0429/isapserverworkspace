@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { IDB } from './db';
 
 export interface IReader {
     system?: number,        // 1: SiPass 2: CCure800
@@ -43,11 +44,13 @@ export interface IElevator {
 @registerSubclass()
 export class Elevator extends ParseObject<IElevator> {}
 
+
 export interface IDoorGroup {
     groupid?: number,
     groupname?: string,
     status?: number,
-    doors?: Door[]
+    doors?: Door[],
+    area?:IDB.LocationArea
 }
 @registerSubclass()
 export class DoorGroup extends ParseObject<IDoorGroup> {}

@@ -37,6 +37,7 @@ type OutputR = Restful.OutputR<IDoorGroup>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(DoorGroup)
+        .include("area")
         .include("doors");
        // .include("doors");
     /// 2) With Extra Filters
