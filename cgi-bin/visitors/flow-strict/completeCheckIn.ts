@@ -1,7 +1,7 @@
 import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
-    Action, Errors, Person, ParseObject, FileHelper,
+    Action, Errors, Person, ParseObject, FileHelper, Config,
     Events, EventStrictCompleteCheckIn, EventStrictCompareFace, Tablets, EnrolledCards, IEnrolledCards
 } from 'core/cgi-package';
 
@@ -95,7 +95,7 @@ export default new Action<Input, Output>({
 
     return ParseObject.toOutputJSON({
         ...invitation.attributes,
-        qrcode: enrollCard.attributes.qrcode
+        qrcode: enrollCard.attributes.qrcode.url().replace("localhost", Config.core.publicExternalIP)
     });
 });
 
