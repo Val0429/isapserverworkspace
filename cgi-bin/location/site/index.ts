@@ -45,58 +45,22 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let extension = File.GetBase64Extension(value.imageBase64);
-                        if (!extension || extension.type !== 'image') {
-                            throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
-                        }
-
-                        if (value.customId === '') {
-                            throw Errors.throw(Errors.CustomBadRequest, ['custom id can not be empty']);
-                        }
-
+                        
                         let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('customId', value.customId)
+                            .equalTo('name', value.name)
                             .first()
                             .fail((e) => {
                                 throw e;
                             });
                         if (site) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate custom id']);
+                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
                         }
 
-                        let manager: Parse.User = await new Parse.Query(Parse.User)
-                            .equalTo('objectId', value.managerId)
-                            .first()
-                            .fail((e) => {
-                                throw e;
-                            });
-                        if (!manager) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
-                        }
-
-                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-
-                        // let officeHour: IDB.OfficeHour = await new Parse.Query(IDB.OfficeHour)
-                        //     .equalTo('objectId', value.officeHourId)
-                        //     .first()
-                        //     .fail((e) => {
-                        //         throw e;
-                        //     });
-                        // if (!officeHour) {
-                        //     throw Errors.throw(Errors.CustomBadRequest, ['office hour not found']);
-                        // }
 
                         site = new IDB.LocationSite();
 
                         site.setValue('name', value.name);
-                        site.setValue('customId', value.customId);
-                        site.setValue('manager', manager);
                         site.setValue('address', value.address);
-                        site.setValue('phone', value.phone);
-                        site.setValue('establishment', value.establishment);
-                        site.setValue('squareMeter', value.squareMeter);
-                        site.setValue('staffNumber', value.staffNumber);
-                        site.setValue('imageSrc', '');
                         site.setValue('longitude', value.longitude);
                         site.setValue('latitude', value.latitude);
 
@@ -106,20 +70,6 @@ action.post(
 
                         resMessages[index].objectId = site.id;
 
-                        let imageSrc: string = `${extension.type}s/${site.id}_location_site_${site.createdAt.getTime()}.${extension.extension}`;
-                        File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
-
-                        site.setValue('imageSrc', imageSrc);
-
-                        await site.save(null, { useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
-
-                        // officeHour.setValue('sites', officeHour.getValue('sites').concat(site));
-
-                        // await officeHour.save(null, { useMasterKey: true }).fail((e) => {
-                        //     throw e;
-                        // });
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -308,8 +258,6 @@ action.put(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputU = data.parameters.resMessages;
 
-            let imgConfig = Config.location.image;
-            let imgSize = { width: imgConfig.width, height: imgConfig.height };
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
@@ -324,94 +272,16 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['site not found']);
                         }
 
-                        let extension = value.imageBase64 ? File.GetBase64Extension(value.imageBase64) : { extension: 'aa', type: 'image' };
-                        if (!extension || extension.type !== 'image') {
-                            throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
-                        }
-
-                        let manager: Parse.User = undefined;
-                        if (value.managerId) {
-                            manager = await new Parse.Query(Parse.User)
-                                .equalTo('objectId', value.managerId)
-                                .first()
-                                .fail((e) => {
-                                    throw e;
-                                });
-                            if (!manager) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
-                            }
-                        }
+                       
 
                         if (value.name || value.name === '') {
                             site.setValue('name', value.name);
                         }
-                        if (value.managerId) {
-                            site.setValue('manager', manager);
-                        }
+                       
                         if (value.address || value.address === '') {
                             site.setValue('address', value.address);
                         }
-                        if (value.phone || value.phone === '') {
-                            site.setValue('phone', value.phone);
-                        }
-                        if (value.establishment) {
-                            site.setValue('establishment', value.establishment);
-                        }
-                        if (value.squareMeter || value.squareMeter === 0) {
-                            site.setValue('squareMeter', value.squareMeter);
-                        }
-                        if (value.staffNumber || value.staffNumber === 0) {
-                            site.setValue('staffNumber', value.staffNumber);
-                        }
-                        // if (value.officeHourId) {
-                        //     let officeHour: IDB.OfficeHour = await new Parse.Query(IDB.OfficeHour)
-                        //         .equalTo('objectId', value.officeHourId)
-                        //         .first()
-                        //         .fail((e) => {
-                        //             throw e;
-                        //         });
-                        //     if (!officeHour) {
-                        //         throw Errors.throw(Errors.CustomBadRequest, ['office hour not found']);
-                        //     }
-
-                        //     let siteIds: string[] = officeHour.getValue('sites').map((value1, index1, array1) => {
-                        //         return value1.id;
-                        //     });
-
-                        //     if (siteIds.indexOf(value.objectId) < 0) {
-                        //         officeHour.setValue('sites', officeHour.getValue('sites').concat(site));
-
-                        //         await officeHour.save(null, { useMasterKey: true }).fail((e) => {
-                        //             throw e;
-                        //         });
-
-                        //         officeHour = await new Parse.Query(IDB.OfficeHour)
-                        //             .notEqualTo('objectId', value.officeHourId)
-                        //             .containedIn('sites', [site])
-                        //             .first()
-                        //             .fail((e) => {
-                        //                 throw e;
-                        //             });
-                        //         if (officeHour) {
-                        //             let sites: IDB.LocationSite[] = officeHour.getValue('sites').filter((value1, index1, array1) => {
-                        //                 return value1.id !== value.objectId;
-                        //             });
-
-                        //             officeHour.setValue('sites', sites);
-
-                        //             await officeHour.save(null, { useMasterKey: true }).fail((e) => {
-                        //                 throw e;
-                        //             });
-                        //         }
-                        //     }
-                        // }
-                        if (value.imageBase64) {
-                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let imageSrc: string = `${extension.type}s/${site.id}_location_site_${site.createdAt.getTime()}.${extension.extension}`;
-                            File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
-
-                            site.setValue('imageSrc', imageSrc);
-                        }
+                        
                         if (value.longitude || value.longitude === 0) {
                             site.setValue('longitude', value.longitude);
                         }

@@ -12,6 +12,7 @@ export interface IRegionIndexC extends IGPS {
     customId?: string;
     address?: string;
     imageBase64: string;
+
 }
 
 export interface IRegionIndexR {
@@ -29,15 +30,15 @@ export interface IRegionIndexU extends IGPS {
 
 export interface ISiteIndexC extends IGPS {
     name: string;
-    customId: string;
-    managerId: string;
+    customId?: string;
+    managerId?: string;
     address?: string;
     phone?: string;
     establishment?: Date;
     squareMeter?: number;
     staffNumber?: number;
-    officeHourId: string;
-    imageBase64: string;
+    officeHourId?: string;
+    imageBase64?: string;
 }
 
 export interface ISiteIndexU extends IGPS {
@@ -76,6 +77,7 @@ export interface IAreaIndexR {
 
 export interface IAreaIndexU {
     objectId: string;
+    name?:string;
     imageBase64?: string;
     mapBase64?: string;
 }

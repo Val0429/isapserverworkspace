@@ -255,6 +255,9 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
                         }
 
+                        if (value.name) {
+                            area.setValue('name', value.name);
+                        }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
                             let imageSrc: string = `${imageExtension.type}s/${area.id}_location_area_image_${area.createdAt.getTime()}.${imageExtension.extension}`;
