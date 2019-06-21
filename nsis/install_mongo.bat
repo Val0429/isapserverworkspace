@@ -1,14 +1,11 @@
-c:
-cd \
-cd "C:\Program Files\MongoDB"
-md data_evis
-cd data_evis
-md db
-cd ..
-md log_evis
-
-cd "C:\Program Files\MongoDB\Server\3.6\bin"
-mongod --port 27017 --dbpath "C:\Program Files\MongoDB\data_evis" --logpath="C:\Program Files\MongoDB\log_evis\log.txt" --install --serviceName "EVIS MongoDB" --serviceDisplayName "EVIS MongoDB" --replSet rs0
-net start "EVIS MongoDB"
-mongo --port 27017 --eval "rs.initiate({_id : 'rs0', members : [{_id : 0, host : 'localhost:27017'}]})"
-mongo --port 27017 --eval "while(true) {if (rs.status().ok) break;sleep(1000)};"
+if not exist "%ProgramW6432%/MongoDB/log_acs" mkdir "%ProgramW6432%/MongoDB/log_acs"
+if not exist "%ProgramW6432%/MongoDB/data_acs" (
+    mkdir "%ProgramW6432%/MongoDB/data_acs"    
+    "%MONGODB_HOME%\mongod" --port 27020 --dbpath "%ProgramW6432%\MongoDB\data_acs" --logpath="%ProgramW6432%\MongoDB\log_acs\log.txt" --install --serviceName "ACS MongoDB" --serviceDisplayName "ACS MongoDB" --replSet rs0
+    net start "ACS MongoDB"
+	"%MONGODB_HOME%\mongo" --port 27020 --eval "rs.initiate({_id : 'rs0', members : [{_id : 0, host : 'localhost:27020'}]})"
+	"%MONGODB_HOME%\mongo" --port 27020 --eval "while(true) {if (rs.status().ok) break;sleep(1000)};"
+) else (
+    "%MONGODB_HOME%\mongod" --port 27020 --dbpath "%ProgramW6432%\MongoDB\data_acs" --logpath="%ProgramW6432%\MongoDB\log_acs\log.txt" --install --serviceName "ACS MongoDB" --serviceDisplayName "ACS MongoDB" --replSet rs0
+    net start "ACS MongoDB"    
+)
