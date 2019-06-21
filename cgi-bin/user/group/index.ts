@@ -8,7 +8,7 @@ import * as UserInfo from '../user';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.Admin],
 });
 
 export default action;

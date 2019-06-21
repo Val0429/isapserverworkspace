@@ -26,7 +26,7 @@ export interface IBaseRoleU {
 }
 
 export interface IUserIndexC extends IBaseLogin_User {
-    role: RoleList.Administrator;
+    role: RoleList.Admin;
     name: string;
     employeeId: string;
     email: string;
@@ -37,7 +37,7 @@ export interface IUserIndexC extends IBaseLogin_User {
 
 export interface IUserIndexU {
     objectId: string;
-    role?: RoleList.Administrator;
+    role?: RoleList.Admin;
     name?: string;
     email?: string;
     phone?: string;

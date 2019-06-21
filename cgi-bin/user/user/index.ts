@@ -8,7 +8,7 @@ import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.Admin],
 });
 
 export default action;

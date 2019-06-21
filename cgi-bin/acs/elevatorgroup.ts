@@ -10,7 +10,7 @@ import { IElevatorGroup, ElevatorGroup } from '../../custom/models'
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Admin]
 });
 
 /// CRUD start /////////////////////////////////

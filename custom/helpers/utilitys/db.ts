@@ -55,7 +55,7 @@ export namespace Db {
                 await CreateUser('SysAdmin', 'SysAdmin12356', roles);
 
                 let roles1 = roles.filter((value, index, array) => {
-                    return value.getName() === RoleList.Administrator;
+                    return value.getName() === RoleList.Admin;
                 });
                 await CreateUser('Admin', '123456', roles1);
 

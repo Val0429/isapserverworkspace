@@ -11,7 +11,7 @@ import { Cameras, ICameras } from 'workspace/custom/models/cameras';
 var action = new Action({
     loginRequired: true,
     postSizeLimit: 1024*1024*10,
-    permission: [RoleList.Administrator, RoleList.Kiosk]
+    permission: [RoleList.Admin, RoleList.User]
 });
 
 

@@ -7,7 +7,7 @@ import { CreateRoot } from './region';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.Admin],
 });
 
 export default action;

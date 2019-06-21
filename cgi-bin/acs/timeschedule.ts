@@ -10,7 +10,7 @@ import { ITimeSchedule, TimeSchedule } from '../../custom/models'
 
 var action = new Action({
     loginRequired: false,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Admin]
 });
 
 /// CRUD start /////////////////////////////////

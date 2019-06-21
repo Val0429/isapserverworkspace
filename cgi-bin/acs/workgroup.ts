@@ -5,7 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
-import { IDoor, Door } from '../../custom/models'
+import { IWorkGroup, WorkGroup } from '../../custom/models'
 
 
 var action = new Action({
@@ -17,12 +17,12 @@ var action = new Action({
 /********************************
  * C: create object
  ********************************/
-type InputC = Restful.InputC<IDoor>;
-type OutputC = Restful.OutputC<IDoor>;
+type InputC = Restful.InputC<IWorkGroup>;
+type OutputC = Restful.OutputC<IWorkGroup>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
-    var obj = new Door(data.inputType);
+    var obj = new WorkGroup(data.inputType);
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -31,12 +31,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<IDoor>;
-type OutputR = Restful.OutputR<IDoor>;
+type InputR = Restful.InputR<IWorkGroup>;
+type OutputR = Restful.OutputR<IWorkGroup>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Door);
+    var query = new Parse.Query(WorkGroup);
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -46,14 +46,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 /********************************
  * U: update object
  ********************************/
-type InputU = Restful.InputU<IDoor>;
-type OutputU = Restful.OutputU<IDoor>;
+type InputU = Restful.InputU<IWorkGroup>;
+type OutputU = Restful.OutputU<IWorkGroup>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Door).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Door <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(WorkGroup).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`WorkGroup <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -63,14 +63,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 /********************************
  * D: delete object
  ********************************/
-type InputD = Restful.InputD<IDoor>;
-type OutputD = Restful.OutputD<IDoor>;
+type InputD = Restful.InputD<IWorkGroup>;
+type OutputD = Restful.OutputD<IWorkGroup>;
 
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Door).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Door <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(WorkGroup).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`WorkGroup <${objectId}> not exists.`]);
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

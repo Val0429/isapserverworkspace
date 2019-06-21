@@ -4,10 +4,6 @@ export interface IReader {
     system?: number,        // 1: SiPass 2: CCure800
     readerid?: number,
     readername?: string,
-    ccureid:number,
-    ccurename:string,
-    sipassid:number,
-    sipassname:string,
     status?: number
 }
 @registerSubclass()
@@ -17,8 +13,8 @@ export interface IDoor {
     system?: number,
     doorid?: number,
     doorname?: string,
-    readerin: Reader,
-    readerout: Reader,
+    readerin: Reader[],
+    readerout: Reader[],
     status?: number    
 }
 @registerSubclass()
@@ -28,15 +24,15 @@ export interface IFloor {
     system?: number,
     floorid?: number,
     floorname?: string,
-    ccureid:number,
-    ccurename:string,
-    sipassid:number,
-    sipassname:string,
+    // ccureid:number,
+    // ccurename:string,
+    // sipassid:number,
+    // sipassname:string,
     status?: number
 }
 @registerSubclass()
 export class Floor extends ParseObject<IFloor> {}
-
+1
 export interface IElevator {
     system?: number,
     elevatorid?: number,

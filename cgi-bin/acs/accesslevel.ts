@@ -10,7 +10,7 @@ import { SiPassAdapter } from '../../custom/services/acs/SiPass'
 
 var action = new Action({
     loginRequired: false,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Admin]
 });
 
 /// CRUD start /////////////////////////////////
