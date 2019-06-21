@@ -11,6 +11,7 @@ import './custom/services';
 
 import * as express from 'express';
 app.use('/files', express.static(`${__dirname}/custom/files`));
+app.use('/images', express.static(`${__dirname}/custom/assets/images`));
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));

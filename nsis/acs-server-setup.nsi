@@ -47,7 +47,6 @@ FunctionEnd
 	
 Function .onInit
 
-
   ReadRegStr $R0 HKLM "${ARP}" "UninstallString"
   StrCmp $R0 "" done
  
@@ -90,7 +89,7 @@ ShowInstDetails show
 ;Pages
 
   !insertmacro MUI_PAGE_LICENSE "License.txt"
-  !insertmacro MUI_PAGE_COMPONENTS 
+  ;!insertmacro MUI_PAGE_COMPONENTS 
   
 ;Section "Run npm start before installing service" SEC01
 	
@@ -157,5 +156,8 @@ UninstallText "This will uninstall ${PRODUCT_NAME}. Press uninstall to continue.
 # uninstaller section start
 Section "uninstall"
   Call un.DoUninstall  
+  
+  ExecWait 'net stop "ACS MongoDB"'
+  ExecWait 'sc Delete "ACS MongoDB"'
 # uninstaller section end
 SectionEnd
