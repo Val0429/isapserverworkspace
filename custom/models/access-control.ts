@@ -59,6 +59,7 @@ export interface IElevatorGroup {
     groupid?: number,
     groupname?: string,
     status?: number,
+    area?:IDB.LocationArea,
     elevators?: Elevator[]
 }
 @registerSubclass()
