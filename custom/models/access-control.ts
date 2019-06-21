@@ -173,7 +173,7 @@ export interface ISyncReceiver {
 }
 
 export interface ISyncNotification {
-    "receivers"?: ISyncReceiver[]
+    receivers?: ISyncReceiver[]
 }
 @registerSubclass()
 export class SyncNotification extends ParseObject<ISyncNotification> {}
