@@ -1,20 +1,16 @@
 import { Config } from 'core/config.gen';
-
 import { Log } from 'helpers/utility';
 
 import * as msSQL from 'mssql';
-
 
 export class HumanResourceService {
     private waitTimer = null;
     private startDelayTime: number = 1 // sec
 
-    private sqlClient: msSQL.connection ;
+    private sqlClient: msSQL.connection;
 
     constructor() {
         var me = this;
-
-        // this.siPassDevice = new SiPassAccountService();
 
         // this.waitTimer = setTimeout(() => {
         //     me.doHumanResourcesSync();
@@ -34,15 +30,15 @@ export class HumanResourceService {
 
         this.sqlClient = await msSQL.connect(config);
 
-        return this.sqlClient ;
+        return this.sqlClient;
     }
 
-    async getViewChangeMemberLog(lastNo: number) {
-        Log.Info(`${this.constructor.name}`, `getViewChangeMemberLog ${lastNo}`);
+    async getViewChangeMemberLog(lastDate: string) {
+        Log.Info(`${this.constructor.name}`, `getViewChangeMemberLog ${lastDate}`);
 
         let res = await this.sqlClient.request()
-            .input('SeqNo', msSQL.Int, lastNo)
-            .query('select * from vieChangeMemberLog where SeqNo >= @SeqNo order by SeqNo');
+            .input('AddDate', msSQL.VarChar(10), lastDate)
+            .query('select * from vieChangeMemberLog where AddDate >= @AddDate order by SeqNo');
 
         return res["recordset"];
     }
@@ -52,25 +48,25 @@ export class HumanResourceService {
 
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), lastDate)
-            .query('select * from vieChangeMemberLog where SeqNo >= @SeqNo order by SeqNo');
+            .query('select * from vieChangeMemberLog where AddDate >= @AddDate order by SeqNo');
 
         return res["recordset"];
     }
 
-    async getViewREMemberLog(lastNo: number) {
-        Log.Info(`${this.constructor.name}`, `getViewREMemberLog ${lastNo}`);
+    async getViewREMemberLog(lastDate: string) {
+        Log.Info(`${this.constructor.name}`, `getViewREMemberLog ${lastDate}`);
 
         let res = await this.sqlClient.request()
-            .input('SeqNo', msSQL.Int, lastNo)
-            .query('select * from vieREMemberLog where SeqNo >= @SeqNo order by SeqNo');
+            .input('AddDate', msSQL.VarChar(10), lastDate)
+            .query('select * from vieREMemberLog where AddDate >= @AddDate order by SeqNo');
 
         return res["recordset"];
     }
 
-    async getViewMember( empno: string[]) {
+    async getViewMember(empno: string[]) {
         Log.Info(`${this.constructor.name}`, `getViewREMemberLog ${empno.length}`);
 
-        let res = [] ;
+        let res = [];
         if (empno.length >= 1) {
             let strEmp = "";
 
@@ -82,6 +78,6 @@ export class HumanResourceService {
                 .query(`select * from vieMember where EmpNo in (''${strEmp}) order by CompCode, EmpNo`);
         }
 
-        return res ;
+        return res;
     }
 }

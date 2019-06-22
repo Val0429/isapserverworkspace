@@ -8,6 +8,8 @@ import * as mongo from 'mongodb';
 import * as msSQL from 'mssql';
 
 import { HumanResourceService } from './acs/HumanResource';
+import { SyncNotification } from './../models/access-control'
+import { SiPassAdapter } from './acs/SiPass';
 
 
 export class HRService {
@@ -18,13 +20,13 @@ export class HRService {
     private mongoClient: mongo.MongoClient;
     private mongoDb: mongo.Db;
 
-    private sqlClient: msSQL.connection ;
+    private sqlClient: msSQL.connection;
 
-    private humanResource: HumanResourceService ;
+    private humanResource: HumanResourceService;
 
     private LastUpdate = {
-        "vieChangeMemberLog": 0,
-        "vieREMemberLog": 0
+        "vieChangeMemberLog": "2019/06/01",
+        "vieREMemberLog": "2019/06/01"
     }
 
     constructor() {
@@ -58,7 +60,7 @@ export class HRService {
             // 2.0 initial MSSQL Connection
             Log.Info(`${this.constructor.name}`, `2.0 initial MSSQL Connection`);
             this.humanResource.connect();
-            
+
             // 3.0 Cleae Temp Data
             Log.Info(`${this.constructor.name}`, `3.0 Cleae Temp Data`);
             let EmpNo: string[] = [];
@@ -79,27 +81,27 @@ export class HRService {
 
             for (let idx = 0; idx < res["recordset"].length; idx++) {
                 let record = res["recordset"][idx];
-                me.LastUpdate.vieChangeMemberLog = record["SeqNo"];
+                me.LastUpdate.vieChangeMemberLog = record["AddDate"];
                 EmpNo.push(record["EmpNo"]);
             };
 
             // vieChangeMemberLog
             let d = new Date();
-                d.setDate(d.getDate() - 90);
-            
-            let month = d.getMonth() < 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
-            let day   = d.getDate()  < 10 ? '0' + d.getDate() : d.getDate();
-            let str = `${d.getFullYear()}-${month}-${day}`;
-            str = "2018/12/31"
+            d.setDate(d.getDate() - 90);
 
-            res = await this.humanResource.getViewHQMemberLog( str );
+            let month = d.getMonth() < 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
+            let day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
+            let str = `${d.getFullYear()}-${month}-${day}`;
+            // str = "2018/12/31"
+
+            res = await this.humanResource.getViewHQMemberLog(str);
             // { recordsets: [ [ [Object], [Object], [Object] ] ],
             //     recordset:
             //      [ { SeqNo: 1,
             //          CompCode: '01',
 
             // 4.2.1 record not in the previous log list
-            Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);            
+            Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);
             let newSeqNoList = [];
             for (let idx = 0; idx < res["recordset"].length; idx++) {
                 let record = res["recordset"][idx];
@@ -121,7 +123,7 @@ export class HRService {
             };
 
             // 4.2.2 record not in the new log list
-            Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);            
+            Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);
             let records = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", str).find();
             for (let idx = 0; idx < records.length; idx++) {
                 let record = records[idx];
@@ -141,27 +143,200 @@ export class HRService {
             for (let idx = 0; idx < res["recordset"].length; idx++) {
                 let record = res["recordset"][idx];
 
-                me.LastUpdate.vieREMemberLog = record["SeqNo"];
+                me.LastUpdate.vieREMemberLog = record["AddDate"];
                 EmpNo.push(record["EmpNo"]);
             };
 
             // 4.4 request human information
             Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
 
+            let adSiPass: SiPassAdapter = new SiPassAdapter();
+
+
             if (EmpNo.length >= 1) {
                 res = await this.humanResource.getViewMember(EmpNo);
+
+                let sessionId = "";
+                {
+                    Log.Info(`${this.constructor.name}`, `2.1 Initial Adapter`);
+                    sessionId = await adSiPass.Login();
+                }
 
                 for (let idx = 0; idx < res["recordset"].length; idx++) {
                     let record = res["recordset"][idx];
 
                     let empNo = record["EmpNo"];
 
-                    this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo" : empNo }, record, {upsert: true})
+                    this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
+
+                    let a = 0;
+                    let b = "";
+                    if (record["EmpNo"].length == 10) {
+                        a = 2000000007;
+                        b = "契約商";
+                    }
+                    else if ((record["EmpNo"].substr(0, 1) == "5") || (record["EmpNo"].substr(0, 1) == "9")) {
+                        a = 2000000009;
+                        b = "約聘";
+                    }
+                    else {
+                        a = 2000000006;
+                        b = "正職";
+                    }
+
+                    if (sessionId != "") {
+                        let d = {
+                            // attributes: {
+                            //     accessibility: boolean;
+                            //     apbExclusion: boolean;
+                            //     apbReEntryExclusion: boolean;
+                            //     isolate: boolean;
+                            //     selfAuthorize: boolean;
+                            //     supervisor: boolean;
+                            //     visitor: boolean;
+                            //     void: boolean;
+                            //     restrictedVisitor:
+                            // },
+                            credentials: [{
+                                active: true,
+                                cardNumber: "",
+                                endDate: ""
+                            }],
+                            accessRules: [],
+                            employeeNumber: record["EmpNo"],
+                            firstName: record["EngName"],
+                            lastName: record["EmpName"],
+                            personalDetails:
+                            {
+                                contactDetails: {
+                                    email: record["EMail"],
+                                    mobileNumber: record["Cellular"],
+                                    // mobileServiceProvider?: string,
+                                    // mobileServiceProviderId?: string,
+                                    // pagerNumber?: string,
+                                    // pagerServiceProvider?: string,
+                                    // pagerServiceProviderId?: string,
+                                    // phoneNumber?: string,
+                                    // useEmailforMessageForward?: boolean
+                                },
+                                dateOfBirth: record["BirthDate"],
+                                userDetails: {
+                                    // userName?: "",
+                                    // password?: "" 
+                                }
+                            },
+                            primaryWorkgroupId: a,
+                            apbWorkgroupId: 0,
+                            primaryWorkgroupName: b,
+                            nonPartitionWorkGroups: [],
+                            // smartCardProfileId?: "0",
+                            // smartCardProfileName: string,
+                            // startDate: string,
+                            status: 0,
+                            token: "",
+                            // traceDetails: {
+                            //     cardLastUsed: "",
+                            //     cardNumberLastUsed: "",
+                            //     lastApbLocation: "",
+                            //     pointName: "",
+                            //     traceCard: false
+                            // },
+                            // vehicle1?: ICardholderVehicle,
+                            // vehicle2?: ICardholderVehicle,
+                            // potrait: "",
+                            primaryWorkGroupAccessRule: [],
+                            nonPartitionWorkgroupAccessRules: [],
+                            visitorDetails: 
+                            {
+                                // company: string,
+                                // profile: string,
+                                // reason: string,
+                                // license: string,
+                                // email: string,
+                                // restrictedUser: string,
+                                // companyCode: string,
+                                // durationEntry: string,
+                                // durationEquipment: string,
+                                // durationEntrainmentTools: string,
+                                // validityApprentice: string,
+                                // validityPeriodIdCard: string,
+                                // entryMonSat: boolean,
+                                // entryInclSun: boolean,
+                                // itEquipment: boolean,
+                                // entrainmentTools: boolean,
+                                // topManagement: boolean,
+                                // apprentice: boolean
+                            },
+                            customFields: [
+                                {
+                                    filedName: "CustomTextBoxControl8__CF",
+                                    fieldValue: "Unknown"
+                                },
+                                {
+                                    filedName: "CustomDropdownControl1__CF",
+                                    fieldValue: a
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl1__CF",
+                                    fieldValue: record["EmpNo"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl3__CF",
+                                    fieldValue: record["AddUser"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl6__CF",
+                                    fieldValue: record["CompName"]
+                                },
+                                {
+                                    filedName: "CustomDateControl2__CF",
+                                    fieldValue: record["UpdDate"]
+                                },
+                                {
+                                    filedName: "CustomDropdownControl2__CF_CF",
+                                    fieldValue: record["Sex"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl5__CF_CF",
+                                    fieldValue: record["MVPN"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl5__CF_CF_CF",
+                                    fieldValue: record["DeptChiName"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                                    fieldValue: record["CostCenter"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                                    fieldValue: record["LocationName"]
+                                },
+                                {
+                                    filedName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                                    fieldValue: record["RegionName"]
+                                },
+                                {
+                                    filedName: "CustomDateControl1__CF_CF",
+                                    fieldValue: record["BirthDate"]
+                                },
+                                {
+                                    filedName: "CustomDateControl1__CF_CF_CF",
+                                    fieldValue: record["EntDate"]
+                                },
+                                {
+                                    filedName: "CustomDateControl1__CF",
+                                    fieldValue: record["OffDate"]
+                                }
+                            ],
+                            // fingerPrints?: [],
+                            cardholderPortrait: ""
+                        }
+
+                        let holder = await adSiPass.postCardHolder(d);
+                    }
                 }
             }
-
-            // Log.Info(`${this.constructor.name}`, `2.3 request device adapter data`);
-
 
             // 5.1 write data to SiPass database
             Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database`);
@@ -176,12 +351,23 @@ export class HRService {
             // let file = new Parse.File("snapshot.jpg", { base64: item["attachments"]}, "image/jpg" );
             // await file.save();
 
+            let rec = [] ;
+            let list = await new Parse.Query(SyncNotification).first();
+
+            for (let i = 0; i < list["receivers"].length; i++) {
+                const e = list["receivers"][i];
+                
+                rec.push(e.get("emailaddress"))
+            }
+
+            var today = new Date();
+            let dd = today.toISOString().substring(0, 10);
+
             let result = await new ScheduleActionEmail().do(
                 {
-                    to: ["tulip.lin@isapsolution.com"],
-                    subject: "subject",
-                    body: "body",
-                    // attachments: [file]
+                    to: rec,
+                    subject: dd + " 門禁系統人事資料同步更新通知",
+                    body: ""
                 });
 
 
