@@ -49,6 +49,11 @@ export class HRService {
 
         // if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
         if (now.getMinutes() != 0) {
+            let memChange = [] ;
+            let memNew = [] ;
+            let memOff = [] ;
+
+
             // 1.0 create database connection
             Log.Info(`${this.constructor.name}`, `1.0 create mongo database connection`);
             // (async () => {
@@ -81,6 +86,9 @@ export class HRService {
 
             for (let idx = 0; idx < res["recordset"].length; idx++) {
                 let record = res["recordset"][idx];
+
+                memChange.push(record) ;
+
                 me.LastUpdate.vieChangeMemberLog = record["AddDate"];
                 EmpNo.push(record["EmpNo"]);
             };
@@ -130,6 +138,17 @@ export class HRService {
 
                 if (newSeqNoList.indexOf(record.get("SeqNo")) < 0) {
                     EmpNo.push(record.get("EmpNo"));
+
+                    if ( record.get("DataType") == "H") {
+                        memNew.push(record);
+                    }
+                    else if ( record.get("DataType") == "Q") {
+                        memOff.push(record);
+                    }
+                    else {
+                        memChange.push(record);
+                    }
+
                 }
             }
 
@@ -144,6 +163,9 @@ export class HRService {
                 let record = res["recordset"][idx];
 
                 me.LastUpdate.vieREMemberLog = record["AddDate"];
+                
+                memChange.push(record);
+
                 EmpNo.push(record["EmpNo"]);
             };
 
