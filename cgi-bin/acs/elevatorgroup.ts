@@ -36,7 +36,7 @@ type OutputR = Restful.OutputR<IElevatorGroup>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(ElevatorGroup);
+    var query = new Parse.Query(ElevatorGroup).include("area.site");
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output

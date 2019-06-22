@@ -1,4 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
+import { IDB } from './db';
 
 export interface IReader {      // R daily v
     system: number,             // 1: SiPass 2: CCure800
@@ -53,8 +54,9 @@ export interface IDoorGroup {   // CRUD V
     system: number,             // 0: iSap
     groupid: number,
     groupname: string,
-    doors: Door[],
-    status: number
+    area?:IDB.LocationArea,
+    doors?: Door[],
+    status?: number
 }
 @registerSubclass()
 export class DoorGroup extends ParseObject<IDoorGroup> { }
@@ -63,8 +65,9 @@ export interface IElevatorGroup {   // CRUD V
     system: number,                 // 0: iSap 
     groupid?: number,
     groupname?: string,
-    status?: number,
-    elevators?: Elevator[]
+   area?:IDB.LocationArea,
+    elevators?: Elevator[],
+    status?: number
 }
 @registerSubclass()
 export class ElevatorGroup extends ParseObject<IElevatorGroup> { }
