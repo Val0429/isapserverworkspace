@@ -7,7 +7,7 @@ import {
 
 import { IPermissionTable, PermissionTable } from '../../custom/models'
 
-import { SiPassAdapter } from '../../custom/services/acs/SiPass'
+// import { SiPassAdapter } from '../../custom/services/acs/SiPass'
 import { Log } from 'helpers/utility';
 import * as delay from 'delay';
 
@@ -28,46 +28,46 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
 
-    this.adSiPass = new SiPassAdapter();
+    // this.adSiPass = new SiPassAdapter();
 
-    // 1.0 Initial Adapter Login
-    {
-        Log.Info(`${this.constructor.name}`, `1.0 Initial Adapter Login`);
-        let sessionId = await this.adSiPass.Login();
-    }
-    await delay(1000);
+    // // 1.0 Initial Adapter Login
+    // {
+    //     Log.Info(`${this.constructor.name}`, `1.0 Initial Adapter Login`);
+    //     let sessionId = await this.adSiPass.Login();
+    // }
+    // await delay(1000);
    
     // 2.0 Access Group
-    {
-        Log.Info(`${this.constructor.name}`, `2.0 Access Group`);
+    // {
+    //     Log.Info(`${this.constructor.name}`, `2.0 Access Group`);
 
-        let al = [] ;
-        for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-            let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
+    //     let al = [] ;
+    //     for (let i = 0; i < data.inputType.accesslevels.length; i++) {
+    //         let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
             
-            let ar = [] ;
-            for (let j = 0; j < level["readers"].length; j++) {
-                const r = level["readers"][j];
+    //         let ar = [] ;
+    //         for (let j = 0; j < level["readers"].length; j++) {
+    //             const r = level["readers"][j];
                 
-                ar.push( {ObjectToken: r["readerid"], ObjectName:r["readername"], RuleToken: 12, RuleType:2} );
-            }
+    //             ar.push( {ObjectToken: r["readerid"], ObjectName:r["readername"], RuleToken: 12, RuleType:2} );
+    //         }
             
-            al.push({
-                name: level["levelid"],
-                token: level["levelname"],
-                accessRule: ar,
-                timeScheduleToken: level["timeschedule"]["timeid"]
-            });
-        }
+    //         al.push({
+    //             name: level["levelid"],
+    //             token: level["levelname"],
+    //             accessRule: ar,
+    //             timeScheduleToken: level["timeschedule"]["timeid"]
+    //         });
+    //     }
 
-        let ag = {
-            name: data.inputType.tableid,
-            token: data.inputType.tablename,
-            accessLevels: al
-        };
+    //     let ag = {
+    //         name: data.inputType.tableid,
+    //         token: data.inputType.tablename,
+    //         accessLevels: al
+    //     };
 
-        await this.adSiPass.postAccessGroup(ag);
-    }
+    //     await this.adSiPass.postAccessGroup(ag);
+    // }
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj);

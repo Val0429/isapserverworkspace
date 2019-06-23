@@ -3,6 +3,7 @@ import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
 import * as siPassClient from '../../modules/acs/sipass';
+// import { ConstructSignatureDeclaration } from 'ts-simple-ast';
 
 export class SiPassAdapter {
     // SiPass
@@ -16,9 +17,10 @@ export class SiPassAdapter {
     private siPassTimeScheule: siPassClient.SiPassTimeScheuleService;
     private siPassDbService: siPassClient.SiPassDbService;
 
-    constructor() {
-        Log.Info(`${this.constructor.name}`, `constructor`);
+    private checkConnectionTimer = null ;
+    private sessionToken = "" ;
 
+    constructor() {
         var me = this;
 
         this.siPassHrParam = new siPassClient.SiPassHrApiGlobalParameter({
@@ -46,8 +48,26 @@ export class SiPassAdapter {
             "database": "asco4",
             "connectionTimeout": 15000
         });
+
+        (async () => {
+            this.sessionToken = await this.Login();
+            Log.Info(`${this.constructor.name}`, `sessionToken=[${this.sessionToken}}]`);
+        })();
+
+        if (!this.sessionToken)
+            this.enableReconnect();
     }
 
+    async enableReconnect() {
+        let me = this;
+
+        this.checkConnectionTimer = setInterval( async () => {
+            if (!this.sessionToken) {
+                me.siPassAccount = new siPassClient.SiPassHrAccountService(me.siPassHrParam);
+                me.sessionToken = await me.Login();
+            }
+        }, 1000) ;
+    }
     async getRecords(date: string, bH: string, bM: string, bS: string, eH: string, eM: string, eS: string) {
 
         await this.siPassDbService.DbConnect(this.siPassDbConnectInfo);
@@ -69,7 +89,6 @@ export class SiPassAdapter {
         //     "Token":"4697C6FB68DD4592E0FC49FFF9B684B56C98E8CA2AC4F94F85F9473BEA3A7C1D:siemens"
         // }
         let ret = JSON.parse(a);
-
         return ret["Token"];
     }
 
@@ -675,4 +694,4 @@ export class SiPassAdapter {
     }
 }
 
-// export default new SiPassAdapter();
+export default new SiPassAdapter();

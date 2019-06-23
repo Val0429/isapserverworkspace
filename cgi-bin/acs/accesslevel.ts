@@ -6,7 +6,7 @@ import {
 } from 'core/cgi-package';
 
 import { IAccessLevel, AccessLevel } from '../../custom/models'
-import { SiPassAdapter } from '../../custom/services/acs/SiPass'
+// import { SiPassAdapter } from '../../custom/services/acs/SiPass'
 
 var action = new Action({
     loginRequired: false,
@@ -44,14 +44,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         rules.push(r);
     }
 
-    var adapter = new SiPassAdapter();
-    let d = {
-        token: data.inputType.levelid,
-        name: data.inputType.levelname,
-        accessRule: rules,
-        timeScheduleToken: data.inputType.timeschedule.get("timeid")
-    }
-    await adapter.postAccessLevel(d);
+    // var adapter = new SiPassAdapter();
+    // let d = {
+    //     token: data.inputType.levelid,
+    //     name: data.inputType.levelname,
+    //     accessRule: rules,
+    //     timeScheduleToken: data.inputType.timeschedule.get("timeid")
+    // }
+    // await adapter.postAccessLevel(d);
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
@@ -87,32 +87,32 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     await obj.save({ ...data.inputType, objectId: undefined });
 
     /// 3) Sync to ACS Services
-    let rules = [] ;
-    for (let idx = 0; idx < data.inputType.reader.length; idx++) {
-        let e = data.inputType.reader[idx];
+    // let rules = [] ;
+    // for (let idx = 0; idx < data.inputType.reader.length; idx++) {
+    //     let e = data.inputType.reader[idx];
         
-        let r = {
-            ObjectToken: e.get("readerid"),
-            ObjectName: e.get("readername"),
-            RuleToken:"12",
-            RuleType:2,
-            StartDate:null,
-            EndDate:null,
-            ArmingRightsId:null,
-            ControlModeId:null
-        }
+    //     let r = {
+    //         ObjectToken: e.get("readerid"),
+    //         ObjectName: e.get("readername"),
+    //         RuleToken:"12",
+    //         RuleType:2,
+    //         StartDate:null,
+    //         EndDate:null,
+    //         ArmingRightsId:null,
+    //         ControlModeId:null
+    //     }
 
-        rules.push(r);
-    }
+    //     rules.push(r);
+    // }
 
-    var adapter = new SiPassAdapter();
-    let d = {
-        token: data.inputType.levelid,
-        name: data.inputType.levelname,
-        accessRule: rules,
-        timeScheduleToken: data.inputType.timeschedule.get("timeid")
-    }
-    await adapter.putAccessLevel(d);
+    // var adapter = new SiPassAdapter();
+    // let d = {
+    //     token: data.inputType.levelid,
+    //     name: data.inputType.levelname,
+    //     accessRule: rules,
+    //     timeScheduleToken: data.inputType.timeschedule.get("timeid")
+    // }
+    // await adapter.putAccessLevel(d);
 
     /// 4) Output
     return ParseObject.toOutputJSON(obj);

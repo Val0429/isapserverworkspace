@@ -65,7 +65,7 @@ export interface IElevatorGroup {   // CRUD V
     system: number,                 // 0: iSap 
     groupid?: number,
     groupname?: string,
-   area?:IDB.LocationArea,
+    area?:IDB.LocationArea,
     elevators?: Elevator[],
     status?: number
 }

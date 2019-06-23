@@ -7,7 +7,7 @@ export class HumanResourceService {
     private waitTimer = null;
     private startDelayTime: number = 1 // sec
 
-    private sqlClient: msSQL.connection;
+    private sqlClient = null ;
 
     constructor() {
         var me = this;
@@ -17,20 +17,27 @@ export class HumanResourceService {
         // }, 1000 * this.startDelayTime);
     }
 
-    async connect() {
+    async connect(config) {
         Log.Info(`${this.constructor.name}`, `connect`);
 
-        let config = {
-            user: Config.humanresource.user,
-            password: Config.humanresource.password,
-            server: Config.humanresource.server,
-            port: Config.humanresource.port,
-            database: Config.humanresource.database
+        try {
+            this.sqlClient = new msSQL.ConnectionPool(config);
+            await this.sqlClient.connect();
         }
+        catch (ex) {
+            Log.Info(`${this.constructor.name}`, ex);
+        }
+    }
 
-        this.sqlClient = await msSQL.connect(config);
+    async disconnect() {
+        Log.Info(`${this.constructor.name}`, `disconnect`);
 
-        return this.sqlClient;
+        try {
+            await this.sqlClient.close();
+        }
+        catch (ex) {
+            Log.Info(`${this.constructor.name}`, ex);
+        }
     }
 
     async getViewChangeMemberLog(lastDate: string) {
@@ -48,7 +55,7 @@ export class HumanResourceService {
 
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), lastDate)
-            .query('select * from vieChangeMemberLog where AddDate >= @AddDate order by SeqNo');
+            .query('select * from vieHQMemberLog where AddDate >= @AddDate order by SeqNo');
 
         return res["recordset"];
     }
@@ -78,6 +85,6 @@ export class HumanResourceService {
                 .query(`select * from vieMember where EmpNo in (''${strEmp}) order by CompCode, EmpNo`);
         }
 
-        return res;
+        return res["recordset"];
     }
 }

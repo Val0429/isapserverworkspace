@@ -28,22 +28,22 @@ export class SiPassHrAccountService {
         //this.m_SessionId = data.sessionId;
 
 
-        var me = this;
-        this.m_WaitTimer = setTimeout(() => {
-            me.MaintainSessionRenewel(data);
-        }, 1000 * this.m_StartDelayTime);
+        // var me = this;
+        // this.m_WaitTimer = setTimeout(() => {
+        //     me.MaintainSessionRenewel(data);
+        // }, 1000 * this.m_StartDelayTime);
     }
 
 
     public async Login(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
 
-        console.log(data.userName);
-        console.log(data.password);
-        console.log(data.uniqueId);
+        // console.log(data.userName);
+        // console.log(data.password);
+        // console.log(data.uniqueId);
 
         // create the request Body
         var requestBody = { "Username": data.userName, "Password": data.password };
-        
+
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',
@@ -53,13 +53,13 @@ export class SiPassHrAccountService {
 
         let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication`;
 
-        console.info(`url = ${url}`);
-        console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
-        console.log(`requestBody =` + JSON.stringify(requestBody)); 
+        // console.info(`url = ${url}`);
+        // console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
+        // console.log(`requestBody =` + JSON.stringify(requestBody)); 
         //console.log(`requestHeader = ${requestHeader}`);
         //console.log(`requestBody = ${requestBody}`);
         //console.dir(requestHeader, {depth: null})
-        
+
         let result: any = await new Promise<any>((resolve, reject) => {
             try {
                 HttpClient.post(
@@ -73,9 +73,7 @@ export class SiPassHrAccountService {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
+                            return reject({ status: `error`, message: body });
                         }
 
                         resolve(body);
@@ -89,15 +87,29 @@ export class SiPassHrAccountService {
             //this.m_IsConnected = false;
             console.log(e);
             return JSON.stringify(e);
-        //}).then(() => {
-        //    this.m_IsConnected = true;
+            //}).then(() => {
+            //    this.m_IsConnected = true;
         });
-        //console.dir(result, {depth: null})
-       // console.log(result); 
-        data.sessionId = result.Token;
-        this.m_IsConnected = true;
-        //console.log(result);        
-        console.info(`result = ` + JSON.stringify(result));      
+
+        // console.log("============================");
+        // console.log(result);
+
+        let token = result.Token;
+
+        if (token) {
+            data.sessionId = result.Token;
+            this.m_IsConnected = true;
+
+            var me = this;
+            this.m_WaitTimer = setTimeout(() => {
+                me.MaintainSessionRenewel(data);
+            }, 1000 * this.m_StartDelayTime);
+        }
+        else {
+            data.sessionId = "";
+            this.m_IsConnected = false;
+        }
+
         return JSON.stringify(result);
 
     }
@@ -116,8 +128,8 @@ export class SiPassHrAccountService {
 
         let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication`;
 
-        console.info(`url = ${url}`);
-        console.info(`requestHeader = ${requestHeader}`);
+        // console.info(`url = ${url}`);
+        // console.info(`requestHeader = ${requestHeader}`);
 
         let result: any = await new Promise<any>((resolve, reject) => {
             try {
@@ -148,6 +160,8 @@ export class SiPassHrAccountService {
             return JSON.stringify(e);
 
         });
+
+        clearTimeout(this.m_WaitTimer);
 
         //console.info(`result = ` + JSON.stringify(result));      
         return JSON.stringify(result);
@@ -272,7 +286,7 @@ export class SiPassHrAccountService {
             let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication/`;
 
             console.info(`MaintainSessionRenewel`);
-            console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
+            console.log(`requestHeader =` + JSON.stringify(requestHeader));
 
             let result: any = await new Promise<any>((resolve, reject) => {
                 try {
@@ -354,7 +368,7 @@ export class SiPassMsAccountService {
 
         // create the request Body
         var requestBody = { "Username": data.userName, "Password": data.password };
-        
+
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',
@@ -365,12 +379,12 @@ export class SiPassMsAccountService {
         let url: string = `https://${data.domain}:${data.port}/api/management/V1/authentication/login`;
 
         console.info(`url = ${url}`);
-        console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
-        console.log(`requestBody =` + JSON.stringify(requestBody)); 
+        console.log(`requestHeader =` + JSON.stringify(requestHeader));
+        console.log(`requestBody =` + JSON.stringify(requestBody));
         //console.log(`requestHeader = ${requestHeader}`);
         //console.log(`requestBody = ${requestBody}`);
         //console.dir(requestHeader, {depth: null})
-        
+
         let result: any = await new Promise<any>((resolve, reject) => {
             try {
                 HttpClient.post(
@@ -400,15 +414,15 @@ export class SiPassMsAccountService {
             //this.m_IsConnected = false;
             console.log(e);
             return JSON.stringify(e);
-        //}).then(() => {
-        //    this.m_IsConnected = true;
+            //}).then(() => {
+            //    this.m_IsConnected = true;
         });
         //console.dir(result, {depth: null})
-       // console.log(result); 
+        // console.log(result); 
         data.sessionId = result.Token;
         this.m_IsConnected = true;
         //console.log(result);        
-        console.info(`result = ` + JSON.stringify(result));      
+        console.info(`result = ` + JSON.stringify(result));
         return JSON.stringify(result);
 
     }
@@ -533,7 +547,7 @@ export class SiPassMsAccountService {
             let url: string = `https://${data.domain}:${data.port}/api/management/V1/authentication/renew`;
 
             console.info(`MaintainSessionRenewel`);
-            console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
+            console.log(`requestHeader =` + JSON.stringify(requestHeader));
 
             let result: any = await new Promise<any>((resolve, reject) => {
                 try {

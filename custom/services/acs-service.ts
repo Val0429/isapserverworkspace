@@ -12,7 +12,7 @@ import * as mongo from 'mongodb';
 
 // import { CCUREReader } from '../modules/acs/ccure800';
 
-import { Reader, Door, Elevator, DoorGroup, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, AccessPolicy } from '../../custom/models'
+import { Reader, Door, Elevator, DoorGroup, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup } from '../../custom/models'
 import { RegularExpressionLiteral, ThrowStatement } from 'ts-simple-ast';
 
 import * as delay from 'delay';
