@@ -9,7 +9,7 @@ import * as Tag from '../../tag';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin],
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
 export default action;

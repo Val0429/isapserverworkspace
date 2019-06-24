@@ -1,66 +1,28 @@
 import { Config } from 'core/config.gen';
-
 import { Log } from 'helpers/utility';
 
 import { ScheduleActionEmail } from 'core/scheduler-loader';
 
-import * as mongo from 'mongodb';
-// import * as msSQL from 'mssql';
-
-// import * as siPassClient from '../modules/acs/sipass';
-// import { IAccessLevelObject, IAccessGroupObject, ICardholderAccessRule, IWorkGroupObject } from '../modules/acs/sipass';
-
-// import { CCUREReader } from '../modules/acs/ccure800';
-
-import { Reader, Door, Elevator, DoorGroup, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup } from '../../custom/models'
-import { RegularExpressionLiteral, ThrowStatement } from 'ts-simple-ast';
-
 import * as delay from 'delay';
-import { ParseObject } from 'core/cgi-package';
 
-import { SiPassAdapter } from './acs/SiPass';
+import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup } from '../../custom/models'
+import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 
 export class ACSService {
     private waitTimer = null;
-    private startDelayTime: number = 1 // sec
+    private startDelayTime: number = 5 // sec
     private cycleTime: number = 600; // sec
-
-    private mongoClient: mongo.MongoClient;
-    private mongoDb: mongo.Db;
-
-    // CCure800
-    // private ccur800: CCUREReader;
-
-    // SiPass
-    private adSiPass: SiPassAdapter;
-    // private siPassHrParam: siPassClient.SiPassHrApiGlobalParameter;
-    // private siPassAccount: siPassClient.SiPassHrAccountService;
-    // private siPassDevice: siPassClient.SiPassDeviceService;
-    // private siPassPersion: siPassClient.SiPassPersonService;
-    // private siPassPermission: siPassClient.SiPassPermissionService;
-    // private siPassTimeScheule: siPassClient.SiPassTimeScheuleService;
 
     constructor() {
         var me = this;
 
         // 1.0 Login to Datebase
         Log.Info(`${this.constructor.name}`, `1.0 Login database connection`);
-        (async () => {
-            await me.initialAdapterConnection();
-        })();
-
-        // this.ccur800 = new CCUREReader();
-
-
-        this.waitTimer = setTimeout(async () => {
-            me.doAccessControlSync();
-        }, 1000 * this.startDelayTime);
-    }
-
-    async initialAdapterConnection() {
-        const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-        this.mongoClient = await mongo.MongoClient.connect(url);
-        this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
+        // (async () => {
+            me.waitTimer = setTimeout(async () => {
+                me.doAccessControlSync();
+            }, 1000 * me.startDelayTime);
+        // })();
     }
 
     async doAccessControlSync() {
@@ -71,284 +33,553 @@ export class ACSService {
 
         clearTimeout(this.waitTimer);
 
-        // if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
-        if (now.getMinutes() != 0) {
+        let siPassSessionId = siPassAdapter.sessionToken;
+        Log.Info(`${this.constructor.name}`, ` SiPass SessionToken ${siPassSessionId}`);
+
+
+        if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
+        // if (now.getMinutes() != 70) {
             // 0.0 Initial Adapter
             Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
-            this.adSiPass = new SiPassAdapter();
 
-            // let a: string = "";
-            // let records: object[] = [];
-
-            // let timeschedules: { token: string, objectId: string }[] = [];
-            // let readers: { token: string, objectId: string }[] = [];
-            // let doors: { token: string, objectId: string }[] = [];
-
-            // 2.0 get date from SiPass            
-            // 2.2 Login
-            let sessionId = "";
-            {
-                Log.Info(`${this.constructor.name}`, `2.1 Initial Adapter`);
-                sessionId = await this.adSiPass.Login();
-            }
-            await delay(1000);
-
-            if (sessionId != "") {
-                // 2.2 Time Schedule
+            let obj: any;
+            if (siPassSessionId != "") {
+                Log.Info(`${this.constructor.name}`, `SiPass 2.2 Time Schedule`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.2 Time Schedule`);
-                    let records = await this.adSiPass.getTimeSchedule();
+                    let records = await siPassAdapter.getTimeSchedule();
+                    console.log("Time Schedule", records);
 
-                    for (let idx = 0; idx < records.length; idx++) {
-                        const r = records[idx];
-                        let d = {
-                            system: 1,
-                            timeid: r["Token"],
-                            timename: r["Name"],
-                            status: 1
+                    if (records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+
+                            obj = await new Parse.Query(TimeSchedule).equalTo("timeid", r["Token"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    timeid: r["Token"],
+                                    timename: r["Name"],
+                                    status: 1
+                                };
+                                let o = new TimeSchedule(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("timeid", r["Token"]);
+                                obj.set("timename", r["Name"]);
+
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("TimeSchedule").findOneAndUpdate({ "timeid": r["Token"] }, { $set: d }, { upsert: true });
                         };
-
-                        await this.mongoDb.collection("TimeSchedule").findOneAndDelete({ "timeid": r["Token"] });
-                        let o = new TimeSchedule(d);
-                        await o.save();
-                    };
+                    }
                 }
                 await delay(1000);
 
-                // 2.3 Door Readers
+                Log.Info(`${this.constructor.name}`, `SiPass 2.3 Door Readers`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.3 Door Readers`);
-                    let records = await this.adSiPass.getReaders();
+                    let records = await siPassAdapter.getReaders();
+                    console.log("Readers", records);
 
-                    for (let idx = 0; idx < records.length; idx++) {
-                        const r = records[idx];
-                        let d = {
-                            system: 1,
-                            readerid: r["Token"],
-                            readername: r["Name"],
-                            status: 1
+                    if (records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+
+                            obj = await new Parse.Query(Reader).equalTo("readerid", r["Token"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    readerid: r["Token"],
+                                    readername: r["Name"],
+                                    status: 1
+                                };
+
+                                let o = new Reader(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("readerid", r["Token"]);
+                                obj.set("readername", r["Name"]);
+
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("Reader").findOneAndUpdate({ "readerid": r["Token"] }, { $set: d }, { upsert: true });
                         };
-                        await this.mongoDb.collection("Reader").findOneAndDelete({ "readerid": r["Token"] });
-                        let o = new Reader(d);
-                        await o.save();
-                    };
-
+                    }
                 }
                 await delay(1000);
 
-                // 2.4 Doors
+                Log.Info(`${this.constructor.name}`, `SiPass 2.4 Doors`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.4 Doors`);
-                    let records = await this.adSiPass.getDoors();
+                    let records = await siPassAdapter.getDoors();
+                    console.log("Doors", records);
 
-                    for (let idx = 0; idx < records.length; idx++) {
-                        const r = records[idx];
-                        let d = {
-                            system: 1,
-                            doorid: +r["Token"],
-                            doorname: r["Name"],
-                            status: 1
+                    if (records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+
+                            obj = await new Parse.Query(Door).equalTo("doorid", +r["Token"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    doorid: +r["Token"],
+                                    doorname: r["Name"],
+                                    status: 1
+                                };
+                                let o = new Door(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("doorid", +r["Token"]);
+                                obj.set("doorname", r["Name"]);
+
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("Door").findOneAndUpdate({ "doorid": +r["Token"] }, { $set: d }, { upsert: true });
                         };
-
-                        await this.mongoDb.collection("Door").findOneAndDelete({ "doorid": r["Token"] });
-                        let o = new Door(d);
-                        await o.save();
-                    };
+                    }
                 }
                 await delay(1000);
 
-                // 2.5 Floors
+                Log.Info(`${this.constructor.name}`, `SiPass 2.5 Floors`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.5 Floors`);
-                    let records = await this.adSiPass.getFloors();
+                    let records = await siPassAdapter.getFloors();
+                    console.log("Floors", records);
+
+                    if (records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+                            obj = await new Parse.Query(Floor).equalTo("floorid", r["Token"]).first();
+
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    floorid: r["Token"],
+                                    floorname: r["Name"],
+                                    status: 1
+                                };
+                                let o = new Floor(d);
+                                let o1 = await o.save();
+                            }
+                            else {
+                                obj.set("floorid", r["Token"]);
+                                obj.set("floorname", r["Name"]);
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
+                        }
+                    }
                 }
                 await delay(1000);
 
-                // 2.6 Elevators
+                Log.Info(`${this.constructor.name}`, `SiPass 2.6 Elevators`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.6 Elevators`);
-                    let records = await this.adSiPass.getElevators();
+                    let records = await siPassAdapter.getElevators();
+
+                    console.log("Elevators", records);
+
+                    if (records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+
+                            obj = await new Parse.Query(Elevator).equalTo("elevatorid", r["Token"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    elevatorid: r["Token"],
+                                    elevatorname: r["Name"],
+                                    status: 1
+                                };
+                                let o = new Elevator(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("elevatorid", r["Token"]);
+                                obj.set("elevatorname", r["Name"]);
+
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("Elevator").findOneAndUpdate({ "elevatorid": r["Token"] }, { $set: d }, { upsert: true });
+                        }
+                    }
                 }
 
-                // 2.7 Access Group List
+                Log.Info(`${this.constructor.name}`, `SiPass 2.7 Access Group List`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.7 Access Group List`);
+                    let readers = await new Parse.Query(Reader).find() ;
 
-                    let readers = await this.mongoDb.collection("Reader").find().toArray();
+                    let grouplist = await siPassAdapter.getAccessGroupList();
+                    console.log("Access Group List", grouplist);
 
-                    let grouplist = await this.adSiPass.getAccessGroupList();
+                    if (grouplist) {
+                        for (let i = 0; i < grouplist.length; i++) {
+                            let group = await siPassAdapter.getAccessGroup(grouplist[i]["Token"]);
 
-                    for (let i = 0; i < grouplist.length; i++) {
-                        let group = await this.adSiPass.getAccessGroup(grouplist[i]["Token"]);
+                            let acl = [];
+                            console.log("Access Group", group);
 
-                        let acl = [] ;
-                        for (let j = 0; j < group["AccessLevels"].length; j++) {
-                            let level = await this.adSiPass.getAccessLevel(group["AccessLevels"][j]["Token"]);
+                            if (group) {
+                                for (let j = 0; j < group["AccessLevels"].length; j++) {
+                                    let level = await siPassAdapter.getAccessLevel(group["AccessLevels"][j]["Token"]);
 
-                            let b = await this.mongoDb.collection("TimeSchedule").findOne({ "timeid": level["TimeScheduleToken"] });
-                            let tsid = b["_id"];
-                            // console.log("========================");
-                            // console.log(tsid);
+                                    obj = await new Parse.Query(TimeSchedule).equalTo("timeid", level["TimeScheduleToken"]).first();
+                                    let tsid = obj.id;
 
-                            let rs = [];
-                            for (let idx1 = 0; idx1 < level["AccessRule"].length; idx1++) {
-                                let rule = level["AccessRule"][idx1];
-                                for (let idx2 = 0; idx2 < readers.length; idx2++) {
-                                    const r = readers[idx2];
-                                    // console.log(r["readerid"], rule["ObjectToken"]);
+                                    let rs = [];
+                                    for (let idx1 = 0; idx1 < level["AccessRule"].length; idx1++) {
+                                        let rule = level["AccessRule"][idx1];
+                                        for (let idx2 = 0; idx2 < readers.length; idx2++) {
+                                            const r = readers[idx2] as Reader;
 
-                                    if (r["readerid"] == rule["ObjectToken"]) {
-                                        rs.push(r["_id"]);
-                                        break;
+                                            if (r.get("readerid") == rule["ObjectToken"]) {
+                                                //rs.push(r["_id"]);
+                                                rs.push(r);
+                                                break;
+                                            }
+                                        }
+                                    };
+
+                                    let lev = await new Parse.Query(AccessLevel).equalTo("levelname", level["Name"]).first();
+                                    if (lev == null) {
+                                        let d = {
+                                            levelid: level["Token"],
+                                            levelname: level["Name"],
+                                            status: 1,
+                                            reader: rs,
+                                            timeschedule: obj
+                                        };
+                                        let o = new AccessLevel(d);
+                                        lev = await o.save();
                                     }
+
+                                    // let lev = await this.mongoDb.collection("AccessLevel").findOneAndUpdate({ "levelname": level["Name"] }, { $set: d }, { upsert: true, returnOriginal: false });
+                                    // let o = new AccessLevel(d);
+                                    // let lev = await o.save();
+                                    // acl.push(lev.value.id);
+                                    acl.push(lev);
+                                    await delay(1000);
                                 }
-                            };
-                            // console.log("========================");
-                            // console.log(rs);
-
-                            let d = {
-                                levelid: level["Token"],
-                                levelname: level["Name"],
-                                status: 1,
-                                reader: rs,
-                                timeschedule: tsid
-                            };
-                            // console.log(da);
-
-                            await this.mongoDb.collection("AccessLevel").findOneAndDelete({ "levelname": level["Name"] });
-                            let o = new AccessLevel(d);
-                            let lev = await o.save();
-
-                            acl.push(lev.id) ;
+                            }
+                            obj = await new Parse.Query(PermissionTable).equalTo("tablename", group["Name"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    tableid: group["Token"],
+                                    tablename: group["Name"],
+                                    status: 1,
+                                    accesslevels: acl
+                                };
+                                let o = new PermissionTable(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("tableid", group["Token"]);
+                                obj.set("tablename", group["Name"]);
+                                obj.set("accesslevels", acl);
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("PermissionTable").findOneAndUpdate({ "tablename": group["Name"] }, { $set: d }, { upsert: true });
                             await delay(1000);
                         }
-
-                        let d = {
-                            tableid: group["Token"],
-                            tablename: group["Name"],
-                            status: 1,
-                            accesslevels: acl
-                        };
-
-                        await this.mongoDb.collection("PermissionTable").findOneAndDelete({ "tablename": group["Name"] });
-                        let o = new PermissionTable(d);
-                        await o.save();
-                        await delay(1000);
                     }
                 }
                 await delay(1000);
 
-                // 2.8 Work Group List
+                Log.Info(`${this.constructor.name}`, `SiPass 2.8 Work Group List`);
                 {
-                    Log.Info(`${this.constructor.name}`, `2.8 Work Group List`);
+                    let grouplist = await siPassAdapter.getWorkGroupList();
+                    console.log("Work Group List", grouplist);
 
-                    let grouplist = await this.adSiPass.getWorkGroupList();
-                    for (let idx = 0; idx < grouplist.length; idx++) {
+                    if (grouplist) {
+                        for (let idx = 0; idx < grouplist.length; idx++) {
 
-                        // Log.Info(`${this.constructor.name}`, `2.8.1 Work Group`);
-                        let group = await this.adSiPass.getWorkGroup(grouplist[idx]["Token"]);
+                            // Log.Info(`${this.constructor.name}`, `2.8.1 Work Group`);
+                            let group = await siPassAdapter.getWorkGroup(grouplist[idx]["Token"]);
 
-                        let d = {
-                            system: 1,
-                            groupid: group["Token"],
-                            groupname: group["Name"],
-                            type: +group["Type"],
-                            accesspolicyrules: group["AccessPolicyRules"],
-                            status: 1
-                        };
-
-                        await this.mongoDb.collection("WorkGroup").findOneAndDelete({ "groupid": group["Token"] });
-                        let o = new WorkGroup(d);
-                        await o.save();
-                    }
-                }
-                await delay(1000);
-
-                // 2.9 Get Card Holder List
-                {
-                    Log.Info(`${this.constructor.name}`, `2.9 Get Card Holder List`);
-
-                    let grouplist = await this.adSiPass.getCardHolderList();
-                    for (let idx = 0; idx < grouplist.length; idx++) {
-                        // Log.Info(`${this.constructor.name}`, `2.9.1 Get Card Holder`);
-                        let holder = await this.adSiPass.getCardHolder(grouplist[idx]["Token"]);
-
-                        let d = {
-                            system: 1,
-                            Attributes: holder["Attributes"],
-                            Credentials: holder["Credentials"],
-                            AccessRules: holder["AccessRules"],
-                            EmployeeNumber: holder["EmployeeNumber"],
-                            EndDate: holder["EndDate"],
-                            FirstName: holder["FirstName"],
-                            GeneralInformation: holder["GeneralInformation"],
-                            LastName: holder["LastName"],
-                            PersonalDetails: {
-                                Address: holder["PersonalDetails"]["Address"],
-                                ContactDetails: {
-                                    Email: holder["PersonalDetails"]["ContactDetails"]["Email"],
-                                    MobileNumber: holder["PersonalDetails"]["ContactDetails"]["MobileNumber"],
-                                    MobileServiceProviderId: holder["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"],
-                                    PagerNumber: holder["PersonalDetails"]["ContactDetails"]["PagerNumber"],
-                                    PagerServiceProviderId: holder["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"],
-                                    PhoneNumber: holder["PersonalDetails"]["ContactDetails"]["PhoneNumber"]
-                                },
-                                DateOfBirth: holder["PersonalDetails"]["DateOfBirth"],
-                                PayrollNumber: holder["PersonalDetails"]["PayrollNumber"],
-                                Title: holder["PersonalDetails"]["Title"],
-                                UserDetails: {
-                                    Password: holder["PersonalDetails"]["UserDetails"]["Password"],
-                                    UserName: holder["PersonalDetails"]["UserDetails"]["UserName"],
-                                }
-                            },
-                            PrimaryWorkgroupId: holder["PrimaryWorkgroupId"],
-                            ApbWorkgroupId: holder["ApbWorkgroupId"],
-                            PrimaryWorkgroupName: holder["PrimaryWorkgroupName"],
-                            NonPartitionWorkGroups: holder["NonPartitionWorkGroups"],
-                            SmartCardProfileId: holder["SmartCardProfileId"],
-                            StartDate: holder["StartDate"],
-                            Status: holder["Status"],
-                            Token: holder["Token"],
-                            TraceDetails: holder["TraceDetails"],
-                            Vehicle1: {
-                                CarColor: holder["Vehicle1"]["CarColor"],
-                                CarModelNumber: holder["Vehicle1"]["CarModelNumber"],
-                                CarRegistrationNumber: holder["Vehicle1"]["CarRegistrationNumber"]
-                            },
-                            Vehicle2: {
-                                CarColor: holder["Vehicle2"]["CarColor"],
-                                CarModelNumber: holder["Vehicle2"]["CarModelNumber"],
-                                CarRegistrationNumber: holder["Vehicle2"]["CarRegistrationNumber"]
-                            },
-                            Potrait: holder["Potrait"],
-                            PrimaryWorkGroupAccessRule: holder["PrimaryWorkGroupAccessRule"],
-                            NonPartitionWorkgroupAccessRules: holder["NonPartitionWorkgroupAccessRules"],
-                            VisitorDetails: {
-                                VisitedEmployeeFirstName: holder["VisitorDetails"]["VisitedEmployeeFirstName"],
-                                VisitedEmployeeLastName: holder["VisitorDetails"]["VisitedEmployeeLastName"],
-                                VisitorCardStatus: holder["VisitorDetails"]["VisitorCardStatus"],
-                                VisitorCustomValues: {
-                                    Company: holder["VisitorDetails"]["VisitorCustomValues"]["Company"],
-                                    Profile: holder["VisitorDetails"]["VisitorCustomValues"]["Profile"],
-                                    Reason: holder["VisitorDetails"]["VisitorCustomValues"]["Reason"],
-                                    License: holder["VisitorDetails"]["VisitorCustomValues"]["License"],
-                                    Email: holder["VisitorDetails"]["VisitorCustomValues"]["Email"],
-                                    RestrictedUser: holder["VisitorDetails"]["VisitorCustomValues"]["RestrictedUser"],
-                                }
-                            },
-                            CustomFields: holder["CustomFields"],
-                            FingerPrints: holder["FingerPrints"],
-                            CardholderPortrait: holder["CardholderPortrait"]
+                            obj = await new Parse.Query(WorkGroup).equalTo("groupid", group["Token"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    groupid: group["Token"],
+                                    groupname: group["Name"],
+                                    type: +group["Type"],
+                                    accesspolicyrules: group["AccessPolicyRules"],
+                                    status: 1
+                                };
+                                let o = new WorkGroup(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("groupid", group["Token"]);
+                                obj.set("groupname", group["Name"]);
+                                obj.set("type", +group["Type"]);
+                                obj.set("accesspolicyrules", group["AccessPolicyRules"]);
+                                obj.save();
+                            }
+                            // await this.mongoDb.collection("WorkGroup").findOneAndUpdate({ "groupid": group["Token"] }, { $set: d }, { upsert: true });
                         }
-                        await this.mongoDb.collection("Member").findOneAndDelete({ "Token": d["Token"] });
-                        let o = new Member(d);
-                        await o.save();
+                    }
+                }
+                await delay(1000);
+
+                Log.Info(`${this.constructor.name}`, `SiPass 2.9 Get Card Holder List`);
+                {
+                    let grouplist = await siPassAdapter.getCardHolderList();
+                    console.log("Card Holder List", grouplist);
+
+                    if (grouplist) {
+
+                        for (let idx = 0; idx < grouplist.length; idx++) {
+                            // Log.Info(`${this.constructor.name}`, `2.9.1 Get Card Holder`);
+                            let holder = await siPassAdapter.getCardHolder(grouplist[idx]["Token"]);
+
+                            obj = await new Parse.Query(Member).equalTo("Token", holder["Token"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    Attributes: holder["Attributes"],
+                                    Credentials: holder["Credentials"],
+                                    AccessRules: holder["AccessRules"],
+                                    EmployeeNumber: holder["EmployeeNumber"],
+                                    EndDate: holder["EndDate"],
+                                    FirstName: holder["FirstName"],
+                                    GeneralInformation: holder["GeneralInformation"],
+                                    LastName: holder["LastName"],
+                                    PersonalDetails: {
+                                        Address: holder["PersonalDetails"]["Address"],
+                                        ContactDetails: {
+                                            Email: holder["PersonalDetails"]["ContactDetails"]["Email"],
+                                            MobileNumber: holder["PersonalDetails"]["ContactDetails"]["MobileNumber"],
+                                            MobileServiceProviderId: holder["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"],
+                                            PagerNumber: holder["PersonalDetails"]["ContactDetails"]["PagerNumber"],
+                                            PagerServiceProviderId: holder["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"],
+                                            PhoneNumber: holder["PersonalDetails"]["ContactDetails"]["PhoneNumber"]
+                                        },
+                                        DateOfBirth: holder["PersonalDetails"]["DateOfBirth"],
+                                        PayrollNumber: holder["PersonalDetails"]["PayrollNumber"],
+                                        Title: holder["PersonalDetails"]["Title"],
+                                        UserDetails: {
+                                            Password: holder["PersonalDetails"]["UserDetails"]["Password"],
+                                            UserName: holder["PersonalDetails"]["UserDetails"]["UserName"],
+                                        }
+                                    },
+                                    PrimaryWorkgroupId: holder["PrimaryWorkgroupId"],
+                                    ApbWorkgroupId: holder["ApbWorkgroupId"],
+                                    PrimaryWorkgroupName: holder["PrimaryWorkgroupName"],
+                                    NonPartitionWorkGroups: holder["NonPartitionWorkGroups"],
+                                    SmartCardProfileId: holder["SmartCardProfileId"],
+                                    StartDate: holder["StartDate"],
+                                    Status: holder["Status"],
+                                    Token: holder["Token"],
+                                    TraceDetails: holder["TraceDetails"],
+                                    Vehicle1: {
+                                        CarColor: holder["Vehicle1"]["CarColor"],
+                                        CarModelNumber: holder["Vehicle1"]["CarModelNumber"],
+                                        CarRegistrationNumber: holder["Vehicle1"]["CarRegistrationNumber"]
+                                    },
+                                    Vehicle2: {
+                                        CarColor: holder["Vehicle2"]["CarColor"],
+                                        CarModelNumber: holder["Vehicle2"]["CarModelNumber"],
+                                        CarRegistrationNumber: holder["Vehicle2"]["CarRegistrationNumber"]
+                                    },
+                                    Potrait: holder["Potrait"],
+                                    PrimaryWorkGroupAccessRule: holder["PrimaryWorkGroupAccessRule"],
+                                    NonPartitionWorkgroupAccessRules: holder["NonPartitionWorkgroupAccessRules"],
+                                    VisitorDetails: {
+                                        VisitedEmployeeFirstName: holder["VisitorDetails"]["VisitedEmployeeFirstName"],
+                                        VisitedEmployeeLastName: holder["VisitorDetails"]["VisitedEmployeeLastName"],
+                                        VisitorCardStatus: holder["VisitorDetails"]["VisitorCardStatus"],
+                                        VisitorCustomValues: {
+                                            Company: holder["VisitorDetails"]["VisitorCustomValues"]["Company"],
+                                            Profile: holder["VisitorDetails"]["VisitorCustomValues"]["Profile"],
+                                            Reason: holder["VisitorDetails"]["VisitorCustomValues"]["Reason"],
+                                            License: holder["VisitorDetails"]["VisitorCustomValues"]["License"],
+                                            Email: holder["VisitorDetails"]["VisitorCustomValues"]["Email"],
+                                            RestrictedUser: holder["VisitorDetails"]["VisitorCustomValues"]["RestrictedUser"],
+                                        }
+                                    },
+                                    CustomFields: holder["CustomFields"],
+                                    FingerPrints: holder["FingerPrints"],
+                                    CardholderPortrait: holder["CardholderPortrait"]
+                                }
+                                let o = new Member(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("Attributes", holder["Attributes"]);
+                                obj.set("Credentials", holder["Credentials"]);
+                                obj.set("AccessRules", holder["AccessRules"]);
+                                obj.set("EmployeeNumber", holder["EmployeeNumber"]);
+                                obj.set("EndDate", holder["EndDate"]);
+                                obj.set("FirstName", holder["FirstName"]);
+                                obj.set("GeneralInformation", holder["GeneralInformation"]);
+                                obj.set("LastName", holder["LastName"]);
+                                obj.set("PersonalDetails", holder["PersonalDetails"]);
+                                obj.set("PrimaryWorkgroupId", holder["PrimaryWorkgroupId"]);
+
+                                obj.set("ApbWorkgroupId", holder["ApbWorkgroupId"]);
+                                obj.set("PrimaryWorkgroupName", holder["PrimaryWorkgroupName"]);
+                                obj.set("NonPartitionWorkGroups", holder["NonPartitionWorkGroups"]);
+                                obj.set("SmartCardProfileId", holder["SmartCardProfileId"]);
+                                obj.set("StartDate", holder["StartDate"]);
+                                obj.set("Status", holder["Status"]);
+                                obj.set("Token", holder["Token"]);
+                                obj.set("TraceDetails", holder["TraceDetails"]);
+                                obj.set("Vehicle1", holder["Vehicle1"]);
+                                obj.set("Vehicle2", holder["Vehicle2"]);
+
+                                obj.set("Potrait", holder["Potrait"]);
+                                obj.set("PrimaryWorkGroupAccessRule", holder["PrimaryWorkGroupAccessRule"]);
+                                obj.set("NonPartitionWorkgroupAccessRules", holder["NonPartitionWorkgroupAccessRules"]);
+                                obj.set("VisitorDetails", holder["VisitorDetails"]);
+
+                                obj.set("CustomFields", holder["CustomFields"]);
+                                obj.set("FingerPrints", holder["FingerPrints"]);
+                                obj.set("CardholderPortrait", holder["CardholderPortrait"]);
+                                obj.save();
+                            }
+
+                            // await this.mongoDb.collection("Member").findOneAndUpdate({ "Token": d["Token"] }, { $set: d }, { upsert: true });
+                            await delay(200);
+                        }
                     }
                 }
                 await delay(1000);
             }
             // 3.0 get data from CCure800
+            {
+                Log.Info(`${this.constructor.name}`, `CCure 2.2 Time Schedule`); 
+                {
+                    let records = await cCureAdapter.getTimeSchedule()
+                    console.log("Time Schedule", records);
 
+                    if ( records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+
+                            obj = await new Parse.Query(TimeSchedule).equalTo("timeid", r["timespecId"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 2,
+                                    timeid: r["timespecId"],
+                                    timename: r["timespecName"],
+                                    status: 1
+                                };
+                                let o = new TimeSchedule(d);
+                                await o.save();
+                            }
+                            else {
+                                obj.set("timeid", r["timespecId"]);
+                                obj.set("timename", r["timespecName"]);
+
+                                obj.save();
+                            }
+                        };
+                    }
+                }
+                await delay(1000);
+
+                Log.Info(`${this.constructor.name}`, `CCure 2.4 Doors`);
+                {
+                    // let records = await cCureAdapter.getDoors();
+                    // console.log("Doors", records);
+
+                    // if (records) {
+                    //     for (let idx = 0; idx < records.length; idx++) {
+                    //         const r = records[idx];
+
+                    //         obj = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
+                    //         if (obj == null) {
+                    //             let d = {
+                    //                 system: 2,
+                    //                 doorid: +r["doorId"],
+                    //                 doorname: r["doorName"],
+                    //                 status: 1
+                    //             };
+                    //             let o = new Door(d);
+                    //             await o.save();
+                    //         }
+                    //         else {
+                    //             obj.set("doorid", +r["doorId"]);
+                    //             obj.set("doorname", r["doorName"]);
+
+                    //             obj.save();
+                    //         }
+                    //     };
+                    // }
+                }
+                await delay(1000);
+
+                Log.Info(`${this.constructor.name}`, `CCure 2.3 Door Readers`);
+                {
+                    let records = await cCureAdapter.getReaders();
+                    console.log("Readers", records);
+
+                    if (records) {
+                        for (let idx = 0; idx < records.length; idx++) {
+                            const r = records[idx];
+
+                            obj = await new Parse.Query(Reader).equalTo("readerid", r["deviceId"]).first();
+                            if (obj == null) {
+                                let d = {
+                                    system: 1,
+                                    readerid: r["deviceId"],
+                                    readername: r["deviceName"],
+                                    status: 1
+                                };
+
+                                obj = new Reader(d);
+                                await obj.save();
+                            }
+                            else {
+                                obj.set("readerid", r["deviceId"]);
+                                obj.set("readername", r["deviceName"]);
+
+                                obj.save();
+                            }
+
+                            // let door = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
+                            // if (door) {
+                            //     let readers = door.get("readerin");
+                            //         readers.push(obj);
+                            //     door.set("readerin", readers);
+                            // }
+                        };
+                    }
+                }
+                await delay(1000);
+
+                Log.Info(`${this.constructor.name}`, `CCure 2.5 Floors`);
+                {
+                    // let records = await cCureAdapter.getFloors();
+                    // console.log("Floors", records);
+
+                    // if (records) {
+                    //     for (let idx = 0; idx < records.length; idx++) {
+                    //         const r = records[idx];
+                    //         obj = await new Parse.Query(Floor).equalTo("floorid", r["Token"]).first();
+
+                    //         if (obj == null) {
+                    //             let d = {
+                    //                 system: 1,
+                    //                 floorid: r["Token"],
+                    //                 floorname: r["Name"],
+                    //                 status: 1
+                    //             };
+                    //             let o = new Floor(d);
+                    //             let o1 = await o.save();
+                    //         }
+                    //         else {
+                    //             obj.set("floorid", r["Token"]);
+                    //             obj.set("floorname", r["Name"]);
+                    //             obj.save();
+                    //         }
+                    //         // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
+                    //     }
+                    // }
+                }
+                await delay(1000);
+            }
+            
 
 
 
@@ -366,7 +597,7 @@ export class ACSService {
             //     });
 
             // 7.0 Database disconnect
-            this.mongoClient.close();
+            // this.mongoClient.close();
         }
 
         now = new Date();

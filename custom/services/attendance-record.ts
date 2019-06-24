@@ -10,7 +10,7 @@ import * as msSQL from 'mssql';
 
 import * as delay from 'delay';
 
-import { SiPassAdapter } from './acs/SiPass';
+import { siPassAdapter } from './acsAdapter-Manager';
 
 
 // import { CCUREReader } from './ccureReader'
@@ -25,11 +25,6 @@ export class AttendanceRecord {
 
     private mongoClient: mongo.MongoClient;
     private mongoDb: mongo.Db;
-
-    // private sqlClient: msSQL.connection ;
-    
-    // SiPass
-    private adSiPass: SiPassAdapter;
 
     // CCure 800
     // private _reader: CCUREReader = null;
@@ -64,18 +59,10 @@ export class AttendanceRecord {
 
         clearTimeout(this.waitTimer);
 
-        // if ((now.getHours() == 0) && (now.getMinutes() == 5)) {  // Startup @XX:05
-        if (now.getMinutes() != 5) {
+        if ((now.getHours() == 0) && (now.getMinutes() == 5)) {  // Startup @XX:05
+        // if (now.getMinutes() != 5) {
             // 0.0 Initial Adapter
             Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
-            this.adSiPass = new SiPassAdapter();
-        
-            // 1.0 Login
-            {
-                Log.Info(`${this.constructor.name}`, `1.0 Login`);
-                let sessionId = await this.adSiPass.Login();
-            }
-            await delay(1000);
 
             // 2.0 Query Records
             {
@@ -84,7 +71,7 @@ export class AttendanceRecord {
                 var end = now = new Date();
                 var begin = new Date(new Date().setHours( end.getHours() - 1 ));
 
-                let records = await this.adSiPass.getRecords(
+                let records = await siPassAdapter.getRecords(
                     begin.toISOString().slice(0,10).replace(/-/g,""),
                     ("0" + begin.getHours()).slice(-2),
                     ("0" + begin.getMinutes()).slice(-2),
@@ -101,8 +88,6 @@ export class AttendanceRecord {
                 });
             }
             await delay(1000);
-
-
 
         }
 

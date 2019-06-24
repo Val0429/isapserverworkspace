@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "workspace/custom/modules/acs/ccure/node_modules/rxjs";
+import { BehaviorSubject } from "rxjs";
 import { isNullOrUndefined } from "util";
 
 

@@ -6,14 +6,14 @@ import {
 } from 'core/cgi-package';
 
 import { IPermissionTable, PermissionTable } from '../../custom/models'
+import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
-// import { SiPassAdapter } from '../../custom/services/acs/SiPass'
 import { Log } from 'helpers/utility';
 import * as delay from 'delay';
 
 var action = new Action({
-    loginRequired: false,
-    permission: [RoleList.Admin]
+    loginRequired: true,
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
 /// CRUD start /////////////////////////////////
@@ -28,46 +28,40 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
 
-    // this.adSiPass = new SiPassAdapter();
+    // 2.0 Modify Access Group
+    {
+        let al = [];
 
-    // // 1.0 Initial Adapter Login
-    // {
-    //     Log.Info(`${this.constructor.name}`, `1.0 Initial Adapter Login`);
-    //     let sessionId = await this.adSiPass.Login();
-    // }
-    // await delay(1000);
-   
-    // 2.0 Access Group
-    // {
-    //     Log.Info(`${this.constructor.name}`, `2.0 Access Group`);
+        if (data.inputType.accesslevels) {
+            for (let i = 0; i < data.inputType.accesslevels.length; i++) {
+                let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
 
-    //     let al = [] ;
-    //     for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-    //         let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
-            
-    //         let ar = [] ;
-    //         for (let j = 0; j < level["readers"].length; j++) {
-    //             const r = level["readers"][j];
-                
-    //             ar.push( {ObjectToken: r["readerid"], ObjectName:r["readername"], RuleToken: 12, RuleType:2} );
-    //         }
-            
-    //         al.push({
-    //             name: level["levelid"],
-    //             token: level["levelname"],
-    //             accessRule: ar,
-    //             timeScheduleToken: level["timeschedule"]["timeid"]
-    //         });
-    //     }
+                let ar = [];
+                if (level["readers"]) {
+                    for (let j = 0; j < level["readers"].length; j++) {
+                        const r = level["readers"][j];
 
-    //     let ag = {
-    //         name: data.inputType.tableid,
-    //         token: data.inputType.tablename,
-    //         accessLevels: al
-    //     };
+                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"], RuleToken: 12, RuleType: 2 });
+                    }
 
-    //     await this.adSiPass.postAccessGroup(ag);
-    // }
+                    al.push({
+                        name: level["levelid"],
+                        token: level["levelname"],
+                        accessRule: ar,
+                        timeScheduleToken: level["timeschedule"]["timeid"]
+                    });
+                }
+            }
+        }
+        let ag = {
+            token: data.inputType.tableid,
+            name: data.inputType.tablename,
+            accessLevels: al
+        };
+
+        Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
+        await siPassAdapter.postAccessGroup(ag);
+    }
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -81,9 +75,12 @@ type OutputR = Restful.OutputR<IPermissionTable>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(PermissionTable);
-        //.include("timeschedule")
-        //.include("member");
+    var query = new Parse.Query(PermissionTable)
+        .include("accesslevels")
+        .include("accesslevels.timeschedule")
+        .include("accesslevels.reader");
+
+
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -104,10 +101,40 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
 
+    // 2.0 Modify Access Group
+    {
+        let al = [];
+        if (data.inputType.accesslevels) {
+            for (let i = 0; i < data.inputType.accesslevels.length; i++) {
+                let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
 
+                let ar = [];
+                if (level["readers"]) {
+                    for (let j = 0; j < level["readers"].length; j++) {
+                        const r = level["readers"][j];
 
+                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"], RuleToken: 12, RuleType: 2 });
+                    }
 
+                    al.push({
+                        name: level["levelid"],
+                        token: level["levelname"],
+                        accessRule: ar,
+                        timeScheduleToken: level["timeschedule"]["timeid"]
+                    });
+                }
+            }
+        }
 
+        let ag = {
+            token: data.inputType.tableid,
+            name: data.inputType.tablename,
+            accessLevels: al
+        };
+
+        Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
+        await siPassAdapter.putAccessGroup(ag);
+    }
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);

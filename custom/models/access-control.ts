@@ -51,10 +51,10 @@ export interface IElevator {    // CRUD V
 export class Elevator extends ParseObject<IElevator> { }
 
 export interface IDoorGroup {   // CRUD V
-    system: number,             // 0: iSap
-    groupid: number,
-    groupname: string,
-    area?:IDB.LocationArea,
+    system?: number,             // 0: iSap
+    groupid?: number,
+    groupname?: string,
+    area?: IDB.LocationArea,
     doors?: Door[],
     status?: number
 }
@@ -62,10 +62,10 @@ export interface IDoorGroup {   // CRUD V
 export class DoorGroup extends ParseObject<IDoorGroup> { }
 
 export interface IElevatorGroup {   // CRUD V
-    system: number,                 // 0: iSap 
+    system?: number,                 // 0: iSap 
     groupid?: number,
     groupname?: string,
-    area?:IDB.LocationArea,
+    area?: IDB.LocationArea,
     elevators?: Elevator[],
     status?: number
 }
@@ -156,7 +156,9 @@ export class TimeSchedule extends ParseObject<ITimeSchedule> { }
 // export class AccessGroup extends ParseObject<IAccessGroup> {}
 
 export interface IAccessLevel {     // CRUD  V
-    levelid?: string,               // 0: iSap 1: SiPass 2: CCure800
+    system?: number                // 0: iSap 1: SiPass 2: CCure800
+    type?: string,
+    levelid?: string,
     levelname?: string,
     status?: number,
     door?: Door,

@@ -1,6 +1,6 @@
 import { Config } from 'core/config.gen';
 import { isNullOrUndefined } from "util";
-import { toArray } from "workspace/custom/modules/acs/ccure/node_modules/rxjs/operator/toArray";
+import { toArray } from "rxjs/operator/toArray";
 import { SignalObject } from "./signalObject";
 import queryMap, { IQueryParam, QueryContent, IQueryMap } from './queryMap'
 
@@ -62,12 +62,12 @@ export class CCUREReader {
      */
     public async connectAsync(): Promise<void> {
         if (this._isConnected) throw `Internal Error: <CCUREReader::connectAsync> Still connecting, do not change config.`;
-        if (isNullOrUndefined(Config.CCUREconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
-        if (Config.CCUREconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
-        this.verifyIP(Config.CCUREconnect.server);
-        this.verifyPort(Config.CCUREconnect.port);
+        if (isNullOrUndefined(Config.ccureconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
+        if (Config.ccureconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
+        this.verifyIP(Config.ccureconnect.server);
+        this.verifyPort(Config.ccureconnect.port);
 
-        this._conn = new this._sql.ConnectionPool(Config.CCUREconnect);
+        this._conn = new this._sql.ConnectionPool(Config.ccureconnect);
 
         try {
             return await this._conn.connect().then(() => {
@@ -208,7 +208,6 @@ export class CCUREReader {
         else return Promise.reject(errorStr);
     }
 
-
     /**
      * Return last query report time unix timestamp
      */
@@ -252,7 +251,18 @@ export class CCUREReader {
      * @param queryParam Query parameters
      */
     protected generateQueryString(queryContent: QueryContent, queryParam: IQueryParam, condition?: String): string {
-        let queryCmd: string = `select ${queryParam.selector} from openquery(${queryParam.dsn},'select * from ${queryParam.table}`;
+        let queryCmd: string ;
+
+        if(isNullOrUndefined(queryParam.inner_selector) === true) queryParam.inner_selector = '*';
+        queryCmd = `select ${queryParam.selector} from openquery(${queryParam.dsn},'select ${queryParam.inner_selector} from ${queryParam.table}`;
+
+        if(isNullOrUndefined(queryParam.left_join_table)  === false && 
+            isNullOrUndefined(queryParam.left_join_on) === false && 
+            isNullOrUndefined(queryParam.left_join_condition) === false)
+        {
+            queryCmd += ` left join ${queryParam.left_join_table} on ${queryParam.left_join_on} where ${queryParam.left_join_condition}`
+        }
+
         if (isNullOrUndefined(queryParam.condition) === false && (queryParam.condition === "") === false) {
             queryCmd += ` where (${queryParam.condition})`;
         }

@@ -9,8 +9,8 @@ import { ISyncNotification, SyncNotification } from '../../custom/models'
 
 
 var action = new Action({
-    loginRequired: false,
-    permission: [RoleList.Admin]
+    loginRequired: true,
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
 /// CRUD start /////////////////////////////////

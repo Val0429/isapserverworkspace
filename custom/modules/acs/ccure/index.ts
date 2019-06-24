@@ -23,6 +23,7 @@ export class CCUREService {
     //Singal Object, use to wait for connected, default set to this._waitTime ms
     protected _signal: SignalObject = new SignalObject(false);
 
+    //Save id<--->name   :   key--value
     protected _idNameMap: IdNameMap = {};
 
     //Connect to SQL server
@@ -36,8 +37,6 @@ export class CCUREService {
         this._signal.set(false);
         this._reader.disconnectAsync();
     }
-
-
 
     /**
      * Get last update report time
@@ -61,8 +60,12 @@ export class CCUREService {
     public async GetNameById(id: number|string): Promise<string> {
         if (isNullOrUndefined(this._idNameMap[id])) {
             var temp = await this.GetAllObjects();
+            console.log(temp);
+            console.log(temp.length);
             for (var i = 0; i < temp.length; i++) {
                 var keyId = temp[i]["objId"];
+                console.log(temp.length);
+
                 this._idNameMap[keyId]=temp[i]["objName"];
             }
         }
@@ -155,6 +158,140 @@ export class CCUREService {
             return null;
         }
         else return this._reader.queryAllAsync(QueryContent.Reports, null, 30000);
+    }
+
+    /*
+    [
+        { 
+            badgeLayoutId: 154135, 
+            badgeLayoutName: 'Security-01' 
+        },
+        { 
+            badgeLayoutId: 154364, 
+            badgeLayoutName: 'NCIC-外包商-01' 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllBadgeLayout(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, 5000);
+    }
+
+    /*
+    [
+        { 
+            personId: 60343,
+            firstName: '',
+            middleName: '',
+            lastName: '高鈴逸',
+            engName: 'Annie Kao',
+            employeeNo: '75677',
+            cardNum: 0,
+            fullCardNumber: 77541,
+            pin: 30380157,
+            deleted: false,
+            lost: false,
+            activationTime: 702748800,
+            expirationTime: 917798340,
+            updateTime: 917820022,
+            updatedPerson: 27004 
+        },
+        {   
+            personId: 30853,
+            firstName: '',
+            middleName: '',
+            lastName: '黃吳意',
+            engName: '離職刪除',
+            employeeNo: '72721',
+            cardNum: 0,
+            fullCardNumber: 75096,
+            pin: 165887807,
+            deleted: false,
+            lost: false,
+            activationTime: 657388800,
+            expirationTime: 870364740,
+            updateTime: 885707145,
+            updatedPerson: 3909 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllPersons(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.Persons, null, 30000);
+    }
+
+    /*
+    [
+        { 
+            personId: 90845,
+            fieldId: 1000000026,
+            fieldName: '普查日期2',
+            charVal: null,
+            decimalVal: null 
+        },
+        { 
+            personId: 90846,
+            fieldId: 1000000026,
+            fieldName: '普查日期2',
+            charVal: null,
+            decimalVal: null 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllPersonExtendInfo(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, 30000);
+    }
+
+    /*
+    [
+        { 
+            fieldId: 1000000087, 
+            value: '補發-損壞', 
+            deleted: false 
+        },
+        { 
+            fieldId: 1000000087, 
+            value: '補發-遺失', 
+            deleted: false 
+        }
+    ]
+    */
+    /**
+     * Note: Different kinds of field, value will put on one of charVal and decimalVal
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllPersonExtendInfoEnumList(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, 5000);
     }
 
     /*
@@ -486,57 +623,6 @@ export class CCUREService {
     /*
     [
         { 
-            personId: 60343,
-            firstName: '',
-            middleName: '',
-            lastName: '高鈴逸',
-            engName: 'Annie Kao',
-            employeeNo: '75677',
-            cardNum: 0,
-            fullCardNumber: 77541,
-            pin: 30380157,
-            deleted: false,
-            lost: false,
-            activationTime: 702748800,
-            expirationTime: 917798340,
-            updateTime: 917820022,
-            updatedPerson: 27004 
-        },
-        {   
-            personId: 30853,
-            firstName: '',
-            middleName: '',
-            lastName: '黃吳意',
-            engName: '離職刪除',
-            employeeNo: '72721',
-            cardNum: 0,
-            fullCardNumber: 75096,
-            pin: 165887807,
-            deleted: false,
-            lost: false,
-            activationTime: 657388800,
-            expirationTime: 870364740,
-            updateTime: 885707145,
-            updatedPerson: 3909 
-        }
-    ]
-    */
-    /**
-     * 
-     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
-     */
-    public async GetAllPersons(OnRaws?: OnRawsCallback): Promise<JSON[]> {
-        await this._signal.wait(this._waitTime, x => x);
-        if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, null);
-            return null;
-        }
-        return this._reader.queryAllAsync(QueryContent.Persons, null, 30000);
-    }
-
-    /*
-    [
-        { 
             groupId: 10444, 
             groupName: 'DG_N2_PCMSC_IV-控制室-A7' 
         },
@@ -557,6 +643,31 @@ export class CCUREService {
             return null;
         }
         return this._reader.queryAllAsync(QueryContent.DoorGroup);
+    }
+
+    /*
+    [
+        { 
+            groupId: 10444, 
+            groupName: 'DG_N2_PCMSC_IV-控制室-A7' 
+        },
+        { 
+            groupId: 10513, 
+            groupName: 'DG_N2_PCMSC_IV-控制室-A8' 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllFloorGroup(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.FloorGroup);
     }
 
     /*
@@ -696,6 +807,84 @@ export class CCUREService {
             return null;
         }
         return this._reader.queryAllAsync(QueryContent.Reports, condition, 30000);
+    }
+
+    /**
+     *   badgeLayoutId: 154135, 
+         badgeLayoutName: 'Security-01'  
+     * @param condition Query string, e.g. lost=true and deleted=false
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetBadgeLayout(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, 30000);
+    }
+    
+    /**
+     *   personId: 30853,
+         firstName: '',
+         middleName: '',
+         lastName: '黃吳意',
+         engName: '離職刪除',
+         employeeNo: '72721',
+         cardNum: 0,
+         fullCardNumber: 75096,
+         pin: 165887807,
+         deleted: false,
+         lost: false,
+         activationTime: 657388800,
+         expirationTime: 870364740,
+         updateTime: 885707145,
+         updatedPerson: 3909 
+     * @param condition Query string, e.g. lost=true and deleted=false
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetPerson(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.Persons, condition, 30000);
+    }
+
+    /**
+     *  Note: Different kinds of field, value will put on one of charVal and decimalVal
+     *  personId: 90846,
+        fieldId: 1000000026,
+        fieldName: '普查日期2',
+        charVal: null,
+        decimalVal: null
+     * @param condition Query string, e.g. lost=true and deleted=false
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetPersonExtendInfo(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, 30000);
+    }
+
+    /**
+     *  fieldId: 1000000087, 
+        value: '補發-損壞', 
+        deleted: false 
+     * @param condition Query string, e.g. lost=true and deleted=false
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetPersonExtendInfoEnumList(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, 5000);
     }
 
     /**
@@ -886,33 +1075,7 @@ export class CCUREService {
         return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, condition);
     }
 
-    /**
-     *   personId: 30853,
-         firstName: '',
-         middleName: '',
-         lastName: '黃吳意',
-         engName: '離職刪除',
-         employeeNo: '72721',
-         cardNum: 0,
-         fullCardNumber: 75096,
-         pin: 165887807,
-         deleted: false,
-         lost: false,
-         activationTime: 657388800,
-         expirationTime: 870364740,
-         updateTime: 885707145,
-         updatedPerson: 3909 
-     * @param condition Query string, e.g. lost=true and deleted=false
-     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
-     */
-    public async GetPerson(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
-        await this._signal.wait(this._waitTime, x => x);
-        if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, null, null, condition);
-            return null;
-        }
-        return this._reader.queryAllAsync(QueryContent.Persons, condition, 30000);
-    }
+    
 
     /**
      *   groupId: 10513, 
@@ -927,6 +1090,21 @@ export class CCUREService {
             return null;
         }
         return this._reader.queryAllAsync(QueryContent.DoorGroup, condition);
+    }
+
+    /**
+     *   groupId: 10513, 
+         groupName: 'DG_N2_PCMSC_IV-控制室-A8' 
+     * @param condition Query string, e.g. groupId=38005
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetFloorGroup(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.FloorGroup, condition);
     }
 
     /**

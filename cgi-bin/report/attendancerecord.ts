@@ -70,8 +70,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
             let cred = m.get("Credentials");
 
             if (cred.length >= 1) {
-                if (cred[0]["CardNumber"] == r.get("card_no"))
+                if (cred[0]["CardNumber"] == r.get("card_no")) {
+                    m["Potrait"] = undefined ;
+                    m["CardholderPortrait"] = undefined ;
                     r.set("member", m);
+                }
             }
         }
     }

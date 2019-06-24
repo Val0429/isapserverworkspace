@@ -9,9 +9,11 @@ import { ScheduleActionEmail } from 'core/scheduler-loader';
 import * as mongo from 'mongodb';
 // import * as msSQL from 'mssql';
 
-import { HumanResourceService } from './acs/HumanResource';
-import { SyncNotification } from './../models/access-control'
-// import { SiPassAdapter } from './acs/SiPass';
+import { HumanResourceAdapter } from './acs/HumanResourceAdapter';
+import { SyncNotification } from './../models/access-control';
+import { vieMember } from '../../custom/models'
+
+import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 
 
@@ -23,16 +25,14 @@ export class HRService {
     private mongoClient: mongo.MongoClient;
     private mongoDb: mongo.Db;
 
-    // private sqlClient: msSQL.connection;
-
-    private humanResource: HumanResourceService;
+    private humanResource: HumanResourceAdapter;
 
     private LastUpdate = null;
 
     constructor() {
         var me = this;
 
-        this.humanResource = new HumanResourceService();
+        this.humanResource = new HumanResourceAdapter();
 
         this.LastUpdate = require('./hr_last_update.json');
 
@@ -239,13 +239,13 @@ export class HRService {
 
             let newMsg = "";
             let offMsg = "";
-            let chgMsg = ""; 
+            let chgMsg = "";
 
             Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
             if (EmpNo.length >= 1) {
                 try {
                     res = await this.humanResource.getViewMember(EmpNo);
-                    // let adSiPass: SiPassAdapter = new SiPassAdapter();
+
 
                     let sessionId = "";
                     // {
@@ -274,38 +274,40 @@ export class HRService {
                             b = "正職";
                         }
 
-                        if ( memNew.indexOf(record["EmpNo"] >= 0)){
-                             newMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${b}</td><td>${record["DeptChiName"]}</td><td>${record["EngName"]}</td></tr>`;
+                        if (memNew.indexOf(record["EmpNo"] >= 0)) {
+                            newMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${b}</td><td>${record["DeptChiName"]}</td><td>${record["EngName"]}</td></tr>`;
                         }
 
-                        if ( memOff.indexOf(record["EmpNo"] >= 0)){
+                        if (memOff.indexOf(record["EmpNo"] >= 0)) {
                             offMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${b}</td><td>${record["DeptChiName"]}</td><td>${record["OffDate"]}</td><td>${record["EngName"]}</td></tr>`;
                         }
 
-                        if ( memChange.indexOf(record["EmpNo"] >= 0)){
+                        if (memChange.indexOf(record["EmpNo"] >= 0)) {
                             let change = "";
-                            let db = await this.mongoDb.collection("vieMember").findOne({ "EmpNo": empNo }) ;
+                            let db = await this.mongoDb.collection("vieMember").findOne({ "EmpNo": empNo });
 
                             {
-                                if (record["CompCode"] != db["CompCode"] )  change += ",公司代碼:" + record["CompCode"] ;
-                                if (record["CompName"] != db["CompName"] )  change += ",公司/廠商名稱:" + record["CompName"] ;
-                                if (record["EngName"] != db["EngName"] )  change += ",英文姓名:" + record["EngName"] ;
-                                if (record["EmpName"] != db["EmpName"] )  change += ",中文姓名:" + record["EmpName"] ;
-                                if (record["Extension"] != db["Extension"] )  change += ",分機號碼:" + record["Extension"] ;
-                                if (record["MVPN"] != db["MVPN"] )  change += ",MVPN:" + record["MVPN"] ;
-                                if (record["Cellular"] != db["Cellular"] )  change += ",行動電話:" + record["Cellular"] ;
-                                if (record["EMail"] != db["EMail"] )  change += ",EMail:" + record["EMail"] ;
-                                if (record["Sex"] != db["Sex"] )  change += ",性別:" + record["Sex"] ;
-                                if (record["BirthDate"] != db["BirthDate"] )  change += ",出生日期:" + record["BirthDate"] ;
-                                if (record["DeptCode"] != db["DeptCode"] )  change += ",部門代號:" + record["DeptCode"] ;
-                                if (record["DeptChiName"] != db["DeptChiName"] )  change += ",部門名稱:" + record["DeptChiName"] ;
-                                if (record["CostCenter"] != db["CostCenter"] )  change += ",成本中心代碼:" + record["CostCenter"] ;
-                                if (record["LocationCode"] != db["LocationCode"] )  change += ",地區代碼:" + record["LocationCode"] ;
-                                if (record["LocationName"] != db["LocationName"] )  change += ",地區:" + record["LocationName"] ;
-                                if (record["RegionCode"] != db["RegionCode"] )  change += ",區域代碼:" + record["RegionCode"] ;
-                                if (record["RegionName"] != db["RegionName"] )  change += ",工作區域:" + record["RegionName"] ;
-                                if (record["EntDate"] != db["EntDate"] )  change += ",報到日期:" + record["EntDate"] ;
-                                if (record["OffDate"] != db["OffDate"] )  change += ",離職日期:" + record["OffDate"] ;
+                                if (db) {
+                                    if (record["CompCode"] != db["CompCode"]) change += ",公司代碼:" + record["CompCode"];
+                                    if (record["CompName"] != db["CompName"]) change += ",公司/廠商名稱:" + record["CompName"];
+                                    if (record["EngName"] != db["EngName"]) change += ",英文姓名:" + record["EngName"];
+                                    if (record["EmpName"] != db["EmpName"]) change += ",中文姓名:" + record["EmpName"];
+                                    if (record["Extension"] != db["Extension"]) change += ",分機號碼:" + record["Extension"];
+                                    if (record["MVPN"] != db["MVPN"]) change += ",MVPN:" + record["MVPN"];
+                                    if (record["Cellular"] != db["Cellular"]) change += ",行動電話:" + record["Cellular"];
+                                    if (record["EMail"] != db["EMail"]) change += ",EMail:" + record["EMail"];
+                                    if (record["Sex"] != db["Sex"]) change += ",性別:" + record["Sex"];
+                                    if (record["BirthDate"] != db["BirthDate"]) change += ",出生日期:" + record["BirthDate"];
+                                    if (record["DeptCode"] != db["DeptCode"]) change += ",部門代號:" + record["DeptCode"];
+                                    if (record["DeptChiName"] != db["DeptChiName"]) change += ",部門名稱:" + record["DeptChiName"];
+                                    if (record["CostCenter"] != db["CostCenter"]) change += ",成本中心代碼:" + record["CostCenter"];
+                                    if (record["LocationCode"] != db["LocationCode"]) change += ",地區代碼:" + record["LocationCode"];
+                                    if (record["LocationName"] != db["LocationName"]) change += ",地區:" + record["LocationName"];
+                                    if (record["RegionCode"] != db["RegionCode"]) change += ",區域代碼:" + record["RegionCode"];
+                                    if (record["RegionName"] != db["RegionName"]) change += ",工作區域:" + record["RegionName"];
+                                    if (record["EntDate"] != db["EntDate"]) change += ",報到日期:" + record["EntDate"];
+                                    if (record["OffDate"] != db["OffDate"]) change += ",離職日期:" + record["OffDate"];
+                                }
                             }
 
                             if (change.length >= 2) change = change.substr(1);
@@ -314,7 +316,36 @@ export class HRService {
                         }
 
                         Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${empNo}`);
-                        this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
+
+                        let obj = await new Parse.Query(vieMember).equalTo("EmpNo", empNo).first();
+                        if (obj == null) {
+                            let o = new vieMember(record);
+                            await o.save();
+                        }
+                        else {
+                            obj.set("attributes", record["attributes"] );
+                            obj.set("credentials", record["credentials"] );
+                            obj.set("accessRules", record["accessRules"] );
+                            obj.set("employeeNumber", record["employeeNumber"] );
+                            obj.set("firstName", record["firstName"] );
+                            obj.set("lastName", record["lastName"] );
+                            obj.set("personalDetails", record["personalDetails"] );
+                            obj.set("primaryWorkgroupId", record["primaryWorkgroupId"] );
+                            obj.set("apbWorkgroupId", record["apbWorkgroupId"] );
+                            obj.set("primaryWorkgroupName", record["primaryWorkgroupName"] );
+                            obj.set("nonPartitionWorkGroups", record["nonPartitionWorkGroups"] );
+                            obj.set("status", record["status"] );
+                            obj.set("token", record["token"] );
+                            obj.set("primaryWorkGroupAccessRule", record["primaryWorkGroupAccessRule"] );
+                            obj.set("nonPartitionWorkgroupAccessRules", record["nonPartitionWorkgroupAccessRules"] );
+                            obj.set("visitorDetails", record["visitorDetails"] );
+                            obj.set("customFields", record["customFields"] );
+                            obj.set("cardholderPortrait", record["cardholderPortrait"] );
+                            await obj.save();
+                        }
+                        // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
+
+                        
 
                         if (sessionId != "") {
                             // 5.1 write data to SiPass database
@@ -468,7 +499,7 @@ export class HRService {
                                 cardholderPortrait: ""
                             }
 
-                            // let holder = await adSiPass.postCardHolder(d);
+                            let holder = await siPassAdapter.postCardHolder(d);
                         }
                     }
                 }
@@ -495,28 +526,28 @@ export class HRService {
                 let dd = today.toISOString().substring(0, 10);
 
                 let msg = `Dear Sir<p>${dd}門禁系統人事資料同步更新通知<p>`;
-                
-                if ( memNew.length >= 1) {
+
+                if (memNew.length >= 1) {
                     msg += `新增人員之資料共${memNew.length}筆，詳細資料如下：<br><br>
                     <table border="0" width="600">
                     <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>英文姓名</th></tr>`;
-                    msg += newMsg ;
+                    msg += newMsg;
                     msg += `</table><p>`;
                 }
 
-                if ( memChange.length >= 1) {
+                if (memChange.length >= 1) {
                     msg += `異動人員之資料共${memChange.length}筆，詳細資料如下：<br><br>
                     <table border="0" width="600">
                     <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>英文姓名 </th><th>異動項目</th></tr>`;
-                    msg += chgMsg ;
+                    msg += chgMsg;
                     msg += `</table><p>`;
                 }
 
-                if ( memOff.length >= 1) {
+                if (memOff.length >= 1) {
                     msg += `離職人員之資料共${memOff.length}筆，詳細資料如下：<br><br>
                     <table border="0" width="600">
                     <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>離職日</th><th>英文姓名</th></tr>`;
-                    msg += chgMsg ;
+                    msg += chgMsg;
                     msg += `</table>`;
 
                 }
