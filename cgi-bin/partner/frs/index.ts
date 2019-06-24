@@ -9,7 +9,7 @@ import FRS from '../../../custom/services/frs';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;

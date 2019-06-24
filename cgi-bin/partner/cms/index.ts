@@ -8,7 +8,7 @@ import * as Device from '../../device';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin],
+    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
