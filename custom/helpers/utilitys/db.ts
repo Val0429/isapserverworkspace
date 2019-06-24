@@ -113,7 +113,7 @@ export namespace Db {
         try {
             let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
                 .equalTo('user', user)
-                .include(['locations', 'groups'])
+                .include(['locations', 'groups', 'sites'])
                 .first()
                 .fail((e) => {
                     throw e;
