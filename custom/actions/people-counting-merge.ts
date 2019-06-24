@@ -22,6 +22,11 @@ class Action {
     /**
      *
      */
+    private _save$: Rx.Subject<Action.ISave> = new Rx.Subject();
+
+    /**
+     *
+     */
     constructor() {
         let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
@@ -52,6 +57,7 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
+            this.EnableSaveStream();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -132,6 +138,43 @@ class Action {
     }
 
     /**
+     * Enable save stream
+     */
+    private EnableSaveStream(): void {
+        try {
+            let next$: Rx.Subject<{}> = new Rx.Subject();
+
+            this._save$
+                .zip(next$.startWith(0))
+                .map((x) => {
+                    return x[0];
+                })
+                .subscribe({
+                    next: async (x) => {
+                        try {
+                            let tasks: Promise<any>[] = [];
+
+                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.hour));
+                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.day));
+                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.month));
+                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.season));
+
+                            await Promise.all(tasks).catch((e) => {
+                                throw e;
+                            });
+                        } catch (e) {
+                            Print.Log(e, new Error(), 'error');
+                        }
+
+                        next$.next();
+                    },
+                });
+        } catch (e) {
+            Print.Log(e, new Error(), 'error');
+        }
+    }
+
+    /**
      * Enable live stream
      */
     private EnableLiveStream(): void {
@@ -167,16 +210,7 @@ class Action {
                                             out: value.out,
                                         };
 
-                                        let tasks: Promise<any>[] = [];
-
-                                        tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.hour));
-                                        tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.day));
-                                        tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.month));
-                                        tasks.push(this.SaveReportSummary(base, count, Enum.ESummaryType.season));
-
-                                        await Promise.all(tasks).catch((e) => {
-                                            throw e;
-                                        });
+                                        this._save$.next({ base: base, count: count });
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
                                     }
@@ -213,5 +247,13 @@ namespace Action {
     export interface ICount {
         in: number;
         out: number;
+    }
+
+    /**
+     *
+     */
+    export interface ISave {
+        base: IDB.IReportBase;
+        count: Action.ICount;
     }
 }

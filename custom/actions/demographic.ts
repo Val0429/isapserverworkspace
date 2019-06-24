@@ -38,6 +38,11 @@ class Action {
     /**
      *
      */
+    private _save$: Rx.Subject<Action.ISave> = new Rx.Subject();
+
+    /**
+     *
+     */
     constructor() {
         let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
@@ -79,6 +84,7 @@ class Action {
             await this.Search();
 
             this.GetAgeRange();
+            this.EnableSaveStream();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -231,6 +237,44 @@ class Action {
     }
 
     /**
+     * Enable save stream
+     */
+    private EnableSaveStream(): void {
+        try {
+            let next$: Rx.Subject<{}> = new Rx.Subject();
+
+            this._save$
+                .zip(next$.startWith(0))
+                .map((x) => {
+                    return x[0];
+                })
+                .subscribe({
+                    next: async (x) => {
+                        try {
+                            let tasks: Promise<any>[] = [];
+
+                            tasks.push(x.report.save(null, { useMasterKey: true }) as any);
+                            tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.hour));
+                            tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.day));
+                            tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.month));
+                            tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.season));
+
+                            await Promise.all(tasks).catch((e) => {
+                                throw e;
+                            });
+                        } catch (e) {
+                            Print.Log(e, new Error(), 'error');
+                        }
+
+                        next$.next();
+                    },
+                });
+        } catch (e) {
+            Print.Log(e, new Error(), 'error');
+        }
+    }
+
+    /**
      * Enable live stream
      */
     private EnableLiveStream(): void {
@@ -294,17 +338,7 @@ class Action {
 
                                         report.setValue('imageSrc', imageSrc);
 
-                                        let tasks: Promise<any>[] = [];
-
-                                        tasks.push(report.save(null, { useMasterKey: true }) as any);
-                                        tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.hour));
-                                        tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.day));
-                                        tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.month));
-                                        tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.season));
-
-                                        await Promise.all(tasks).catch((e) => {
-                                            throw e;
-                                        });
+                                        this._save$.next({ report: report });
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
                                     }
@@ -349,5 +383,12 @@ namespace Action {
     export interface IAgeRange {
         min: number;
         max: number;
+    }
+
+    /**
+     *
+     */
+    export interface ISave {
+        report: IDB.ReportDemographic;
     }
 }

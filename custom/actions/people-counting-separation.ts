@@ -22,6 +22,11 @@ class Action {
     /**
      *
      */
+    private _save$: Rx.Subject<Action.ISave> = new Rx.Subject();
+
+    /**
+     *
+     */
     constructor() {
         let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
@@ -52,6 +57,7 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
+            this.EnableSaveStream();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -119,6 +125,43 @@ class Action {
     }
 
     /**
+     * Enable save stream
+     */
+    private EnableSaveStream(): void {
+        try {
+            let next$: Rx.Subject<{}> = new Rx.Subject();
+
+            this._save$
+                .zip(next$.startWith(0))
+                .map((x) => {
+                    return x[0];
+                })
+                .subscribe({
+                    next: async (x) => {
+                        try {
+                            let tasks: Promise<any>[] = [];
+
+                            tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.hour));
+                            tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.day));
+                            tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.month));
+                            tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.season));
+
+                            await Promise.all(tasks).catch((e) => {
+                                throw e;
+                            });
+                        } catch (e) {
+                            Print.Log(e, new Error(), 'error');
+                        }
+
+                        next$.next();
+                    },
+                });
+        } catch (e) {
+            Print.Log(e, new Error(), 'error');
+        }
+    }
+
+    /**
      * Enable live stream
      */
     private EnableLiveStream(): void {
@@ -149,16 +192,7 @@ class Action {
                                             date: value.date,
                                         };
 
-                                        let tasks: Promise<any>[] = [];
-
-                                        tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.hour));
-                                        tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.day));
-                                        tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.month));
-                                        tasks.push(this.SaveReportSummary(base, Enum.ESummaryType.season));
-
-                                        await Promise.all(tasks).catch((e) => {
-                                            throw e;
-                                        });
+                                        this._save$.next({ base: base });
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
                                     }
@@ -185,5 +219,12 @@ namespace Action {
     export interface IAction {
         device: IDB.Device;
         date: Date;
+    }
+
+    /**
+     *
+     */
+    export interface ISave {
+        base: IDB.IReportBase;
     }
 }
