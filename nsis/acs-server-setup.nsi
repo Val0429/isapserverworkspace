@@ -206,9 +206,9 @@ Section
 	
 	;${If} ${SectionIsSelected} ${SEC01}		
   #run npm start for 1.5 minute	
-  DetailPrint "run npm start for 1.5 minute"
+  DetailPrint "Run npm start for 1.5 minute"
 		ExecDos::exec /TIMEOUT=90000 '"start.bat"'
-  DetailPrint "finished run npm"	
+  DetailPrint "Finished run npm"	
 	;${EndIf}
 	
 	# install service
