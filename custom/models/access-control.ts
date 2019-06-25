@@ -22,10 +22,10 @@ export interface IDoor {    // CRUD daily V
 export class Door extends ParseObject<IDoor> { }
 
 export interface IFloor {   // R daily V
-    system: number,         // 1: SiPass 2: CCure800
-    floorid: number,
+    system?: number,         // 1: SiPass 2: CCure800
+    floorid?: number,
     floorname: string,
-    status: number
+    status?: number
 }
 @registerSubclass()
 export class Floor extends ParseObject<IFloor> { }
