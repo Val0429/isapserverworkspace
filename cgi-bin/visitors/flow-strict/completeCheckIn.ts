@@ -28,6 +28,7 @@ export default new Action<Input, Output>({
 })
 .post(async (data) => {
     let { pin } = data.inputType;
+    let request = data.request;
 
     let { owner, invitation, result, company, visitor, index } = await tryCheckInWithPinCode(pin);
     let kiosk = data.user;
@@ -95,7 +96,7 @@ export default new Action<Input, Output>({
 
     return ParseObject.toOutputJSON({
         ...invitation.attributes,
-        qrcode: enrollCard.attributes.qrcode.url().replace("localhost", Config.core.publicExternalIP)
+        qrcode: enrollCard.attributes.qrcode.url().replace("localhost", request.connection.localAddress.replace(/^.*:/, ''))
     });
 });
 
