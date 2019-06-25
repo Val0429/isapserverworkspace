@@ -46,6 +46,24 @@ action.get(
             if (_input.mode) {
                 query.equalTo('mode', _input.mode);
             }
+            if (_input.siteId) {
+                let site: IDB.LocationSite = new IDB.LocationSite();
+                site.id = _input.siteId;
+
+                query.equalTo('site', site);
+            }
+            if (_input.areaId) {
+                let area: IDB.LocationArea = new IDB.LocationArea();
+                area.id = _input.areaId;
+
+                query.equalTo('area', area);
+            }
+            if (_input.groupId) {
+                let group: IDB.DeviceGroup = new IDB.DeviceGroup();
+                group.id = _input.groupId;
+
+                query.containedIn('groups', [group]);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;

@@ -74,6 +74,9 @@ export interface IVisitorC extends IC_Base {
 }
 
 export interface IIndexR {
+    siteId?: string;
+    areaId?: string;
+    groupId?: string;
     mode?: Enum.EDeviceMode;
 }
 
