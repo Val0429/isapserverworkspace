@@ -20,6 +20,79 @@ Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 
 !macro DoUninstall UN
+Function ${UN}DeleteFoldersWithExclusion
+    Exch $R0 ; exclude dir
+    Exch
+    Exch $R1 ; route dir
+    Push $R2
+    Push $R3
+ 
+    ClearErrors
+    FindFirst $R3 $R2 "$R1\*.*"
+ 
+    Top:
+        StrCmp $R2 "." Next
+        StrCmp $R2 ".." Next
+        StrCmp $R2 $R0 Next
+        IfFileExists "$R1\$R2\*.*" Jump DeleteFile
+    
+    Jump:
+        Push '$R1\$R2'
+        Push '$R0'
+        Call ${UN}DeleteFoldersWithExclusion
+    
+        Push "$R1\$R2" 
+        Call ${UN}isEmptyDir
+        Pop $0    
+        StrCmp $0 1 RmD Next
+    
+    RmD:
+        RMDir /r $R1\$R2
+        Goto Next
+    
+    DeleteFile:
+        Delete '$R1\$R2'
+    
+    Next:
+        ClearErrors
+        FindNext $R3 $R2
+        IfErrors Exit
+        Goto Top
+    
+    Exit:
+        FindClose $R3
+    
+    Pop $R3
+    Pop $R2
+    Pop $R1
+    Pop $R0
+FunctionEnd
+
+Function ${UN}isEmptyDir
+    # Stack ->                    # Stack: <directory>
+    Exch $0                       # Stack: $0
+    Push $1                       # Stack: $1, $0
+    FindFirst $0 $1 "$0\*.*"
+    strcmp $1 "." 0 _notempty
+        FindNext $0 $1
+        strcmp $1 ".." 0 _notempty
+        ClearErrors
+        FindNext $0 $1
+        IfErrors 0 _notempty
+            FindClose $0
+            Pop $1                  # Stack: $0
+            StrCpy $0 1
+            Exch $0                 # Stack: 1 (true)
+            goto _end
+        _notempty:
+        FindClose $0
+        Pop $1                   # Stack: $0
+        StrCpy $0 0
+        Exch $0                  # Stack: 0 (false)
+    _end:
+FunctionEnd
+
+
 Function ${UN}DoUninstall
 	#0, get old installation folder
 	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
@@ -34,8 +107,10 @@ Function ${UN}DoUninstall
 	# third, remove services	
 	ExecWait '"uninstall.bat" /s'
 	
-	# now delete installed files
-	RMDir /r $R1
+	# now delete installed files	
+  Push "$R1"
+	Push "assets" 		;dir to exclude
+	Call ${UN}DeleteFoldersWithExclusion
 	
 	# remove registry info
 	DeleteRegKey HKLM "Software\${PRODUCT_NAME}"
@@ -129,8 +204,11 @@ Section
 	# intall mongo
 	ExecWait '"install_mongo.bat" /s'
 	
-	;${If} ${SectionIsSelected} ${SEC01}			
-	;	ExecWait '"start.bat"'
+	;${If} ${SectionIsSelected} ${SEC01}		
+  #run npm start for 1.5 minute	
+  DetailPrint "run npm start for 1.5 minute"
+		ExecDos::exec /TIMEOUT=90000 '"start.bat"'
+  DetailPrint "finished run npm"	
 	;${EndIf}
 	
 	# install service
@@ -148,6 +226,9 @@ Section
 	 IntFmt $0 "0x%08X" $0
 	 WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
 	 
+   MessageBox MB_YESNO|MB_ICONQUESTION "Reboot is required to complete installation, do you wish to reboot the system now?" IDNO +2
+   Reboot
+  
 SectionEnd
 
 UninstallText "This will uninstall ${PRODUCT_NAME}. Press uninstall to continue."

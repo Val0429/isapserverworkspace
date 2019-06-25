@@ -2,3 +2,5 @@
 custom/web/
 node_modules/
 custom/assets/images/
+
+nsis/Release/
