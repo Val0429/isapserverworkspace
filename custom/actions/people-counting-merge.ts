@@ -155,9 +155,9 @@ class Action {
                             let tasks: Promise<any>[] = [];
 
                             tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.hour));
-                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.day));
-                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.month));
-                            tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.season));
+                            // tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.day));
+                            // tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.month));
+                            // tasks.push(this.SaveReportSummary(x.base, x.count, Enum.ESummaryType.season));
 
                             await Promise.all(tasks).catch((e) => {
                                 throw e;
