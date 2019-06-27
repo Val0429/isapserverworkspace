@@ -194,9 +194,13 @@ export class ReportPeopleCounting extends Report {
                     return value1.device.objectId === value.device.objectId && value1.date.getTime() === value.date.getTime() - dateGap;
                 });
 
-                let inVariety: number = prevSummary && prevSummary.in !== 0 ? Utility.Round(value.in / prevSummary.in - 1, 2) : NaN;
+                // let inVariety: number = prevSummary && prevSummary.in !== 0 ? Utility.Round(value.in / prevSummary.in - 1, 2) : NaN;
 
-                let outVariety: number = prevSummary && prevSummary.out !== 0 ? Utility.Round(value.out / prevSummary.out - 1, 2) : NaN;
+                // let outVariety: number = prevSummary && prevSummary.out !== 0 ? Utility.Round(value.out / prevSummary.out - 1, 2) : NaN;
+
+                let prevIn: number = prevSummary ? prevSummary.in : NaN;
+
+                let prevOut: number = prevSummary ? prevSummary.out : NaN;
 
                 return {
                     site: value.site,
@@ -206,9 +210,9 @@ export class ReportPeopleCounting extends Report {
                     date: value.date,
                     type: value.type,
                     in: value.in,
-                    inVariety: inVariety,
+                    prevIn: prevIn,
                     out: value.out,
-                    outVariety: outVariety,
+                    prevOut: prevOut,
                     weather: value.weather,
                 };
             }, []);

@@ -46,9 +46,9 @@ export interface ISummaryDataBase {
 
 export interface IPeopleCountingSummaryData extends ISummaryDataBase {
     in: number;
-    inVariety?: number;
+    prevIn?: number;
     out: number;
-    outVariety?: number;
+    prevOut?: number;
 }
 
 export interface IPeopleCountingSummary {
