@@ -11,21 +11,21 @@ export interface IReader {      // R daily v
 export class Reader extends ParseObject<IReader> { }
 
 export interface IDoor {    // CRUD daily V
-    system: number,         // 0: iSap 1: SiPass 2: CCure800
-    doorid: number,
+    system?: number,         // 0: iSap 1: SiPass 2: CCure800
+    doorid?: number,
     doorname: string,
-    readerin: Reader[],
-    readerout: Reader[],
-    status: number
+    readerin?: Reader[],
+    readerout?: Reader[],
+    status?: number
 }
 @registerSubclass()
 export class Door extends ParseObject<IDoor> { }
 
 export interface IFloor {   // R daily V
-    system: number,         // 1: SiPass 2: CCure800
-    floorid: number,
+    system?: number,         // 1: SiPass 2: CCure800
+    floorid?: number,
     floorname: string,
-    status: number
+    status?: number
 }
 @registerSubclass()
 export class Floor extends ParseObject<IFloor> { }
@@ -42,10 +42,10 @@ export class FloorGroup extends ParseObject<IFloorGroup> { }
 
 export interface IElevator {    // CRUD V
     system: number,             // 0: iSap 1: SiPass 2: CCure800
-    elevatorid: number,
+    elevatorid?: number,
     elevatorname: string,
-    reader: Floor[],
-    status: number
+    reader?: Floor[],
+    status?: number
 }
 @registerSubclass()
 export class Elevator extends ParseObject<IElevator> { }
