@@ -58,6 +58,9 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
             if (!input.sessionId) {
                 throw Errors.throw(Errors.CustomUnauthorized, ['This session is not valid or is already expired.']);
             }
+            if (!data.user) {
+                throw Errors.throw(Errors.LoginFailed);
+            }
 
             user = data.user;
             sessionId = input.sessionId;
