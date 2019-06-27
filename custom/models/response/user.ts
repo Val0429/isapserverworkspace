@@ -47,6 +47,7 @@ export interface IUserLogin extends IBaseLogin {
     sites: IObject[];
     groups: IObject[];
     isAppBinding: boolean;
+    allowSites: IObject[];
 }
 
 export interface IGroupIndexR {

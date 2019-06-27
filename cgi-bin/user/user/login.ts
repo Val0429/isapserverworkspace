@@ -92,6 +92,13 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
             };
         });
 
+        let allowSites = (_userInfo.sites || []).map((value1, index1, array1) => {
+            return {
+                objectId: value1.id,
+                name: value1.getValue('name'),
+            };
+        });
+
         return {
             sessionId: sessionId,
             objectId: user.id,
@@ -106,6 +113,7 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
             sites: sites,
             groups: groups,
             isAppBinding: !!_userInfo.info.getValue('mobileType') && _userInfo.info.getValue('mobileType') !== Enum.EMobileType.none,
+            allowSites: allowSites,
         };
     } catch (e) {
         throw e;
