@@ -445,6 +445,7 @@ export class ACSService {
                 }
                 await delay(1000);
             }
+
             // 3.0 get data from CCure800
             {
                 Log.Info(`${this.constructor.name}`, `CCure 2.2 Time Schedule`); 
