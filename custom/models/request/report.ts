@@ -26,3 +26,5 @@ export interface ISummaryBase extends IDateRange {
 }
 
 export interface IPeopleCountingSummary extends ISummaryBase {}
+
+export interface IDemographicSummary extends ISummaryBase {}

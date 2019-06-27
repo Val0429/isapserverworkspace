@@ -55,3 +55,25 @@ export interface IPeopleCountingSummary {
     peakHours: IPeakHour[];
     summaryDatas: IPeopleCountingSummaryData[];
 }
+
+export interface IGenderRange {
+    totalRanges: number[];
+    maleRanges: number[];
+    femaleRanges: number[];
+}
+
+export interface IDemographicSummaryData extends ISummaryDataBase {
+    maleTotal: number;
+    maleRanges: number[];
+    prevMaleTotal?: number;
+    prevMaleRanges?: number[];
+    femaleTotal: number;
+    femaleRanges: number[];
+    prevFemaleTotal?: number;
+    prevFemaleRanges?: number[];
+}
+
+export interface IDemographicSummary {
+    genderRange: IGenderRange;
+    summaryDatas: IDemographicSummaryData[];
+}
