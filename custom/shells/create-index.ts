@@ -6,7 +6,8 @@ import { createIndex } from 'helpers/parse-server/parse-helper';
 
 import { APIPermissions, APIRoles, APITokens, IAPIPermissions, IAPIRoles, IAPITokens } from 'models/customRoles';
 
-import { Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, SyncNotification, AttendanceRecords } from '../../custom/models'
+import { Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Member, TimeSchedule, AccessLevel, 
+        PermissionTable, WorkGroup, SyncNotification, AttendanceRecords, CardProfile, ProfileId } from '../../custom/models'
 
 (async () => {
 
@@ -120,6 +121,36 @@ import { Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Me
         tokens = new APITokens();   await tokens.save({ identifier: "7-2_system_license_R" });
         tokens = new APITokens();   await tokens.save({ identifier: "7-2_system_license_CRUD" });
         tokens = new APITokens();   await tokens.save({ identifier: "7-3_system_operationlog_R" });
+    }
+    ////////////////////////////
+
+    /// Create default API Tokens
+    let profiels = await new Parse.Query(ProfileId).first();
+    if (!profiels) {
+        profiels = new CardProfile();   await profiels.save({ name: "正職" });
+        profiels = new CardProfile();   await profiels.save({ name: "ASR臨時卡" });
+        profiels = new CardProfile();   await profiels.save({ name: "DOC臨時卡" });
+        profiels = new CardProfile();   await profiels.save({ name: "GSA臨時卡" });
+        profiels = new CardProfile();   await profiels.save({ name: "IDC臨時卡" });
+        profiels = new CardProfile();   await profiels.save({ name: "NOC臨時卡" });
+        profiels = new CardProfile();   await profiels.save({ name: "下包商" });
+        profiels = new CardProfile();   await profiels.save({ name: "子公司" });
+        profiels = new CardProfile();   await profiels.save({ name: "契約商_長駐" });
+        profiels = new CardProfile();   await profiels.save({ name: "契約商_短派" });
+        profiels = new CardProfile();   await profiels.save({ name: "施工" });
+        profiels = new CardProfile();   await profiels.save({ name: "約聘" });
+        profiels = new CardProfile();   await profiels.save({ name: "租戶" });
+        profiels = new CardProfile();   await profiels.save({ name: "停車卡" });
+        profiels = new CardProfile();   await profiels.save({ name: "訪客" });
+        profiels = new CardProfile();   await profiels.save({ name: "貴賓" });
+        profiels = new CardProfile();   await profiels.save({ name: "電梯卡" });
+    }
+
+    profiels = await new Parse.Query(ProfileId).first();
+    if (!profiels) {
+        profiels = new ProfileId();   await profiels.save({ name: "35 bit" });
+        profiels = new ProfileId();   await profiels.save({ name: "26 bit" });
+        profiels = new ProfileId();   await profiels.save({ name: "mifare32" });
     }
     ////////////////////////////
 

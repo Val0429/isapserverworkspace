@@ -299,3 +299,18 @@ export interface IAttendanceRecords {
 }
 @registerSubclass()
 export class AttendanceRecords extends ParseObject<IAttendanceRecords> { }
+
+
+export interface IProfileId {   // Credentials.ProfileId
+    name?: string               // 35 bit, 26 bit, ???
+}
+@registerSubclass()
+export class ProfileId extends ParseObject<IProfileId> { }
+
+
+export interface ICardProfile { // 正卡類型   CustomDropdownControl1__CF
+    name?: string               // 正職, ASR臨時卡, DOC臨時卡
+}
+@registerSubclass()
+export class CardProfile extends ParseObject<ICardProfile> { }
+

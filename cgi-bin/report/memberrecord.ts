@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors,
-    Restful, FileHelper, ParseObject, IMember, Member
+    Restful, FileHelper, ParseObject, IMember, Member, TimeSchedule
 } from 'core/cgi-package';
 
 import { IvieMember, vieMember } from 'workspace/custom/models/index';
@@ -36,8 +36,32 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.CostCenterName);
     if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.WorkAreaName);
     
+    let pageSize = Number.MAX_SAFE_INTEGER;
+
+    let times = await new Parse.Query(TimeSchedule).find(); 
+    
+    
     /// 3) Output
-    let o = await query.limit(Number.MAX_SAFE_INTEGER).find();    
+    let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
+
+    for (let i = 0; i < o.length; i++) {
+        let r = o[i];
+        let rules = r.get("AccessRules");
+
+        if ( rules.length >= 1) {
+            for (let j = 0; j < rules.length; j++) {
+                let ru = rules[j];
+
+                for (let k = 0; k < times.length; k++) {
+                    if (ru["TimeScheduleToken"] == times[k].get("timeid") ) {
+                        //ru["TimeScheduleToken"] = JSON.stringify(ParseObject.toOutputJSON(times[k]));
+                        ru["TimeScheduleToken"] = times[k].get("timename") ;
+                    }
+                }
+            }
+        }
+    }
+
     let results = constructData(o.map( (d) => ParseObject.toOutputJSON(d)), filter);
     let paging :any = {
         page: 1,
@@ -61,7 +85,7 @@ function constructData(dataMember: IMember[], filter?:any) {
         let workAreaName = workArea && workArea.FieldValue ? workArea.FieldValue : '';
         if (item.AccessRules && item.AccessRules.length > 0) {
             for (let accessRule of item.AccessRules) {
-                records.push(createEmployee(item, departmentName, costCenterName, workAreaName, accessRule.ObjectName));
+                records.push(createEmployee(item, departmentName, costCenterName, workAreaName, accessRule.TimeScheduleToken));
             }
         }
         else {
