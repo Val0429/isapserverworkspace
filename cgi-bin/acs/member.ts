@@ -6,6 +6,7 @@ import {
 } from 'core/cgi-package';
 
 import { IMember, Member, AccessLevel } from '../../custom/models'
+import { ConstructSignatureDeclaration } from 'ts-simple-ast';
 
 
 var action = new Action({
@@ -27,23 +28,75 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // AccessRules
     let accessLevels = await new Parse.Query(AccessLevel).find();
 
-
     let rules = obj.get("AccessRules");
     for (let i = 0; i < rules.length; i++) {
         const rid = rules[i];
 
         for (let j = 0; j < accessLevels.length; j++) {
             const level = accessLevels[j];
-            
-            if ( level.get("levelid")== rid)
+
+            if (level.get("levelid") == rid)
                 rules.splice(i, 1, level);
         }
     }
 
-    // CustomFields
-    let record = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
-    let fields = record.get("CustomFields");
 
+    // CustomFields
+    let fields = [
+        { "FiledName": "CustomTextBoxControl8__CF" },
+        { "FiledName": "CustomDropdownControl1__CF" },
+        { "FiledName": "CustomTextBoxControl1__CF" },
+        { "FiledName": "CustomTextBoxControl2__CF" },
+        { "FiledName": "CustomTextBoxControl3__CF" },
+        { "FiledName": "CustomTextBoxControl6__CF" },
+        { "FiledName": "CustomDateControl2__CF" },
+        { "FiledName": "CustomDropdownControl2__CF_CF" },
+        { "FiledName": "CustomDropdownControl2__CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl5__CF" },
+        { "FiledName": "CustomDateControl1__CF_CF" },
+        { "FiledName": "CustomDateControl1__CF_CF_CF" },
+        { "FiledName": "CustomDateControl1__CF" },
+        { "FiledName": "CustomDropdownControl3__CF_CF" },
+        { "FiledName": "CustomDropdownControl3__CF_CF_CF" },
+        { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF" },
+        { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDropdownControl3__CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomTextBoxControl7__CF" },
+        { "FiledName": "CustomDateControl3__CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+        { "FiledName": "CustomDateControl3__CF" }
+    ];
     let inputs = obj.get("CustomFields");
 
     for (let i = 0; i < fields.length; i++) {
@@ -51,9 +104,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
         for (let j = 0; j < inputs.length; j++) {
             const input = inputs[j];
-            
-            if ( input.get("FiledName") == db.get("FiledName"))
-                db.set("FieldValue", input.get("FieldValue"));
+
+            if (input["FiledName"] == db["FiledName"])
+                db["FieldValue"] = input["FieldValue"];
         }
 
     }
@@ -105,7 +158,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         for (let j = 0; j < accessLevels.length; j++) {
             const level = accessLevels[j];
 
-            if ( level.get("levelid")== rid)
+            if (level.get("levelid") == rid)
                 rules.splice(i, 1, level);
         }
     }
@@ -113,24 +166,25 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     // CustomFields
     let record = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
 
-    let fields = record.get("CustomFields");
-    let inputs = update.get("CustomFields");
+    if (record) {
+        let fields = record.get("CustomFields");
+        let inputs = update.get("CustomFields");
 
-    for (let i = 0; i < fields.length; i++) {
-        const db = fields[i];
+        for (let i = 0; i < fields.length; i++) {
+            const db = fields[i];
 
-        for (let j = 0; j < inputs.length; j++) {
-            const input = inputs[j];
+            for (let j = 0; j < inputs.length; j++) {
+                const input = inputs[j];
 
-            if ( input["FiledName"] == db["FiledName"]) {
-                db["FieldValue"] = input["FieldValue"];
-                break ;
+                if (input["FiledName"] == db["FiledName"]) {
+                    db["FieldValue"] = input["FieldValue"];
+                    break;
+                }
             }
         }
+
+        update.set("CustomFields", fields);
     }
-
-    update.set("CustomFields", fields);
-
     // console.log( ParseObject.toOutputJSON(update));
 
     await obj.save({ ...ParseObject.toOutputJSON(update), objectId: undefined });

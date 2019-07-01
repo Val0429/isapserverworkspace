@@ -125,7 +125,7 @@ import { Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Me
     ////////////////////////////
 
     /// Create default API Tokens
-    let profiels = await new Parse.Query(ProfileId).first();
+    let profiels = await new Parse.Query(CardProfile).first();
     if (!profiels) {
         profiels = new CardProfile();   await profiels.save({ name: "正職" });
         profiels = new CardProfile();   await profiels.save({ name: "ASR臨時卡" });
@@ -146,11 +146,11 @@ import { Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Me
         profiels = new CardProfile();   await profiels.save({ name: "電梯卡" });
     }
 
-    profiels = await new Parse.Query(ProfileId).first();
-    if (!profiels) {
-        profiels = new ProfileId();   await profiels.save({ name: "35 bit" });
-        profiels = new ProfileId();   await profiels.save({ name: "26 bit" });
-        profiels = new ProfileId();   await profiels.save({ name: "mifare32" });
+    let weigands = await new Parse.Query(ProfileId).first();
+    if (!weigands) {
+        weigands = new ProfileId();   await weigands.save({ profileid: 1, name: "35 bit" });
+        weigands = new ProfileId();   await weigands.save({ profileid: 2, name: "26 bit" });
+        weigands = new ProfileId();   await weigands.save({ profileid: 3, name: "mifare32" });
     }
     ////////////////////////////
 

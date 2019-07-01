@@ -95,7 +95,7 @@ export interface IMember {      // CRUD
     LastName?: string,
     PersonalDetails?: {
         Address?: string,
-        ContactDetails: {
+        ContactDetails?: {
             Email?: string,
             MobileNumber?: string,
             MobileServiceProviderId?: string,
@@ -106,7 +106,7 @@ export interface IMember {      // CRUD
         DateOfBirth?: string,
         PayrollNumber?: string,
         Title?: string,
-        UserDetails: {
+        UserDetails?: {
             Password?: string,
             UserName?: string
         }
@@ -126,7 +126,7 @@ export interface IMember {      // CRUD
     PrimaryWorkGroupAccessRule?: [],
     NonPartitionWorkgroupAccessRules?: [],
     VisitorDetails?: {},
-    CustomFields: {
+    CustomFields?: {
         FiledName?: string,
         FieldValue?: string
     }[],
@@ -302,6 +302,7 @@ export class AttendanceRecords extends ParseObject<IAttendanceRecords> { }
 
 
 export interface IProfileId {   // Credentials.ProfileId
+    profileid: number;
     name?: string               // 35 bit, 26 bit, ???
 }
 @registerSubclass()
