@@ -11,7 +11,7 @@ import { ConstructSignatureDeclaration } from 'ts-simple-ast';
 
 var action = new Action({
     loginRequired: false,
-    postSizeLimit: 1024*1024*10,
+    postSizeLimit: 1024 * 1024 * 10,
     permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
@@ -30,21 +30,22 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let accessLevels = await new Parse.Query(AccessLevel).find();
 
     let rules = obj.get("AccessRules");
-    for (let i = 0; i < rules.length; i++) {
-        const rid = rules[i];
+    if (rules) {
+        for (let i = 0; i < rules.length; i++) {
+            const rid = rules[i];
 
-        for (let j = 0; j < accessLevels.length; j++) {
-            const level = accessLevels[j];
+            for (let j = 0; j < accessLevels.length; j++) {
+                const level = accessLevels[j];
 
-            if (level.get("levelid") == rid)
-                rules.splice(i, 1, level);
+                if (level.get("levelid") == rid)
+                    rules.splice(i, 1, level);
+            }
         }
     }
 
-
     // CustomFields
     let fields = [
-        { "FiledName": "CustomTextBoxControl8__CF" },
+        { "FiledName": "CustomDateControl4__CF" },
         { "FiledName": "CustomDropdownControl1__CF" },
         { "FiledName": "CustomTextBoxControl1__CF" },
         { "FiledName": "CustomTextBoxControl2__CF" },
@@ -100,16 +101,17 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     ];
     let inputs = obj.get("CustomFields");
 
-    for (let i = 0; i < fields.length; i++) {
-        const db = fields[i];
+    if (inputs) {
+        for (let i = 0; i < fields.length; i++) {
+            const db = fields[i];
 
-        for (let j = 0; j < inputs.length; j++) {
-            const input = inputs[j];
+            for (let j = 0; j < inputs.length; j++) {
+                const input = inputs[j];
 
-            if (input["FiledName"] == db["FiledName"])
-                db["FieldValue"] = input["FieldValue"];
+                if (input["FiledName"] == db["FiledName"])
+                    db["FieldValue"] = input["FieldValue"];
+            }
         }
-
     }
 
     obj.set("CustomFields", fields);
@@ -153,17 +155,18 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     let rules = update.get("AccessRules");
 
-    for (let i = 0; i < rules.length; i++) {
-        const rid = rules[i];
+    if (rules) {
+        for (let i = 0; i < rules.length; i++) {
+            const rid = rules[i];
 
-        for (let j = 0; j < accessLevels.length; j++) {
-            const level = accessLevels[j];
+            for (let j = 0; j < accessLevels.length; j++) {
+                const level = accessLevels[j];
 
-            if (level.get("levelid") == rid)
-                rules.splice(i, 1, level);
+                if (level.get("levelid") == rid)
+                    rules.splice(i, 1, level);
+            }
         }
     }
-
     // CustomFields
     let record = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
 
@@ -171,19 +174,79 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         let fields = record.get("CustomFields");
         let inputs = update.get("CustomFields");
 
-        for (let i = 0; i < fields.length; i++) {
-            const db = fields[i];
+        if (!fields) {
+            // CustomFields
+            fields = [
+                { "FiledName": "CustomDateControl4__CF" },
+                { "FiledName": "CustomDropdownControl1__CF" },
+                { "FiledName": "CustomTextBoxControl1__CF" },
+                { "FiledName": "CustomTextBoxControl2__CF" },
+                { "FiledName": "CustomTextBoxControl3__CF" },
+                { "FiledName": "CustomTextBoxControl6__CF" },
+                { "FiledName": "CustomDateControl2__CF" },
+                { "FiledName": "CustomDropdownControl2__CF_CF" },
+                { "FiledName": "CustomDropdownControl2__CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl5__CF" },
+                { "FiledName": "CustomDateControl1__CF_CF" },
+                { "FiledName": "CustomDateControl1__CF_CF_CF" },
+                { "FiledName": "CustomDateControl1__CF" },
+                { "FiledName": "CustomDropdownControl3__CF_CF" },
+                { "FiledName": "CustomDropdownControl3__CF_CF_CF" },
+                { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF" },
+                { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDropdownControl3__CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomTextBoxControl7__CF" },
+                { "FiledName": "CustomDateControl3__CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+                { "FiledName": "CustomDateControl3__CF" }
+            ];
+        }
 
-            for (let j = 0; j < inputs.length; j++) {
-                const input = inputs[j];
+        if (!inputs) {
+            for (let i = 0; i < fields.length; i++) {
+                const db = fields[i];
 
-                if (input["FiledName"] == db["FiledName"]) {
-                    db["FieldValue"] = input["FieldValue"];
-                    break;
+                for (let j = 0; j < inputs.length; j++) {
+                    const input = inputs[j];
+
+                    if (input["FiledName"] == db["FiledName"]) {
+                        db["FieldValue"] = input["FieldValue"];
+                        break;
+                    }
                 }
             }
         }
-
         update.set("CustomFields", fields);
     }
     // console.log( ParseObject.toOutputJSON(update));

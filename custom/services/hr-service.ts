@@ -435,8 +435,8 @@ export class HRService {
                                 },
                                 customFields: [
                                     {
-                                        filedName: "CustomTextBoxControl8__CF",
-                                        fieldValue: "Unknown"
+                                        filedName: "CustomDateControl4__CF",
+                                        fieldValue: record["UpdDate"]
                                     },
                                     {
                                         filedName: "CustomDropdownControl1__CF",
@@ -453,10 +453,6 @@ export class HRService {
                                     {
                                         filedName: "CustomTextBoxControl6__CF",
                                         fieldValue: record["CompName"]
-                                    },
-                                    {
-                                        filedName: "CustomDateControl2__CF",
-                                        fieldValue: record["UpdDate"]
                                     },
                                     {
                                         filedName: "CustomDropdownControl2__CF_CF",
