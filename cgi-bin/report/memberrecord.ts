@@ -34,8 +34,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF").startsWith("CustomFields.FieldValue",filter.DepartmentName);
     if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.CostCenterName);
     if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.WorkAreaName);
+    if(filter.ResignationDate) query.equalTo("CustomFields.FiledName", "CustomDateControl1__CF").startsWith("CustomFields.FieldValue",filter.ResignationDate);
     
-    let times = await new Parse.Query(TimeSchedule).find(); 
+    let times = await new Parse.Query(TimeSchedule).limit(Number.MAX_SAFE_INTEGER).find(); 
     
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
@@ -71,13 +72,16 @@ function constructData(dataMember: IMember[], filter?:any) {
         let workArea = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF") : undefined;
         let workAreaName = workArea && workArea.FieldValue ? workArea.FieldValue : '';
         
+        let resignation = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomDateControl1__CF") : undefined;
+        let resignationDate = resignation && resignation.FieldValue ? resignation.FieldValue : '';
+        let cardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
         if (item.AccessRules && item.AccessRules.length > 0) {
             for (let accessRule of item.AccessRules) {
-                records.push(createEmployee(item, departmentName, costCenterName, workAreaName, accessRule.TimeScheduleToken));
+                records.push(createEmployee(item, cardNumber, departmentName, costCenterName, workAreaName, resignationDate,accessRule.TimeScheduleToken));
             }
         }
         else {
-            records.push(createEmployee(item, departmentName, costCenterName, workAreaName, ""));
+            records.push(createEmployee(item, cardNumber, departmentName, costCenterName, workAreaName, resignationDate, ""));
         }
     }
     if(!filter) return records;
@@ -88,15 +92,16 @@ function constructData(dataMember: IMember[], filter?:any) {
     return records;
 }
 
-function createEmployee(item: any,departmentName: string,costCenterName: string,workAreaName: string, accessRule: string) {
+function createEmployee(item: any,cardNumber:string,departmentName: string,costCenterName: string,workAreaName: string, resignationDate:string, accessRule: string) {
     return {
       FirstName: item.FirstName,
       LastName: item.LastName,
       EmployeeNumber: item.EmployeeNumber,
-      CardNumber: item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber).join(", "):"",
+      CardNumber: cardNumber,
       DepartmentName: departmentName,
       CostCenterName: costCenterName,
       WorkAreaName: workAreaName,
-      PermissionList: accessRule
+      PermissionList: accessRule,
+      ResignationDate:resignationDate
     }
   }
