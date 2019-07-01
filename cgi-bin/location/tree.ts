@@ -23,7 +23,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            // let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let childrens: IResponse.ILocation.ITree[] = (await GetRegionChildrens().catch((e) => {
                 throw e;

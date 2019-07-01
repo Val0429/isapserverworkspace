@@ -28,7 +28,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            // let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let query: Parse.Query<IDB.LocationSite> = new Parse.Query(IDB.LocationSite);
 
