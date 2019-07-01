@@ -31,7 +31,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType)
-        .addAscending("card_no").addAscending("date_occurred").addAscending("time_occurred");
+        .addAscending("card_no")
+        .addAscending("date_occurred")
+        .addAscending("time_occurred");
+    
+    let filter = data.parameters as any;
+    if(filter.card_no){
+        query.equalTo("card_no", filter.card_no);
+    }
 
     let records = [];
     let rs = await query.limit(pageSize).find();
@@ -57,27 +64,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         }
         lr = r ;
     }
-    records.push(lr);
-
-    let members = await new Parse.Query(Member).limit(pageSize).find();
-
-    for (let i = 0; i < records.length; i++) {
-        let r = records[i];
-
-        for (let j = 0; j < members.length; j++) {
-            let m = members[j];
-
-            let cred = m.get("Credentials");
-
-            if (cred.length >= 1) {
-                if (cred[0]["CardNumber"] == r.get("card_no")) {
-                    m["Potrait"] = undefined ;
-                    m["CardholderPortrait"] = undefined ;
-                    r.set("member", m);
-                }
-            }
-        }
-    }
+    records.push(lr);    
 
     /// 3) Output
     return Restful.Pagination(records, data.inputType);
