@@ -8,6 +8,45 @@ export interface ISalesRecordR {
     transaction: number;
 }
 
+export interface IComplex_Data {
+    value: number;
+    variety: number;
+}
+
+export interface IComplex_Data_Demographic extends IComplex_Gender {
+    maleVariety: number;
+    femaleVariety: number;
+}
+
+export interface IComplex_Gender {
+    malePercent: number;
+    femalePercent: number;
+}
+
+export interface IComplex_SalesRecord {
+    revenue: number;
+    transaction: number;
+}
+
+export interface IComplex_Count {
+    in: number;
+    out: number;
+}
+
+export interface IComplex {
+    peopleCounting: IComplex_Data;
+    humanDetection: IComplex_Data;
+    dwellTime: IComplex_Data;
+    demographic: IComplex_Data_Demographic;
+    visitor: IComplex_Data;
+    repeatCustomer: IComplex_Data;
+    revenue: IComplex_Data;
+    transaction: IComplex_Data;
+    conversion: IComplex_Data;
+    asp: IComplex_Data;
+    weather?: ISummaryWeather;
+}
+
 export interface ISummaryWeather {
     site: IObject;
     date: Date;

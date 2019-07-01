@@ -25,6 +25,8 @@ export interface ISummaryBase extends IDateRange {
     tagIds: string[];
 }
 
+export interface IComplex extends ISummaryBase {}
+
 export interface IPeopleCountingSummary extends ISummaryBase {}
 
 export interface IDemographicSummary extends ISummaryBase {}
