@@ -14,43 +14,61 @@ export class Report {
     /**
      *
      */
-    protected _collection: string = '';
-
-    /**
-     *
-     */
-    protected _sites: IDB.LocationSite[] = [];
+    private _sites: IDB.LocationSite[] = [];
 
     /**
      *
      */
     protected _type: Enum.ESummaryType = Enum.ESummaryType.hour;
-
-    /**
-     *
-     */
-    private _startDate: Date = new Date();
-    protected get startDate(): Date {
-        return new Date(this._startDate);
+    public get type(): string {
+        return Enum.ESummaryType[this._type];
     }
 
     /**
      *
      */
-    private _endDate: Date = new Date();
-    protected get endDate(): Date {
-        return new Date(this._endDate);
+    private _currDateRange: IDB.IDateRange = {
+        startDate: new Date(),
+        endDate: new Date(),
+    };
+    public get currDateRange(): IDB.IDateRange {
+        return {
+            startDate: new Date(this._currDateRange.startDate),
+            endDate: new Date(this._currDateRange.endDate),
+        };
     }
 
     /**
      *
      */
-    protected _officeHours: IDB.OfficeHour[] = [];
+    private _prevDateRange: IDB.IDateRange = {
+        startDate: new Date(),
+        endDate: new Date(),
+    };
+    public get prevDateRange(): IDB.IDateRange {
+        return {
+            startDate: new Date(this._prevDateRange.startDate),
+            endDate: new Date(this._prevDateRange.endDate),
+        };
+    }
 
     /**
      *
      */
-    protected _weathers: IDB.Weather[] = [];
+    private _dateGap: number = 0;
+    public get dateGap(): number {
+        return this._dateGap;
+    }
+
+    /**
+     *
+     */
+    private _officeHours: IDB.OfficeHour[] = [];
+
+    /**
+     *
+     */
+    private _weathers: IDB.Weather[] = [];
     public get weathers(): IResponse.IReport.ISummaryWeather[] {
         let weathers = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
             let site: IResponse.IObject = {
@@ -72,13 +90,26 @@ export class Report {
 
     /**
      * Initialization
+     * @param input
+     * @param userSiteIds
      */
     public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
         try {
             this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
-            this._startDate = new Date(new Date(input.startDate).setHours(0, 0, 0, 0));
-            this._endDate = new Date(new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)).setHours(0, 0, 0, 0));
+
             this._type = input.type;
+
+            this._currDateRange = {
+                startDate: new Date(new Date(input.startDate).setHours(0, 0, 0, 0)),
+                endDate: new Date(new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)).setHours(0, 0, 0, 0)),
+            };
+
+            this._dateGap = this.currDateRange.endDate.getTime() - this.currDateRange.startDate.getTime();
+
+            this._prevDateRange = {
+                startDate: new Date(this.currDateRange.startDate.getTime() - this._dateGap),
+                endDate: new Date(this.currDateRange.startDate),
+            };
 
             let tasks = [];
 
@@ -95,7 +126,7 @@ export class Report {
     }
 
     /**
-     *  Get allow site
+     * Get allow site
      * @param userSiteIds
      * @param siteIds
      * @param tagIds
@@ -166,27 +197,29 @@ export class Report {
     }
 
     /**
-     * Get report summary
+     * Get report
+     * @param collection
      * @param startDate
      * @param endDate
      */
-    public async GetReportSummarys<T extends Parse.Object>(): Promise<T[]>;
-    public async GetReportSummarys<T extends Parse.Object>(startDate: Date, endDate: Date): Promise<T[]>;
-    public async GetReportSummarys<T extends Parse.Object>(startDate?: Date, endDate?: Date): Promise<T[]> {
-        try {
-            startDate = startDate || this.startDate;
-            endDate = endDate || this.endDate;
 
-            let reportSummaryQuery: Parse.Query = new Parse.Query(this._collection)
+    public async GetReports<T extends Parse.Object>(collection: new () => T): Promise<T[]>;
+    public async GetReports<T extends Parse.Object>(collection: new () => T, startDate: Date, endDate: Date): Promise<T[]>;
+    public async GetReports<T extends Parse.Object>(collection: new () => T, startDate?: Date, endDate?: Date): Promise<T[]> {
+        try {
+            startDate = startDate || this.currDateRange.startDate;
+            endDate = endDate || this.currDateRange.endDate;
+
+            let reportQuery: Parse.Query = new Parse.Query(collection)
                 .equalTo('type', Enum.ESummaryType.hour)
                 .containedIn('site', this._sites)
                 .greaterThanOrEqualTo('date', startDate)
                 .lessThan('date', endDate);
 
-            let reportSummaryTotal: number = await reportSummaryQuery.count();
+            let reportTotal: number = await reportQuery.count();
 
-            let reportSummarys: Parse.Object[] = await reportSummaryQuery
-                .limit(reportSummaryTotal)
+            let reports: Parse.Object[] = await reportQuery
+                .limit(reportTotal)
                 .ascending(['date'])
                 .include(['site', 'area', 'device', 'device.groups'])
                 .find()
@@ -194,9 +227,9 @@ export class Report {
                     throw e;
                 });
 
-            reportSummarys = this.OfficeHourFilter(reportSummarys);
+            reports = this.OfficeHourFilter(reports);
 
-            return reportSummarys as T[];
+            return reports as T[];
         } catch (e) {
             throw e;
         }
@@ -229,8 +262,8 @@ export class Report {
     public async GetWeathers(startDate: Date, endDate: Date): Promise<IDB.Weather[]>;
     public async GetWeathers(startDate?: Date, endDate?: Date): Promise<IDB.Weather[]> {
         try {
-            startDate = startDate || this.startDate;
-            endDate = endDate || this.endDate;
+            startDate = startDate || this.currDateRange.startDate;
+            endDate = endDate || this.currDateRange.endDate;
 
             let weatherQuery: Parse.Query<IDB.Weather> = new Parse.Query(IDB.Weather)
                 .containedIn('site', this._sites)
@@ -262,8 +295,8 @@ export class Report {
     public async GetSalesRecords(startDate: Date, endDate: Date): Promise<IDB.ReportSalesRecord[]>;
     public async GetSalesRecords(startDate?: Date, endDate?: Date): Promise<IDB.ReportSalesRecord[]> {
         try {
-            startDate = startDate || this.startDate;
-            endDate = endDate || this.endDate;
+            startDate = startDate || this.currDateRange.startDate;
+            endDate = endDate || this.currDateRange.endDate;
 
             let recordQuery: Parse.Query<IDB.ReportSalesRecord> = new Parse.Query(IDB.ReportSalesRecord)
                 .containedIn('site', this._sites)
@@ -317,10 +350,10 @@ export class Report {
     }
 
     /**
-     * Get summary data base attr
+     * Get base summary data attr
      * @param data
      */
-    public GetSummaryDataBase(data: any): IResponse.IReport.ISummaryDataBase {
+    public GetBaseSummaryData(data: any): IResponse.IReport.ISummaryDataBase {
         try {
             let date: Date = this.GetTypeDate(data.getValue('date'));
 
@@ -352,7 +385,7 @@ export class Report {
                 device: device,
                 deviceGroups: deviceGroups,
                 date: date,
-                type: Enum.ESummaryType[this._type],
+                type: this.type,
             };
 
             return base;

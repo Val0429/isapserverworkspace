@@ -34,16 +34,14 @@ action.post(
 
             await report.Initialization(_input, _userInfo.siteIds);
 
-            let prevDate = report.GetPrevDate();
-
             let tasks = [];
 
             tasks.push(report.GetPeopleCountingSummary());
-            tasks.push(report.GetPeopleCountingSummary(prevDate.startDate, prevDate.endDate));
+            tasks.push(report.GetPeopleCountingSummary(report.prevDateRange.startDate, report.prevDateRange.endDate));
             tasks.push(report.GetDemographicSummary());
-            tasks.push(report.GetDemographicSummary(prevDate.startDate, prevDate.endDate));
+            tasks.push(report.GetDemographicSummary(report.prevDateRange.startDate, report.prevDateRange.endDate));
             tasks.push(report.GetSalesRecordSummary());
-            tasks.push(report.GetSalesRecordSummary(prevDate.startDate, prevDate.endDate));
+            tasks.push(report.GetSalesRecordSummary(report.prevDateRange.startDate, report.prevDateRange.endDate));
 
             let result = await Promise.all(tasks);
 
@@ -114,35 +112,6 @@ action.post(
 
 export class ReportComplex extends Report {
     /**
-     *
-     */
-    public set collection(value: string) {
-        this._collection = value;
-    }
-    public get collection(): string {
-        return this._collection;
-    }
-
-    /**
-     * Get prev date
-     */
-    public GetPrevDate(): IDB.IDateRange {
-        try {
-            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
-
-            let prevStartDate: Date = new Date(this.startDate.getTime() - dateGap);
-            let prevEndDate: Date = new Date(this.startDate);
-
-            return {
-                startDate: prevStartDate,
-                endDate: prevEndDate,
-            };
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get weather with one site and one day
      */
     public GetWeather(): IResponse.IReport.ISummaryWeather {
@@ -166,9 +135,7 @@ export class ReportComplex extends Report {
     public async GetPeopleCountingSummary(startDate: Date, endDate: Date): Promise<IResponse.IReport.IComplex_Count>;
     public async GetPeopleCountingSummary(startDate?: Date, endDate?: Date): Promise<IResponse.IReport.IComplex_Count> {
         try {
-            this.collection = 'ReportPeopleCountingSummary';
-
-            let summarys = await this.GetReportSummarys<IDB.ReportPeopleCountingSummary>(startDate, endDate);
+            let summarys = await this.GetReports(IDB.ReportPeopleCountingSummary, startDate, endDate);
             if (summarys.length === 0) {
                 return {
                     in: NaN,
@@ -204,9 +171,7 @@ export class ReportComplex extends Report {
     public async GetDemographicSummary(startDate: Date, endDate: Date): Promise<IResponse.IReport.IComplex_Gender>;
     public async GetDemographicSummary(startDate?: Date, endDate?: Date): Promise<IResponse.IReport.IComplex_Gender> {
         try {
-            this.collection = 'ReportDemographicSummary';
-
-            let summarys = await this.GetReportSummarys<IDB.ReportDemographicSummary>(startDate, endDate);
+            let summarys = await this.GetReports(IDB.ReportDemographicSummary, startDate, endDate);
             if (summarys.length === 0) {
                 return {
                     malePercent: NaN,

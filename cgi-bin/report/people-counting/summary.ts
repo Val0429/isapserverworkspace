@@ -53,17 +53,12 @@ export class ReportPeopleCounting extends Report {
     /**
      *
      */
-    protected _collection: string = 'ReportPeopleCountingSummary';
+    private _currReports: IDB.ReportPeopleCountingSummary[] = [];
 
     /**
      *
      */
-    private _currReportSummarys: IDB.ReportPeopleCountingSummary[] = [];
-
-    /**
-     *
-     */
-    private _prevReportSummarys: IDB.ReportPeopleCountingSummary[] = [];
+    private _prevReports: IDB.ReportPeopleCountingSummary[] = [];
 
     /**
      * Initialization
@@ -74,54 +69,15 @@ export class ReportPeopleCounting extends Report {
         try {
             await super.Initialization(input, userSiteIds);
 
-            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
-
-            let prevStartDate: Date = new Date(this.startDate.getTime() - dateGap);
-            let prevEndDate: Date = new Date(this.startDate);
-
             let tasks = [];
 
-            tasks.push(this.GetReportSummarys<IDB.ReportPeopleCountingSummary>());
-            tasks.push(this.GetReportSummarys<IDB.ReportPeopleCountingSummary>(prevStartDate, prevEndDate));
+            tasks.push(this.GetReports(IDB.ReportPeopleCountingSummary));
+            tasks.push(this.GetReports(IDB.ReportPeopleCountingSummary, this.prevDateRange.startDate, this.prevDateRange.endDate));
 
             let result = await Promise.all(tasks);
 
-            this._currReportSummarys = result[0];
-            this._prevReportSummarys = result[1];
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Summary datas
-     * @param reportSummarys
-     */
-    public SummaryDatas(reportSummarys: IDB.ReportPeopleCountingSummary[]): IResponse.IReport.IPeopleCountingSummaryData[] {
-        try {
-            let summarys = reportSummarys.reduce<IResponse.IReport.IPeopleCountingSummaryData[]>((prev, curr, index, array) => {
-                let date: Date = this.GetTypeDate(curr.getValue('date'));
-
-                let summary = prev.find((value1, index1, array1) => {
-                    return value1.device.objectId === curr.getValue('device').id && value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.in += curr.getValue('in');
-                    summary.out += curr.getValue('out');
-                } else {
-                    let base = this.GetSummaryDataBase(curr);
-
-                    prev.push({
-                        ...base,
-                        in: curr.getValue('in'),
-                        out: curr.getValue('out'),
-                    });
-                }
-
-                return prev;
-            }, []);
-
-            return summarys;
+            this._currReports = result[0];
+            this._prevReports = result[1];
         } catch (e) {
             throw e;
         }
@@ -132,7 +88,7 @@ export class ReportPeopleCounting extends Report {
      */
     public GetPeakHours(): IResponse.IReport.IPeakHour[] {
         try {
-            let peakHours = this._currReportSummarys.reduce<IResponse.IReport.IPeakHour[]>((prev, curr, index, array) => {
+            let peakHours = this._currReports.reduce<IResponse.IReport.IPeakHour[]>((prev, curr, index, array) => {
                 let data: IResponse.IReport.IPeakHourData = {
                     date: curr.getValue('date'),
                     level: curr.getValue('in'),
@@ -193,19 +149,51 @@ export class ReportPeopleCounting extends Report {
     }
 
     /**
+     * Summary datas
+     * @param reports
+     */
+    public SummaryDatas(reports: IDB.ReportPeopleCountingSummary[]): IResponse.IReport.IPeopleCountingSummaryData[] {
+        try {
+            let summarys = reports.reduce<IResponse.IReport.IPeopleCountingSummaryData[]>((prev, curr, index, array) => {
+                let date: Date = this.GetTypeDate(curr.getValue('date'));
+
+                let summary = prev.find((value1, index1, array1) => {
+                    return value1.device.objectId === curr.getValue('device').id && value1.date.getTime() === date.getTime();
+                });
+                if (summary) {
+                    summary.in += curr.getValue('in');
+                    summary.out += curr.getValue('out');
+                } else {
+                    let base = this.GetBaseSummaryData(curr);
+
+                    prev.push({
+                        ...base,
+                        in: curr.getValue('in'),
+                        out: curr.getValue('out'),
+                    });
+                }
+
+                return prev;
+            }, []);
+
+            return summarys;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Get summary
      */
     public GetSummaryDatas(): IResponse.IReport.IPeopleCountingSummaryData[] {
         try {
-            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
+            let currSummarys = this.SummaryDatas(this._currReports);
 
-            let currSummarys = this.SummaryDatas(this._currReportSummarys);
-
-            let prevSummarys = this.SummaryDatas(this._prevReportSummarys);
+            let prevSummarys = this.SummaryDatas(this._prevReports);
 
             let summarys = currSummarys.map<IResponse.IReport.IPeopleCountingSummaryData>((value, index, array) => {
                 let prevSummary = prevSummarys.find((value1, index1, array1) => {
-                    return value1.device.objectId === value.device.objectId && value1.date.getTime() === value.date.getTime() - dateGap;
+                    return value1.device.objectId === value.device.objectId && value1.date.getTime() === value.date.getTime() - this.dateGap;
                 });
 
                 // let inVariety: number = prevSummary && prevSummary.in !== 0 ? Utility.Round(value.in / prevSummary.in - 1, 2) : NaN;
