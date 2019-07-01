@@ -34,9 +34,9 @@ action.post(
 
             await report.Initialization(_input, _userInfo.siteIds);
 
-            let genderRange = await report.GetGenderRange();
+            let genderRange = report.GetGenderRange();
 
-            let summaryDatas = await report.GetSummaryDatas();
+            let summaryDatas = report.GetSummaryDatas();
 
             return {
                 genderRange: genderRange,
@@ -56,16 +56,49 @@ export class ReportDemographic extends Report {
     protected _collection: string = 'ReportDemographicSummary';
 
     /**
-     * Get report summary
-     * @param startDate
-     * @param endDate
+     *
      */
-    public async GetCurrSummaryDatas(): Promise<IResponse.IReport.IDemographicSummaryData[]>;
-    public async GetCurrSummaryDatas(startDate: Date, endDate: Date): Promise<IResponse.IReport.IDemographicSummaryData[]>;
-    public async GetCurrSummaryDatas(startDate?: Date, endDate?: Date): Promise<IResponse.IReport.IDemographicSummaryData[]> {
-        try {
-            let reportSummarys = await this.GetReportSummary<IDB.ReportDemographicSummary>(startDate, endDate);
+    private _currReportSummarys: IDB.ReportDemographicSummary[] = [];
 
+    /**
+     *
+     */
+    private _prevReportSummarys: IDB.ReportDemographicSummary[] = [];
+
+    /**
+     * Initialization
+     * @param input
+     * @param userSiteIds
+     */
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
+        try {
+            await super.Initialization(input, userSiteIds);
+
+            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
+
+            let prevStartDate: Date = new Date(this.startDate.getTime() - dateGap);
+            let prevEndDate: Date = new Date(this.startDate);
+
+            let tasks = [];
+
+            tasks.push(this.GetReportSummarys<IDB.ReportDemographicSummary>());
+            tasks.push(this.GetReportSummarys<IDB.ReportDemographicSummary>(prevStartDate, prevEndDate));
+
+            let result = await Promise.all(tasks);
+
+            this._currReportSummarys = result[0];
+            this._prevReportSummarys = result[1];
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Summary datas
+     * @param reportSummarys
+     */
+    public SummaryDatas(reportSummarys: IDB.ReportDemographicSummary[]): IResponse.IReport.IDemographicSummaryData[] {
+        try {
             let summarys = reportSummarys.reduce<IResponse.IReport.IDemographicSummaryData[]>((prev, curr, index, array) => {
                 let date: Date = this.GetTypeDate(curr.getValue('date'));
 
@@ -105,31 +138,11 @@ export class ReportDemographic extends Report {
     }
 
     /**
-     * Get previous report summary
-     */
-    public async GetPrevSummaryDatas(): Promise<IResponse.IReport.IDemographicSummaryData[]> {
-        try {
-            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
-
-            let prevStartDate: Date = new Date(this.startDate.getTime() - dateGap);
-            let prevEndDate: Date = new Date(this.startDate);
-
-            let prevSummarys = await this.GetCurrSummaryDatas(prevStartDate, prevEndDate);
-
-            return prevSummarys;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get gender range
      */
-    public async GetGenderRange(): Promise<IResponse.IReport.IGenderRange> {
+    public GetGenderRange(): IResponse.IReport.IGenderRange {
         try {
-            let reportSummarys = await this.GetReportSummary<IDB.ReportDemographicSummary>();
-
-            let genderRange = reportSummarys.reduce<IResponse.IReport.IGenderRange>(
+            let genderRange = this._currReportSummarys.reduce<IResponse.IReport.IGenderRange>(
                 (prev, curr, index, array) => {
                     prev.maleRanges = curr.getValue('maleRanges').map((value1, index1, array1) => {
                         return value1 + (prev.maleRanges[index1] || 0);
@@ -159,13 +172,13 @@ export class ReportDemographic extends Report {
     /**
      * Get summary
      */
-    public async GetSummaryDatas(): Promise<IResponse.IReport.IDemographicSummaryData[]> {
+    public GetSummaryDatas(): IResponse.IReport.IDemographicSummaryData[] {
         try {
             let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
 
-            let currSummarys = await this.GetCurrSummaryDatas();
+            let currSummarys = this.SummaryDatas(this._currReportSummarys);
 
-            let prevSummarys = await this.GetPrevSummaryDatas();
+            let prevSummarys = this.SummaryDatas(this._prevReportSummarys);
 
             let summarys = currSummarys.map<IResponse.IReport.IDemographicSummaryData>((value, index, array) => {
                 let prevSummary = prevSummarys.find((value1, index1, array1) => {

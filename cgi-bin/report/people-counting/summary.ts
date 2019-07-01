@@ -33,9 +33,9 @@ action.post(
 
             await report.Initialization(_input, _userInfo.siteIds);
 
-            let peakHours = await report.GetPeakHours();
+            let peakHours = report.GetPeakHours();
 
-            let summaryDatas = await report.GetSummaryDatas();
+            let summaryDatas = report.GetSummaryDatas();
 
             return {
                 peakHours: peakHours,
@@ -55,16 +55,49 @@ export class ReportPeopleCounting extends Report {
     protected _collection: string = 'ReportPeopleCountingSummary';
 
     /**
-     * Get report summary
-     * @param startDate
-     * @param endDate
+     *
      */
-    public async GetCurrSummaryDatas(): Promise<IResponse.IReport.IPeopleCountingSummaryData[]>;
-    public async GetCurrSummaryDatas(startDate: Date, endDate: Date): Promise<IResponse.IReport.IPeopleCountingSummaryData[]>;
-    public async GetCurrSummaryDatas(startDate?: Date, endDate?: Date): Promise<IResponse.IReport.IPeopleCountingSummaryData[]> {
-        try {
-            let reportSummarys = await this.GetReportSummary<IDB.ReportPeopleCountingSummary>(startDate, endDate);
+    private _currReportSummarys: IDB.ReportPeopleCountingSummary[] = [];
 
+    /**
+     *
+     */
+    private _prevReportSummarys: IDB.ReportPeopleCountingSummary[] = [];
+
+    /**
+     * Initialization
+     * @param input
+     * @param userSiteIds
+     */
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
+        try {
+            await super.Initialization(input, userSiteIds);
+
+            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
+
+            let prevStartDate: Date = new Date(this.startDate.getTime() - dateGap);
+            let prevEndDate: Date = new Date(this.startDate);
+
+            let tasks = [];
+
+            tasks.push(this.GetReportSummarys<IDB.ReportPeopleCountingSummary>());
+            tasks.push(this.GetReportSummarys<IDB.ReportPeopleCountingSummary>(prevStartDate, prevEndDate));
+
+            let result = await Promise.all(tasks);
+
+            this._currReportSummarys = result[0];
+            this._prevReportSummarys = result[1];
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Summary datas
+     * @param reportSummarys
+     */
+    public SummaryDatas(reportSummarys: IDB.ReportPeopleCountingSummary[]): IResponse.IReport.IPeopleCountingSummaryData[] {
+        try {
             let summarys = reportSummarys.reduce<IResponse.IReport.IPeopleCountingSummaryData[]>((prev, curr, index, array) => {
                 let date: Date = this.GetTypeDate(curr.getValue('date'));
 
@@ -94,31 +127,11 @@ export class ReportPeopleCounting extends Report {
     }
 
     /**
-     * Get previous report summary
-     */
-    public async GetPrevSummaryDatas(): Promise<IResponse.IReport.IPeopleCountingSummaryData[]> {
-        try {
-            let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
-
-            let prevStartDate: Date = new Date(this.startDate.getTime() - dateGap);
-            let prevEndDate: Date = new Date(this.startDate);
-
-            let prevSummarys = await this.GetCurrSummaryDatas(prevStartDate, prevEndDate);
-
-            return prevSummarys;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get peak hour
      */
-    public async GetPeakHours(): Promise<IResponse.IReport.IPeakHour[]> {
+    public GetPeakHours(): IResponse.IReport.IPeakHour[] {
         try {
-            let reportSummarys = await this.GetReportSummary<IDB.ReportPeopleCountingSummary>();
-
-            let peakHours = reportSummarys.reduce<IResponse.IReport.IPeakHour[]>((prev, curr, index, array) => {
+            let peakHours = this._currReportSummarys.reduce<IResponse.IReport.IPeakHour[]>((prev, curr, index, array) => {
                 let data: IResponse.IReport.IPeakHourData = {
                     date: curr.getValue('date'),
                     level: curr.getValue('in'),
@@ -181,13 +194,13 @@ export class ReportPeopleCounting extends Report {
     /**
      * Get summary
      */
-    public async GetSummaryDatas(): Promise<IResponse.IReport.IPeopleCountingSummaryData[]> {
+    public GetSummaryDatas(): IResponse.IReport.IPeopleCountingSummaryData[] {
         try {
             let dateGap: number = this.endDate.getTime() - this.startDate.getTime();
 
-            let currSummarys = await this.GetCurrSummaryDatas();
+            let currSummarys = this.SummaryDatas(this._currReportSummarys);
 
-            let prevSummarys = await this.GetPrevSummaryDatas();
+            let prevSummarys = this.SummaryDatas(this._prevReportSummarys);
 
             let summarys = currSummarys.map<IResponse.IReport.IPeopleCountingSummaryData>((value, index, array) => {
                 let prevSummary = prevSummarys.find((value1, index1, array1) => {

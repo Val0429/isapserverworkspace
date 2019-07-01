@@ -57,14 +57,20 @@ export class Report {
      */
     public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
         try {
-            this._sites = await this.GetAllowSite(userSiteIds, input.siteIds, input.tagIds);
+            this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
             this._startDate = new Date(new Date(input.startDate).setHours(0, 0, 0, 0));
             this._endDate = new Date(new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)).setHours(0, 0, 0, 0));
             this._type = input.type;
 
-            this._officeHours = await this.GetOfficeHour();
+            let tasks = [];
 
-            this._weathers = await this.GetWeather();
+            tasks.push(this.GetOfficeHours());
+            tasks.push(this.GetWeathers());
+
+            let result = await Promise.all(tasks);
+
+            this._officeHours = result[0];
+            this._weathers = result[1];
         } catch (e) {
             throw e;
         }
@@ -76,7 +82,7 @@ export class Report {
      * @param siteIds
      * @param tagIds
      */
-    public async GetAllowSite(userSiteIds: string[], siteIds: string[], tagIds: string[]): Promise<IDB.LocationSite[]> {
+    public async GetAllowSites(userSiteIds: string[], siteIds: string[], tagIds: string[]): Promise<IDB.LocationSite[]> {
         try {
             let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
                 .containedIn('objectId', tagIds)
@@ -146,9 +152,9 @@ export class Report {
      * @param startDate
      * @param endDate
      */
-    public async GetReportSummary<T extends Parse.Object>(): Promise<T[]>;
-    public async GetReportSummary<T extends Parse.Object>(startDate: Date, endDate: Date): Promise<T[]>;
-    public async GetReportSummary<T extends Parse.Object>(startDate?: Date, endDate?: Date): Promise<T[]> {
+    public async GetReportSummarys<T extends Parse.Object>(): Promise<T[]>;
+    public async GetReportSummarys<T extends Parse.Object>(startDate: Date, endDate: Date): Promise<T[]>;
+    public async GetReportSummarys<T extends Parse.Object>(startDate?: Date, endDate?: Date): Promise<T[]> {
         try {
             startDate = startDate || this.startDate;
             endDate = endDate || this.endDate;
@@ -181,7 +187,7 @@ export class Report {
     /**
      * Get office hour
      */
-    public async GetOfficeHour(): Promise<IDB.OfficeHour[]> {
+    public async GetOfficeHours(): Promise<IDB.OfficeHour[]> {
         try {
             let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
                 .containedIn('sites', this._sites)
@@ -201,9 +207,9 @@ export class Report {
      * @param startDate
      * @param endDate
      */
-    public async GetWeather(): Promise<IDB.Weather[]>;
-    public async GetWeather(startDate: Date, endDate: Date): Promise<IDB.Weather[]>;
-    public async GetWeather(startDate?: Date, endDate?: Date): Promise<IDB.Weather[]> {
+    public async GetWeathers(): Promise<IDB.Weather[]>;
+    public async GetWeathers(startDate: Date, endDate: Date): Promise<IDB.Weather[]>;
+    public async GetWeathers(startDate?: Date, endDate?: Date): Promise<IDB.Weather[]> {
         try {
             startDate = startDate || this.startDate;
             endDate = endDate || this.endDate;
@@ -237,9 +243,9 @@ export class Report {
      * @param startDate
      * @param endDate
      */
-    public async GetSalesRecord(): Promise<IDB.ReportSalesRecord[]>;
-    public async GetSalesRecord(startDate: Date, endDate: Date): Promise<IDB.ReportSalesRecord[]>;
-    public async GetSalesRecord(startDate?: Date, endDate?: Date): Promise<IDB.ReportSalesRecord[]> {
+    public async GetSalesRecords(): Promise<IDB.ReportSalesRecord[]>;
+    public async GetSalesRecords(startDate: Date, endDate: Date): Promise<IDB.ReportSalesRecord[]>;
+    public async GetSalesRecords(startDate?: Date, endDate?: Date): Promise<IDB.ReportSalesRecord[]> {
         try {
             startDate = startDate || this.startDate;
             endDate = endDate || this.endDate;
