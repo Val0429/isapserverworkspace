@@ -9,8 +9,7 @@ import { IvieMember, vieMember } from 'workspace/custom/models/index';
 
 
 var action = new Action({
-    //loginRequired: true,
-    postSizeLimit: 1024*1024*10,
+    loginRequired: true,
     permission: [RoleList.Admin, RoleList.User]
 });
 
@@ -20,7 +19,7 @@ var action = new Action({
  * R: get object
  ********************************/
 type InputR = Restful.InputR<any>;
-type OutputR = Restful.OutputR<IMember>;
+type OutputR = Restful.OutputR<any>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {    
     /// 1) Make Query
@@ -35,34 +34,23 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF").startsWith("CustomFields.FieldValue",filter.DepartmentName);
     if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.CostCenterName);
     if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.WorkAreaName);
+    if(filter.ResignationDate) query.equalTo("CustomFields.FiledName", "CustomDateControl1__CF").startsWith("CustomFields.FieldValue",filter.ResignationDate);
     
-    let pageSize = Number.MAX_SAFE_INTEGER;
-
-    let times = await new Parse.Query(TimeSchedule).find(); 
-    
+    let times = await new Parse.Query(TimeSchedule).limit(Number.MAX_SAFE_INTEGER).find(); 
     
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
-
-    for (let i = 0; i < o.length; i++) {
-        let r = o[i];
-        let rules = r.get("AccessRules");
-
-        if ( rules.length >= 1) {
-            for (let j = 0; j < rules.length; j++) {
-                let ru = rules[j];
-
-                for (let k = 0; k < times.length; k++) {
-                    if (ru["TimeScheduleToken"] == times[k].get("timeid") ) {
-                        //ru["TimeScheduleToken"] = JSON.stringify(ParseObject.toOutputJSON(times[k]));
-                        ru["TimeScheduleToken"] = times[k].get("timename") ;
-                    }
-                }
-            }
-        }
+    let outputData = o.map( (d) => ParseObject.toOutputJSON(d));
+    for (let item of outputData) {
+        for (let ru of item.AccessRules) {
+            if(!ru.TimeScheduleToken) continue;
+            let tsExists = times.find(x=>x.get("timeid") == ru.TimeScheduleToken);
+            if(!tsExists) continue;
+            ru.TimeScheduleToken = tsExists.get("timename");
+        }        
     }
 
-    let results = constructData(o.map( (d) => ParseObject.toOutputJSON(d)), filter);
+    let results = constructData(outputData, filter);
     let paging :any = {
         page: 1,
         pageSize: Number.MAX_SAFE_INTEGER,
@@ -83,13 +71,17 @@ function constructData(dataMember: IMember[], filter?:any) {
         let costCenterName = costCenter && costCenter.FieldValue ? costCenter.FieldValue : '';
         let workArea = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF") : undefined;
         let workAreaName = workArea && workArea.FieldValue ? workArea.FieldValue : '';
+        
+        let resignation = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomDateControl1__CF") : undefined;
+        let resignationDate = resignation && resignation.FieldValue ? resignation.FieldValue : '';
+        let cardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
         if (item.AccessRules && item.AccessRules.length > 0) {
             for (let accessRule of item.AccessRules) {
-                records.push(createEmployee(item, departmentName, costCenterName, workAreaName, accessRule.TimeScheduleToken));
+                records.push(createEmployee(item, cardNumber, departmentName, costCenterName, workAreaName, resignationDate,accessRule.TimeScheduleToken));
             }
         }
         else {
-            records.push(createEmployee(item, departmentName, costCenterName, workAreaName, ""));
+            records.push(createEmployee(item, cardNumber, departmentName, costCenterName, workAreaName, resignationDate, ""));
         }
     }
     if(!filter) return records;
@@ -100,15 +92,16 @@ function constructData(dataMember: IMember[], filter?:any) {
     return records;
 }
 
-function createEmployee(item: any,departmentName: string,costCenterName: string,workAreaName: string, accessRule: string) {
+function createEmployee(item: any,cardNumber:string,departmentName: string,costCenterName: string,workAreaName: string, resignationDate:string, accessRule: string) {
     return {
       FirstName: item.FirstName,
       LastName: item.LastName,
       EmployeeNumber: item.EmployeeNumber,
-      CardNumber: item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber).join(", "):"",
+      CardNumber: cardNumber,
       DepartmentName: departmentName,
       CostCenterName: costCenterName,
       WorkAreaName: workAreaName,
-      PermissionList: accessRule
+      PermissionList: accessRule,
+      ResignationDate:resignationDate
     }
   }

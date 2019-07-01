@@ -7,6 +7,7 @@ import {
 
 import { IAttendanceRecords, AttendanceRecords, Member } from 'workspace/custom/models/index';
 import { last } from 'rxjs/operator/last';
+import moment = require('moment');
 
 
 var action = new Action({
@@ -31,7 +32,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType)
-        .addAscending("card_no").addAscending("date_occurred").addAscending("time_occurred");
+        .addAscending("card_no")
+        .addAscending("date_occurred")
+        .addAscending("time_occurred");
+    
+    let filter = data.parameters as any;
+    if(filter.card_no){
+        query.equalTo("card_no", filter.card_no);
+    }
 
     let records = [];
     let rs = await query.limit(pageSize).find();
@@ -39,12 +47,19 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let lr = null;
     if (rs.length >= 1) {
         lr = rs[0];
+        
+        let dateTime = lr.get("date_occurred")+lr.get("time_occurred");
+        
+        lr.set("date_time_occured", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
+        console.log(lr.get("date_time_occured"));
         records.push(lr);
     }
 
     for (let i = 1; i < rs.length; i++) {
         let r = rs[i];
-
+        let dateTime = r.get("date_occurred")+r.get("time_occurred")
+        
+        r.set("date_time_occured", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
         if (r.get("card_no") != lr.get("card_no")) {
             records.push(lr);
             records.push(r);
@@ -56,27 +71,17 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
             }
         }
         lr = r ;
+        
     }
-    records.push(lr);
-
-    let members = await new Parse.Query(Member).limit(pageSize).find();
-
-    for (let i = 0; i < records.length; i++) {
-        let r = records[i];
-
-        for (let j = 0; j < members.length; j++) {
-            let m = members[j];
-
-            let cred = m.get("Credentials");
-
-            if (cred.length >= 1) {
-                if (cred[0]["CardNumber"] == r.get("card_no")) {
-                    m["Potrait"] = undefined ;
-                    m["CardholderPortrait"] = undefined ;
-                    r.set("member", m);
-                }
-            }
-        }
+    records.push(lr);    
+    
+    if(filter.start){
+        let start = new Date(filter.start);
+        records.filter(x=>x.date_time_occured >= start);
+    }
+    if(filter.end){
+        let end= new Date(filter.end);
+        records.filter(x=>x.date_time_occured <= end);
     }
 
     /// 3) Output
