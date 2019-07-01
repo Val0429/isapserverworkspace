@@ -10,6 +10,7 @@ import { IMember, Member, AccessLevel } from '../../custom/models'
 
 var action = new Action({
     loginRequired: false,
+    postSizeLimit: 1024*1024*10,
     permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
