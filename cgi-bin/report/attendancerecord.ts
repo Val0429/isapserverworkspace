@@ -7,6 +7,7 @@ import {
 
 import { IAttendanceRecords, AttendanceRecords, Member } from 'workspace/custom/models/index';
 import { last } from 'rxjs/operator/last';
+import moment = require('moment');
 
 
 var action = new Action({
@@ -46,12 +47,19 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let lr = null;
     if (rs.length >= 1) {
         lr = rs[0];
+        
+        let dateTime = lr.get("date_occurred")+lr.get("time_occurred");
+        
+        lr.set("date_time_occured", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
+        console.log(lr.get("date_time_occured"));
         records.push(lr);
     }
 
     for (let i = 1; i < rs.length; i++) {
         let r = rs[i];
-
+        let dateTime = r.get("date_occurred")+r.get("time_occurred")
+        
+        r.set("date_time_occured", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
         if (r.get("card_no") != lr.get("card_no")) {
             records.push(lr);
             records.push(r);
@@ -63,8 +71,18 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
             }
         }
         lr = r ;
+        
     }
     records.push(lr);    
+    
+    if(filter.start){
+        let start = new Date(filter.start);
+        records.filter(x=>x.date_time_occured >= start);
+    }
+    if(filter.end){
+        let end= new Date(filter.end);
+        records.filter(x=>x.date_time_occured <= end);
+    }
 
     /// 3) Output
     return Restful.Pagination(records, data.inputType);
