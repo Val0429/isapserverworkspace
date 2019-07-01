@@ -9,6 +9,8 @@ export interface ISalesRecordR {
 }
 
 export interface ISummaryWeather {
+    site: IObject;
+    date: Date;
     icon: string;
     temperatureMin: number;
     temperatureMax: number;
@@ -41,7 +43,6 @@ export interface ISummaryDataBase {
     device: IObject;
     date: Date;
     type: string;
-    weather?: ISummaryWeather;
 }
 
 export interface IPeopleCountingSummaryData extends ISummaryDataBase {
@@ -52,6 +53,7 @@ export interface IPeopleCountingSummaryData extends ISummaryDataBase {
 }
 
 export interface IPeopleCountingSummary {
+    weathers: ISummaryWeather[];
     peakHours: IPeakHour[];
     summaryDatas: IPeopleCountingSummaryData[];
 }
@@ -74,6 +76,7 @@ export interface IDemographicSummaryData extends ISummaryDataBase {
 }
 
 export interface IDemographicSummary {
+    weathers: ISummaryWeather[];
     genderRange: IGenderRange;
     summaryDatas: IDemographicSummaryData[];
 }

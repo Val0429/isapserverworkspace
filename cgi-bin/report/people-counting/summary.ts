@@ -38,6 +38,7 @@ action.post(
             let summaryDatas = report.GetSummaryDatas();
 
             return {
+                weathers: report.weathers,
                 peakHours: peakHours,
                 summaryDatas: summaryDatas,
             };
@@ -226,7 +227,6 @@ export class ReportPeopleCounting extends Report {
                     prevIn: prevIn,
                     out: value.out,
                     prevOut: prevOut,
-                    weather: value.weather,
                 };
             }, []);
 

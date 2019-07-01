@@ -51,6 +51,24 @@ export class Report {
      *
      */
     protected _weathers: IDB.Weather[] = [];
+    public get weathers(): IResponse.IReport.ISummaryWeather[] {
+        let weathers = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
+            let site: IResponse.IObject = {
+                objectId: value.getValue('site').id,
+                name: value.getValue('site').getValue('name'),
+            };
+
+            return {
+                site: site,
+                date: value.getValue('date'),
+                icon: value.getValue('icon'),
+                temperatureMin: value.getValue('temperatureMin'),
+                temperatureMax: value.getValue('temperatureMax'),
+            };
+        });
+
+        return weathers;
+    }
 
     /**
      * Initialization
@@ -214,10 +232,6 @@ export class Report {
             startDate = startDate || this.startDate;
             endDate = endDate || this.endDate;
 
-            if (this._type === Enum.ESummaryType.hour) {
-                return [];
-            }
-
             let weatherQuery: Parse.Query<IDB.Weather> = new Parse.Query(IDB.Weather)
                 .containedIn('site', this._sites)
                 .greaterThanOrEqualTo('date', startDate)
@@ -227,6 +241,7 @@ export class Report {
 
             let weatherRecord: IDB.Weather[] = await weatherQuery
                 .limit(weatherTotal)
+                .include('site')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -331,17 +346,6 @@ export class Report {
                 };
             });
 
-            let weather: IDB.Weather = this._weathers.find((value1, index1, array1) => {
-                return value1.getValue('site').id === data.getValue('site').id && value1.getValue('date').getTime() === date.getTime();
-            });
-            let summaryWeather: IResponse.IReport.ISummaryWeather = weather
-                ? {
-                      icon: weather.getValue('icon'),
-                      temperatureMin: weather.getValue('temperatureMin'),
-                      temperatureMax: weather.getValue('temperatureMax'),
-                  }
-                : undefined;
-
             let base: IResponse.IReport.ISummaryDataBase = {
                 site: site,
                 area: area,
@@ -349,7 +353,6 @@ export class Report {
                 deviceGroups: deviceGroups,
                 date: date,
                 type: Enum.ESummaryType[this._type],
-                weather: summaryWeather,
             };
 
             return base;

@@ -39,6 +39,7 @@ action.post(
             let summaryDatas = report.GetSummaryDatas();
 
             return {
+                weathers: report.weathers,
                 genderRange: genderRange,
                 summaryDatas: summaryDatas,
             };
@@ -212,7 +213,6 @@ export class ReportDemographic extends Report {
                     femaleRanges: value.femaleRanges,
                     prevFemaleTotal: prevFemaleTotal,
                     prevFemaleRanges: prevFemaleRanges,
-                    weather: value.weather,
                 };
             }, []);
 
