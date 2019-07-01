@@ -36,7 +36,7 @@ action.post(
         let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
 
         try {
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            // let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputC = data.parameters.resMessages;
 
             let imgConfig = Config.location.image;
@@ -103,7 +103,7 @@ action.get(
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            // let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
 
             let query: Parse.Query<IDB.LocationSite> = new Parse.Query(IDB.LocationSite);
@@ -255,7 +255,7 @@ action.put(
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
 
         try {
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            // let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let resMessages: OutputU = data.parameters.resMessages;
 
 
@@ -325,7 +325,7 @@ action.delete(
     async (data): Promise<OutputD> => {
         try {
             let _input: InputD = data.inputType;
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            // let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _objectIds: string[] = data.parameters.objectIds;
             let resMessages: OutputD = data.parameters.resMessages;
 
