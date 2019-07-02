@@ -47,16 +47,16 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let lr = null;
     if (rs.length >= 1) {
         lr = rs[0];
-        
-        let dateTime = lr.get("date_occurred")+lr.get("time_occurred");
-        
-        lr.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
-        
-        records.push(lr);
+        if(lr.get("date_occurred") && lr.get("time_occurred")){
+            let dateTime = lr.get("date_occurred")+lr.get("time_occurred");            
+            lr.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());            
+            records.push(lr);
+        }
     }
 
     for (let i = 1; i < rs.length; i++) {
         let r = rs[i];
+        if(!r.get("date_occurred") ||!r.get("time_occurred"))continue;
         let dateTime = r.get("date_occurred")+r.get("time_occurred")
         
         r.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());

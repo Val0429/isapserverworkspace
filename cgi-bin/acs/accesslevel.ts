@@ -71,9 +71,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(AccessLevel);
     /// 2) With Extra Filters
-    query = Restful.Filter(query, data.inputType)
-        .include("timeschedule");
-
+    query = Restful.Filter(query, data.inputType);
     
     let filter = data.parameters as any;
     if(filter.timename){
