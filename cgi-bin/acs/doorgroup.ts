@@ -39,7 +39,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(DoorGroup)
         .include("area.site")
         .include("doors");
-       // .include("doors");
+    let filter = data.parameters as any;
+    if(filter.name){
+        query.startsWith("groupname", filter.name);
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
