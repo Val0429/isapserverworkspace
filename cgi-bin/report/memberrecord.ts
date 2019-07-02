@@ -5,7 +5,13 @@ import {
     Restful, FileHelper, ParseObject, IMember, Member, TimeSchedule
 } from 'core/cgi-package';
 
-import { IvieMember, vieMember } from 'workspace/custom/models/index';
+const fieldNames = {
+    DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
+    CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
+    WorkAreaName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+    ResignationDate:"CustomDateControl1__CF",
+    CompanyName:"CustomTextBoxControl6__CF"
+}
 
 
 var action = new Action({
@@ -31,10 +37,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.FirstName) query.startsWith("FirstName", filter.FirstName);    
     if(filter.EmployeeNumber) query.startsWith("EmployeeNumber", filter.EmployeeNumber);  
     if(filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
-    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF").startsWith("CustomFields.FieldValue",filter.DepartmentName);
-    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.CostCenterName);
-    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF").startsWith("CustomFields.FieldValue",filter.WorkAreaName);
-    if(filter.ResignationDate) query.equalTo("CustomFields.FiledName", "CustomDateControl1__CF").startsWith("CustomFields.FieldValue",filter.ResignationDate);
+    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).startsWith("CustomFields.FieldValue",filter.DepartmentName);
+    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).startsWith("CustomFields.FieldValue",filter.CostCenterName);
+    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).startsWith("CustomFields.FieldValue",filter.WorkAreaName);
+    if(filter.ResignationDate) query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).startsWith("CustomFields.FieldValue",filter.ResignationDate);
+    if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).startsWith("CustomFields.FieldValue",filter.CompanyName);
     
     let times = await new Parse.Query(TimeSchedule).limit(Number.MAX_SAFE_INTEGER).find(); 
     
@@ -65,43 +72,46 @@ export default action;
 function constructData(dataMember: IMember[], filter?:any) {
     let records:any=[];
     for (let item of dataMember) {
-        let department = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomTextBoxControl5__CF_CF_CF") : undefined;
-        let departmentName = department && department.FieldValue ? department.FieldValue : '';
-        let costCenter = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomTextBoxControl5__CF_CF_CF_CF") : undefined;
-        let costCenterName = costCenter && costCenter.FieldValue ? costCenter.FieldValue : '';
-        let workArea = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF") : undefined;
-        let workAreaName = workArea && workArea.FieldValue ? workArea.FieldValue : '';
-        
-        let resignation = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == "CustomDateControl1__CF") : undefined;
-        let resignationDate = resignation && resignation.FieldValue ? resignation.FieldValue : '';
-        let cardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
+
         if (item.AccessRules && item.AccessRules.length > 0) {
             for (let accessRule of item.AccessRules) {
-                records.push(createEmployee(item, cardNumber, departmentName, costCenterName, workAreaName, resignationDate,accessRule.TimeScheduleToken));
+                records.push(createEmployee(item, accessRule.TimeScheduleToken));
             }
         }
         else {
-            records.push(createEmployee(item, cardNumber, departmentName, costCenterName, workAreaName, resignationDate, ""));
+            records.push(createEmployee(item, ""));
         }
     }
-    if(!filter) return records;
-    
     
     if(filter.PermissionList) records= records.filter(x=>x.PermissionList.toLowerCase().indexOf(filter.PermissionList.toLowerCase())>-1);
 
     return records;
 }
-
-function createEmployee(item: any,cardNumber:string,departmentName: string,costCenterName: string,workAreaName: string, resignationDate:string, accessRule: string) {
-    return {
-      FirstName: item.FirstName,
-      LastName: item.LastName,
-      EmployeeNumber: item.EmployeeNumber,
-      CardNumber: cardNumber,
-      DepartmentName: departmentName,
-      CostCenterName: costCenterName,
-      WorkAreaName: workAreaName,
-      PermissionList: accessRule,
-      ResignationDate:resignationDate
-    }
+function getCustomFieldValue(item:IMember, fieldName:string){
+    let field = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == fieldName) : undefined;
+    return field && field.FieldValue ? field.FieldValue : '';
+}
+function createEmployee(item: any,  
+    accessRule: string) {
+    
+        let departmentName = getCustomFieldValue(item, fieldNames.CompanyName);        
+        let costCenterName = getCustomFieldValue(item, fieldNames.CostCenterName);                
+        let workAreaName = getCustomFieldValue(item, fieldNames.WorkAreaName);                
+        let companyName = getCustomFieldValue(item, fieldNames.CompanyName);        
+        let resignationDate = getCustomFieldValue(item, fieldNames.ResignationDate);
+        let cardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
+        let permissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>x.RuleToken) : [];
+        return {
+            FirstName: item.FirstName,
+            LastName: item.LastName,
+            EmployeeNumber: item.EmployeeNumber,
+            CardNumber: cardNumber,
+            DepartmentName: departmentName,
+            CostCenterName: costCenterName,
+            WorkAreaName: workAreaName,
+            PermissionList: accessRule,
+            ResignationDate:resignationDate,
+            CompanyName:companyName,
+            PermissionTable:permissionTable
+        }
   }
