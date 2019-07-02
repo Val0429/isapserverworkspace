@@ -100,8 +100,8 @@ export class Report {
             this._type = input.type;
 
             this._currDateRange = {
-                startDate: new Date(new Date(input.startDate).setHours(0, 0, 0, 0)),
-                endDate: new Date(new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)).setHours(0, 0, 0, 0)),
+                startDate: new Date(input.startDate),
+                endDate: new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)),
             };
 
             this._dateGap = this.currDateRange.endDate.getTime() - this.currDateRange.startDate.getTime();
