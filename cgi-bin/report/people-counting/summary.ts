@@ -35,11 +35,14 @@ action.post(
 
             let peakHours = report.GetPeakHours();
 
+            let salesRecords = await report.GetSalesRecordSummarys();
+
             let summaryDatas = report.GetSummaryDatas();
 
             return {
                 weathers: report.weathers,
                 peakHours: peakHours,
+                salesRecords: salesRecords,
                 summaryDatas: summaryDatas,
             };
         } catch (e) {
@@ -217,6 +220,19 @@ export class ReportPeopleCounting extends Report {
                     prevOut: prevOut,
                 };
             }, []);
+
+            return summarys;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get sales record
+     */
+    public async GetSalesRecordSummarys(): Promise<IResponse.IReport.ISalesRecordSummaryData[]> {
+        try {
+            let summarys = await super.GetSalesRecordSummarys(this._currReports);
 
             return summarys;
         } catch (e) {

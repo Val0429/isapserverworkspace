@@ -307,6 +307,7 @@ export class Report {
 
             let salesRecord: IDB.ReportSalesRecord[] = await recordQuery
                 .limit(recordTotal)
+                .include('site')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -315,6 +316,99 @@ export class Report {
             salesRecord = this.OfficeHourFilter(salesRecord);
 
             return salesRecord;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get sales record summary
+     * @param reports
+     */
+    public async GetSalesRecordSummarys(): Promise<IResponse.IReport.ISalesRecordSummaryData[]>;
+    public async GetSalesRecordSummarys(reports: IDB.ReportPeopleCountingSummary[]): Promise<IResponse.IReport.ISalesRecordSummaryData[]>;
+    public async GetSalesRecordSummarys(reports?: IDB.ReportPeopleCountingSummary[]): Promise<IResponse.IReport.ISalesRecordSummaryData[]> {
+        try {
+            if (!reports) {
+                reports = await this.GetReports(IDB.ReportPeopleCountingSummary);
+            }
+
+            let salesRecords = await this.GetSalesRecords();
+
+            let dates: Date[] = []
+                .concat(reports, salesRecords)
+                .map((value, index, array) => {
+                    let date: Date = this.GetTypeDate(value.get('date'));
+
+                    return date;
+                })
+                .filter((value, index, array) => {
+                    return (
+                        array.findIndex((value1, index1, array1) => {
+                            return value1.getTime() === value.getTime();
+                        }) === index
+                    );
+                });
+
+            let sites = this._sites.map<IResponse.IObject>((value, index, array) => {
+                return {
+                    objectId: value.id,
+                    name: value.getValue('name'),
+                };
+            });
+
+            let summarys = new Array<IResponse.IReport.ISalesRecordSummaryData>().concat(
+                ...sites.map((value, index, array) => {
+                    return dates.map<IResponse.IReport.ISalesRecordSummaryData>((value1, index1, array1) => {
+                        return {
+                            site: value,
+                            date: value1,
+                            revenue: 0,
+                            transaction: 0,
+                            traffic: 0,
+                        };
+                    });
+                }),
+            );
+
+            summarys = summarys.map<IResponse.IReport.ISalesRecordSummaryData>((value, index, array) => {
+                let salesRecord = salesRecords
+                    .filter((value1, index1, array1) => {
+                        return value1.getValue('site').id === value.site.objectId && this.GetTypeDate(value1.getValue('date')).getTime() === value.date.getTime();
+                    })
+                    .reduce(
+                        (prev1, curr1, index1, array1) => {
+                            prev1.revenue += curr1.getValue('revenue');
+                            prev1.transaction += curr1.getValue('transaction');
+
+                            return prev1;
+                        },
+                        {
+                            revenue: 0,
+                            transaction: 0,
+                        },
+                    );
+
+                let traffic = reports
+                    .filter((value1, index1, array1) => {
+                        let date: Date = this.GetTypeDate(value1.getValue('date'));
+
+                        return value1.getValue('site').id === value.site.objectId && date.getTime() === value.date.getTime();
+                    })
+                    .reduce<number>((prev1, curr1, index1, array1) => {
+                        return prev1 + curr1.getValue('in');
+                    }, 0);
+
+                return {
+                    site: value.site,
+                    date: value.date,
+                    revenue: salesRecord.revenue,
+                    transaction: salesRecord.transaction,
+                    traffic: traffic,
+                };
+            });
+
+            return summarys;
         } catch (e) {
             throw e;
         }

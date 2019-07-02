@@ -60,8 +60,7 @@ export interface ISalesRecordSummaryData {
     date: Date;
     revenue: number;
     transaction: number;
-    conversion: number;
-    asp: number;
+    traffic: number;
 }
 
 export interface IPeakHourData {
@@ -94,6 +93,7 @@ export interface IPeopleCountingSummaryData extends ISummaryDataBase {
 export interface IPeopleCountingSummary {
     weathers: ISummaryWeather[];
     peakHours: IPeakHour[];
+    salesRecords: ISalesRecordSummaryData[];
     summaryDatas: IPeopleCountingSummaryData[];
 }
 
