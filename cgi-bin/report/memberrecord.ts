@@ -43,20 +43,12 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.ResignationDate) query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).startsWith("CustomFields.FieldValue",filter.ResignationDate);
     if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).startsWith("CustomFields.FieldValue",filter.CompanyName);
     
-    let times = await new Parse.Query(TimeSchedule).limit(Number.MAX_SAFE_INTEGER).find(); 
+    
     
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
     let outputData = o.map( (d) => ParseObject.toOutputJSON(d));
-    for (let item of outputData) {
-        for (let ru of item.AccessRules) {
-            if(!ru.TimeScheduleToken) continue;
-            let tsExists = times.find(x=>x.get("timeid") == ru.TimeScheduleToken);
-            if(!tsExists) continue;
-            ru.TimeScheduleToken = tsExists.get("timename");
-        }        
-    }
-
+    
     let results = constructData(outputData, filter);
     let paging :any = {
         page: 1,
@@ -72,27 +64,16 @@ export default action;
 function constructData(dataMember: IMember[], filter?:any) {
     let records:any=[];
     for (let item of dataMember) {
-
-        if (item.AccessRules && item.AccessRules.length > 0) {
-            for (let accessRule of item.AccessRules) {
-                records.push(createEmployee(item, accessRule.TimeScheduleToken));
-            }
-        }
-        else {
-            records.push(createEmployee(item, ""));
-        }
-    }
+        records.push(createEmployee(item));
+    }   
     
-    if(filter.PermissionList) records= records.filter(x=>x.PermissionList.toLowerCase().indexOf(filter.PermissionList.toLowerCase())>-1);
-
     return records;
 }
 function getCustomFieldValue(item:IMember, fieldName:string){
     let field = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == fieldName) : undefined;
     return field && field.FieldValue ? field.FieldValue : '';
 }
-function createEmployee(item: any,  
-    accessRule: string) {
+function createEmployee(item: any) {
     
         let departmentName = getCustomFieldValue(item, fieldNames.CompanyName);        
         let costCenterName = getCustomFieldValue(item, fieldNames.CostCenterName);                
@@ -109,7 +90,6 @@ function createEmployee(item: any,
             DepartmentName: departmentName,
             CostCenterName: costCenterName,
             WorkAreaName: workAreaName,
-            PermissionList: accessRule,
             ResignationDate:resignationDate,
             CompanyName:companyName,
             PermissionTable:permissionTable
