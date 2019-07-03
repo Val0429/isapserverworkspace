@@ -5,6 +5,8 @@ import {
     Restful, FileHelper, ParseObject, IMember, Member, TimeSchedule
 } from 'core/cgi-package';
 
+import * as moment from 'moment';
+
 const fieldNames = {
     DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
     CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
@@ -40,7 +42,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).startsWith("CustomFields.FieldValue",filter.DepartmentName);
     if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).startsWith("CustomFields.FieldValue",filter.CostCenterName);
     if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).startsWith("CustomFields.FieldValue",filter.WorkAreaName);
-    if(filter.ResignationDate) query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).startsWith("CustomFields.FieldValue",filter.ResignationDate);
+    if(filter.ResignationDate){
+        let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
+        query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).startsWith("CustomFields.FieldValue",resignDate);
+    } 
     if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).startsWith("CustomFields.FieldValue",filter.CompanyName);
     
     
@@ -90,7 +95,7 @@ function createEmployee(item: any) {
             DepartmentName: departmentName,
             CostCenterName: costCenterName,
             WorkAreaName: workAreaName,
-            ResignationDate:resignationDate,
+            ResignationDate:resignationDate.split("T")[0],
             CompanyName:companyName,
             PermissionTable:permissionTable
         }
