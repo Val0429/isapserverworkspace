@@ -31,3 +31,7 @@ export interface IDemographicTest {
     gender: string;
     imageBase64: string;
 }
+
+export interface IFRSManagerR extends IRequest.IPartner.IFRSManagerC {
+    objectId: string;
+}

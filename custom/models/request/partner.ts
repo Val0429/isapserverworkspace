@@ -121,3 +121,21 @@ export interface IDemographicTest_ObjectId extends IDemographicTest_Base {
 export interface IDemographicTest_Config extends IDemographicTest_Base {
     config: IDemographicBase;
 }
+
+export interface IFRSManagerBase {
+    protocol: 'http' | 'https';
+    ip: string;
+    port: number;
+    account: string;
+    password: string;
+}
+
+export interface IFRSManagerC extends IFRSManagerBase {
+    customId: string;
+    name: string;
+}
+
+export interface IFRSManagerU extends IFRSManagerBase {
+    objectId: string;
+    name?: string;
+}

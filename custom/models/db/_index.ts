@@ -19,6 +19,7 @@ export * from './report-people-counting-summary';
 export * from './report-sales-record';
 export * from './server-cms';
 export * from './server-demographic';
+export * from './server-frs-manager';
 export * from './server-frs';
 export * from './server-human-detection';
 export * from './tag';
