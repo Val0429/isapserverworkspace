@@ -1,0 +1,1 @@
+export * from './face-feature-compare-v8';
