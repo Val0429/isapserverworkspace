@@ -12,7 +12,9 @@ const fieldNames = {
     CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
     WorkAreaName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
     ResignationDate:"CustomDateControl1__CF",
-    CompanyName:"CustomTextBoxControl6__CF"
+    CompanyName:"CustomTextBoxControl6__CF",
+    CardCustodian:"CustomTextBoxControl2__CF",
+    CardType:"CustomDropdownControl1__CF"
 }
 
 
@@ -42,9 +44,19 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).startsWith("CustomFields.FieldValue",filter.DepartmentName);
     if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).startsWith("CustomFields.FieldValue",filter.CostCenterName);
     if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).startsWith("CustomFields.FieldValue",filter.WorkAreaName);
+    if(filter.CardCustodian) query.equalTo("CustomFields.FiledName", fieldNames.CardCustodian).startsWith("CustomFields.FieldValue",filter.CardCustodian);
+    if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).startsWith("CustomFields.FieldValue",filter.CardType);
     if(filter.ResignationDate){
         let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
         query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).startsWith("CustomFields.FieldValue",resignDate);
+    } 
+    if(filter.EndDate){      
+        let endDate = new Date(filter.EndDate);  
+        query.lessThanOrEqualTo("EndDate", endDate);
+    } 
+    if(filter.StartDate){      
+        let startDate = new Date(filter.StartDate);  
+        query.greaterThanOrEqualTo("StartDate", startDate);
     } 
     if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).startsWith("CustomFields.FieldValue",filter.CompanyName);
     
@@ -80,23 +92,29 @@ function getCustomFieldValue(item:IMember, fieldName:string){
 }
 function createEmployee(item: any) {
     
-        let departmentName = getCustomFieldValue(item, fieldNames.CompanyName);        
-        let costCenterName = getCustomFieldValue(item, fieldNames.CostCenterName);                
-        let workAreaName = getCustomFieldValue(item, fieldNames.WorkAreaName);                
-        let companyName = getCustomFieldValue(item, fieldNames.CompanyName);        
-        let resignationDate = getCustomFieldValue(item, fieldNames.ResignationDate);
-        let cardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
-        let permissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>x.RuleToken) : [];
+        let DepartmentName = getCustomFieldValue(item, fieldNames.DepartmentName);        
+        let CostCenterName = getCustomFieldValue(item, fieldNames.CostCenterName);                
+        let WorkAreaName = getCustomFieldValue(item, fieldNames.WorkAreaName);                
+        let CompanyName = getCustomFieldValue(item, fieldNames.CompanyName);        
+        let ResignationDate = getCustomFieldValue(item, fieldNames.ResignationDate);
+        let CardCustodian = getCustomFieldValue(item, fieldNames.CardCustodian);
+        let CardType = getCustomFieldValue(item, fieldNames.CardType);
+        let CardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
+        let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>x.RuleToken) : [];
         return {
             FirstName: item.FirstName,
             LastName: item.LastName,
             EmployeeNumber: item.EmployeeNumber,
-            CardNumber: cardNumber,
-            DepartmentName: departmentName,
-            CostCenterName: costCenterName,
-            WorkAreaName: workAreaName,
-            ResignationDate:resignationDate.split("T")[0],
-            CompanyName:companyName,
-            PermissionTable:permissionTable
+            CardNumber,
+            DepartmentName,
+            CostCenterName,
+            WorkAreaName,
+            ResignationDate:ResignationDate.split("T")[0],
+            CompanyName,
+            PermissionTable,
+            CardCustodian,
+            CardType,
+            StartDate:moment(item.StartDate).format("YYYY-MM-DD"),
+            EndDate:moment(item.EndDate).format("YYYY-MM-DD")
         }
   }
