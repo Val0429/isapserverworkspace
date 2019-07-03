@@ -41,6 +41,7 @@ action.post(
 
             return {
                 weathers: report.weathers,
+                officeHours: report.officeHours,
                 peakHours: peakHours,
                 salesRecords: salesRecords,
                 summaryDatas: summaryDatas,

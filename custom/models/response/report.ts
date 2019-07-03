@@ -1,3 +1,4 @@
+import { IDayRange } from '../db/_index';
 import { IObject } from './_index';
 
 export interface ISalesRecordR {
@@ -55,6 +56,13 @@ export interface ISummaryWeather {
     temperatureMax: number;
 }
 
+export interface ISummaryOfficeHour {
+    objectId: string;
+    name: string;
+    dayRanges: IDayRange[];
+    sites: IObject[];
+}
+
 export interface ISalesRecordSummaryData {
     site: IObject;
     date: Date;
@@ -92,6 +100,7 @@ export interface IPeopleCountingSummaryData extends ISummaryDataBase {
 
 export interface IPeopleCountingSummary {
     weathers: ISummaryWeather[];
+    officeHours: ISummaryOfficeHour[];
     peakHours: IPeakHour[];
     salesRecords: ISalesRecordSummaryData[];
     summaryDatas: IPeopleCountingSummaryData[];
@@ -116,6 +125,7 @@ export interface IDemographicSummaryData extends ISummaryDataBase {
 
 export interface IDemographicSummary {
     weathers: ISummaryWeather[];
+    officeHours: ISummaryOfficeHour[];
     genderRange: IGenderRange;
     summaryDatas: IDemographicSummaryData[];
 }

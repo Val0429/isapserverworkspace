@@ -64,6 +64,25 @@ export class Report {
      *
      */
     private _officeHours: IDB.OfficeHour[] = [];
+    public get officeHours(): IResponse.IReport.ISummaryOfficeHour[] {
+        let officeHours = this._officeHours.map<IResponse.IReport.ISummaryOfficeHour>((value, index, array) => {
+            let sites: IResponse.IObject[] = (value.getValue('sites') || []).map((value1, index1, array1) => {
+                return {
+                    objectId: value1.id,
+                    name: value1.getValue('name'),
+                };
+            });
+
+            return {
+                objectId: value.id,
+                name: value.getValue('name'),
+                dayRanges: value.getValue('dayRanges'),
+                sites: sites,
+            };
+        });
+
+        return officeHours;
+    }
 
     /**
      *
@@ -242,6 +261,7 @@ export class Report {
         try {
             let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
                 .containedIn('sites', this._sites)
+                .include('sites')
                 .find()
                 .fail((e) => {
                     throw e;

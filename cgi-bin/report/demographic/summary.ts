@@ -40,6 +40,7 @@ action.post(
 
             return {
                 weathers: report.weathers,
+                officeHours: report.officeHours,
                 genderRange: genderRange,
                 summaryDatas: summaryDatas,
             };
