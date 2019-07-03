@@ -1,5 +1,0 @@
-var faceFeatureCompareLinux = require('../addon/featureCompareLinux/build/Release/faceFeatureCompare')();
-var sourceFeatureBuffer = new Buffer( featureA, 'binary' );
-var targetFeatureBuffer = new Buffer( featureB, 'binary' );
-
-var scoreData = faceFeatureCompareLinux.faceFeatureCompare( sourceFeatureBuffer, targetFeatureBuffer );

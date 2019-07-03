@@ -1,7 +1,20 @@
-import { Subject } from 'rxjs';
-var sjRecognizedUser = new Subject<RecognizedUser>();
-var sjUnRecognizedUser = new Subject<UnRecognizedUser>();
-export { sjRecognizedUser, sjUnRecognizedUser };
+export const LogTitle = "FRS Server";
+
+export enum RequestLoginReason {
+    SessionExpired
+}
+
+export interface IFRSConfig {
+    ip: string;
+    port: number;
+    account: string;
+    password: string;
+}
+
+export interface IFRSServiceConfig {
+    frs: IFRSConfig;
+    debug?: boolean;
+}
 
 export enum UserType {
     UnRecognized = 0,

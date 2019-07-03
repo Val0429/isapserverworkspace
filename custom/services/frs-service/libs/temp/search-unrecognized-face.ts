@@ -1,14 +1,13 @@
 import { Observable, Subject } from 'rxjs';
-import { UserType, RecognizedUser, UnRecognizedUser } from './core';
-import { Config } from './../../../../core/config.gen';
+import { UserType, RecognizedUser, UnRecognizedUser, IFRSConfig } from './core';
 import { Semaphore } from 'helpers/utility/semaphore';
 
-export function searchRecognizedFace(face: RecognizedUser) {
+export function searchUnRecognizedFace(face: UnRecognizedUser, config: IFRSConfig) {
     let cache: (RecognizedUser | UnRecognizedUser)[] = [];
-    let match: RecognizedUser = null;
+    let match: UnRecognizedUser = null;
     let matchStart: number;
     let matchEnd: number;
-    let possibleCompanionMilliSeconds: number = Config.fts.possibleCompanionDurationSeconds * 1000;
+    let possibleCompanionMilliSeconds: number = config.possibleCompanionDurationSeconds * 1000;
 
     return function(source): Observable<RecognizedUser | UnRecognizedUser> {
         return Observable.create( (subscriber) => {
@@ -31,8 +30,8 @@ export function searchRecognizedFace(face: RecognizedUser) {
 
             let subscription = source.subscribe( async (value: RecognizedUser | UnRecognizedUser) => {
 
-                /// 1) find match person_id for same person
-                if (value.type === UserType.Recognized && face.person_id === value.person_id) {
+                /// 1) find unrecognized user score for same person
+                if (value.type === UserType.UnRecognized && value.score >= config.specialScoreForUnRecognizedFace) {
                     value.search_ok = true;
                     match = value;
                     matchStart = value.timestamp - possibleCompanionMilliSeconds;
