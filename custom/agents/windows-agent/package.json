@@ -1,0 +1,13 @@
+{
+  "name": "isap-windows-agent",
+  "version": "0.00.01",
+  "config": {
+    "displayname": "iSap Windows Agent"
+  },
+  "description": "iSap Windows Agent v0.00.01",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "screenshot-desktop": "^1.5.4"
+  }
+}

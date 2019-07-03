@@ -1,0 +1,15 @@
+{
+  "name": "isap-smart-community-service",
+  "version": "1.00.00",
+  "config": {
+    "displayname": "iSap Smart Community Service"
+  },
+  "description": "iSap Smart Community Service v1.00.00",
+  "scripts": {
+    "start": "npm start --prefix ./../",
+    "create-project": "git checkout --orphan"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
