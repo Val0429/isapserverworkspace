@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup
 } from 'core/cgi-package';
 
 import { IPermissionTable, PermissionTable } from '../../custom/models'
@@ -76,11 +76,30 @@ type OutputR = Restful.OutputR<IPermissionTable>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(PermissionTable)
-        .include("accesslevels")
+        .include("accesslevels.door")
+        .include("accesslevels.doorgroup")
         .include("accesslevels.timeschedule")
         .include("accesslevels.reader");
 
-
+    let filter = data.parameters as any;
+    if(filter.name){
+        query.startsWith("tablename", filter.name);
+    }
+    if(filter.timename){
+        let tsQuery = new Parse.Query(TimeSchedule).startsWith("timename", filter.timename);    
+        let alQuery = new Parse.Query(AccessLevel).matchesQuery("timeschedule", tsQuery);    
+        query.matchesQuery("accesslevels", alQuery);
+    }
+    if(filter.doorname){
+        let doorQuery = new Parse.Query(Door).startsWith("doorname", filter.doorname);    
+        let alQuery = new Parse.Query(AccessLevel).matchesQuery("door", doorQuery);
+        query.matchesQuery("accesslevels", alQuery);
+    }
+    if(filter.doorgroupname){
+        let dgQuery = new Parse.Query(DoorGroup).startsWith("groupname", filter.doorgroupname);    
+        let alQuery = new Parse.Query(AccessLevel).matchesQuery("doorgroup", dgQuery);
+        query.matchesQuery("accesslevels", alQuery);
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
