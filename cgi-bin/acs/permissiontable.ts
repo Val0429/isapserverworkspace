@@ -83,20 +83,20 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 
     let filter = data.parameters as any;
     if(filter.name){
-        query.startsWith("tablename", filter.name);
+        query.matches("tablename", new RegExp(filter.name), "i");
     }
     if(filter.timename){
-        let tsQuery = new Parse.Query(TimeSchedule).startsWith("timename", filter.timename);    
+        let tsQuery = new Parse.Query(TimeSchedule).matches("timename", new RegExp(filter.timename), "i");    
         let alQuery = new Parse.Query(AccessLevel).matchesQuery("timeschedule", tsQuery);    
         query.matchesQuery("accesslevels", alQuery);
     }
     if(filter.doorname){
-        let doorQuery = new Parse.Query(Door).startsWith("doorname", filter.doorname);    
+        let doorQuery = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i");    
         let alQuery = new Parse.Query(AccessLevel).matchesQuery("door", doorQuery);
         query.matchesQuery("accesslevels", alQuery);
     }
     if(filter.doorgroupname){
-        let dgQuery = new Parse.Query(DoorGroup).startsWith("groupname", filter.doorgroupname);    
+        let dgQuery = new Parse.Query(DoorGroup).matches("groupname", new RegExp(filter.doorgroupname), "i");    
         let alQuery = new Parse.Query(AccessLevel).matchesQuery("doorgroup", dgQuery);
         query.matchesQuery("accesslevels", alQuery);
     }

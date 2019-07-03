@@ -40,7 +40,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
     let filter = data.parameters as any;
     if(filter.name){
-        query.startsWith("floorname", filter.name);
+        query.matches("floorname", new RegExp(filter.name), "i");
     }
     query = Restful.Filter(query, data.inputType);
     /// 3) Output

@@ -4,6 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import { LocationRegion } from 'workspace/custom/models/db/location-region';
 
 let action = new Action({
     loginRequired: true,
@@ -45,10 +46,22 @@ action.get(
                 query.equalTo('region', null);
             }
 
+            let filter = data.parameters;
+            console.log(filter)
+            if(filter.sitename){
+                query.matches('name', new RegExp(filter.sitename), 'i');
+            }
+            
+            if(filter.regionname){
+                
+                let regQuery = new Parse.Query(LocationRegion).matches('name', new RegExp(filter.regionname), 'i');
+                query.matchesQuery('region', regQuery);
+            }
+
             let total: number = await query.count().fail((e) => {
                 throw e;
             });
-
+            
             let sites: IDB.LocationSite[] = await query
                 .limit(total)
                 .include('region')

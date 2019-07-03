@@ -39,7 +39,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(Reader);
     let filter = data.parameters as any;
     if(filter.name){
-        query.startsWith("readername", filter.name);
+        query.matches("readername", new RegExp(filter.name), "i");
     }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);

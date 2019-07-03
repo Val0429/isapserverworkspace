@@ -37,18 +37,18 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) Filter query 
     let filter = data.parameters;
     
-    if(filter.LastName) query.startsWith("LastName", filter.LastName);
-    if(filter.FirstName) query.startsWith("FirstName", filter.FirstName);    
-    if(filter.EmployeeNumber) query.startsWith("EmployeeNumber", filter.EmployeeNumber);  
+    if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
+    if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
+    if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
     if(filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
-    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).startsWith("CustomFields.FieldValue",filter.DepartmentName);
-    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).startsWith("CustomFields.FieldValue",filter.CostCenterName);
-    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).startsWith("CustomFields.FieldValue",filter.WorkAreaName);
-    if(filter.CardCustodian) query.equalTo("CustomFields.FiledName", fieldNames.CardCustodian).startsWith("CustomFields.FieldValue",filter.CardCustodian);
-    if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).startsWith("CustomFields.FieldValue",filter.CardType);
+    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue",new RegExp(filter.DepartmentName), "i");
+    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue",new RegExp(filter.CostCenterName), "i");
+    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue",new RegExp(filter.WorkAreaName), "i");
+    if(filter.CardCustodian) query.equalTo("CustomFields.FiledName", fieldNames.CardCustodian).matches("CustomFields.FieldValue",new RegExp(filter.CardCustodian), "i");
+    if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue",new RegExp(filter.CardType), "i");
     if(filter.ResignationDate){
         let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
-        query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).startsWith("CustomFields.FieldValue",resignDate);
+        query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).matches("CustomFields.FieldValue", new RegExp(resignDate), "i");
     } 
     if(filter.EndDate){      
         let endDate = new Date(filter.EndDate);  
@@ -58,7 +58,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let startDate = new Date(filter.StartDate);  
         query.greaterThanOrEqualTo("StartDate", startDate);
     } 
-    if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).startsWith("CustomFields.FieldValue",filter.CompanyName);
+    if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).matches("CustomFields.FieldValue", new RegExp(filter.CompanyName), "i");
     
     
     

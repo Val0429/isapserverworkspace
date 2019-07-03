@@ -75,11 +75,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     let filter = data.parameters as any;
     if(filter.timename){
-        let tsQuery = new Parse.Query(TimeSchedule).startsWith("timename", filter.timename);    
+        let tsQuery = new Parse.Query(TimeSchedule).matches("timename", new RegExp(filter.timename), "i");    
         query.matchesQuery("timeschedule", tsQuery);
     }
     if(filter.doorname){
-        let tsDoor = new Parse.Query(Door).startsWith("doorname", filter.doorname);    
+        let tsDoor = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i");    
         query.matchesQuery("door", tsDoor);
     }
     /// 3) Output

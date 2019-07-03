@@ -41,7 +41,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         .include("doors");
     let filter = data.parameters as any;
     if(filter.name){
-        query.startsWith("groupname", filter.name);
+        query.matches("groupname", new RegExp(filter.name), "i");
     }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);

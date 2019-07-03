@@ -6,6 +6,7 @@ import * as Middleware from '../../../custom/middlewares';
 // import * as Enum from '../../../custom/enums';
 import * as Area from '../area';
 import * as Tag from '../../tag';
+import { LocationRegion } from 'workspace/custom/models/db/_index';
 // import * as OfficeHour from '../../office-hour';
 // import * as UserGroup from '../../user/group';
 // import * as Campaign from '../../event/campaign';
@@ -44,37 +45,37 @@ action.post(
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
-                    try {
-                        
-                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('name', value.name)
-                            .first()
-                            .fail((e) => {
-                                throw e;
-                            });
-                        if (site) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
-                        }
-
-
-                        site = new IDB.LocationSite();
-
-                        site.setValue('name', value.name);
-                        site.setValue('address', value.address);
-                        site.setValue('longitude', value.longitude);
-                        site.setValue('latitude', value.latitude);
-
-                        await site.save(null, { useMasterKey: true }).fail((e) => {
+                try {
+                    
+                    let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
+                        .equalTo('name', value.name)
+                        .first()
+                        .fail((e) => {
                             throw e;
                         });
-
-                        resMessages[index].objectId = site.id;
-
-                    } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
-
-                        Print.Log(e, new Error(), 'error');
+                    if (site) {
+                        throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
                     }
+
+
+                    site = new IDB.LocationSite();
+
+                    site.setValue('name', value.name);
+                    site.setValue('address', value.address);
+                    site.setValue('longitude', value.longitude);
+                    site.setValue('latitude', value.latitude);
+
+                    await site.save(null, { useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+
+                    resMessages[index].objectId = site.id;
+
+                } catch (e) {
+                    resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+
+                    Print.Log(e, new Error(), 'error');
+                }
                 }),
             );
 
@@ -115,6 +116,15 @@ action.get(
 
             if (_input.objectId) {
                 query.equalTo('objectId', _input.objectId);
+            }
+
+            let filter = data.parameters;
+            if(filter.sitename){
+                query.matches('name', new RegExp(filter.sitename), 'i');
+            }
+            if(filter.regionname){
+                let regQuery = new Parse.Query(LocationRegion).matches('name', new RegExp(filter.regionname), 'i');
+                query.matchesQuery('region', regQuery);
             }
 
             let total: number = await query.count().fail((e) => {

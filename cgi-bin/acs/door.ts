@@ -39,7 +39,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(Door);
     let filter = data.parameters as any;
     if(filter.name){
-        query.startsWith("doorname", filter.name);
+        query.matches("doorname", new RegExp(filter.name), "i");
     }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
