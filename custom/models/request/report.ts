@@ -1,4 +1,4 @@
-import { IDateRange } from '../db/_index';
+import { IDateRange, IDaySingle } from '../db/_index';
 import * as Enum from '../../enums';
 
 export interface ISalesRecordC {
@@ -30,3 +30,26 @@ export interface IComplex extends ISummaryBase {}
 export interface IPeopleCountingSummary extends ISummaryBase {}
 
 export interface IDemographicSummary extends ISummaryBase {}
+
+export interface ITemplateC extends IDateRange {
+    name: string;
+    mode: Enum.EDeviceMode;
+    type: Enum.ESummaryType;
+    siteIds: string[];
+    tagIds: string[];
+    sendDates: IDaySingle[];
+    sendUserIds: string[];
+}
+
+export interface ITemplateU {
+    objectId: string;
+    name?: string;
+    mode?: Enum.EDeviceMode;
+    type?: Enum.ESummaryType;
+    siteIds?: string[];
+    tagIds?: string[];
+    startDate?: Date;
+    endDate?: Date;
+    sendDates?: IDaySingle[];
+    sendUserIds?: string[];
+}

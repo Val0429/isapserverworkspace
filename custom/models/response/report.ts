@@ -1,4 +1,4 @@
-import { IDayRange } from '../db/_index';
+import { IDayRange, IDaySingle } from '../db/_index';
 import { IObject } from './_index';
 
 export interface ISalesRecordR {
@@ -128,4 +128,21 @@ export interface IDemographicSummary {
     officeHours: ISummaryOfficeHour[];
     genderRange: IGenderRange;
     summaryDatas: IDemographicSummaryData[];
+}
+
+export interface ISendUser extends IObject {
+    email: string;
+}
+
+export interface ITemplateR {
+    objectId: string;
+    name: string;
+    mode: string;
+    type: string;
+    sites: IObject[];
+    tags: IObject[];
+    startDate: Date;
+    endDate: Date;
+    sendDates: IDaySingle[];
+    sendUsers: IObject[];
 }
