@@ -5,6 +5,7 @@ import { Print, FRSService } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as Main from '../../main';
+import { type } from 'os';
 
 class Service {
     /**
@@ -167,16 +168,16 @@ class Service {
                     frs.liveStream$.subscribe({
                         next: async (x) => {
                             try {
-                                let devices = this._devices.filter((value, index, array) => {
-                                    let config = value.getValue('config') as IDB.ICameraFRS;
+                                let devices = this._devices.filter((value1, index1, array1) => {
+                                    let config = value1.getValue('config') as IDB.ICameraFRS;
                                     return config.sourceid === x.camera;
                                 });
 
-                                devices.forEach((value, index, array) => {
-                                    switch (value.getValue('mode')) {
+                                devices.forEach((value1, index1, array1) => {
+                                    switch (value1.getValue('mode')) {
                                         case Enum.EDeviceMode.peopleCounting:
                                             Action.PeopleCountingSeparation.action$.next({
-                                                device: value,
+                                                device: value1,
                                                 date: x.date,
                                             });
                                             break;
@@ -184,7 +185,7 @@ class Service {
                                             break;
                                         case Enum.EDeviceMode.demographic:
                                             Action.Demographic.action$.next({
-                                                device: value,
+                                                device: value1,
                                                 date: x.date,
                                                 image: x.image,
                                             });
@@ -192,7 +193,7 @@ class Service {
                                         case Enum.EDeviceMode.visitor:
                                             break;
                                         default:
-                                            throw `${value.id}(device) mode not found`;
+                                            throw `${value1.id}(device) mode not found`;
                                     }
                                 });
                             } catch (e) {

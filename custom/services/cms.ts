@@ -205,16 +205,16 @@ class Service {
                 cms.liveStream$.subscribe({
                     next: async (x) => {
                         try {
-                            let devices = this._devices.filter((value, index, array) => {
-                                let config = value.getValue('config') as IDB.ICameraCMS;
+                            let devices = this._devices.filter((value1, index1, array1) => {
+                                let config = value1.getValue('config') as IDB.ICameraCMS;
                                 return config.nvrId === x.nvr && config.channelId === x.channel;
                             });
 
-                            devices.forEach((value, index, array) => {
-                                switch (value.getValue('mode')) {
+                            devices.forEach((value1, index1, array1) => {
+                                switch (value1.getValue('mode')) {
                                     case Enum.EDeviceMode.humanDetection:
                                         Action.HumanDetection.action$.next({
-                                            device: value,
+                                            device: value1,
                                             date: new Date(x.timestamp),
                                             image: x.image,
                                         });
@@ -222,7 +222,7 @@ class Service {
                                     case Enum.EDeviceMode.heatmap:
                                         break;
                                     default:
-                                        throw `${value.id}(device) mode not found`;
+                                        throw `${value1.id}(device) mode not found`;
                                 }
                             });
                         } catch (e) {
