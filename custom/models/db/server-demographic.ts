@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Rx from 'rxjs';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice } from './_index';
 
 /**
  * Demographic 設定
@@ -36,7 +36,7 @@ export interface IServerDemographic {
     margin: number;
 }
 
-export let ServerDemographic$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
-
 @registerSubclass()
-export class ServerDemographic extends ParseObject<IServerDemographic> {}
+export class ServerDemographic extends ParseObjectNotice<IServerDemographic> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'ServerDemographic');
+}

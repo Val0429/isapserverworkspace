@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IReportBase } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, IReportBase } from './_index';
 import { HumanDetection } from '../../helpers';
 
 /**
@@ -23,4 +23,4 @@ export interface IReportHumanDetection extends IReportBase {
 }
 
 @registerSubclass()
-export class ReportHumanDetection extends ParseObject<IReportHumanDetection> {}
+export class ReportHumanDetection extends ParseObjectNotice<IReportHumanDetection> {}

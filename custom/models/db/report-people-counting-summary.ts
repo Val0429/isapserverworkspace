@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IReportBase } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, IReportBase } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -33,4 +33,4 @@ export interface IReportPeopleCountingSummary extends IReportBase {
 }
 
 @registerSubclass()
-export class ReportPeopleCountingSummary extends ParseObject<IReportPeopleCountingSummary> {}
+export class ReportPeopleCountingSummary extends ParseObjectNotice<IReportPeopleCountingSummary> {}

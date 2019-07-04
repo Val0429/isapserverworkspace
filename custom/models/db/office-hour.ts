@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IDayRange, LocationSite } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, IDayRange, LocationSite } from './_index';
 
 /**
  * 營業時間
@@ -22,4 +22,6 @@ export interface IOfficeHour {
 }
 
 @registerSubclass()
-export class OfficeHour extends ParseObject<IOfficeHour> {}
+export class OfficeHour extends ParseObjectNotice<IOfficeHour> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'OfficeHour');
+}

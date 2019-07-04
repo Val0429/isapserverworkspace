@@ -53,7 +53,7 @@ class Action {
                 },
             });
 
-        IDB.ServerHumanDetection$.subscribe({
+        IDB.ServerHumanDetection.notice$.subscribe({
             next: (x) => {
                 if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
                     initialization$.next();

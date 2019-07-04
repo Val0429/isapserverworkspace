@@ -46,7 +46,7 @@ class Service {
                 },
             });
 
-        IDB.ServerCMS$.subscribe({
+        IDB.ServerCMS.notice$.subscribe({
             next: (x) => {
                 if (x.crud === 'u') {
                     initialization$.next();
@@ -54,9 +54,9 @@ class Service {
             },
         });
 
-        IDB.Device$.subscribe({
+        IDB.Device.notice$.subscribe({
             next: (x) => {
-                if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.model === Enum.EDeviceModelIsap.cms) {
+                if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.data.get('model') === Enum.EDeviceModelIsap.cms) {
                     initialization$.next();
                 }
             },

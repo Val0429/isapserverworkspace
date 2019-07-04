@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Rx from 'rxjs';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice } from './_index';
 
 /**
  * Demographic 設定
@@ -36,7 +36,7 @@ export interface IServerHumanDetection {
     target_score: number;
 }
 
-export let ServerHumanDetection$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
-
 @registerSubclass()
-export class ServerHumanDetection extends ParseObject<IServerHumanDetection> {}
+export class ServerHumanDetection extends ParseObjectNotice<IServerHumanDetection> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'ServerHumanDetection');
+}

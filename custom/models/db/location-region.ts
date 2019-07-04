@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { Tree } from 'models/nodes';
+import { TreeNotice } from './_index';
 
 /**
  * 地區
@@ -44,6 +44,8 @@ export interface ILocationRegion {
 @registerSubclass({
     container: true,
 })
-export class LocationRegion extends Tree<ILocationRegion> {
+export class LocationRegion extends TreeNotice<ILocationRegion> {
     groupBy: null;
+
+    static notice$ = TreeNotice._notice$.filter((x) => x.data.className === 'LocationRegion');
 }

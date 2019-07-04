@@ -82,8 +82,6 @@ action.post(
                 }),
             );
 
-            IDB.ServerFRSManager$.next({ crud: 'c' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -228,8 +226,6 @@ action.put(
                 }),
             );
 
-            IDB.ServerFRSManager$.next({ crud: 'u' });
-
             return resMessages;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -282,8 +278,6 @@ action.delete(
                     }
                 }),
             );
-
-            IDB.ServerFRSManager$.next({ crud: 'd' });
 
             return resMessages;
         } catch (e) {

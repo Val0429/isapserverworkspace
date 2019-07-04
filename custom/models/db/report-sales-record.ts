@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { LocationSite } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, LocationSite } from './_index';
 
 /**
  * 銷售紀錄
@@ -27,4 +27,6 @@ export interface IReportSalesRecord {
 }
 
 @registerSubclass()
-export class ReportSalesRecord extends ParseObject<IReportSalesRecord> {}
+export class ReportSalesRecord extends ParseObjectNotice<IReportSalesRecord> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'ReportSalesRecord');
+}

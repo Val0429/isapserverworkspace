@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IReportBase } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, IReportBase } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -20,7 +20,12 @@ export interface IReportDemographic extends IReportBase {
      * 性別
      */
     gender: Enum.EGender;
+
+    /**
+     * NxN search id
+     */
+    faceId: string;
 }
 
 @registerSubclass()
-export class ReportDemographic extends ParseObject<IReportDemographic> {}
+export class ReportDemographic extends ParseObjectNotice<IReportDemographic> {}

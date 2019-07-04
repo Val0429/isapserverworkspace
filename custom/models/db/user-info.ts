@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { LocationSite, UserGroup } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, LocationSite, UserGroup } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -93,4 +93,6 @@ export interface IUserInfo {
 }
 
 @registerSubclass()
-export class UserInfo extends ParseObject<IUserInfo> {}
+export class UserInfo extends ParseObjectNotice<IUserInfo> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'UserInfo');
+}

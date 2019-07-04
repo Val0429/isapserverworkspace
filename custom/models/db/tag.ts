@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { LocationRegion, LocationSite } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, LocationRegion, LocationSite } from './_index';
 
 /**
  * 標籤
@@ -27,4 +27,6 @@ export interface ITag {
 }
 
 @registerSubclass()
-export class Tag extends ParseObject<ITag> {}
+export class Tag extends ParseObjectNotice<ITag> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'Tag');
+}

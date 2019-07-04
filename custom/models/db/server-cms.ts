@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Rx from 'rxjs';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice } from './_index';
 
 /**
  * CMS 設定
@@ -41,7 +41,7 @@ export interface IServerCMS {
     password: string;
 }
 
-export let ServerCMS$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
-
 @registerSubclass()
-export class ServerCMS extends ParseObject<IServerCMS> {}
+export class ServerCMS extends ParseObjectNotice<IServerCMS> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'ServerCMS');
+}

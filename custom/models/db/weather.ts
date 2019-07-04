@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { LocationSite } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, LocationSite } from './_index';
 
 /**
  * 天氣記錄
@@ -32,4 +32,6 @@ export interface IWeather {
 }
 
 @registerSubclass()
-export class Weather extends ParseObject<IWeather> {}
+export class Weather extends ParseObjectNotice<IWeather> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'Weather');
+}

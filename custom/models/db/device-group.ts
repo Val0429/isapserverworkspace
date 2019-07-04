@@ -1,6 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Rx from 'rxjs';
-import { LocationSite, LocationArea } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, LocationSite, LocationArea } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -28,7 +27,7 @@ export interface IDeviceGroup {
     name: string;
 }
 
-export let DeviceGroup$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
-
 @registerSubclass()
-export class DeviceGroup extends ParseObject<IDeviceGroup> {}
+export class DeviceGroup extends ParseObjectNotice<IDeviceGroup> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'DeviceGroup');
+}

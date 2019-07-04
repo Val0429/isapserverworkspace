@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IDateRange, LocationSite } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, IDateRange, LocationSite } from './_index';
 
 /**
  * 事件活動
@@ -32,4 +32,6 @@ export interface IEventCampaign extends IDateRange {
 }
 
 @registerSubclass()
-export class EventCampaign extends ParseObject<IEventCampaign> {}
+export class EventCampaign extends ParseObjectNotice<IEventCampaign> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'EventCampaign');
+}

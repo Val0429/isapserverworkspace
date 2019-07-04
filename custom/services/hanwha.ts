@@ -41,9 +41,9 @@ class Service {
                 },
             });
 
-        IDB.Device$.subscribe({
+        IDB.Device.notice$.subscribe({
             next: (x) => {
-                if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.brand === Enum.EDeviceBrand.hanwha) {
+                if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.data.get('brand') === Enum.EDeviceBrand.hanwha) {
                     initialization$.next();
                 }
             },

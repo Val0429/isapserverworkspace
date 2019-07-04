@@ -61,7 +61,7 @@ class Action {
                 },
             });
 
-        IDB.ServerDemographic$.subscribe({
+        IDB.ServerDemographic.notice$.subscribe({
             next: (x) => {
                 if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
                     initialization$.next();

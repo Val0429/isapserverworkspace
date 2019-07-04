@@ -1,6 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Rx from 'rxjs';
-import { LocationRegion } from './_index';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice, LocationRegion } from './_index';
 
 /**
  * 地區
@@ -67,7 +66,7 @@ export interface ILocationSite {
     latitude?: number;
 }
 
-export let LocationSite$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
-
 @registerSubclass()
-export class LocationSite extends ParseObject<ILocationSite> {}
+export class LocationSite extends ParseObjectNotice<ILocationSite> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'LocationSite');
+}

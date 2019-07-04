@@ -1,5 +1,5 @@
-import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import * as Rx from 'rxjs';
+import { registerSubclass } from 'helpers/parse-server/parse-helper';
+import { ParseObjectNotice } from './_index';
 
 /**
  * FRS 設定
@@ -41,7 +41,7 @@ export interface IServerFRSManager {
     password: string;
 }
 
-export let ServerFRSManager$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd' }> = new Rx.Subject();
-
 @registerSubclass()
-export class ServerFRSManager extends ParseObject<IServerFRSManager> {}
+export class ServerFRSManager extends ParseObjectNotice<IServerFRSManager> {
+    static notice$ = ParseObjectNotice._notice$.filter((x) => x.data.className === 'ServerFRSManager');
+}
