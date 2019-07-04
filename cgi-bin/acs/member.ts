@@ -131,9 +131,6 @@ const fieldNames = {
     DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
     CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
     WorkAreaName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-    ResignationDate:"CustomDateControl1__CF",
-    CompanyName:"CustomTextBoxControl6__CF",
-    CardCustodian:"CustomTextBoxControl2__CF",
     CardType:"CustomDropdownControl1__CF"
 }
 
@@ -149,16 +146,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue",new RegExp(filter.DepartmentName), "i");
     if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue",new RegExp(filter.CostCenterName), "i");
     if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue",new RegExp(filter.WorkAreaName), "i");
-    if(filter.CardCustodian) query.equalTo("CustomFields.FiledName", fieldNames.CardCustodian).matches("CustomFields.FieldValue",new RegExp(filter.CardCustodian), "i");
+    
     if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue",new RegExp(filter.CardType), "i");
     
-    if(filter.EndDate){      
-        let endDate = new Date(filter.EndDate);  
-        query.lessThanOrEqualTo("EndDate", endDate);
+    if(filter.start2 && filter.end2){       
+        query.lessThanOrEqualTo("EndDate", filter.end2).greaterThanOrEqualTo("EndDate", filter.start2);
     } 
-    if(filter.StartDate){      
-        let startDate = new Date(filter.StartDate);  
-        query.greaterThanOrEqualTo("StartDate", startDate);
+    if(filter.start1 && filter.end1){      
+        query.lessThanOrEqualTo("StartDate", filter.end1).greaterThanOrEqualTo("StartDate", filter.start1);
     } 
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);

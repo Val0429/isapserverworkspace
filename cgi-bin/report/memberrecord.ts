@@ -50,14 +50,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
         query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).matches("CustomFields.FieldValue", new RegExp(resignDate), "i");
     } 
-    if(filter.EndDate){      
-        let endDate = new Date(filter.EndDate);  
-        query.lessThanOrEqualTo("EndDate", endDate);
-    } 
-    if(filter.StartDate){      
-        let startDate = new Date(filter.StartDate);  
-        query.greaterThanOrEqualTo("StartDate", startDate);
-    } 
+   
     if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).matches("CustomFields.FieldValue", new RegExp(filter.CompanyName), "i");
     
     
