@@ -88,7 +88,6 @@ export class AttendanceRecord {
                 });
             }
             await delay(1000);
-
         }
 
         now = new Date();

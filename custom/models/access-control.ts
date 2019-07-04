@@ -303,18 +303,10 @@ export interface IAttendanceRecords {
 @registerSubclass()
 export class AttendanceRecords extends ParseObject<IAttendanceRecords> { }
 
-
-export interface IProfileId {   // Credentials.ProfileId
-    profileid: number;
-    name?: string               // 35 bit, 26 bit, ???
+export interface IDropDownList {
+    type: String,   // ProfileId, Certification, License, CreateReason1 , CreateReason2, CreateReason3, ApplyReason1, ApplyReason2, ApplyReason3
+    key?: number,
+    name?: string
 }
 @registerSubclass()
-export class ProfileId extends ParseObject<IProfileId> { }
-
-
-export interface ICardProfile { // 正卡類型   CustomDropdownControl1__CF
-    name?: string               // 正職, ASR臨時卡, DOC臨時卡
-}
-@registerSubclass()
-export class CardProfile extends ParseObject<ICardProfile> { }
-
+export class DropDownList extends ParseObject<IDropDownList> { }

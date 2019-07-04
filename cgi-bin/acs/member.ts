@@ -27,6 +27,19 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Member(data.inputType);
 
+    let cardno = "" ;
+    try {
+        cardno = obj.get("Credentials")[0]["CardNumber"];
+    }
+    catch ( e) {
+        throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
+    }
+
+    let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
+    if ( cnt != null) {
+        throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
+    }
+
     // AccessRules
     let accessLevels = await new Parse.Query(AccessLevel).find();
 
