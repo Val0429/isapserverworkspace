@@ -25,6 +25,11 @@ type OutputC = Restful.OutputC<IPermissionTable>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
+
+    let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
+    let maxId = firstObject.get("tableid");
+    data.inputType.tableid = maxId + 1;
+
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
 
