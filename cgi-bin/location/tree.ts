@@ -170,7 +170,7 @@ async function GetSiteChildrens(region: IDB.LocationRegion, sites: IDB.LocationS
 
                 let siteData: IResponse.ILocation.ITreeSite = {
                     name: value.getValue('name'),
-                    customId: value.getValue('customId'),
+                    //customId:value.getValue('customId'),
                     address: value.getValue('address'),
                     tags: tags,
                     imageSrc: value.getValue('imageSrc'),
