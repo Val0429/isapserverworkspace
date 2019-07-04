@@ -231,6 +231,55 @@ export class FRSService {
     }
 
     /**
+     * Get user groups
+     * @param sessionId
+     */
+    public async GetUserGroups(): Promise<FRSService.IObject[]>;
+    public async GetUserGroups(sessionId: string): Promise<FRSService.IObject[]>;
+    public async GetUserGroups(sessionId?: string): Promise<FRSService.IObject[]> {
+        try {
+            let url: string = `${this._baseUrl}/persons/group?sessionId=${encodeURIComponent(sessionId || this.sessionId)}&page_size=1000&skip_pages=0`;
+
+            let result: any = await new Promise<any>((resolve, reject) => {
+                try {
+                    HttpClient.get(
+                        {
+                            url: url,
+                            json: true,
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.message.toLowerCase() !== 'ok') {
+                                return reject(body.message);
+                            }
+
+                            resolve(body);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            let groups: FRSService.IObject[] = result.group_list.groups.map((value, index, array) => {
+                return {
+                    objectId: value.group_id,
+                    name: value.name,
+                };
+            });
+
+            return groups;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Enable Live Subject
      * @param sessionId
      */
@@ -259,14 +308,23 @@ export class FRSService {
             next: async (data) => {
                 try {
                     if ('type' in data) {
-                        let date: Date = new Date(data.timestamp);
-                        let camera: string = data.channel;
-                        let faceId: string = data.verify_face_id;
-                        let name: string = 'unknown';
-                        let snapshot: Buffer = await this.GetSnapshot(data.snapshot);
+                        let result = data as FRSCore.RecognizedUser | FRSCore.UnRecognizedUser;
 
-                        if (data.type === FRSCore.UserType.Recognized) {
-                            name = data.person_info.fullname;
+                        let date: Date = new Date(result.timestamp);
+                        let camera: string = result.channel;
+                        let faceId: string = result.verify_face_id;
+                        let name: string = 'unknown';
+                        let snapshot: Buffer = await this.GetSnapshot(result.snapshot);
+                        let groups: FRSService.IObject[] = [];
+
+                        if (result.type === FRSCore.UserType.Recognized) {
+                            name = result.person_info.fullname;
+                            groups = result.groups.map((value, index, array) => {
+                                return {
+                                    objectId: value.group_id,
+                                    name: value.name,
+                                };
+                            });
                         }
 
                         this._liveStream$.next({
@@ -274,6 +332,7 @@ export class FRSService {
                             camera: camera,
                             faceId: faceId,
                             date: date,
+                            groups: groups,
                             image: snapshot,
                         });
                     }
@@ -366,6 +425,11 @@ export namespace FRSService {
         throttleKeepSameFaceSeconds?: number;
     }
 
+    export interface IObject {
+        objectId: string;
+        name: string;
+    }
+
     /**
      *
      */
@@ -374,6 +438,7 @@ export namespace FRSService {
         camera: string;
         faceId: string;
         date: Date;
+        groups: IObject[];
         image: Buffer;
     }
 
