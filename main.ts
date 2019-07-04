@@ -26,16 +26,27 @@ interface RecognizedRelatedUnit {
 }
 type RecognizedRelatedData = RecognizedRelatedUnit[];
 
+interface IFaceSource {
+    frsId: string;
+    snapshot: string;
+    channel: string;
+    faceFeature: Buffer;
+}
+
 /// faces saved in DB
 interface NxNFaces {
     /// unique key of face
     _id: string;
     /// private use, group simular faces
     gId: string;
+    /// private use, score to group leader.
+    gScore: number;
     /// relation to FRS of recognized user
     relations: RecognizedRelatedData;
-    /// feature
-    faceFeature: Buffer;
+    /// source of this face
+    source: IFaceSource;
+    /// for debug
+    url: string;
 }
 
 /// faces send to WS
@@ -44,14 +55,19 @@ interface NxNFacesResult {
     objectId: string;
     /// relation to FRS of recognized user
     relations: RecognizedRelatedData;
+    /// source of db matched face
+    source: IFaceSource;
+    /// for debug
+    url: string;
 
-    /// frs related
-    frsId: string;
-    snapshot: string;
-    channel: string;
+    /// source of current face
+    currentSource: IFaceSource;
+    /// for debug
+    currentUrl: string;
 
-    /// for 1st face: 1.0, for others: < 1.0
+    /// currentSource compare to source
     score: number;
+    /// happen time
     timestamp: Date;
 }
 
@@ -62,9 +78,12 @@ interface ICompareMatch {
 type ICompareMatches = ICompareMatch[];
 
 const collectionName = "NxNFaces";
-const valuableThreshold = 0.3;
-const groupingThreshold = 0.7;
-const matchingthreshold = 0.9;
+// const valuableThreshold = 0.3;
+// const groupingThreshold = 0.7;
+// const matchingthreshold = 0.9;
+const valuableThreshold = 0.4;
+const groupingThreshold = 0.8;
+const matchingthreshold = 0.96;
 const highestMatchesCount = 10;
 class ManagedFaces {
     private db: Db;
@@ -76,8 +95,10 @@ class ManagedFaces {
         this.client = client;
         let col = db.collection(collectionName);
         /// find exists Faces
+        console.time("init faces loaded");
         let faces: NxNFaces[] = await col.find({}).toArray();
         this.doInit(faces);
+        console.timeEnd("init faces loaded");
     }
 
     private managedFaces: { [gid: string]: NxNFaces[] } = {};
@@ -89,28 +110,30 @@ class ManagedFaces {
     private doInitOne(face: NxNFaces) {
         let gId = face.gId;
         let bucket = this.managedFaces[gId] || (this.managedFaces[gId] = []);
-        if (face.faceFeature instanceof Buffer) bucket.push(face);
-        else bucket.push({ ...face, faceFeature: (face.faceFeature as any).read(0, (face.faceFeature as any).length()) });
+        if (!(face.source.faceFeature instanceof Buffer)) {
+            face.source.faceFeature = (face.source.faceFeature as any).read(0, (face.source.faceFeature as any).length());
+        }
+        bucket.splice( this.pickInsertLocation(bucket, face, "gScore"), 0, face );
     }
 
-    private insertHighestMatches(highestMatches: ICompareMatches, current: ICompareMatch) {
-        const location = (array, value) => {
-            var low = 0,
-                high = array.length;
+    private pickInsertLocation<T>(array: T[], value: T, key: string) {
+        var low = 0,
+            high = array.length;
 
-            while (low < high) {
-                var mid = low + high >>> 1;
-                if (array[mid].score > value.score) low = mid + 1;
-                else high = mid;
-            }
-            return low;
+        while (low < high) {
+            var mid = low + high >>> 1;
+            if (array[mid][key] > value[key]) low = mid + 1;
+            else high = mid;
         }
+        return low;
+    }
 
+    private insertHighestMatches(highestMatches: any[], current: ICompareMatch) {
         if (highestMatches.length < highestMatchesCount) {
-            return highestMatches.splice( location(highestMatches, current), 0, current );
+            return highestMatches.splice( this.pickInsertLocation(highestMatches, current, "score"), 0, current );
         }
         if (highestMatches[highestMatches.length-1].score < current.score) {
-            highestMatches.splice( location(highestMatches, current), 0, current );
+            highestMatches.splice( this.pickInsertLocation(highestMatches, current, "score"), 0, current );
             return highestMatches.pop();
         }
     }
@@ -130,11 +153,11 @@ class ManagedFaces {
             /// 1.1.3) compare with all.
             for (let i=0; i<nxnfaces.length; ++i) {
                 let o = nxnfaces[i];
-                let score = FaceFeatureCompare.sync(faceFeature, o.faceFeature);
+                let score = FaceFeatureCompare.sync(faceFeature, o.source.faceFeature);
 
                 if (i===0) {
                     if (score < valuableThreshold) continue main;
-                    if (score > (highestGroup[1] || 0)) highestGroup = [gid, score];
+                    if (score > (highestGroup[1] || groupingThreshold)) highestGroup = [gid, score];
                 }
 
                 /// 1.2) if any face matches (>= ${matchingThreshold}), done and return.
@@ -156,7 +179,11 @@ class ManagedFaces {
                         }
                     }
                     /// return
-                    return o;
+                    return {
+                        ...o,
+                        matchUrl: `http://${face.frs.attributes.ip}:${face.frs.attributes.port}/frs/cgi/snapshot/image=${face.face.snapshot}`,
+                        matchScore: score
+                    } as any;
                 }
 
                 /// 1.3) if not match
@@ -172,7 +199,14 @@ class ManagedFaces {
         let c: NxNFaces = {
             _id: shortid.generate(),
             gId: highestGroup.length > 0 ? highestGroup[0] : shortid.generate(),
-            faceFeature,
+            gScore: highestGroup.length > 0 ? highestGroup[1] : 1.0,
+            source: {
+                frsId: face.frs.id,
+                channel: face.face.channel,
+                snapshot: face.face.snapshot,
+                faceFeature,
+            },
+            url: `http://${face.frs.attributes.ip}:${face.frs.attributes.port}/frs/cgi/snapshot/image=${face.face.snapshot}`,
             relations: face.face.type === UserType.UnRecognized ? [] : [
                 {
                     frsId: face.frs.id,
@@ -188,7 +222,7 @@ class ManagedFaces {
         console.log('goes to here')
         return highestMatches.reduce((final, value) => {
             final.push({
-                ...value, face: { ...value.face, faceFeature: undefined }
+                ...value, face: { ...value.face, source: { ...value.face.source, faceFeature: undefined } }
             });
             return final;
         }, []);
@@ -213,5 +247,5 @@ class ManagedFaces {
         else console.log('matches');
         // console.log({ ...data, face: { ...data.face, face_feature: undefined } });
     });
-    
+
 })();

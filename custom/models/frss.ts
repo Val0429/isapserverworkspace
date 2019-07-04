@@ -1,8 +1,11 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import { FRSService } from 'workspace/custom/services/frs-service';
 import 'workspace/custom/services/frs-service/modules/live-faces';
+import 'workspace/custom/services/frs-service/modules/verify-face';
 import { Subject } from 'rxjs';
 import { RecognizedUser, UnRecognizedUser } from 'workspace/custom/services/frs-service/libs/core';
+
+const request = require('request');
 
 export const sjLiveStream: Subject<ILiveFaces> = new Subject<ILiveFaces>();
 export interface ILiveFaces {
@@ -46,6 +49,17 @@ export interface IFRSs {
         instance.sjLiveStream.subscribe( (face) => {
             sjLiveStream.next({ frs, face });
         });
+
+        const doOnce = () => {
+            const url = "https://thispersondoesnotexist.com/image";
+            request.get({ url, encoding: null }, async (err, res, body) => {
+                console.log('image received!');
+                await instance.verifyFace({ image: body });
+                console.log('verify face sent!');
+                setTimeout( () => doOnce(), 0 );
+            });
+        }
+        doOnce();
     }
 
     static async delete(frs: FRSs) {
