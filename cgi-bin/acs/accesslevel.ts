@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, TimeSchedule, Door
 } from 'core/cgi-package';
 
 import { IAccessLevel, AccessLevel } from '../../custom/models'
@@ -73,6 +73,16 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(AccessLevel);
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
+    
+    let filter = data.parameters as any;
+    if(filter.timename){
+        let tsQuery = new Parse.Query(TimeSchedule).matches("timename", new RegExp(filter.timename), "i");    
+        query.matchesQuery("timeschedule", tsQuery);
+    }
+    if(filter.doorname){
+        let tsDoor = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i");    
+        query.matchesQuery("door", tsDoor);
+    }
     /// 3) Output
     return Restful.Pagination(query, data.parameters);
 });

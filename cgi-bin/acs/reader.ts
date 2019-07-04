@@ -38,6 +38,10 @@ type OutputR = Restful.OutputR<IReader>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Reader);
+    let filter = data.parameters as any;
+    if(filter.name){
+        query.matches("readername", new RegExp(filter.name), "i");
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output

@@ -38,8 +38,8 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         .addAscending("time_occurred");
     
     let filter = data.parameters as any;
-    if(filter.card_no){
-        query.equalTo("card_no", filter.card_no);
+    if(filter.CardNumber){
+        query.equalTo("card_no", filter.CardNumber);
     }
 
     let records = [];
@@ -48,19 +48,19 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let lr = null;
     if (rs.length >= 1) {
         lr = rs[0];
-        
-        let dateTime = lr.get("date_occurred")+lr.get("time_occurred");
-        
-        lr.set("date_time_occured", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
-        console.log(lr.get("date_time_occured"));
-        records.push(lr);
+        if(lr.get("date_occurred") && lr.get("time_occurred")){
+            let dateTime = lr.get("date_occurred")+lr.get("time_occurred");            
+            lr.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());            
+            records.push(lr);
+        }
     }
 
     for (let i = 1; i < rs.length; i++) {
         let r = rs[i];
+        if(!r.get("date_occurred") ||!r.get("time_occurred"))continue;
         let dateTime = r.get("date_occurred")+r.get("time_occurred")
         
-        r.set("date_time_occured", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
+        r.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
         if (r.get("card_no") != lr.get("card_no")) {
             records.push(lr);
             records.push(r);
@@ -78,11 +78,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     if(filter.start){
         let start = new Date(filter.start);
-        records.filter(x=>x.date_time_occured >= start);
+        records = records.filter(x=>x.get("date_time_occurred") >= start);
     }
     if(filter.end){
         let end= new Date(filter.end);
-        records.filter(x=>x.date_time_occured <= end);
+        records = records.filter(x=>x.get("date_time_occurred") <= end);
     }
 
     /// 3) Output

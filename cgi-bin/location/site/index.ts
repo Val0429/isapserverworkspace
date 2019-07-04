@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, DoorGroup, ParseObject, IDoorGroup } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
@@ -6,6 +6,7 @@ import * as Middleware from '../../../custom/middlewares';
 // import * as Enum from '../../../custom/enums';
 import * as Area from '../area';
 import * as Tag from '../../tag';
+import { LocationRegion } from 'workspace/custom/models/db/_index';
 // import * as OfficeHour from '../../office-hour';
 // import * as UserGroup from '../../user/group';
 // import * as Campaign from '../../event/campaign';
@@ -45,37 +46,37 @@ action.post(
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
-                    try {
-                        
-                        let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
-                            .equalTo('name', value.name)
-                            .first()
-                            .fail((e) => {
-                                throw e;
-                            });
-                        if (site) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
-                        }
-
-
-                        site = new IDB.LocationSite();
-
-                        site.setValue('name', value.name);
-                        site.setValue('address', value.address);
-                        site.setValue('longitude', value.longitude);
-                        site.setValue('latitude', value.latitude);
-
-                        await site.save(null, { useMasterKey: true }).fail((e) => {
+                try {
+                    
+                    let site: IDB.LocationSite = await new Parse.Query(IDB.LocationSite)
+                        .equalTo('name', value.name)
+                        .first()
+                        .fail((e) => {
                             throw e;
                         });
-
-                        resMessages[index].objectId = site.id;
-
-                    } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
-
-                        Print.Log(e, new Error(), 'error');
+                    if (site) {
+                        throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
                     }
+
+
+                    site = new IDB.LocationSite();
+
+                    site.setValue('name', value.name);
+                    site.setValue('address', value.address);
+                    site.setValue('longitude', value.longitude);
+                    site.setValue('latitude', value.latitude);
+
+                    await site.save(null, { useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+
+                    resMessages[index].objectId = site.id;
+
+                } catch (e) {
+                    resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+
+                    Print.Log(e, new Error(), 'error');
+                }
                 }),
             );
 
@@ -118,6 +119,15 @@ action.get(
                 query.equalTo('objectId', _input.objectId);
             }
 
+            let filter = data.parameters;
+            if(filter.sitename){
+                query.matches('name', new RegExp(filter.sitename), 'i');
+            }
+            if(filter.regionname){
+                let regQuery = new Parse.Query(LocationRegion).matches('name', new RegExp(filter.regionname), 'i');
+                query.matchesQuery('region', regQuery);
+            }
+            
             let total: number = await query.count().fail((e) => {
                 throw e;
             });
@@ -132,23 +142,7 @@ action.get(
                     throw e;
                 });
 
-            let managers: Parse.User[] = sites.map((value, index, array) => {
-                return value.getValue('manager');
-            });
-            let managerInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
-                .containedIn('user', managers)
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
-
-            // let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
-            //     .containedIn('sites', sites)
-            //     .find()
-            //     .fail((e) => {
-            //         throw e;
-            //     });
-
+            
             let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
                 .containedIn('site', sites)
                 .find()
@@ -156,12 +150,14 @@ action.get(
                     throw e;
                 });
 
-            // let deviceGroups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
-            //     .containedIn('site', sites)
-            //     .find()
-            //     .fail((e) => {
-            //         throw e;
-            //     });
+            let doorGroups: DoorGroup[] = await new Parse.Query(DoorGroup)
+                .containedIn('area', areas)
+                .include("doors")
+                .include("area")
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
 
             return {
                 paging: {
@@ -170,65 +166,42 @@ action.get(
                     page: _paging.page,
                     pageSize: _paging.pageSize,
                 },
-                results: sites.map((value, index, array) => {
-                    let region: IResponse.IObject = value.getValue('region')
+                results: sites.map(site => {
+                    let region: IResponse.IObject = site.getValue('region')
                         ? {
-                              objectId: value.getValue('region').id,
-                              name: value.getValue('region').getValue('name'),
+                              objectId: site.getValue('region').id,
+                              name: site.getValue('region').getValue('name'),
                           }
                         : undefined;
 
-                    let managerInfo: IDB.UserInfo = managerInfos.find((value1, index1, array1) => {
-                        return value1.getValue('user').id === value.getValue('manager').id;
-                    });
-                    let manager: IResponse.IObject = managerInfo
-                        ? {
-                              objectId: value.getValue('manager').id,
-                              name: managerInfo.getValue('name'),
-                          }
-                        : undefined;
-
-                    // let officeHour: IDB.OfficeHour = officeHours.find((value1, index1, array1) => {
-                    //     let siteIds: string[] = value1.getValue('sites').map((value2, index2, array2) => {
-                    //         return value2.id;
-                    //     });
-
-                    //     return siteIds.indexOf(value.id) > -1;
-                    // });
-                    // let officeHourObject: IResponse.IObject = officeHour
-                    //     ? {
-                    //           objectId: value.id,
-                    //           name: officeHour.getValue('name'),
-                    //       }
-                    //     : undefined;
-
-                    let areaCount: number = areas.filter((value1, index1, array1) => {
-                        return value1.getValue('site').id === value.id;
-                    }).length;
-
-                    // let deviceGroupCount: number = deviceGroups.filter((value1, index1, array1) => {
-                    //     return value1.getValue('site').id === value.id;
-                    // }).length;
-
+                    let doorGroupCount=0;
+                    let doorCount=0;
+                    let readerCount=0;
+                    let siteAreas: any[] = areas.filter(area=>area.getValue("site").id == site.id).map(d => ParseObject.toOutputJSON(d));
+                    for(let sa of siteAreas){
+                        let areaDoorGroups:any[] = doorGroups.filter(x=> x.getValue("area").id == sa.objectId).map(d => ParseObject.toOutputJSON(d));
+                        doorGroupCount+=areaDoorGroups.length;
+                        for(let dg of areaDoorGroups){
+                            doorCount+=dg.doors.length;
+                            for(let d of dg.doors){
+                                readerCount += d.readerin ? d.readerin.length:0;
+                                readerCount += d.readerout ? d.readerout.length:0;
+                            }
+                        }
+                    }
+            
                     return {
-                        objectId: value.id,
+                        objectId: site.id,
                         region: region,
-                        name: value.getValue('name'),
-                        customId: value.getValue('customId'),
-                        manager: manager,
-                        address: value.getValue('address'),
-                        phone: value.getValue('phone'),
-                        establishment: value.getValue('establishment'),
-                        squareMeter: value.getValue('squareMeter'),
-                        staffNumber: value.getValue('staffNumber'),
-                        // officeHour: officeHourObject,
-                        officeHour: null,
-                        imageSrc: value.getValue('imageSrc'),
-                        longitude: value.getValue('longitude'),
-                        latitude: value.getValue('latitude'),
-                        areaCount: areaCount,
-                        // deviceGroupCount: deviceGroupCount,
-                        deviceGroupCount: 0
+                        name: site.getValue('name'),
+                        address: site.getValue('address'),
+                        imageSrc: site.getValue('imageSrc'),
+                        longitude: site.getValue('longitude'),
+                        latitude: site.getValue('latitude'),
+                        areaCount:siteAreas.length,
+                        doorGroupCount,
+                        doorCount,
+                        readerCount
                     };
                 }),
             };

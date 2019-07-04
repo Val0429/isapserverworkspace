@@ -30,7 +30,7 @@ action.put(
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
 
         try {
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
+            
             let resMessages: OutputU = data.parameters.resMessages;
 
             await Promise.all(

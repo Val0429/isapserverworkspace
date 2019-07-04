@@ -39,6 +39,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Floor);
     /// 2) With Extra Filters
+    let filter = data.parameters as any;
+    if(filter.name){
+        query.matches("floorname", new RegExp(filter.name), "i");
+    }
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters);

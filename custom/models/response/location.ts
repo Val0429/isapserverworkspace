@@ -26,7 +26,6 @@ export interface IRegionAll {
 
 export interface ISiteIndexR_Base extends IGPS {
     name: string;
-    customId: string;
     address: string;
     imageSrc: string;
 }
@@ -34,14 +33,7 @@ export interface ISiteIndexR_Base extends IGPS {
 export interface ISiteIndexR extends ISiteIndexR_Base {
     objectId: string;
     region: IObject;
-    manager: IObject;
-    phone: string;
-    establishment: Date;
-    squareMeter: number;
-    staffNumber: number;
-    officeHour: IObject;
     areaCount: number;
-    deviceGroupCount: number;
 }
 
 export interface ISiteAll {
