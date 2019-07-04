@@ -613,138 +613,6 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
 }
 
 /**
- * Unbinding device area
- * @param area
- */
-export async function UnbindingArea(area: IDB.LocationArea): Promise<void> {
-    try {
-        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-            .equalTo('area', area)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            devices.map(async (value, index, array) => {
-                value.unset('area');
-
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Unbinding device group
- * @param group
- */
-export async function UnbindingGroup(group: IDB.DeviceGroup): Promise<void> {
-    try {
-        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-            .containedIn('groups', [group])
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            devices.map(async (value, index, array) => {
-                let groups: IDB.DeviceGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
-                    return value1.id !== group.id;
-                });
-                value.setValue('groups', groups);
-
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Delete device by server
- * @param serverId
- */
-export async function DeleteByServer(serverId: string): Promise<void> {
-    try {
-        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-            .equalTo('config.server.objectId', serverId)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            devices.map(async (value, index, array) => {
-                await value.destroy({ useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Delete device by demographic server
- * @param demoServer
- */
-export async function DeleteByDemoServer(demoServer: IDB.ServerDemographic): Promise<void> {
-    try {
-        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-            .equalTo('demoServer', demoServer)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            devices.map(async (value, index, array) => {
-                await value.destroy({ useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Delete device by human detection server
- * @param hdServer
- */
-export async function DeleteByHDServer(hdServer: IDB.ServerHumanDetection): Promise<void> {
-    try {
-        let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-            .equalTo('hdServer', hdServer)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            devices.map(async (value, index, array) => {
-                await value.destroy({ useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
  * Convert device mode to prodect id
  * @param mode
  */
@@ -804,3 +672,141 @@ async function LicenseCheck(mode: Enum.EDeviceMode): Promise<void> {
         throw e;
     }
 }
+
+/**
+ * Unbinding when site was delete
+ */
+IDB.LocationSite.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
+                    .equalTo('site', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    devices.map(async (value, index, array) => {
+                        value.unset('site');
+                        value.unset('area');
+                        value.setValue('groups', []);
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Unbinding when area was delete
+ */
+IDB.LocationArea.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
+                    .equalTo('area', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    devices.map(async (value, index, array) => {
+                        value.unset('area');
+                        value.setValue('groups', []);
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Unbinding when device group was delete
+ */
+IDB.DeviceGroup.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
+                    .containedIn('groups', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    devices.map(async (value, index, array) => {
+                        let groups: IDB.DeviceGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('groups', groups);
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Delete when human detection server was delete
+ */
+IDB.ServerHumanDetection.notice$
+    .merge(IDB.ServerDemographic.notice$)
+    .merge(IDB.ServerCMS.notice$)
+    .merge(IDB.ServerFRS.notice$)
+    .merge(IDB.ServerFRSManager.notice$)
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let query: Parse.Query<IDB.Device> = new Parse.Query(IDB.Device);
+
+                switch (x.data.className) {
+                    case 'ServerHumanDetection':
+                        query.equalTo('hdServer', x.data);
+                        break;
+                    case 'ServerDemographic':
+                        query.equalTo('demoServer', x.data);
+                        break;
+                    default:
+                        query.equalTo('config.server.objectId', x.data.id);
+                }
+
+                let devices: IDB.Device[] = await query.find().fail((e) => {
+                    throw e;
+                });
+
+                await Promise.all(
+                    devices.map(async (value, index, array) => {
+                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

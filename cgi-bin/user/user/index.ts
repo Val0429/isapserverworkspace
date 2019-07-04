@@ -440,31 +440,67 @@ action.delete(
 );
 
 /**
- * Unbinding user info group
- * @param group
+ * Unbinding when user group was delete
  */
-export async function UnbindingGroup(group: IDB.UserGroup): Promise<void> {
-    try {
-        let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
-            .containedIn('groups', [group])
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+IDB.UserGroup.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                    .containedIn('groups', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
 
-        await Promise.all(
-            userInfos.map(async (value, index, array) => {
-                let groups: IDB.UserGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
-                    return value1.id !== group.id;
-                });
-                value.setValue('groups', groups);
+                await Promise.all(
+                    userInfos.map(async (value, index, array) => {
+                        let groups: IDB.UserGroup[] = value.getValue('groups').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('groups', groups);
 
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Unbinding when site was delete
+ */
+IDB.LocationSite.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                    .containedIn('sites', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    userInfos.map(async (value, index, array) => {
+                        let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('sites', sites);
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

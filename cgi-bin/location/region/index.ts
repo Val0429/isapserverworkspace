@@ -4,8 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as Site from '../site';
-import * as Tag from '../../tag';
 
 let action = new Action({
     loginRequired: true,
@@ -360,10 +358,6 @@ export async function Delete(region: IDB.LocationRegion): Promise<void> {
         await Promise.all(
             childrens.map(async (value, index, array) => {
                 if (value.getValue('imageSrc')) {
-                    await Site.UnbindingRegion(value);
-
-                    await Tag.UnbindingRegion(value);
-
                     try {
                         File.DeleteFile(`${File.assetsPath}/${value.getValue('imageSrc')}`);
                     } catch (e) {}

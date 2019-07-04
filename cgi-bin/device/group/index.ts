@@ -4,7 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Parser, Db } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as Device from '../';
 
 let action = new Action({
     loginRequired: true,
@@ -293,7 +292,9 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['group not found']);
                         }
 
-                        await Delete(group);
+                        await group.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -311,40 +312,29 @@ action.delete(
 );
 
 /**
- * Delete group
- * @param objectId
+ * Delete when area was delete
  */
-export async function Delete(group: IDB.DeviceGroup): Promise<void> {
-    try {
-        await Device.UnbindingGroup(group);
+IDB.LocationArea.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
+                    .equalTo('area', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
 
-        await group.destroy({ useMasterKey: true }).fail((e) => {
-            throw e;
-        });
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Delete group
- * @param area
- */
-export async function Deletes(area: IDB.LocationArea): Promise<void> {
-    try {
-        let groups: IDB.DeviceGroup[] = await new Parse.Query(IDB.DeviceGroup)
-            .equalTo('area', area)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            groups.map(async (value, index, array) => {
-                await Delete(value);
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+                await Promise.all(
+                    groups.map(async (value, index, array) => {
+                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

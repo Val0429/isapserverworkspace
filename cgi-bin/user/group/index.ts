@@ -4,7 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Parser, Db } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as UserInfo from '../user';
 
 let action = new Action({
     loginRequired: true,
@@ -264,8 +263,6 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['user group not found']);
                         }
 
-                        await UserInfo.UnbindingGroup(group);
-
                         await group.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
@@ -286,31 +283,34 @@ action.delete(
 );
 
 /**
- * Unbinding group site
- * @param site
+ * Unbinding when site was delete
  */
-export async function UnbindingSite(site: IDB.LocationSite): Promise<void> {
-    try {
-        let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
-            .containedIn('sites', [site])
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+IDB.LocationSite.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let groups: IDB.UserGroup[] = await new Parse.Query(IDB.UserGroup)
+                    .containedIn('sites', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
 
-        await Promise.all(
-            groups.map(async (value, index, array) => {
-                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
-                    return value1.id !== site.id;
-                });
-                value.setValue('sites', sites);
+                await Promise.all(
+                    groups.map(async (value, index, array) => {
+                        let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('sites', sites);
 
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

@@ -4,8 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as DeviceGroup from '../../device/group';
-import * as Device from '../../device';
 
 let action = new Action({
     loginRequired: true,
@@ -341,10 +339,6 @@ action.delete(
  */
 export async function Delete(area: IDB.LocationArea): Promise<void> {
     try {
-        await DeviceGroup.Deletes(area);
-
-        await Device.UnbindingArea(area);
-
         await area.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });
@@ -362,24 +356,27 @@ export async function Delete(area: IDB.LocationArea): Promise<void> {
 }
 
 /**
- * Delete area
- * @param site
+ * Delete when site was delete
  */
-export async function Deletes(site: IDB.LocationSite): Promise<void> {
-    try {
-        let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
-            .equalTo('site', site)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+IDB.LocationSite.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let areas: IDB.LocationArea[] = await new Parse.Query(IDB.LocationArea)
+                    .equalTo('site', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
 
-        await Promise.all(
-            areas.map(async (value, index, array) => {
-                await Delete(value);
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+                await Promise.all(
+                    areas.map(async (value, index, array) => {
+                        await Delete(value);
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

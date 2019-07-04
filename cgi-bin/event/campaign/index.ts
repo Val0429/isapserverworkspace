@@ -280,31 +280,34 @@ action.delete(
 );
 
 /**
- * Unbinding event campaign site
- * @param site
+ * Unbinding when site was delete
  */
-export async function UnbindingSite(site: IDB.LocationSite): Promise<void> {
-    try {
-        let campaigns: IDB.EventCampaign[] = await new Parse.Query(IDB.EventCampaign)
-            .containedIn('sites', [site])
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+IDB.LocationSite.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let campaigns: IDB.EventCampaign[] = await new Parse.Query(IDB.EventCampaign)
+                    .containedIn('sites', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
 
-        await Promise.all(
-            campaigns.map(async (value, index, array) => {
-                let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
-                    return value1.id !== site.id;
-                });
-                value.setValue('sites', sites);
+                await Promise.all(
+                    campaigns.map(async (value, index, array) => {
+                        let sites: IDB.LocationSite[] = value.getValue('sites').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('sites', sites);
 
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

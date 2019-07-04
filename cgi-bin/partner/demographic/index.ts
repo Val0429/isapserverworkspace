@@ -4,7 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Parser, Draw, Face, Demographic } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as Device from '../../device';
 
 let action = new Action({
     loginRequired: true,
@@ -265,8 +264,6 @@ action.delete(
                         if (!server) {
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
-
-                        await Device.DeleteByDemoServer(server);
 
                         await server.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;

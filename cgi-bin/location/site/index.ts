@@ -4,11 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as Area from '../area';
-import * as Tag from '../../tag';
-import * as OfficeHour from '../../office-hour';
-import * as UserGroup from '../../user/group';
-import * as Campaign from '../../event/campaign';
 
 let action = new Action({
     loginRequired: true,
@@ -489,16 +484,6 @@ action.delete(
  */
 export async function Delete(site: IDB.LocationSite): Promise<void> {
     try {
-        await OfficeHour.UnbindingSite(site);
-
-        await Tag.UnbindingSite(site);
-
-        await UserGroup.UnbindingSite(site);
-
-        await Campaign.UnbindingSite(site);
-
-        await Area.Deletes(site);
-
         await site.destroy({ useMasterKey: true }).fail((e) => {
             throw e;
         });
@@ -512,28 +497,61 @@ export async function Delete(site: IDB.LocationSite): Promise<void> {
 }
 
 /**
- * Unbinding site region
- * @param region
+ * Unbinding when region was delete
  */
-export async function UnbindingRegion(region: IDB.LocationRegion): Promise<void> {
-    try {
-        let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
-            .equalTo('region', region)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+IDB.LocationRegion.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
+                    .equalTo('region', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
 
-        await Promise.all(
-            sites.map(async (value, index, array) => {
-                value.unset('region');
+                await Promise.all(
+                    sites.map(async (value, index, array) => {
+                        value.unset('region');
 
-                await value.save(null, { useMasterKey: true }).fail((e) => {
-                    throw e;
-                });
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Unbinding when user was delete
+ */
+IDB.UserInfo.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let sites: IDB.LocationSite[] = await new Parse.Query(IDB.LocationSite)
+                    .equalTo('manager', x.data.get('uer'))
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    sites.map(async (value, index, array) => {
+                        value.unset('manager');
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

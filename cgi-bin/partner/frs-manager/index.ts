@@ -266,8 +266,6 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
                         }
 
-                        await Device.DeleteByServer(server.id);
-
                         await server.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
