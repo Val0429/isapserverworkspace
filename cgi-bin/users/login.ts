@@ -5,6 +5,7 @@ import {
     bodyParserJson, EventLogin, Events,
     UserHelper, getEnumKey, ParseObject, EnumConverter
 } from 'core/cgi-package';
+import { APIPermissions, APIRoles } from 'models/customRoles';
 
 
 interface IInputNormal {
@@ -30,14 +31,34 @@ export default new Action<Input, Output>({
 })
 .all( async (data) => {
     let sessionId: string, user: Parse.User;
+    let permissions=[];
     if ('username' in data.inputType) {
+        
         /// Try login
-        var obj = await UserHelper.login(data.inputType);
-        sessionId = obj.sessionId;
-        user = obj.user;
+        try {
+            user = await Parse.User.logIn(data.inputType.username, data.inputType.password);
+            /// fetch all roles
+            
+            await Promise.all(user.get("roles").map( r => r.fetch() ) );
+            let apiRoles=user.get("apiRoles");
+            if(apiRoles){
+                let apiRole = new APIRoles();
+                apiRole.id=apiRoles[0].id;
+                permissions = await new Parse.Query(APIPermissions)
+                    .include("a")
+                    .include("of")
+                    .equalTo("a", apiRole)
+                    .find();
+            }
+            /// Success
+            sessionId = user.getSessionToken();
+
+        } catch(reason) {
+            throw Errors.throw(Errors.LoginFailed);
+        }
 
         var ev = new EventLogin({
-            owner: obj.user
+            owner: user
         });
         Events.save(ev);
 
@@ -51,6 +72,7 @@ export default new Action<Input, Output>({
     return ParseObject.toOutputJSON({
         sessionId,
         serverTime: new Date(),
-        user
+        user,
+        permissions
     });
 });
