@@ -5,4 +5,5 @@ export * from './device-model-hanwha';
 export * from './device-model-isap';
 export * from './gender';
 export * from './mobile-type';
+export * from './people-type';
 export * from './summary-type';

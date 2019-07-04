@@ -1,5 +1,26 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
 import { ParseObjectNotice } from './_index';
+import * as Enum from '../../enums';
+
+/**
+ * FRS User Group
+ */
+export interface IFRSUserGroup {
+    /**
+     *
+     */
+    type: Enum.EPeopleType;
+
+    /**
+     *
+     */
+    objectId: string;
+
+    /**
+     *
+     */
+    name: string;
+}
 
 /**
  * FRS 設定
@@ -44,6 +65,11 @@ export interface IServerFRS {
      *
      */
     password: string;
+
+    /**
+     * User group in FRS
+     */
+    userGroups: IFRSUserGroup[];
 }
 
 @registerSubclass()

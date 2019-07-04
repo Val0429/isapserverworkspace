@@ -70,6 +70,7 @@ action.post(
                         server.setValue('wsport', value.wsport);
                         server.setValue('account', value.account);
                         server.setValue('password', value.password);
+                        server.setValue('userGroups', value.userGroups);
 
                         await server.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -154,6 +155,7 @@ action.get(
                         wsport: value.getValue('wsport'),
                         account: value.getValue('account'),
                         password: value.getValue('password'),
+                        userGroups: value.getValue('userGroups'),
                     };
                 }),
             };
@@ -213,6 +215,9 @@ action.put(
 
                         if (value.name || value.name === '') {
                             server.setValue('name', value.name);
+                        }
+                        if (value.userGroups) {
+                            server.setValue('userGroups', value.userGroups);
                         }
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
@@ -293,8 +298,7 @@ action.delete(
 
 /**
  * Get device list
- * @param analysis
- * @param manage
+ * @param config
  */
 export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSService.IDevice[]> {
     try {
@@ -313,6 +317,32 @@ export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSServ
         let devices = await frs.GetDeviceList();
 
         return devices;
+    } catch (e) {
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
+    }
+}
+
+/**
+ * Get user group
+ * @param config
+ */
+export async function GetUserGroup(config: FRSService.IConfig): Promise<FRSService.IObject[]> {
+    try {
+        let frs: FRSService = FRS.frss.find((value, index, array) => {
+            return value.config.ip === config.ip && value.config.port === config.port;
+        });
+        if (!frs) {
+            frs = new FRSService();
+            frs.config = config;
+
+            frs.Initialization();
+
+            await frs.Login();
+        }
+
+        let groups = await frs.GetUserGroups();
+
+        return groups;
     } catch (e) {
         throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
