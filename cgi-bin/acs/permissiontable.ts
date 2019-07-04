@@ -12,7 +12,7 @@ import { Log } from 'helpers/utility';
 import * as delay from 'delay';
 
 var action = new Action({
-    loginRequired: true,
+    loginRequired: false,
     permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
@@ -25,6 +25,11 @@ type OutputC = Restful.OutputC<IPermissionTable>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
+
+    let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
+    let maxId = firstObject.get("tableid");
+    data.inputType.tableid = maxId + 1;
+
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
 
@@ -61,6 +66,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
         Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
         await siPassAdapter.postAccessGroup(ag);
+
+
+        // compare access level with ccure 800 and alarm
     }
 
     /// 2) Output
@@ -111,9 +119,10 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
                 let ar = [];
                 if (level["readers"]) {
                     for (let j = 0; j < level["readers"].length; j++) {
+                        // check access level exists
                         const r = level["readers"][j];
 
-                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"], RuleToken: 12, RuleType: 2 });
+                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"] , RuleToken: 12, RuleType: 2 });
                     }
 
                     al.push({
@@ -122,6 +131,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
                         accessRule: ar,
                         timeScheduleToken: level["timeschedule"]["timeid"]
                     });
+
+                    // push access level to sipass
+                    
                 }
             }
         }
@@ -135,6 +147,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
         await siPassAdapter.putAccessGroup(ag);
     }
+
+    // compare access level with ccure 800 and alarm
+    // door name and time name
+    // door group  ==> door name
+
+
+
+
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
