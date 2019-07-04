@@ -67,9 +67,10 @@ class Action {
     /**
      * Save report summary
      * @param base
+     * @param groups
      * @param type
      */
-    private async SaveReportSummary(base: IDB.IReportBase, type: Enum.ESummaryType): Promise<void> {
+    private async SaveReportSummary(base: IDB.IReportBase, groups: Enum.EPeopleType[], type: Enum.ESummaryType): Promise<void> {
         try {
             let date: Date = new Date(base.date);
             switch (type) {
@@ -98,10 +99,16 @@ class Action {
                 });
 
             let isIn = base.device.getValue('direction') === Enum.EDeviceDirection.in;
+            let isEmployee = groups.indexOf(Enum.EPeopleType.employee) > -1;
 
             if (reportSummary) {
                 reportSummary.setValue('in', reportSummary.getValue('in') + (isIn ? 1 : 0));
                 reportSummary.setValue('out', reportSummary.getValue('out') + (isIn ? 0 : 1));
+
+                if (isEmployee) {
+                    reportSummary.setValue('inEmployee', (reportSummary.getValue('inEmployee') || 0) + (isIn ? 1 : 0));
+                    reportSummary.setValue('outEmployee', (reportSummary.getValue('outEmployee') || 0) + (isIn ? 1 : 0));
+                }
             } else {
                 reportSummary = new IDB.ReportPeopleCountingSummary();
 
@@ -111,9 +118,16 @@ class Action {
                 reportSummary.setValue('type', type);
                 reportSummary.setValue('date', date);
                 reportSummary.setValue('in', isIn ? 1 : 0);
+                reportSummary.setValue('inEmployee', 0);
                 reportSummary.setValue('inTotal', 0);
                 reportSummary.setValue('out', isIn ? 0 : 1);
+                reportSummary.setValue('outEmployee', 0);
                 reportSummary.setValue('outTotal', 0);
+
+                if (isEmployee) {
+                    reportSummary.setValue('inEmployee', isIn ? 1 : 0);
+                    reportSummary.setValue('outEmployee', isIn ? 1 : 0);
+                }
             }
 
             await reportSummary.save(null, { useMasterKey: true }).fail((e) => {
@@ -141,10 +155,10 @@ class Action {
                         try {
                             let tasks: Promise<any>[] = [];
 
-                            tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.hour));
-                            // tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.day));
-                            // tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.month));
-                            // tasks.push(this.SaveReportSummary(x.base, Enum.ESummaryType.season));
+                            tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.hour));
+                            // tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.day));
+                            // tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.month));
+                            // tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.season));
 
                             await Promise.all(tasks).catch((e) => {
                                 throw e;
@@ -192,7 +206,10 @@ class Action {
                                             date: value.date,
                                         };
 
-                                        this._save$.next({ base: base });
+                                        this._save$.next({
+                                            base: base,
+                                            groups: value.groups,
+                                        });
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
                                     }
@@ -219,6 +236,7 @@ namespace Action {
     export interface IAction {
         device: IDB.Device;
         date: Date;
+        groups: Enum.EPeopleType[];
     }
 
     /**
@@ -226,5 +244,6 @@ namespace Action {
      */
     export interface ISave {
         base: IDB.IReportBase;
+        groups: Enum.EPeopleType[];
     }
 }

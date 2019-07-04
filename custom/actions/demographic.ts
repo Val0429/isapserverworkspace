@@ -182,13 +182,13 @@ class Action {
                     throw e;
                 });
 
+            let isEmployee = (report.getValue('userGroups') || []).indexOf(Enum.EPeopleType.employee) > -1;
+
             let ageIndex: number = this._ageRanges.findIndex((value, index, array) => {
                 return value.min <= report.getValue('age') && value.max > report.getValue('age');
             });
 
             if (reportSummary) {
-                let total: number = reportSummary.getValue('total') + 1;
-
                 reportSummary.setValue('total', reportSummary.getValue('total') + 1);
                 if (report.getValue('gender') === Enum.EGender.male) {
                     let ageRange = reportSummary.getValue('maleRanges');
@@ -196,12 +196,28 @@ class Action {
 
                     reportSummary.setValue('maleTotal', reportSummary.getValue('maleTotal') + 1);
                     reportSummary.setValue('maleRanges', ageRange);
+
+                    if (isEmployee) {
+                        let ageRange = reportSummary.getValue('maleEmployeeRanges') || new Array(this._ageRanges.length).fill(0);
+                        ageRange[ageIndex] += 1;
+
+                        reportSummary.setValue('maleEmployeeTotal', reportSummary.getValue('maleEmployeeTotal') + 1);
+                        reportSummary.setValue('maleEmployeeRanges', ageRange);
+                    }
                 } else {
                     let ageRange = reportSummary.getValue('femaleRanges');
                     ageRange[ageIndex] += 1;
 
                     reportSummary.setValue('femaleTotal', reportSummary.getValue('femaleTotal') + 1);
                     reportSummary.setValue('femaleRanges', ageRange);
+
+                    if (isEmployee) {
+                        let ageRange = reportSummary.getValue('femaleEmployeeRanges') || new Array(this._ageRanges.length).fill(0);
+                        ageRange[ageIndex] += 1;
+
+                        reportSummary.setValue('femaleEmployeeTotal', reportSummary.getValue('femaleEmployeeTotal') + 1);
+                        reportSummary.setValue('femaleEmployeeRanges', ageRange);
+                    }
                 }
             } else {
                 reportSummary = new IDB.ReportDemographicSummary();
@@ -215,16 +231,31 @@ class Action {
                 reportSummary.setValue('type', type);
                 reportSummary.setValue('date', date);
                 reportSummary.setValue('total', 1);
+                reportSummary.setValue('maleTotal', 0);
+                reportSummary.setValue('maleEmployeeTotal', 0);
+                reportSummary.setValue('maleRanges', new Array(this._ageRanges.length).fill(0));
+                reportSummary.setValue('maleEmployeeRanges', new Array(this._ageRanges.length).fill(0));
+                reportSummary.setValue('femaleTotal', 0);
+                reportSummary.setValue('femaleEmployeeTotal', 0);
+                reportSummary.setValue('femaleRanges', new Array(this._ageRanges.length).fill(0));
+                reportSummary.setValue('femaleEmployeeRanges', new Array(this._ageRanges.length).fill(0));
+
                 if (report.getValue('gender') === Enum.EGender.male) {
                     reportSummary.setValue('maleTotal', 1);
                     reportSummary.setValue('maleRanges', ageRange);
-                    reportSummary.setValue('femaleTotal', 0);
-                    reportSummary.setValue('femaleRanges', new Array(this._ageRanges.length).fill(0));
+
+                    if (isEmployee) {
+                        reportSummary.setValue('maleEmployeeTotal', 1);
+                        reportSummary.setValue('maleEmployeeRanges', ageRange);
+                    }
                 } else {
-                    reportSummary.setValue('maleTotal', 0);
-                    reportSummary.setValue('maleRanges', new Array(this._ageRanges.length).fill(0));
                     reportSummary.setValue('femaleTotal', 1);
                     reportSummary.setValue('femaleRanges', ageRange);
+
+                    if (isEmployee) {
+                        reportSummary.setValue('femaleEmployeeTotal', 1);
+                        reportSummary.setValue('femaleEmployeeRanges', ageRange);
+                    }
                 }
             }
 
@@ -328,6 +359,7 @@ class Action {
                                         report.setValue('imageSrc', '');
                                         report.setValue('age', feature.age);
                                         report.setValue('gender', feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
+                                        report.setValue('userGroups', value.groups);
 
                                         await report.save(null, { useMasterKey: true }).fail((e) => {
                                             throw e;
@@ -375,6 +407,7 @@ namespace Action {
         device: IDB.Device;
         date: Date;
         image: Buffer;
+        groups: Enum.EPeopleType[];
     }
 
     /**

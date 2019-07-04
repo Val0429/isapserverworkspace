@@ -17,9 +17,19 @@ export interface IReportPeopleCountingSummary extends IReportBase {
     in: number;
 
     /**
+     * Employee in value
+     */
+    inEmployee: number;
+
+    /**
      * out
      */
     out: number;
+
+    /**
+     * Employee out value
+     */
+    outEmployee: number;
 
     /**
      * in 總和

@@ -22,9 +22,9 @@ export interface IReportDemographic extends IReportBase {
     gender: Enum.EGender;
 
     /**
-     * NxN search id
+     * FRS user group
      */
-    faceId: string;
+    userGroups: Enum.EPeopleType[];
 }
 
 @registerSubclass()

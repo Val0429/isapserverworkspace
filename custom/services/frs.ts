@@ -173,12 +173,28 @@ class Service {
                                     return config.sourceid === x.camera;
                                 });
 
+                                let groups = x.groups
+                                    .map<Enum.EPeopleType>((value1, index1, array1) => {
+                                        let group = value.getValue('userGroups').find((value2, index2, array2) => {
+                                            return value2.objectId === value1.objectId;
+                                        });
+                                        if (group) {
+                                            return group.type;
+                                        }
+
+                                        return undefined;
+                                    })
+                                    .filter((value1, index1, array1) => {
+                                        return !!value1;
+                                    });
+
                                 devices.forEach((value1, index1, array1) => {
                                     switch (value1.getValue('mode')) {
                                         case Enum.EDeviceMode.peopleCounting:
                                             Action.PeopleCountingSeparation.action$.next({
                                                 device: value1,
                                                 date: x.date,
+                                                groups: groups,
                                             });
                                             break;
                                         case Enum.EDeviceMode.dwellTime:
@@ -188,6 +204,7 @@ class Service {
                                                 device: value1,
                                                 date: x.date,
                                                 image: x.image,
+                                                groups: groups,
                                             });
                                             break;
                                         case Enum.EDeviceMode.visitor:
