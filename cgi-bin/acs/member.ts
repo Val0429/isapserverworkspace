@@ -124,12 +124,42 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<IMember>;
+type InputR = Restful.InputR<any>;
 type OutputR = Restful.OutputR<IMember>;
+
+const fieldNames = {
+    DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
+    CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
+    WorkAreaName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+    ResignationDate:"CustomDateControl1__CF",
+    CompanyName:"CustomTextBoxControl6__CF",
+    CardCustodian:"CustomTextBoxControl2__CF",
+    CardType:"CustomDropdownControl1__CF"
+}
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Member);
+    
+    let filter = data.parameters;    
+    if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
+    if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
+    if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
+    if(filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
+    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue",new RegExp(filter.DepartmentName), "i");
+    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue",new RegExp(filter.CostCenterName), "i");
+    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue",new RegExp(filter.WorkAreaName), "i");
+    if(filter.CardCustodian) query.equalTo("CustomFields.FiledName", fieldNames.CardCustodian).matches("CustomFields.FieldValue",new RegExp(filter.CardCustodian), "i");
+    if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue",new RegExp(filter.CardType), "i");
+    
+    if(filter.EndDate){      
+        let endDate = new Date(filter.EndDate);  
+        query.lessThanOrEqualTo("EndDate", endDate);
+    } 
+    if(filter.StartDate){      
+        let startDate = new Date(filter.StartDate);  
+        query.greaterThanOrEqualTo("StartDate", startDate);
+    } 
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
