@@ -10,7 +10,8 @@ import { IMember, Member, AccessLevel } from '../../custom/models'
 
 var action = new Action({
     loginRequired: false,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "2-2_report_door_R"
 });
 
 
@@ -40,7 +41,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         if ( rules.length >= 1) {
             for (let j = 0; j < rules.length; j++) {
                 let ru = rules[j];
-console.log(ru);
                 for (let k = 0; k < times.length; k++) {
                     if (ru["TimeScheduleToken"] == times[k].get("timeid") )
                         ru["TimeScheduleToken"] = times[k];

@@ -3,7 +3,7 @@ let config: Config = {
     "port": 1433,
     "user": "sa",
     "password": "5j/cj86aup6eji6j04njo4e",
-    "database": "FET_HR",
+    "database": "FET",
 	"connectionTimeout": 15000,
 };
 

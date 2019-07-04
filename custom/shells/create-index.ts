@@ -104,14 +104,14 @@ import { Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Me
 
         tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_door_R" });
         tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_door_CRUD" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_doorgroup_R" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_doorgroup_CRUD" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_floor_R" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_floor_CRUD" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_elevator_R" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_elevator_CRUD" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_reader_R" });
-        tokens = new APITokens();   await tokens.save({ identifier: "5-1_door_reader_CRUD" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-2_door_doorgroup_R" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-2_door_doorgroup_CRUD" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-3_door_floor_R" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-3_door_floor_CRUD" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-4_door_elevator_R" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-4_door_elevator_CRUD" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-5_door_reader_R" });
+        tokens = new APITokens();   await tokens.save({ identifier: "5-5_door_reader_CRUD" });
 
         tokens = new APITokens();   await tokens.save({ identifier: "6-1_notification_sync_R" });
         tokens = new APITokens();   await tokens.save({ identifier: "6-1_notification_sync_CRUD" });

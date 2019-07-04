@@ -56,14 +56,14 @@ export class SiPassAdapter {
             Log.Info(`${this.constructor.name}`, `sessionToken=[${this.sessionToken}}]`);
         })();
 
-        // if (!this.sessionToken)
-        //     this.enableReconnect();
+        if (!this.sessionToken)
+            this.enableReconnect();
     }
 
     async enableReconnect() {
         let me = this;
 
-        this.checkConnectionTimer = setInterval(async () => {
+        this.checkConnectionTimer =  setInterval(async () => {
             if (!this.sessionToken) {
                 me.siPassAccount = new siPassClient.SiPassHrAccountService(me.siPassHrParam);
                 me.sessionToken = await me.Login();

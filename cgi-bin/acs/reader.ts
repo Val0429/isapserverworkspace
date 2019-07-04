@@ -10,7 +10,8 @@ import { IReader, Reader } from '../../custom/models'
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "5-5_door_reader_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

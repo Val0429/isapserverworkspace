@@ -6,13 +6,14 @@ import {
 } from 'core/cgi-package';
 
 import { IMember, Member, AccessLevel } from '../../custom/models'
-import { ConstructSignatureDeclaration } from 'ts-simple-ast';
+import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 
 var action = new Action({
     loginRequired: false,
     postSizeLimit: 1024 * 1024 * 10,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "3-2_door_member_CRUD"
 });
 
 /// CRUD start /////////////////////////////////
@@ -113,12 +114,26 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             }
         }
     }
-
+    
+    obj.set("Token", "-1");
     obj.set("CustomFields", fields);
+    obj.set("Vehicle1", {});
+    obj.set("Vehicle2", {});
+    obj.set("VisitorDetails", {
+        "VisitorCardStatus": 0,
+        "VisitorCustomValues": {}
+    });
 
     await obj.save(null, { useMasterKey: true });
+
+    let ret = ParseObject.toOutputJSON(obj); 
+    console.log(ret);
+
+    let holder = await siPassAdapter.postCardHolder(ret);
+    console.log(holder);
+
     /// 2) Output
-    return ParseObject.toOutputJSON(obj);
+    return ret;
 });
 
 /********************************
@@ -168,10 +183,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         }
     }
     // CustomFields
-    let record = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
-
-    if (record) {
-        let fields = record.get("CustomFields");
+    if (obj) {
+        let fields = obj.get("CustomFields");
         let inputs = update.get("CustomFields");
 
         if (!fields) {
@@ -249,12 +262,24 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         }
         update.set("CustomFields", fields);
     }
-    // console.log( ParseObject.toOutputJSON(update));
+
+    // update.set("Vehicle1", {});
+    // update.set("Vehicle2", {});
+    // update.set("VisitorDetails", {
+    //     "VisitorCardStatus": 0,
+    //     "VisitorCustomValues": {}
+    // });
 
     await obj.save({ ...ParseObject.toOutputJSON(update), objectId: undefined });
 
     /// 3) Output
-    return ParseObject.toOutputJSON(obj);
+    let ret =  ParseObject.toOutputJSON(obj);
+    console.log(ret);
+
+    let holder = await siPassAdapter.postCardHolder(ret);
+    console.log(holder);
+
+    return ret ;
 });
 
 /********************************

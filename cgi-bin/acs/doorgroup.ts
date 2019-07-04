@@ -10,7 +10,8 @@ import { IDoorGroup, DoorGroup } from '../../custom/models'
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "5-2_door_doorgroup_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

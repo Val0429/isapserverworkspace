@@ -9,7 +9,8 @@ import * as Tag from '../../tag';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "4-3_location_region_CRUD"
 });
 
 export default action;

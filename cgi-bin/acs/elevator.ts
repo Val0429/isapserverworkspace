@@ -6,10 +6,12 @@ import {
 } from 'core/cgi-package';
 
 import { IElevator, Elevator } from '../../custom/models'
+import licenseService from 'services/license';
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "5-4_door_elevator_CRUD"
 });
 
 /// CRUD start /////////////////////////////////
@@ -20,11 +22,44 @@ type InputC = Restful.InputC<IElevator>;
 type OutputC = Restful.OutputC<IElevator>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    /// 1) Create Object
-    var obj = new Elevator(data.inputType);
-    await obj.save(null, { useMasterKey: true });
-    /// 2) Output
-    return ParseObject.toOutputJSON(obj);
+    let count: number = await new Promise((resolve, reject) => {
+        new Parse.Query(Elevator).count().then(
+            (count) => {
+                resolve(count);
+            },
+            (error) => {
+                resolve(-1);
+            }
+        );
+    }) as number;;
+
+    if (count == -1)
+        throw Errors.throw(Errors.CustomBadRequest, ["License invalid."]);
+
+    let xml = await licenseService.getLicense();
+
+    let model = xml.summary["00222"];
+
+    if (!model)
+        throw Errors.throw(Errors.CustomBadRequest, ["License invalid. model no mismatch"]);
+    else {
+        let amount = model["totalCount"];
+
+        if (!amount)
+            throw Errors.throw(Errors.CustomBadRequest, ["License invalid."]);
+        else {
+            console.log(count, amount);
+            if ( count + 1 <= amount) {
+                /// 1) Create Object
+                var obj = new Elevator(data.inputType);
+                await obj.save(null, { useMasterKey: true });
+                /// 2) Output
+                return ParseObject.toOutputJSON(obj);
+            }
+            else 
+                throw Errors.throw(Errors.CustomBadRequest, ["License reach maximum."]);
+        }
+    }
 });
 
 /********************************

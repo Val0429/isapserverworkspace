@@ -128,7 +128,7 @@ export interface IMember {      // CRUD
     VisitorDetails?: {},
     CustomFields?: {
         FiledName?: string,
-        FieldValue?: string
+        FieldValue?: any
     }[],
     FingerPrints?: [],
     CardholderPortrait?: string
@@ -175,6 +175,8 @@ export class AccessLevel extends ParseObject<IAccessLevel> { }
 export interface IPermissionTable {     // CRUD  V
     tableid?: string,
     tablename?: string,
+    ccureToken?: string;
+    sipassToken?: string;
     status?: number,
     accesslevels?: AccessLevel[]
 }
@@ -213,7 +215,8 @@ export class WorkGroup extends ParseObject<IWorkGroup> { }
 
 export interface ISyncReceiver {
     receivename?: string,
-    emailaddress?: string
+    emailaddress?: string,
+    status?: number
 }
 // @registerSubclass()
 // export class SyncReceiver extends ParseObject<ISyncReceiver> { }

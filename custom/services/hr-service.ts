@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as fs from 'fs';
 
-
+import * as delay from 'delay';
 import { Log } from 'helpers/utility';
 
 import { ScheduleActionEmail } from 'core/scheduler-loader';
@@ -77,7 +77,9 @@ export class HRService {
                 port: Config.humanresource.port,
                 user: Config.humanresource.user,
                 password: Config.humanresource.password,
-                database: Config.humanresource.database
+                database: Config.humanresource.database,
+                requestTimeout: 300000,
+                connectionTimeout: 300000 //ms
             }
 
             await this.humanResource.connect(config);
@@ -247,7 +249,7 @@ export class HRService {
                     res = await this.humanResource.getViewMember(EmpNo);
 
 
-                    let sessionId = "";
+                    let sessionId = siPassAdapter.sessionToken;
                     // {
                     //     Log.Info(`${this.constructor.name}`, `4.4.1 Initial SiPass Adapter`);
                     //     sessionId = await adSiPass.Login();
@@ -323,179 +325,145 @@ export class HRService {
                             await o.save();
                         }
                         else {
-                            obj.set("attributes", record["attributes"] );
-                            obj.set("credentials", record["credentials"] );
-                            obj.set("accessRules", record["accessRules"] );
-                            obj.set("employeeNumber", record["employeeNumber"] );
-                            obj.set("firstName", record["firstName"] );
-                            obj.set("lastName", record["lastName"] );
-                            obj.set("personalDetails", record["personalDetails"] );
-                            obj.set("primaryWorkgroupId", record["primaryWorkgroupId"] );
-                            obj.set("apbWorkgroupId", record["apbWorkgroupId"] );
-                            obj.set("primaryWorkgroupName", record["primaryWorkgroupName"] );
-                            obj.set("nonPartitionWorkGroups", record["nonPartitionWorkGroups"] );
-                            obj.set("status", record["status"] );
-                            obj.set("token", record["token"] );
-                            obj.set("primaryWorkGroupAccessRule", record["primaryWorkGroupAccessRule"] );
-                            obj.set("nonPartitionWorkgroupAccessRules", record["nonPartitionWorkgroupAccessRules"] );
-                            obj.set("visitorDetails", record["visitorDetails"] );
-                            obj.set("customFields", record["customFields"] );
-                            obj.set("cardholderPortrait", record["cardholderPortrait"] );
+                            obj.set("attributes", record["attributes"]);
+                            obj.set("credentials", record["credentials"]);
+                            obj.set("accessRules", record["accessRules"]);
+                            obj.set("employeeNumber", record["employeeNumber"]);
+                            obj.set("firstName", record["firstName"]);
+                            obj.set("lastName", record["lastName"]);
+                            obj.set("personalDetails", record["personalDetails"]);
+                            obj.set("primaryWorkgroupId", record["primaryWorkgroupId"]);
+                            obj.set("apbWorkgroupId", record["apbWorkgroupId"]);
+                            obj.set("primaryWorkgroupName", record["primaryWorkgroupName"]);
+                            obj.set("nonPartitionWorkGroups", record["nonPartitionWorkGroups"]);
+                            obj.set("status", record["status"]);
+                            obj.set("token", record["token"]);
+                            obj.set("primaryWorkGroupAccessRule", record["primaryWorkGroupAccessRule"]);
+                            obj.set("nonPartitionWorkgroupAccessRules", record["nonPartitionWorkgroupAccessRules"]);
+                            obj.set("visitorDetails", record["visitorDetails"]);
+                            obj.set("customFields", record["customFields"]);
+                            obj.set("cardholderPortrait", record["cardholderPortrait"]);
                             await obj.save();
                         }
                         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
 
-                        
+
+                        console.log(`======================= ${sessionId}`);
 
                         if (sessionId != "") {
                             // 5.1 write data to SiPass database
                             Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
 
                             let d = {
-                                // attributes: {
-                                //     accessibility: boolean;
-                                //     apbExclusion: boolean;
-                                //     apbReEntryExclusion: boolean;
-                                //     isolate: boolean;
-                                //     selfAuthorize: boolean;
-                                //     supervisor: boolean;
-                                //     visitor: boolean;
-                                //     void: boolean;
-                                //     restrictedVisitor:
-                                // },
-                                credentials: [{
-                                    active: true,
-                                    cardNumber: "",
-                                    endDate: ""
-                                }],
-                                accessRules: [],
-                                employeeNumber: record["EmpNo"],
-                                firstName: record["EngName"],
-                                lastName: record["EmpName"],
-                                personalDetails:
+                                AccessRules: [],
+                                ApbWorkgroupId: a,
+                                Attributes: {},
+                                Credentials: [],
+                                EmployeeNumber: record["EmpNo"],
+                                EndDate: record["OffDate"] ? record["OffDate"] : "2100-12-31T23:59:59",
+                                FirstName: record["EngName"] ? record["EngName"] : "_",
+                                GeneralInformation: "",
+                                LastName: record["EmpName"] ? record["EmpName"] : "_",
+                                NonPartitionWorkGroups: [],
+                                PersonalDetails:
                                 {
-                                    contactDetails: {
-                                        email: record["EMail"],
-                                        mobileNumber: record["Cellular"],
-                                        // mobileServiceProvider?: string,
-                                        // mobileServiceProviderId?: string,
-                                        // pagerNumber?: string,
-                                        // pagerServiceProvider?: string,
-                                        // pagerServiceProviderId?: string,
-                                        // phoneNumber?: string,
-                                        // useEmailforMessageForward?: boolean
+                                    Address: "",
+                                    ContactDetails: {
+                                        Email: record["EMail"],
+                                        MobileNumber: record["Cellular"],
+                                        MobileServiceProviderId: "0",
+                                        PagerNumber: "",
+                                        PagerServiceProviderId: "0",
+                                        PhoneNumber: ""
                                     },
-                                    dateOfBirth: record["BirthDate"],
-                                    userDetails: {
-                                        // userName?: "",
-                                        // password?: "" 
+                                    DateOfBirth: record["BirthDate"],
+                                    PayrollNumber: "",
+                                    Title: "",
+                                    UserDetails: {
+                                        UserName: "",
+                                        Password: ""
                                     }
                                 },
-                                primaryWorkgroupId: a,
-                                apbWorkgroupId: 0,
-                                primaryWorkgroupName: b,
-                                nonPartitionWorkGroups: [],
-                                // smartCardProfileId?: "0",
-                                // smartCardProfileName: string,
-                                // startDate: string,
-                                status: 0,
-                                token: "",
-                                // traceDetails: {
-                                //     cardLastUsed: "",
-                                //     cardNumberLastUsed: "",
-                                //     lastApbLocation: "",
-                                //     pointName: "",
-                                //     traceCard: false
-                                // },
-                                // vehicle1?: ICardholderVehicle,
-                                // vehicle2?: ICardholderVehicle,
-                                // potrait: "",
-                                primaryWorkGroupAccessRule: [],
-                                nonPartitionWorkgroupAccessRules: [],
-                                visitorDetails:
-                                {
-                                    // company: string,
-                                    // profile: string,
-                                    // reason: string,
-                                    // license: string,
-                                    // email: string,
-                                    // restrictedUser: string,
-                                    // companyCode: string,
-                                    // durationEntry: string,
-                                    // durationEquipment: string,
-                                    // durationEntrainmentTools: string,
-                                    // validityApprentice: string,
-                                    // validityPeriodIdCard: string,
-                                    // entryMonSat: boolean,
-                                    // entryInclSun: boolean,
-                                    // itEquipment: boolean,
-                                    // entrainmentTools: boolean,
-                                    // topManagement: boolean,
-                                    // apprentice: boolean
+                                Potrait: "",
+                                PrimaryWorkgroupId: a,
+                                PrimaryWorkgroupName: b,
+                                SmartCardProfileId: "0",
+                                StartDate: record["EntDate"],
+                                Status: 61,
+                                Token: "-1",
+                                TraceDetails: {
                                 },
-                                customFields: [
+                                Vehicle1: {},
+                                Vehicle2: {},
+                                VisitorDetails:
+                                {
+                                    VisitorCardStatus: 0,
+                                    VisitorCustomValues: {}
+                                },
+                                CustomFields: [
                                     {
-                                        filedName: "CustomDateControl4__CF",
-                                        fieldValue: record["UpdDate"]
+                                        FiledName: "CustomDateControl4__CF",
+                                        FieldValue: record["UpdDate"]
                                     },
                                     {
-                                        filedName: "CustomDropdownControl1__CF",
-                                        fieldValue: a
+                                        FiledName: "CustomDropdownControl1__CF",
+                                        FieldValue: a
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl1__CF",
-                                        fieldValue: record["EmpNo"]
+                                        FiledName: "CustomTextBoxControl1__CF",
+                                        FieldValue: record["EmpNo"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl3__CF",
-                                        fieldValue: record["AddUser"]
+                                        FiledName: "CustomTextBoxControl3__CF",
+                                        FieldValue: record["AddUser"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl6__CF",
-                                        fieldValue: record["CompName"]
+                                        FiledName: "CustomTextBoxControl6__CF",
+                                        FieldValue: record["CompName"]
                                     },
                                     {
-                                        filedName: "CustomDropdownControl2__CF_CF",
-                                        fieldValue: record["Sex"]
+                                        FiledName: "CustomDropdownControl2__CF_CF",
+                                        FieldValue: record["Sex"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl5__CF_CF",
-                                        fieldValue: record["MVPN"]
+                                        FiledName: "CustomTextBoxControl5__CF_CF",
+                                        FieldValue: record["MVPN"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl5__CF_CF_CF",
-                                        fieldValue: record["DeptChiName"]
+                                        FiledName: "CustomTextBoxControl5__CF_CF_CF",
+                                        FieldValue: record["DeptChiName"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                        fieldValue: record["CostCenter"]
+                                        FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                                        FieldValue: record["CostCenter"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                        fieldValue: record["LocationName"]
+                                        FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                                        FieldValue: record["LocationName"]
                                     },
                                     {
-                                        filedName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                        fieldValue: record["RegionName"]
+                                        FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                                        FieldValue: record["RegionName"]
                                     },
                                     {
-                                        filedName: "CustomDateControl1__CF_CF",
-                                        fieldValue: record["BirthDate"]
+                                        FiledName: "CustomDateControl1__CF_CF",
+                                        FieldValue: record["BirthDate"]
                                     },
                                     {
-                                        filedName: "CustomDateControl1__CF_CF_CF",
-                                        fieldValue: record["EntDate"]
+                                        FiledName: "CustomDateControl1__CF_CF_CF",
+                                        FieldValue: record["EntDate"]
                                     },
                                     {
-                                        filedName: "CustomDateControl1__CF",
-                                        fieldValue: record["OffDate"]
+                                        FiledName: "CustomDateControl1__CF",
+                                        FieldValue: record["OffDate"]
                                     }
                                 ],
-                                // fingerPrints?: [],
-                                cardholderPortrait: ""
+                                "_links": []
                             }
 
                             let holder = await siPassAdapter.postCardHolder(d);
+
+                            await delay(1000);
                         }
                     }
                 }
@@ -545,7 +513,6 @@ export class HRService {
                     <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>離職日</th><th>英文姓名</th></tr>`;
                     msg += chgMsg;
                     msg += `</table>`;
-
                 }
 
 

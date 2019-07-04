@@ -13,7 +13,8 @@ import moment = require('moment');
 var action = new Action({
     loginRequired: false,
     postSizeLimit: 1024 * 1024 * 10,
-    permission: [RoleList.Admin, RoleList.User]
+    permission: [RoleList.Admin, RoleList.User],
+    apiToken: "2-7_report_attendance_R"
 });
 
 

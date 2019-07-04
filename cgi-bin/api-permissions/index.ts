@@ -16,7 +16,8 @@ interface ICAPIPermissions {
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken : "1-1_user_Permission_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

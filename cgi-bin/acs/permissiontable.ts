@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, AccessLevel
 } from 'core/cgi-package';
 
 import { IPermissionTable, PermissionTable } from '../../custom/models'
@@ -12,8 +12,9 @@ import { Log } from 'helpers/utility';
 import * as delay from 'delay';
 
 var action = new Action({
-    loginRequired: false,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    loginRequired: true,
+    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    apiToken: "3-3_door_permissiontable_CRUD"
 });
 
 /// CRUD start /////////////////////////////////
@@ -46,16 +47,25 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                     for (let j = 0; j < level["readers"].length; j++) {
                         const r = level["readers"][j];
 
-                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"], RuleToken: 12, RuleType: 2 });
+                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: 12, RuleType: 3 });
                     }
 
                     al.push({
-                        name: level["levelid"],
-                        token: level["levelname"],
+                        name: level["levelname"],
+                        token: level["levelid"],
                         accessRule: ar,
                         timeScheduleToken: level["timeschedule"]["timeid"]
                     });
                 }
+
+                let d = {
+                    name: level["levelname"],
+                    token: level["levelid"],
+                    accessRule: ar,
+                    timeScheduleToken: level["timeschedule"]["timename"]
+                };
+
+                await siPassAdapter.postAccessLevel(d);
             }
         }
         let ag = {
@@ -67,8 +77,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
         await siPassAdapter.postAccessGroup(ag);
 
+        for (let i = 0; i < al.length; i++) {
+            const e = al[i];
 
-        // compare access level with ccure 800 and alarm
+            let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 2).first();
+
+            if (ccure == null)
+                throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
+        }
     }
 
     /// 2) Output
@@ -122,18 +138,24 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
                         // check access level exists
                         const r = level["readers"][j];
 
-                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"] , RuleToken: 12, RuleType: 2 });
+                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: 12, RuleType: 3 });
                     }
 
                     al.push({
-                        name: level["levelid"],
-                        token: level["levelname"],
+                        name: level["levelname"],
+                        token: level["levelid"],
                         accessRule: ar,
                         timeScheduleToken: level["timeschedule"]["timeid"]
                     });
 
-                    // push access level to sipass
-                    
+                    let d = {
+                        name: level["levelname"],
+                        token: level["levelid"],
+                        accessRule: ar,
+                        timeScheduleToken: level["timeschedule"]["timename"]
+                    };
+    
+                    await siPassAdapter.postAccessLevel(d);
                 }
             }
         }
@@ -146,15 +168,16 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
         Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
         await siPassAdapter.putAccessGroup(ag);
+
+        for (let i = 0; i < al.length; i++) {
+            const e = al[i];
+
+            let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 2).first();
+
+            if (ccure == null)
+                throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
+        }
     }
-
-    // compare access level with ccure 800 and alarm
-    // door name and time name
-    // door group  ==> door name
-
-
-
-
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);

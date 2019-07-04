@@ -8,7 +8,8 @@ import {
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator]
+    permission: [RoleList.SystemAdministrator],
+    apiToken: "7-1_system_hurmanresource_CRUD"
 });
 
 /// CRUD start /////////////////////////////////
