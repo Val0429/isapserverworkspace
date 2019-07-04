@@ -11,5 +11,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "shortid": "^2.2.14"
+  }
 }
