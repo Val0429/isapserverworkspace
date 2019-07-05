@@ -92,15 +92,13 @@ export class ReportDemographic extends Report {
         try {
             let genderRange = this._currReports.reduce<IResponse.IReport.IGenderRange>(
                 (prev, curr, index, array) => {
-                    prev.maleRanges = curr.getValue('maleRanges').map((value1, index1, array1) => {
-                        return value1 + (prev.maleRanges[index1] || 0);
-                    });
-                    prev.femaleRanges = curr.getValue('femaleRanges').map((value1, index1, array1) => {
-                        return value1 + (prev.femaleRanges[index1] || 0);
-                    });
-                    prev.totalRanges = prev.maleRanges.map((value1, index1, array1) => {
-                        return value1 + (prev.femaleRanges[index1] || 0);
-                    });
+                    prev.maleRanges = this.MerageArray(curr.getValue('maleRanges'), prev.maleRanges);
+                    prev.femaleRanges = this.MerageArray(curr.getValue('femaleRanges'), prev.femaleRanges);
+                    prev.totalRanges = this.MerageArray(prev.maleRanges, prev.femaleRanges);
+
+                    prev.maleEmployeeRanges = this.MerageArray(curr.getValue('maleEmployeeRanges'), prev.maleEmployeeRanges);
+                    prev.femaleEmployeeRanges = this.MerageArray(curr.getValue('femaleEmployeeRanges'), prev.femaleEmployeeRanges);
+                    prev.totalEmployeeRanges = this.MerageArray(prev.maleEmployeeRanges, prev.femaleEmployeeRanges);
 
                     return prev;
                 },
@@ -108,6 +106,9 @@ export class ReportDemographic extends Report {
                     totalRanges: [],
                     maleRanges: [],
                     femaleRanges: [],
+                    totalEmployeeRanges: [],
+                    maleEmployeeRanges: [],
+                    femaleEmployeeRanges: [],
                 },
             );
 
@@ -131,13 +132,13 @@ export class ReportDemographic extends Report {
                 });
                 if (summary) {
                     summary.maleTotal += curr.getValue('maleTotal');
-                    summary.maleRanges = summary.maleRanges.map((value1, index1, array1) => {
-                        return value1 + curr.getValue('maleRanges')[index1];
-                    });
+                    summary.maleRanges = this.MerageArray(summary.maleRanges, curr.getValue('maleRanges'));
                     summary.femaleTotal += curr.getValue('femaleTotal');
-                    summary.femaleRanges = summary.femaleRanges.map((value1, index1, array1) => {
-                        return value1 + curr.getValue('femaleRanges')[index1];
-                    });
+                    summary.femaleRanges = this.MerageArray(summary.femaleRanges, curr.getValue('femaleRanges'));
+                    summary.maleEmployeeTotal += curr.getValue('maleEmployeeTotal') || 0;
+                    summary.maleEmployeeRanges = this.MerageArray(summary.maleEmployeeRanges, curr.getValue('maleEmployeeRanges'));
+                    summary.femaleEmployeeTotal += curr.getValue('femaleEmployeeTotal') || 0;
+                    summary.femaleEmployeeRanges = this.MerageArray(summary.femaleEmployeeRanges, curr.getValue('femaleEmployeeRanges'));
                 } else {
                     let base = this.GetBaseSummaryData(curr);
 
@@ -147,6 +148,10 @@ export class ReportDemographic extends Report {
                         maleRanges: curr.getValue('maleRanges'),
                         femaleTotal: curr.getValue('femaleTotal'),
                         femaleRanges: curr.getValue('femaleRanges'),
+                        maleEmployeeTotal: curr.getValue('maleEmployeeTotal') || 0,
+                        maleEmployeeRanges: curr.getValue('maleEmployeeRanges') || new Array(Demographic.ageRanges.length).fill(0),
+                        femaleEmployeeTotal: curr.getValue('femaleEmployeeTotal') || 0,
+                        femaleEmployeeRanges: curr.getValue('femaleEmployeeRanges') || new Array(Demographic.ageRanges.length).fill(0),
                     };
 
                     prev.push(summary);
@@ -180,12 +185,14 @@ export class ReportDemographic extends Report {
                 // let femalePercentVariety: number = prevSummary && prevSummary.femalePercent !== 0 ? Utility.Round(value.femalePercent / prevSummary.femalePercent - 1, 2) : NaN;
 
                 let prevMaleTotal: number = prevSummary ? prevSummary.maleTotal : NaN;
-
                 let prevMaleRanges: number[] = prevSummary ? prevSummary.maleRanges : new Array(Demographic.ageRanges.length).fill(NaN);
-
                 let prevFemaleTotal: number = prevSummary ? prevSummary.femaleTotal : NaN;
-
                 let prevFemaleRanges: number[] = prevSummary ? prevSummary.femaleRanges : new Array(Demographic.ageRanges.length).fill(NaN);
+
+                let prevMaleEmployeeTotal: number = prevSummary ? prevSummary.maleEmployeeTotal : NaN;
+                let prevMaleEmployeeRanges: number[] = prevSummary ? prevSummary.maleEmployeeRanges : new Array(Demographic.ageRanges.length).fill(NaN);
+                let prevFemaleEmployeeTotal: number = prevSummary ? prevSummary.femaleEmployeeTotal : NaN;
+                let prevFemaleEmployeeRanges: number[] = prevSummary ? prevSummary.femaleEmployeeRanges : new Array(Demographic.ageRanges.length).fill(NaN);
 
                 return {
                     site: value.site,
@@ -202,10 +209,38 @@ export class ReportDemographic extends Report {
                     femaleRanges: value.femaleRanges,
                     prevFemaleTotal: prevFemaleTotal,
                     prevFemaleRanges: prevFemaleRanges,
+                    maleEmployeeTotal: value.maleEmployeeTotal,
+                    maleEmployeeRanges: value.maleEmployeeRanges,
+                    prevMaleEmployeeTotal: prevMaleEmployeeTotal,
+                    prevMaleEmployeeRanges: prevMaleEmployeeRanges,
+                    femaleEmployeeTotal: value.femaleEmployeeTotal,
+                    femaleEmployeeRanges: value.femaleEmployeeRanges,
+                    prevFemaleEmployeeTotal: prevFemaleEmployeeTotal,
+                    prevFemaleEmployeeRanges: prevFemaleEmployeeRanges,
                 };
             }, []);
 
             return summarys;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Merage array
+     * @param array1
+     * @param array2
+     */
+    private MerageArray(array1: number[], array2: number[]): number[] {
+        try {
+            array1 = array1 && array1.length === Demographic.ageRanges.length ? array1 : new Array(Demographic.ageRanges.length).fill(0);
+            array2 = array2 && array2.length === Demographic.ageRanges.length ? array2 : new Array(Demographic.ageRanges.length).fill(0);
+
+            let array: number[] = array1.map((value, index, array) => {
+                return (value || 0) + (array2[index] || 0);
+            });
+
+            return array;
         } catch (e) {
             throw e;
         }

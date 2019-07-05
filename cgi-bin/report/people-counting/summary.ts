@@ -93,9 +93,11 @@ export class ReportPeopleCounting extends Report {
     public GetPeakHours(): IResponse.IReport.IPeakHour[] {
         try {
             let peakHours = this._currReports.reduce<IResponse.IReport.IPeakHour[]>((prev, curr, index, array) => {
+                let traffic: number = curr.getValue('in') - (curr.getValue('inEmployee') || 0);
+
                 let data: IResponse.IReport.IPeakHourData = {
                     date: curr.getValue('date'),
-                    level: curr.getValue('in'),
+                    level: traffic,
                 };
 
                 let peakHour = prev.find((value1, index1, array1) => {
@@ -106,7 +108,7 @@ export class ReportPeopleCounting extends Report {
                         return value1.date.getTime() === curr.getValue('date').getTime();
                     });
                     if (peakHourData) {
-                        peakHourData.level += curr.getValue('in');
+                        peakHourData.level += traffic;
                     } else {
                         peakHour.peakHourDatas.push(data);
                     }
@@ -167,6 +169,8 @@ export class ReportPeopleCounting extends Report {
                 if (summary) {
                     summary.in += curr.getValue('in');
                     summary.out += curr.getValue('out');
+                    summary.inEmployee += curr.getValue('inEmployee') || 0;
+                    summary.outEmployee += curr.getValue('outEmployee') || 0;
                 } else {
                     let base = this.GetBaseSummaryData(curr);
 
@@ -174,6 +178,8 @@ export class ReportPeopleCounting extends Report {
                         ...base,
                         in: curr.getValue('in'),
                         out: curr.getValue('out'),
+                        inEmployee: curr.getValue('inEmployee') || 0,
+                        outEmployee: curr.getValue('outEmployee') || 0,
                     });
                 }
 
@@ -205,8 +211,10 @@ export class ReportPeopleCounting extends Report {
                 // let outVariety: number = prevSummary && prevSummary.out !== 0 ? Utility.Round(value.out / prevSummary.out - 1, 2) : NaN;
 
                 let prevIn: number = prevSummary ? prevSummary.in : NaN;
-
                 let prevOut: number = prevSummary ? prevSummary.out : NaN;
+
+                let prevInEmployee: number = prevSummary ? prevSummary.inEmployee : NaN;
+                let prevOutEmployee: number = prevSummary ? prevSummary.outEmployee : NaN;
 
                 return {
                     site: value.site,
@@ -219,6 +227,10 @@ export class ReportPeopleCounting extends Report {
                     prevIn: prevIn,
                     out: value.out,
                     prevOut: prevOut,
+                    inEmployee: value.inEmployee,
+                    prevInEmployee: prevInEmployee,
+                    outEmployee: value.outEmployee,
+                    prevOutEmployee: prevOutEmployee,
                 };
             }, []);
 

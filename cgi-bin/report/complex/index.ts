@@ -144,8 +144,8 @@ export class ReportComplex extends Report {
 
             let summary = summarys.reduce<IResponse.IReport.IComplex_Count>(
                 (prev, curr, index, array) => {
-                    prev.in += curr.getValue('in');
-                    prev.out += curr.getValue('out');
+                    prev.in += curr.getValue('in') - (curr.getValue('inEmployee') || 0);
+                    prev.out += curr.getValue('out') - (curr.getValue('outEmployee') || 0);
 
                     return prev;
                 },
@@ -180,8 +180,8 @@ export class ReportComplex extends Report {
 
             let summary = summarys.reduce<IResponse.IReport.IComplex_Gender>(
                 (prev, curr, index, array) => {
-                    prev.malePercent += curr.getValue('maleTotal');
-                    prev.femalePercent += curr.getValue('femaleTotal');
+                    prev.malePercent += curr.getValue('maleTotal') - (curr.getValue('maleEmployeeTotal') || 0);
+                    prev.femalePercent += curr.getValue('femaleTotal') - (curr.getValue('femaleEmployeeTotal') || 0);
 
                     return prev;
                 },

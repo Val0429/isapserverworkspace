@@ -416,7 +416,7 @@ export class Report {
                         return value1.getValue('site').id === value.site.objectId && date.getTime() === value.date.getTime();
                     })
                     .reduce<number>((prev1, curr1, index1, array1) => {
-                        return prev1 + curr1.getValue('in');
+                        return prev1 + curr1.getValue('in') - (curr1.getValue('inEmployee') || 0);
                     }, 0);
 
                 return {

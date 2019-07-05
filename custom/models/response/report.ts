@@ -96,6 +96,10 @@ export interface IPeopleCountingSummaryData extends ISummaryDataBase {
     prevIn?: number;
     out: number;
     prevOut?: number;
+    inEmployee: number;
+    prevInEmployee?: number;
+    outEmployee: number;
+    prevOutEmployee?: number;
 }
 
 export interface IPeopleCountingSummary {
@@ -110,6 +114,9 @@ export interface IGenderRange {
     totalRanges: number[];
     maleRanges: number[];
     femaleRanges: number[];
+    totalEmployeeRanges: number[];
+    maleEmployeeRanges: number[];
+    femaleEmployeeRanges: number[];
 }
 
 export interface IDemographicSummaryData extends ISummaryDataBase {
@@ -121,6 +128,14 @@ export interface IDemographicSummaryData extends ISummaryDataBase {
     femaleRanges: number[];
     prevFemaleTotal?: number;
     prevFemaleRanges?: number[];
+    maleEmployeeTotal: number;
+    maleEmployeeRanges: number[];
+    prevMaleEmployeeTotal?: number;
+    prevMaleEmployeeRanges?: number[];
+    femaleEmployeeTotal: number;
+    femaleEmployeeRanges: number[];
+    prevFemaleEmployeeTotal?: number;
+    prevFemaleEmployeeRanges?: number[];
 }
 
 export interface IDemographicSummary {
