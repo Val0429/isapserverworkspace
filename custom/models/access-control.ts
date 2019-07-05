@@ -114,7 +114,7 @@ export interface IMember {      // CRUD
     PrimaryWorkgroupId?: number,
     ApbWorkgroupId?: number,
     PrimaryWorkgroupName?: string,
-    NonPartitionWorkGroups?: [],
+    NonPartitionWorkGroups?: any[],
     SmartCardProfileId?: string,
     StartDate?: string,
     Status?: number,
@@ -123,14 +123,14 @@ export interface IMember {      // CRUD
     // Vehicle1?: {},
     // Vehicle2?: {},
     Potrait?: string,
-    PrimaryWorkGroupAccessRule?: [],
-    NonPartitionWorkgroupAccessRules?: [],
+    PrimaryWorkGroupAccessRule?: any[],
+    NonPartitionWorkgroupAccessRules?: any[],
     VisitorDetails?: {},
     CustomFields?: {
         FiledName?: string,
         FieldValue?: any
     }[],
-    FingerPrints?: [],
+    FingerPrints?: any[],
     CardholderPortrait?: string
 }
 @registerSubclass()

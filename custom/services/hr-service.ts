@@ -7,14 +7,15 @@ import { Log } from 'helpers/utility';
 import { ScheduleActionEmail } from 'core/scheduler-loader';
 
 import * as mongo from 'mongodb';
-// import * as msSQL from 'mssql';
+import * as msSQL from 'mssql';
 
 import { HumanResourceAdapter } from './acs/HumanResourceAdapter';
+import { CCure800SqlAdapter } from './acs/CCure800SqlAdapter';
 import { SyncNotification } from './../models/access-control';
 import { vieMember } from '../../custom/models'
 
 import { siPassAdapter } from './acsAdapter-Manager';
-import { ParseObject } from 'core/cgi-package';
+import { ParseObject, Member } from 'core/cgi-package';
 
 
 export class HRService {
@@ -26,6 +27,7 @@ export class HRService {
     private mongoDb: mongo.Db;
 
     private humanResource: HumanResourceAdapter;
+    private CCure800SqlAdapter : CCure800SqlAdapter ;
 
     private LastUpdate = null;
 
@@ -83,6 +85,18 @@ export class HRService {
             }
 
             await this.humanResource.connect(config);
+
+            config = {
+                server: Config.ccuresqlserver.server,
+                port: Config.ccuresqlserver.port,
+                user: Config.ccuresqlserver.user,
+                password: Config.ccuresqlserver.password,
+                database: Config.ccuresqlserver.database,
+                requestTimeout: 300000,
+                connectionTimeout: 300000 //ms
+            }
+
+            await this.CCure800SqlAdapter.connect(config);
 
             // 3.0 Cleae Temp Data
             let EmpNo: string[] = [];
@@ -348,118 +362,123 @@ export class HRService {
                         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
 
 
-                        console.log(`======================= ${sessionId}`);
+                        let d = {
+                            AccessRules: [],
+                            ApbWorkgroupId: a,
+                            Attributes: {},
+                            Credentials: [],
+                            EmployeeNumber: record["EmpNo"],
+                            EndDate: record["OffDate"] ? record["OffDate"] : "2100-12-31T23:59:59",
+                            FirstName: record["EngName"] ? record["EngName"] : "_",
+                            GeneralInformation: "",
+                            LastName: record["EmpName"] ? record["EmpName"] : "_",
+                            NonPartitionWorkGroups: [],
+                            PersonalDetails:
+                            {
+                                Address: "",
+                                ContactDetails: {
+                                    Email: record["EMail"],
+                                    MobileNumber: record["Cellular"],
+                                    MobileServiceProviderId: "0",
+                                    PagerNumber: "",
+                                    PagerServiceProviderId: "0",
+                                    PhoneNumber: ""
+                                },
+                                DateOfBirth: record["BirthDate"],
+                                PayrollNumber: "",
+                                Title: "",
+                                UserDetails: {
+                                    UserName: "",
+                                    Password: ""
+                                }
+                            },
+                            Potrait: "",
+                            PrimaryWorkgroupId: a,
+                            PrimaryWorkgroupName: b,
+                            SmartCardProfileId: "0",
+                            StartDate: record["EntDate"],
+                            Status: 61,
+                            Token: "-1",
+                            TraceDetails: {
+                            },
+                            Vehicle1: {},
+                            Vehicle2: {},
+                            VisitorDetails:
+                            {
+                                VisitorCardStatus: 0,
+                                VisitorCustomValues: {}
+                            },
+                            CustomFields: [
+                                {
+                                    FiledName: "CustomDateControl4__CF",
+                                    FieldValue: record["UpdDate"]
+                                },
+                                {
+                                    FiledName: "CustomDropdownControl1__CF",
+                                    FieldValue: a
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl1__CF",
+                                    FieldValue: record["EmpNo"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl3__CF",
+                                    FieldValue: record["AddUser"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl6__CF",
+                                    FieldValue: record["CompName"]
+                                },
+                                {
+                                    FiledName: "CustomDropdownControl2__CF_CF",
+                                    FieldValue: record["Sex"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF",
+                                    FieldValue: record["MVPN"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF",
+                                    FieldValue: record["DeptChiName"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                                    FieldValue: record["CostCenter"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                                    FieldValue: record["LocationName"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                                    FieldValue: record["RegionName"]
+                                },
+                                {
+                                    FiledName: "CustomDateControl1__CF_CF",
+                                    FieldValue: record["BirthDate"]
+                                },
+                                {
+                                    FiledName: "CustomDateControl1__CF_CF_CF",
+                                    FieldValue: record["EntDate"]
+                                },
+                                {
+                                    FiledName: "CustomDateControl1__CF",
+                                    FieldValue: record["OffDate"]
+                                }
+                            ],
+                            "_links": []
+                        }
 
+                        console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+                        this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+
+                        console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+                        await this.CCure800SqlAdapter.writeMember(d);
+
+                        console.log(`======================= ${sessionId}`);
                         if (sessionId != "") {
                             // 5.1 write data to SiPass database
                             Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-
-                            let d = {
-                                AccessRules: [],
-                                ApbWorkgroupId: a,
-                                Attributes: {},
-                                Credentials: [],
-                                EmployeeNumber: record["EmpNo"],
-                                EndDate: record["OffDate"] ? record["OffDate"] : "2100-12-31T23:59:59",
-                                FirstName: record["EngName"] ? record["EngName"] : "_",
-                                GeneralInformation: "",
-                                LastName: record["EmpName"] ? record["EmpName"] : "_",
-                                NonPartitionWorkGroups: [],
-                                PersonalDetails:
-                                {
-                                    Address: "",
-                                    ContactDetails: {
-                                        Email: record["EMail"],
-                                        MobileNumber: record["Cellular"],
-                                        MobileServiceProviderId: "0",
-                                        PagerNumber: "",
-                                        PagerServiceProviderId: "0",
-                                        PhoneNumber: ""
-                                    },
-                                    DateOfBirth: record["BirthDate"],
-                                    PayrollNumber: "",
-                                    Title: "",
-                                    UserDetails: {
-                                        UserName: "",
-                                        Password: ""
-                                    }
-                                },
-                                Potrait: "",
-                                PrimaryWorkgroupId: a,
-                                PrimaryWorkgroupName: b,
-                                SmartCardProfileId: "0",
-                                StartDate: record["EntDate"],
-                                Status: 61,
-                                Token: "-1",
-                                TraceDetails: {
-                                },
-                                Vehicle1: {},
-                                Vehicle2: {},
-                                VisitorDetails:
-                                {
-                                    VisitorCardStatus: 0,
-                                    VisitorCustomValues: {}
-                                },
-                                CustomFields: [
-                                    {
-                                        FiledName: "CustomDateControl4__CF",
-                                        FieldValue: record["UpdDate"]
-                                    },
-                                    {
-                                        FiledName: "CustomDropdownControl1__CF",
-                                        FieldValue: a
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl1__CF",
-                                        FieldValue: record["EmpNo"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl3__CF",
-                                        FieldValue: record["AddUser"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl6__CF",
-                                        FieldValue: record["CompName"]
-                                    },
-                                    {
-                                        FiledName: "CustomDropdownControl2__CF_CF",
-                                        FieldValue: record["Sex"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl5__CF_CF",
-                                        FieldValue: record["MVPN"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                                        FieldValue: record["DeptChiName"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                        FieldValue: record["CostCenter"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                        FieldValue: record["LocationName"]
-                                    },
-                                    {
-                                        FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                        FieldValue: record["RegionName"]
-                                    },
-                                    {
-                                        FiledName: "CustomDateControl1__CF_CF",
-                                        FieldValue: record["BirthDate"]
-                                    },
-                                    {
-                                        FiledName: "CustomDateControl1__CF_CF_CF",
-                                        FieldValue: record["EntDate"]
-                                    },
-                                    {
-                                        FiledName: "CustomDateControl1__CF",
-                                        FieldValue: record["OffDate"]
-                                    }
-                                ],
-                                "_links": []
-                            }
 
                             let holder = await siPassAdapter.postCardHolder(d);
 
@@ -534,6 +553,7 @@ export class HRService {
             try {
                 this.mongoClient.close();
                 this.humanResource.disconnect();
+                this.CCure800SqlAdapter.disconnect();
             }
             catch (ex) {
                 Log.Info(`${this.constructor.name}`, ex);

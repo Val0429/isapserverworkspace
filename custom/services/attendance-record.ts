@@ -59,7 +59,7 @@ export class AttendanceRecord {
 
         clearTimeout(this.waitTimer);
 
-        if ((now.getHours() == 0) && (now.getMinutes() == 5)) {  // Startup @XX:05
+        if (now.getMinutes() == 5) {  // Startup @XX:05
         // if (now.getMinutes() != 5) {
             // 0.0 Initial Adapter
             Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);

@@ -1,10 +1,10 @@
 {
-  "name": "isap-fts-service",
-  "version": "2.01.03",
+  "name": "isap-accesscontrol-service",
+  "version": "1.00.00",
   "config": {
-    "displayname": "iSap FTS Service"
+    "displayname": "iSap Access Control Service"
   },
-  "description": "iSap FTS Service v2.01.02",
+  "description": "iSap Access Control Service v1.00.00",
   "scripts": {
     "start": "npm start --prefix ./../",
     "create-project": "git checkout --orphan"

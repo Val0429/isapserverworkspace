@@ -2,11 +2,12 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, Config
 } from 'core/cgi-package';
 
 import { IMember, Member, AccessLevel } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
+import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
 
 
 var action = new Action({
@@ -27,16 +28,16 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Member(data.inputType);
 
-    let cardno = "" ;
+    let cardno = "";
     try {
         cardno = obj.get("Credentials")[0]["CardNumber"];
     }
-    catch ( e) {
+    catch (e) {
         throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
     }
 
     let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
-    if ( cnt != null) {
+    if (cnt != null) {
         throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
     }
 
@@ -127,7 +128,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             }
         }
     }
-    
+
     obj.set("Token", "-1");
     obj.set("CustomFields", fields);
     obj.set("Vehicle1", {});
@@ -139,11 +140,30 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     await obj.save(null, { useMasterKey: true });
 
-    let ret = ParseObject.toOutputJSON(obj); 
+    let ret = ParseObject.toOutputJSON(obj);
     console.log(ret);
 
     let holder = await siPassAdapter.postCardHolder(ret);
     console.log(holder);
+
+    try {
+        let config = {
+            server: Config.ccuresqlserver.server,
+            port: Config.ccuresqlserver.port,
+            user: Config.ccuresqlserver.user,
+            password: Config.ccuresqlserver.password,
+            database: Config.ccuresqlserver.database,
+            requestTimeout: 300000,
+            connectionTimeout: 300000 //ms
+        }
+
+        await this.CCure800SqlAdapter.connect(config);
+        await this.CCure800SqlAdapter.writeMember(ret);
+        await this.CCure800SqlAdapter.disconnect();
+    }
+    catch (ex) {
+        console.log(`${this.constructor.name}`, ex);
+    }
 
     /// 2) Output
     return ret;
@@ -156,33 +176,33 @@ type InputR = Restful.InputR<any>;
 type OutputR = Restful.OutputR<IMember>;
 
 const fieldNames = {
-    DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
-    CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
-    WorkAreaName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-    CardType:"CustomDropdownControl1__CF"
+    DepartmentName: "CustomTextBoxControl5__CF_CF_CF",
+    CostCenterName: "CustomTextBoxControl5__CF_CF_CF_CF",
+    WorkAreaName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+    CardType: "CustomDropdownControl1__CF"
 }
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Member);
-    
-    let filter = data.parameters;    
-    if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
-    if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
-    if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
-    if(filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
-    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue",new RegExp(filter.DepartmentName), "i");
-    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue",new RegExp(filter.CostCenterName), "i");
-    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue",new RegExp(filter.WorkAreaName), "i");
-    
-    if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue",new RegExp(filter.CardType), "i");
-    
-    if(filter.start2 && filter.end2){       
+
+    let filter = data.parameters;
+    if (filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
+    if (filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");
+    if (filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");
+    if (filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
+    if (filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue", new RegExp(filter.DepartmentName), "i");
+    if (filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue", new RegExp(filter.CostCenterName), "i");
+    if (filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue", new RegExp(filter.WorkAreaName), "i");
+
+    if (filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue", new RegExp(filter.CardType), "i");
+
+    if (filter.start2 && filter.end2) {
         query.lessThanOrEqualTo("EndDate", filter.end2).greaterThanOrEqualTo("EndDate", filter.start2);
-    } 
-    if(filter.start1 && filter.end1){      
+    }
+    if (filter.start1 && filter.end1) {
         query.lessThanOrEqualTo("StartDate", filter.end1).greaterThanOrEqualTo("StartDate", filter.start1);
-    } 
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -311,13 +331,13 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     await obj.save({ ...ParseObject.toOutputJSON(update), objectId: undefined });
 
     /// 3) Output
-    let ret =  ParseObject.toOutputJSON(obj);
+    let ret = ParseObject.toOutputJSON(obj);
     console.log(ret);
 
     let holder = await siPassAdapter.postCardHolder(ret);
     console.log(holder);
 
-    return ret ;
+    return ret;
 });
 
 /********************************
