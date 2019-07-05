@@ -66,7 +66,16 @@ export default new Action<Input, Output>({
         if (!data.session) throw Errors.throw(Errors.CustomUnauthorized, ["This session is not valid or is already expired."]);
         user = data.user;
         sessionId = data.session.getSessionToken();
-
+        let apiRoles=user.get("apiRoles");
+        if(apiRoles){
+            let apiRole = new APIRoles();
+            apiRole.id=apiRoles[0].id;
+            permissions = await new Parse.Query(APIPermissions)
+                .include("a")
+                .include("of")
+                .equalTo("a", apiRole)
+                .find();
+        }
     }
 
     return ParseObject.toOutputJSON({
