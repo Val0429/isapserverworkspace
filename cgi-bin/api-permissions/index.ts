@@ -46,6 +46,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(APIPermissions)
         .include("of").include("a").include("b").include("c").include("d");
+    
+        let filter = data.parameters as any;
+    if(filter.role){
+        console.log(filter.role);
+        let apiRole = new APIRoles();
+        apiRole.id=filter.role;
+        query.equalTo("a", apiRole);
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -61,8 +69,8 @@ type OutputU = Restful.OutputU<IAPIPermissions>;
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(APITokens).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`APITokens <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(APIPermissions).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`APIPermissions <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -75,15 +83,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 type InputD = Restful.InputD<IAPIPermissions>;
 type OutputD = Restful.OutputD<IAPIPermissions>;
 
-action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+action.delete<InputD, any>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(APITokens).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`APITokens <${objectId}> not exists.`]);
-    /// 2) Delete
-    obj.destroy({ useMasterKey: true });
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
+    let parent = new APIRoles();
+        parent.id = objectId;
+        let permissions = await new Parse.Query(APIPermissions).equalTo("a", parent).find();
+        ParseObject.destroyAll(permissions);
+        return permissions.map(o=> ParseObject.toOutputJSON(o));
 });
 /// CRUD end ///////////////////////////////////
 
