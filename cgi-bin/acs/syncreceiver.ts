@@ -38,6 +38,14 @@ type OutputR = Restful.OutputR<ISyncNotification>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(SyncNotification);
+    
+    let filter = data.parameters as any;
+    if(filter.name){
+        query.matches("receivers.receivename", new RegExp(filter.name), "i");
+    }
+    if(filter.email){
+        query.matches("receivers.emailaddress", new RegExp(filter.email), "i");
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output

@@ -58,8 +58,12 @@ type OutputR = Restful.OutputR<IUser>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(Parse.User)
+        .include("apiRoles")
         .include("roles");
-
+        let filter = data.parameters as any;
+    if(filter.name){
+        query.matches("username", new RegExp(filter.name), "i");
+    }
     query = Restful.Filter(query, data.inputType);
 
     return Restful.Pagination(query, data.inputType);
