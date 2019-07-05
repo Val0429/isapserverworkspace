@@ -3,13 +3,15 @@ import { app } from 'core/main.gen';
 import './custom/shells/create-index';
 import './custom/shells/auto-index';
 
-
+import * as util from 'util';
+const setImmediatePromise = util.promisify(setImmediate);
 
 import { FRSs, sjLiveStream, ILiveFaces } from './custom/models/frss';
 import { FaceFeatureCompare } from './custom/services/frs-service/libs/face-feature-compare';
-import { createMongoDB } from 'helpers/parse-server/parse-helper';
+import { createMongoDB, ParseObject } from 'helpers/parse-server/parse-helper';
 import { UserType } from 'workspace/custom/services/frs-service/libs/core';
 import { Db } from 'mongodb';
+import { kaListen } from './cgi-bin/listen';
 const shortid = require('shortid');
 
 /// start FRS connection
@@ -78,12 +80,12 @@ interface ICompareMatch {
 type ICompareMatches = ICompareMatch[];
 
 const collectionName = "NxNFaces";
-// const valuableThreshold = 0.3;
-// const groupingThreshold = 0.7;
-// const matchingthreshold = 0.9;
-const valuableThreshold = 0.4;
-const groupingThreshold = 0.8;
-const matchingthreshold = 0.96;
+const valuableThreshold = 0.3;
+const groupingThreshold = 0.7;
+const matchingthreshold = 0.9;
+// const valuableThreshold = 0.4;
+// const groupingThreshold = 0.8;
+// const matchingthreshold = 0.96;
 const highestMatchesCount = 10;
 class ManagedFaces {
     private db: Db;
@@ -138,7 +140,7 @@ class ManagedFaces {
         }
     }
     
-    async compare(face: ILiveFaces): Promise<NxNFaces | ICompareMatches> {
+    async compare(face: ILiveFaces): Promise<NxNFacesResult> {
         let faceFeature = new Buffer(face.face.face_feature, 'binary');
         let highestMatches: ICompareMatches = [];
         let highestGroup: [string?, number?] = [];
@@ -180,10 +182,20 @@ class ManagedFaces {
                     }
                     /// return
                     return {
-                        ...o,
-                        matchUrl: `http://${face.frs.attributes.ip}:${face.frs.attributes.port}/frs/cgi/snapshot/image=${face.face.snapshot}`,
-                        matchScore: score
-                    } as any;
+                        objectId: o._id,
+                        relations: o.relations,
+                        source: o.source,
+                        url: o.url,
+                        currentSource: {
+                            frsId: face.frs.id,
+                            channel: face.face.channel,
+                            snapshot: face.face.snapshot,
+                            faceFeature: undefined
+                        },
+                        currentUrl: `http://${face.frs.attributes.ip}:${face.frs.attributes.port}/frs/cgi/snapshot/image=${face.face.snapshot}`,
+                        score,
+                        timestamp: new Date(face.face.timestamp)
+                    }
                 }
 
                 /// 1.3) if not match
@@ -192,6 +204,7 @@ class ManagedFaces {
                     score, face: o
                 });
             }
+            // await setImmediatePromise();
         }
         /// 2.1) if none highestGroup, create with new group.
         /// 2.2) if yes highestGroup, create with exists group.
@@ -199,7 +212,7 @@ class ManagedFaces {
         let c: NxNFaces = {
             _id: shortid.generate(),
             gId: highestGroup.length > 0 ? highestGroup[0] : shortid.generate(),
-            gScore: highestGroup.length > 0 ? highestGroup[1] : 1.0,
+            gScore: highestGroup.length > 0 ? highestGroup[1] : 1,
             source: {
                 frsId: face.frs.id,
                 channel: face.face.channel,
@@ -219,13 +232,24 @@ class ManagedFaces {
         let col = this.db.collection(collectionName);
         col.insertOne(c);
         this.doInitOne(c);
-        console.log('goes to here')
-        return highestMatches.reduce((final, value) => {
-            final.push({
-                ...value, face: { ...value.face, source: { ...value.face.source, faceFeature: undefined } }
-            });
-            return final;
-        }, []);
+        console.log('goes to end')
+
+        return {
+            objectId: c._id,
+            relations: c.relations,
+            source: c.source,
+            url: c.url,
+            currentSource: c.source,
+            currentUrl: c.url,
+            score: 1,
+            timestamp: new Date(face.face.timestamp)
+        }        
+        // return highestMatches.reduce((final, value) => {
+        //     final.push({
+        //         ...value, face: { ...value.face, source: { ...value.face.source, faceFeature: undefined } }
+        //     });
+        //     return final;
+        // }, []);
     }
 }
 
@@ -241,11 +265,20 @@ class ManagedFaces {
         console.time(`compare #${tc}`);
         let result = await managedFaces.compare(data);
         console.timeEnd(`compare #${tc}`);
-        console.log('highest score...', result);
 
-        if (Array.isArray(result)) console.log('not match');
-        else console.log('matches');
-        // console.log({ ...data, face: { ...data.face, face_feature: undefined } });
+        //console.log('result', result);
+        let rtn = {
+            ...result,
+            source: {
+                ...result.source,
+                faceFeature: undefined,
+            },
+            currentSource: {
+                ...result.currentSource,
+                faceFeature: undefined
+            }
+        }
+        kaListen.send(ParseObject.toOutputJSON(rtn));
     });
 
 })();

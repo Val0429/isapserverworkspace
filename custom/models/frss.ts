@@ -50,16 +50,17 @@ export interface IFRSs {
             sjLiveStream.next({ frs, face });
         });
 
-        const doOnce = () => {
-            const url = "https://thispersondoesnotexist.com/image";
-            request.get({ url, encoding: null }, async (err, res, body) => {
-                console.log('image received!');
-                await instance.verifyFace({ image: body });
-                console.log('verify face sent!');
-                setTimeout( () => doOnce(), 0 );
-            });
-        }
-        doOnce();
+        /// for test
+        // const doOnce = () => {
+        //     const url = "https://thispersondoesnotexist.com/image";
+        //     request.get({ url, encoding: null }, async (err, res, body) => {
+        //         console.log('image received!');
+        //         await instance.verifyFace({ image: body });
+        //         console.log('verify face sent!');
+        //         setTimeout( () => doOnce(), 0 );
+        //     });
+        // }
+        // doOnce();
     }
 
     static async delete(frs: FRSs) {
