@@ -8,7 +8,7 @@ import { APIPermissions, APIRoles, APITokens, IAPIPermissions, IAPIRoles, IAPITo
 
 import {
     Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Member, TimeSchedule, AccessLevel,
-    PermissionTable, WorkGroup, SyncNotification, AttendanceRecords, CardProfile, ProfileId
+    PermissionTable, WorkGroup, SyncNotification, AttendanceRecords, DropDownList
 } from '../../custom/models'
 
 (async () => {
@@ -62,6 +62,7 @@ import {
         token = new APITokens(); await token.save({ identifier: "5-3_door_floor_CRUD" });
         token = new APITokens(); await token.save({ identifier: "5-4_door_elevator_CRUD" });
         token = new APITokens(); await token.save({ identifier: "5-5_door_reader_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "5-6_door_elevatorgroup_CRUD" });
 
         token = new APITokens(); await token.save({ identifier: "6-1_notification_sync_CRUD" });
 
@@ -127,35 +128,41 @@ import {
     ////////////////////////////
 
 
-
     /// Create default API Tokens
-    let profiels = await new Parse.Query(CardProfile).first();
-    if (!profiels) {
-        profiels = new CardProfile(); await profiels.save({ name: "正職" });
-        profiels = new CardProfile(); await profiels.save({ name: "ASR臨時卡" });
-        profiels = new CardProfile(); await profiels.save({ name: "DOC臨時卡" });
-        profiels = new CardProfile(); await profiels.save({ name: "GSA臨時卡" });
-        profiels = new CardProfile(); await profiels.save({ name: "IDC臨時卡" });
-        profiels = new CardProfile(); await profiels.save({ name: "NOC臨時卡" });
-        profiels = new CardProfile(); await profiels.save({ name: "下包商" });
-        profiels = new CardProfile(); await profiels.save({ name: "子公司" });
-        profiels = new CardProfile(); await profiels.save({ name: "契約商_長駐" });
-        profiels = new CardProfile(); await profiels.save({ name: "契約商_短派" });
-        profiels = new CardProfile(); await profiels.save({ name: "施工" });
-        profiels = new CardProfile(); await profiels.save({ name: "約聘" });
-        profiels = new CardProfile(); await profiels.save({ name: "租戶" });
-        profiels = new CardProfile(); await profiels.save({ name: "停車卡" });
-        profiels = new CardProfile(); await profiels.save({ name: "訪客" });
-        profiels = new CardProfile(); await profiels.save({ name: "貴賓" });
-        profiels = new CardProfile(); await profiels.save({ name: "電梯卡" });
+    let dropItem = await new Parse.Query(DropDownList).first();
+    if (!dropItem) {
+        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 1, name: "26 bit" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 2, name: "35 bit" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 3, name: "mifare32" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 1, name: "正職" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 2, name: "ASR臨時卡" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 3, name: "DOC臨時卡" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 4, name: "GSA臨時卡" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 5, name: "IDC臨時卡" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 6, name: "NOC臨時卡" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 7, name: "下包商" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 8, name: "子公司" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 9, name: "契約商_長駐" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 10, name: "契約商_短派" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 11, name: "施工" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 12, name: "約聘" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 13, name: "租戶" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 14, name: "停車卡" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 15, name: "訪客" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 16, name: "貴賓" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 17, name: "電梯卡" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 1, name: "License" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason1", key: 1, name: "CreateReason1" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason2", key: 1, name: "CreateReason2" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason3", key: 1, name: "CreateReason3" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason1", key: 1, name: "ApplyReason1" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason2", key: 1, name: "ApplyReason2" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason3", key: 1, name: "ApplyReason3" });
     }
 
-    let weigands = await new Parse.Query(ProfileId).first();
-    if (!weigands) {
-        weigands = new ProfileId(); await weigands.save({ profileid: 1, name: "35 bit" });
-        weigands = new ProfileId(); await weigands.save({ profileid: 2, name: "26 bit" });
-        weigands = new ProfileId(); await weigands.save({ profileid: 3, name: "mifare32" });
-    }
     ////////////////////////////
 
     let obj = null;
