@@ -73,13 +73,18 @@ export class ReportDemographic extends Report {
 
             let tasks = [];
 
-            tasks.push(this.GetReports(IDB.ReportDemographicSummary));
-            tasks.push(this.GetReports(IDB.ReportDemographicSummary, this.prevDateRange.startDate, this.prevDateRange.endDate));
+            tasks.push(
+                (async () => {
+                    this._currReports = await this.GetReports(IDB.ReportDemographicSummary, []);
+                })(),
+            );
+            tasks.push(
+                (async () => {
+                    this._prevReports = await this.GetReports(IDB.ReportDemographicSummary, [], this.prevDateRange.startDate, this.prevDateRange.endDate);
+                })(),
+            );
 
-            let result = await Promise.all(tasks);
-
-            this._currReports = result[0];
-            this._prevReports = result[1];
+            await Promise.all(tasks);
         } catch (e) {
             throw e;
         }

@@ -35,23 +35,49 @@ action.post(
 
             let tasks = [];
 
-            tasks.push(report.GetPeopleCountingSummary());
-            tasks.push(report.GetPeopleCountingSummary(report.prevDateRange.startDate, report.prevDateRange.endDate));
-            tasks.push(report.GetDemographicSummary());
-            tasks.push(report.GetDemographicSummary(report.prevDateRange.startDate, report.prevDateRange.endDate));
-            tasks.push(report.GetSalesRecordSummary());
-            tasks.push(report.GetSalesRecordSummary(report.prevDateRange.startDate, report.prevDateRange.endDate));
+            let currPCSummary: IResponse.IReport.IComplex_Count = undefined;
+            tasks.push(
+                (async () => {
+                    currPCSummary = await report.GetPeopleCountingSummary();
+                })(),
+            );
 
-            let result = await Promise.all(tasks);
+            let prevPCSummary: IResponse.IReport.IComplex_Count = undefined;
+            tasks.push(
+                (async () => {
+                    prevPCSummary = await report.GetPeopleCountingSummary(report.prevDateRange.startDate, report.prevDateRange.endDate);
+                })(),
+            );
 
-            let currPCSummary = result[0];
-            let prevPCSummary = result[1];
+            let currDemoSummary: IResponse.IReport.IComplex_Gender = undefined;
+            tasks.push(
+                (async () => {
+                    currDemoSummary = await report.GetDemographicSummary();
+                })(),
+            );
 
-            let currDemoSummary = result[2];
-            let prevDemoSummary = result[3];
+            let prevDemoSummary: IResponse.IReport.IComplex_Gender = undefined;
+            tasks.push(
+                (async () => {
+                    prevDemoSummary = await report.GetDemographicSummary(report.prevDateRange.startDate, report.prevDateRange.endDate);
+                })(),
+            );
 
-            let currSRSummary = result[4];
-            let prevSRSummary = result[5];
+            let currSRSummary: IResponse.IReport.IComplex_SalesRecord = undefined;
+            tasks.push(
+                (async () => {
+                    currSRSummary = await report.GetSalesRecordSummary();
+                })(),
+            );
+
+            let prevSRSummary: IResponse.IReport.IComplex_SalesRecord = undefined;
+            tasks.push(
+                (async () => {
+                    prevSRSummary = await report.GetSalesRecordSummary(report.prevDateRange.startDate, report.prevDateRange.endDate);
+                })(),
+            );
+
+            await Promise.all(tasks);
 
             let pc: IResponse.IReport.IComplex_Data = {
                 value: currPCSummary.in,
@@ -134,7 +160,7 @@ export class ReportComplex extends Report {
     public async GetPeopleCountingSummary(startDate: Date, endDate: Date): Promise<IResponse.IReport.IComplex_Count>;
     public async GetPeopleCountingSummary(startDate?: Date, endDate?: Date): Promise<IResponse.IReport.IComplex_Count> {
         try {
-            let summarys = await this.GetReports(IDB.ReportPeopleCountingSummary, startDate, endDate);
+            let summarys = await this.GetReports(IDB.ReportPeopleCountingSummary, [], startDate, endDate);
             if (summarys.length === 0) {
                 return {
                     in: NaN,
@@ -170,7 +196,7 @@ export class ReportComplex extends Report {
     public async GetDemographicSummary(startDate: Date, endDate: Date): Promise<IResponse.IReport.IComplex_Gender>;
     public async GetDemographicSummary(startDate?: Date, endDate?: Date): Promise<IResponse.IReport.IComplex_Gender> {
         try {
-            let summarys = await this.GetReports(IDB.ReportDemographicSummary, startDate, endDate);
+            let summarys = await this.GetReports(IDB.ReportDemographicSummary, [], startDate, endDate);
             if (summarys.length === 0) {
                 return {
                     malePercent: NaN,

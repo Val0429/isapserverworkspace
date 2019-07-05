@@ -132,13 +132,19 @@ export class Report {
 
             let tasks = [];
 
-            tasks.push(this.GetOfficeHours());
-            tasks.push(this.GetWeathers());
+            tasks.push(
+                (async () => {
+                    this._officeHours = await this.GetOfficeHours();
+                })(),
+            );
 
-            let result = await Promise.all(tasks);
+            tasks.push(
+                (async () => {
+                    this._weathers = await this.GetWeathers();
+                })(),
+            );
 
-            this._officeHours = result[0];
-            this._weathers = result[1];
+            await Promise.all(tasks);
         } catch (e) {
             throw e;
         }
@@ -218,13 +224,14 @@ export class Report {
     /**
      * Get report
      * @param collection
+     * @param includes
      * @param startDate
      * @param endDate
      */
 
-    public async GetReports<T extends Parse.Object>(collection: new () => T): Promise<T[]>;
-    public async GetReports<T extends Parse.Object>(collection: new () => T, startDate: Date, endDate: Date): Promise<T[]>;
-    public async GetReports<T extends Parse.Object>(collection: new () => T, startDate?: Date, endDate?: Date): Promise<T[]> {
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[]): Promise<T[]>;
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<T[]>;
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate?: Date, endDate?: Date): Promise<T[]> {
         try {
             startDate = startDate || this.currDateRange.startDate;
             endDate = endDate || this.currDateRange.endDate;
@@ -240,7 +247,7 @@ export class Report {
             let reports: Parse.Object[] = await reportQuery
                 .limit(reportTotal)
                 .ascending(['date'])
-                .include(['site', 'area', 'device', 'device.groups'])
+                .include(['site', 'area', 'device', 'device.groups', ...includes])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -350,7 +357,7 @@ export class Report {
     public async GetSalesRecordSummarys(reports?: IDB.ReportPeopleCountingSummary[]): Promise<IResponse.IReport.ISalesRecordSummaryData[]> {
         try {
             if (!reports) {
-                reports = await this.GetReports(IDB.ReportPeopleCountingSummary);
+                reports = await this.GetReports(IDB.ReportPeopleCountingSummary, []);
             }
 
             let salesRecords = await this.GetSalesRecords();
