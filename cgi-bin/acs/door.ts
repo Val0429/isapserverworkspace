@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IDoor, Door } from '../../custom/models'
 import licenseService from 'services/license';
 
@@ -76,6 +77,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 /// 1) Create Object
                 var obj = new Door(data.inputType);
                 await obj.save(null, { useMasterKey: true });
+
+                Log.Info(`${this.constructor.name}`, `postDoor ${data.inputType.doorid} ${data.inputType.doorname}`);
+
                 /// 2) Output
                 return ParseObject.toOutputJSON(obj);
             }
@@ -117,6 +121,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Door <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+
+    Log.Info(`${this.constructor.name}`, `putDoor ${obj.get("doorid")} ${obj.get("doorname")}`);
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -133,6 +140,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(Door).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Door <${objectId}> not exists.`]);
     /// 2) Delete
+
+    Log.Info(`${this.constructor.name}`, `deleteDoor ${obj.get("doorid")} ${obj.get("doorname")}`);
+
     obj.destroy({ useMasterKey: true });
     /// 3) Output
     return ParseObject.toOutputJSON(obj);

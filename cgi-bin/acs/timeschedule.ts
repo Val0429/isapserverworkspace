@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { ITimeSchedule, TimeSchedule } from '../../custom/models'
 
 
@@ -23,6 +24,9 @@ type OutputC = Restful.OutputC<ITimeSchedule>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new TimeSchedule(data.inputType);
+
+    Log.Info(`${this.constructor.name}`, `postTimeSchedule ${data.inputType.timeid} ${data.inputType.timename}`);
+
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -54,6 +58,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(TimeSchedule).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`TimeSchedule <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `putTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`);
+
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -71,6 +78,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(TimeSchedule).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`TimeSchedule <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `deleteTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

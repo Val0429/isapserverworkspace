@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IDoorGroup, DoorGroup } from '../../custom/models'
 
 
@@ -26,6 +27,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var obj = new DoorGroup(data.inputType);
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
+    Log.Info(`${this.constructor.name}`, `postDoorGroup ${data.inputType.groupid} ${data.inputType.groupname}`);
+
     return ParseObject.toOutputJSON(obj);
 });
 
@@ -62,6 +65,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(DoorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`DoorGroup <${objectId}> not exists.`]);
     /// 2) Modify
+    Log.Info(`${this.constructor.name}`, `putDoorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
@@ -78,6 +83,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(DoorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`DoorGroup <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `deleteDoorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

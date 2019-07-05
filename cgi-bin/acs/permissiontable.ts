@@ -87,6 +87,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         }
     }
 
+    Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
+
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -141,6 +143,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
+    
+    Log.Info(`${this.constructor.name}`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`);
+
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
 
@@ -213,6 +218,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
+    
+    Log.Info(`${this.constructor.name}`, `deletePermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

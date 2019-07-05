@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject, TimeSchedule, Door
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IAccessLevel, AccessLevel } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
@@ -40,7 +41,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             ObjectToken: e.get("readerid"),
             ObjectName: e.get("readername"),
             RuleToken:"12",
-            RuleType:2,
+            RuleType:3,
             StartDate:null,
             EndDate:null,
             ArmingRightsId:null,
@@ -57,6 +58,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         timeScheduleToken: data.inputType.timeschedule.get("timeid")
     }
     await siPassAdapter.postAccessLevel(d);
+
+    Log.Info(`${this.constructor.name}`, `postAccessLevel ${data.inputType.levelid} ${data.inputType.levelname}`);
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
@@ -101,6 +104,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
 
+    Log.Info(`${this.constructor.name}`, `putAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
+
     /// 3) Sync to ACS Services
     let rules = [] ;
     for (let idx = 0; idx < data.inputType.reader.length; idx++) {
@@ -144,6 +149,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(AccessLevel).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`AccessLevel <${objectId}> not exists.`]);
     /// 2) Delete
+
+    Log.Info(`${this.constructor.name}`, `deleteAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
+
     obj.destroy({ useMasterKey: true });
     /// 3) Output
     return ParseObject.toOutputJSON(obj);

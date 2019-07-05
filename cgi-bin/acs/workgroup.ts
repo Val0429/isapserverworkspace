@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IWorkGroup, WorkGroup } from '../../custom/models'
 
 
@@ -23,6 +24,9 @@ type OutputC = Restful.OutputC<IWorkGroup>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new WorkGroup(data.inputType);
+
+    Log.Info(`${this.constructor.name}`, `postWorkGroup ${data.inputType.groupid} ${data.inputType.groupname}`);
+    
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -54,6 +58,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(WorkGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`WorkGroup <${objectId}> not exists.`]);
+    
+    Log.Info(`${this.constructor.name}`, `putWorkGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -71,6 +78,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(WorkGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`WorkGroup <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `deleteWorkGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

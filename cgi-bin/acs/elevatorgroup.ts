@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IElevatorGroup, ElevatorGroup } from '../../custom/models'
 
 
@@ -24,6 +25,9 @@ type OutputC = Restful.OutputC<IElevatorGroup>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new ElevatorGroup(data.inputType);
+
+    Log.Info(`${this.constructor.name}`, `postElevatorGroup ${data.inputType.groupid} ${data.inputType.groupname}`);
+
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -59,6 +63,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(ElevatorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`ElevatorGroup <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `putElevatorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -76,6 +82,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(ElevatorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`ElevatorGroup <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `deleteElevatorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

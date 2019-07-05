@@ -10,7 +10,7 @@ import * as msSQL from 'mssql';
 
 import * as delay from 'delay';
 
-import { siPassAdapter } from './acsAdapter-Manager';
+import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 
 
 // import { CCUREReader } from './ccureReader'
@@ -66,7 +66,7 @@ export class AttendanceRecord {
 
             // 2.0 Query Records
             {
-                Log.Info(`${this.constructor.name}`, `2.0 Query Records`);
+                Log.Info(`${this.constructor.name}`, `2.0 Query Records from SiPass`);
 
                 var end = now = new Date();
                 var begin = new Date(new Date().setHours( end.getHours() - 1 ));
@@ -81,6 +81,15 @@ export class AttendanceRecord {
                     ("0" + end.getSeconds()).slice(-2)
                 );
 
+                records.forEach( async (r) => {
+                    let o = new AttendanceRecords(r);
+                    await o.save();
+                    await delay(100);
+                });
+
+                Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
+
+                records = await cCureAdapter.getRecords();
                 records.forEach( async (r) => {
                     let o = new AttendanceRecords(r);
                     await o.save();

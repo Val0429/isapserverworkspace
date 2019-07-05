@@ -55,10 +55,10 @@ export class CCureAdapter {
         //         updateTime: 2008-04-18T14:03:49.000Z 
         //     }
         // ]
-        
+
         //   * IF [messageCode]==1002 : 人-卡:核可進入
         //   * IF [messageCode]==1003 : 人-卡:拒絕進入
-    
+
         return records;
     }
 
@@ -157,6 +157,29 @@ export class CCureAdapter {
         return records;
     }
 
+    async getDoorGroups() {
+        Log.Info(`${this.constructor.name}`, `getDoorGroups`);
+
+        await this._signal.wait(this._waitTime, x => x);
+        let records = await this._reader.queryAllAsync(QueryContent.DoorGroup);
+
+        return records;
+
+        // { 
+        //     floorId: 64358,
+        //     floorName: 'S_KSMSC_D客梯 7F',
+        //     online: true,
+        //     description: '' 
+        // },
+        // { 
+        //     floorId: 64359,
+        //     floorName: 'S_KSMSC_D客梯 8F',
+        //     online: true,
+        //     description: '' 
+        // }
+
+    }
+
     async getFloors() {
         Log.Info(`${this.constructor.name}`, `getFloors`);
 
@@ -164,14 +187,46 @@ export class CCureAdapter {
         let records = await this._reader.queryAllAsync(QueryContent.Floor);
 
         return records;
+
+
+        // [
+        //     { 
+        //         floorId: 64358,
+        //         floorName: 'S_KSMSC_D客梯 7F',
+        //         online: true,
+        //         description: '' 
+        //     },
+        //     { 
+        //         floorId: 64359,
+        //         floorName: 'S_KSMSC_D客梯 8F',
+        //         online: true,
+        //         description: '' 
+        //     }
+        // ]
+
     }
 
     async getElevators() {
         Log.Info(`${this.constructor.name}`, `getElevators`);
 
         await this._signal.wait(this._waitTime, x => x);
-       let records = await this._reader.queryAllAsync(QueryContent.Elevator);
+        let records = await this._reader.queryAllAsync(QueryContent.Elevator);
         return records;
+
+        // { 
+        //     elevatorId: 64316,
+        //     elevatorName: 'S_KSMSC_S_10G00A',
+        //     deviceId: 64283,
+        //     online: true,
+        //     description: 'KaoHsiung MSC A客梯' 
+        // },
+        // { 
+        //     elevatorId: 2147483635,
+        //     elevatorName: '$預設的電梯 (15162)',
+        //     deviceId: null,
+        //     online: false,
+        //     description: '' 
+        // }
     }
 
     async getCardHolderList() {
@@ -200,6 +255,24 @@ export class CCureAdapter {
         //         updatedPerson: 3909 
         //     }
         // ]
+
+        return records;
+    }
+
+    async getPermissionTables() {
+        Log.Info(`${this.constructor.name}`, `getPermissionTable`);
+
+        await this._signal.wait(this._waitTime, x => x);
+        let records = await this._reader.queryAllAsync(QueryContent.Clearance, null, 30000);
+
+        // { 
+        //     permissionTableId: 5205,
+        //     permissionTableName: 'C_Nantou-HUB-ALL' 
+        // },
+        // { 
+        //     permissionTableId: 5604,
+        //     permissionTableName: 'N1_NHHQ_6F-D22' 
+        // }
 
         return records;
     }

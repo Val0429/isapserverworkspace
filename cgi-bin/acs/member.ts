@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject, Config
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IMember, Member, AccessLevel } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
@@ -164,6 +165,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     catch (ex) {
         console.log(`${this.constructor.name}`, ex);
     }
+
+    Log.Info(`${this.constructor.name}`, `postMember ${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`);
 
     /// 2) Output
     return ret;
@@ -330,6 +333,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     await obj.save({ ...ParseObject.toOutputJSON(update), objectId: undefined });
 
+    Log.Info(`${this.constructor.name}`, `putMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`);
+
     /// 3) Output
     let ret = ParseObject.toOutputJSON(obj);
     console.log(ret);
@@ -351,6 +356,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Member).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `deleteMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output

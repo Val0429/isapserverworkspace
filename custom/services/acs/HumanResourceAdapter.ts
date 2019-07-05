@@ -87,4 +87,22 @@ export class HumanResourceAdapter {
 
         return res["recordset"];
     }
+
+    async getViewSupporter(empno: string[]) {
+        Log.Info(`${this.constructor.name}`, `getViewSupporter ${empno.length}`);
+
+        let res = [];
+        if (empno.length >= 1) {
+            let strEmp = "";
+
+            empno.forEach(no => {
+                strEmp += (",'" + no + "'");
+            });
+
+            res = await this.sqlClient.request()
+                .query(`select * from vieSupporter where SupporterNo in (''${strEmp}) order by CompCode, SupporterNo`);
+        }
+
+        return res["recordset"];
+    }
 }

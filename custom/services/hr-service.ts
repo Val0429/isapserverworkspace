@@ -129,6 +129,8 @@ export class HRService {
 
                     me.LastUpdate.vieChangeMemberLog = record["AddDate"];
                     EmpNo.push(record["EmpNo"]);
+
+                    Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["SeqNo"]}`);
                 };
             }
             catch (ex) {
@@ -138,7 +140,7 @@ export class HRService {
 
             // 4.2 vieChangeMemberLog
             res = null;
-            Log.Info(`${this.constructor.name}`, `4.2 Get Import data getViewHQMemberLog`);
+            Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
 
             let d = new Date();
             d.setDate(d.getDate() - 90);
@@ -146,9 +148,8 @@ export class HRService {
             let month = d.getMonth() < 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
             let day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
             let str = `${d.getFullYear()}/${month}/${day}`;
-            // str = "2018/12/31"
 
-            Log.Info(`${this.constructor.name}`, `4.2.0 remove getViewHQMemberLog before ${str}`);
+            Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${str}`);
             try {
                 let logs = await new Parse.Query("vieHQMemberLog").lessThan("AddDate", str).find();
                 for (let i = 0; i < logs.length; i++) {
@@ -185,12 +186,16 @@ export class HRService {
                         if (log == undefined) {
                             EmpNo.push(record["UserNo"]);
                             await new Parse.Object("vieHQMemberLog").save(record);
+
+                            Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["SeqNo"]}`);
                         }
                         else {
                             if (record["AddDate"] != log.get("AddDate")) {
                                 EmpNo.push(record["UserNo"]);
                                 log.set("AddDate", record["AddDate"]);
                                 log.save();
+
+                                Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["SeqNo"]}`);
                             }
                         }
                     };
@@ -209,6 +214,8 @@ export class HRService {
 
                         if (newSeqNoList.indexOf(record.get("SeqNo")) < 0) {
                             EmpNo.push(record.get("UserNo"));
+
+                            Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record.get("SeqNo")}`);
 
                             if (record.get("DataType") == "H") {
                                 memNew.push(record);
@@ -230,7 +237,7 @@ export class HRService {
 
             // 4.3 vieREMemberLog
             res = null;
-            Log.Info(`${this.constructor.name}`, `4.2 Get Import data getViewREMemberLog`);
+            Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieREMemberLog`);
             try {
                 res = await this.humanResource.getViewREMemberLog(this.LastUpdate.vieREMemberLog);
                 // { recordsets: [ [ [Object], [Object], [Object] ] ],
@@ -244,6 +251,8 @@ export class HRService {
                     me.LastUpdate.vieREMemberLog = record["AddDate"];
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
+
+                    Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["SeqNo"]}`);
                 };
             }
             catch (ex) {
@@ -262,7 +271,6 @@ export class HRService {
                 try {
                     res = await this.humanResource.getViewMember(EmpNo);
 
-
                     let sessionId = siPassAdapter.sessionToken;
                     // {
                     //     Log.Info(`${this.constructor.name}`, `4.4.1 Initial SiPass Adapter`);
@@ -273,6 +281,8 @@ export class HRService {
                         let record = res[idx];
 
                         let empNo = record["EmpNo"];
+
+                        Log.Info(`${this.constructor.name}`, `Import data vieMember ${empNo}`);
 
                         // 5.0 write data to SQL database
                         let a = 0;
@@ -334,6 +344,173 @@ export class HRService {
                         Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${empNo}`);
 
                         let obj = await new Parse.Query(vieMember).equalTo("EmpNo", empNo).first();
+                        if (obj == null) {
+                            let o = new vieMember(record);
+                            await o.save();
+                        }
+                        else {
+                            obj.set("attributes", record["attributes"]);
+                            obj.set("credentials", record["credentials"]);
+                            obj.set("accessRules", record["accessRules"]);
+                            obj.set("employeeNumber", record["employeeNumber"]);
+                            obj.set("firstName", record["firstName"]);
+                            obj.set("lastName", record["lastName"]);
+                            obj.set("personalDetails", record["personalDetails"]);
+                            obj.set("primaryWorkgroupId", record["primaryWorkgroupId"]);
+                            obj.set("apbWorkgroupId", record["apbWorkgroupId"]);
+                            obj.set("primaryWorkgroupName", record["primaryWorkgroupName"]);
+                            obj.set("nonPartitionWorkGroups", record["nonPartitionWorkGroups"]);
+                            obj.set("status", record["status"]);
+                            obj.set("token", record["token"]);
+                            obj.set("primaryWorkGroupAccessRule", record["primaryWorkGroupAccessRule"]);
+                            obj.set("nonPartitionWorkgroupAccessRules", record["nonPartitionWorkgroupAccessRules"]);
+                            obj.set("visitorDetails", record["visitorDetails"]);
+                            obj.set("customFields", record["customFields"]);
+                            obj.set("cardholderPortrait", record["cardholderPortrait"]);
+                            await obj.save();
+                        }
+                        // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
+
+
+                        let d = {
+                            AccessRules: [],
+                            ApbWorkgroupId: a,
+                            Attributes: {},
+                            Credentials: [],
+                            EmployeeNumber: record["EmpNo"],
+                            EndDate: record["OffDate"] ? record["OffDate"] : "2100-12-31T23:59:59",
+                            FirstName: record["EngName"] ? record["EngName"] : "_",
+                            GeneralInformation: "",
+                            LastName: record["EmpName"] ? record["EmpName"] : "_",
+                            NonPartitionWorkGroups: [],
+                            PersonalDetails:
+                            {
+                                Address: "",
+                                ContactDetails: {
+                                    Email: record["EMail"],
+                                    MobileNumber: record["Cellular"],
+                                    MobileServiceProviderId: "0",
+                                    PagerNumber: "",
+                                    PagerServiceProviderId: "0",
+                                    PhoneNumber: ""
+                                },
+                                DateOfBirth: record["BirthDate"],
+                                PayrollNumber: "",
+                                Title: "",
+                                UserDetails: {
+                                    UserName: "",
+                                    Password: ""
+                                }
+                            },
+                            Potrait: "",
+                            PrimaryWorkgroupId: a,
+                            PrimaryWorkgroupName: b,
+                            SmartCardProfileId: "0",
+                            StartDate: record["EntDate"],
+                            Status: 61,
+                            Token: "-1",
+                            TraceDetails: {
+                            },
+                            Vehicle1: {},
+                            Vehicle2: {},
+                            VisitorDetails:
+                            {
+                                VisitorCardStatus: 0,
+                                VisitorCustomValues: {}
+                            },
+                            CustomFields: [
+                                {
+                                    FiledName: "CustomDateControl4__CF",
+                                    FieldValue: record["UpdDate"]
+                                },
+                                {
+                                    FiledName: "CustomDropdownControl1__CF",
+                                    FieldValue: a
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl1__CF",
+                                    FieldValue: record["EmpNo"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl3__CF",
+                                    FieldValue: record["AddUser"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl6__CF",
+                                    FieldValue: record["CompName"]
+                                },
+                                {
+                                    FiledName: "CustomDropdownControl2__CF_CF",
+                                    FieldValue: record["Sex"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF",
+                                    FieldValue: record["MVPN"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF",
+                                    FieldValue: record["DeptChiName"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                                    FieldValue: record["CostCenter"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                                    FieldValue: record["LocationName"]
+                                },
+                                {
+                                    FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                                    FieldValue: record["RegionName"]
+                                },
+                                {
+                                    FiledName: "CustomDateControl1__CF_CF",
+                                    FieldValue: record["BirthDate"]
+                                },
+                                {
+                                    FiledName: "CustomDateControl1__CF_CF_CF",
+                                    FieldValue: record["EntDate"]
+                                },
+                                {
+                                    FiledName: "CustomDateControl1__CF",
+                                    FieldValue: record["OffDate"]
+                                }
+                            ],
+                            "_links": []
+                        }
+
+                        console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+                        this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+
+                        console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+                        await this.CCure800SqlAdapter.writeMember(d);
+
+                        console.log(`======================= ${sessionId}`);
+                        if (sessionId != "") {
+                            // 5.1 write data to SiPass database
+                            Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+
+                            let holder = await siPassAdapter.postCardHolder(d);
+
+                            await delay(1000);
+                        }
+                    }
+
+                    res = await this.humanResource.getViewSupporter(EmpNo);
+                    for (let idx = 0; idx < res.length; idx++) {
+                        let record = res[idx];
+
+                        let supporterNo = record["SupporterNo"];
+
+                        Log.Info(`${this.constructor.name}`, `Import data vieSupporter ${supporterNo}`);
+
+                        // 5.0 write data to SQL database
+                        let a = 2000000007;
+                        let b = "契約商";
+
+                        Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${supporterNo}`);
+
+                        let obj = await new Parse.Query(vieMember).equalTo("EmpNo", supporterNo).first();
                         if (obj == null) {
                             let o = new vieMember(record);
                             await o.save();

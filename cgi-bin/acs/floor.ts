@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IFloor, Floor } from '../../custom/models'
 
 
@@ -24,6 +25,9 @@ type OutputC = Restful.OutputC<IFloor>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Floor(data.inputType);
+
+    Log.Info(`${this.constructor.name}`, `postFloor ${data.inputType.floorid} ${data.inputType.floorname}`);
+
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -59,6 +63,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Floor).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floor <${objectId}> not exists.`]);
+    
+    Log.Info(`${this.constructor.name}`, `putFloor ${obj.get("floorid")} ${obj.get("floorname")}`);
+
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output

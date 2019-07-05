@@ -5,6 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
+import { Log } from 'helpers/utility';
 import { IReader, Reader } from '../../custom/models'
 
 
@@ -24,6 +25,9 @@ type OutputC = Restful.OutputC<IReader>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Reader(data.inputType);
+
+    Log.Info(`${this.constructor.name}`, `postReader ${data.inputType.readerid} ${data.inputType.readername}`);
+
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -59,6 +63,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Reader).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Reader <${objectId}> not exists.`]);
+
+    Log.Info(`${this.constructor.name}`, `putReader ${obj.get("readerid")} ${obj.get("readername")}`);
+
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -76,6 +83,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Reader).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Reader <${objectId}> not exists.`]);
+    
+    Log.Info(`${this.constructor.name}`, `deleteReader ${obj.get("readerid")} ${obj.get("readername")}`);
+    
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     /// 3) Output
