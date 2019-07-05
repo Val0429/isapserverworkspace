@@ -8,7 +8,7 @@ import { LocationRegion } from 'workspace/custom/models/db/location-region';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
 export default action;

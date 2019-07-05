@@ -11,7 +11,7 @@ import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
     apiToken: "3-1_door_accesslevel_CRUD"
 });
 

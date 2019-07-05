@@ -304,7 +304,7 @@ export interface IAttendanceRecords {
 export class AttendanceRecords extends ParseObject<IAttendanceRecords> { }
 
 export interface IDropDownList {
-    type: String,   // ProfileId, Certification, License, CreateReason1 , CreateReason2, CreateReason3, ApplyReason1, ApplyReason2, ApplyReason3
+    type: string,   // ProfileId, Certification, License, CreateReason1 , CreateReason2, CreateReason3, ApplyReason1, ApplyReason2, ApplyReason3
     key?: number,
     name?: string
 }

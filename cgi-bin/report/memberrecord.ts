@@ -20,7 +20,7 @@ const fieldNames = {
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.User]
+    // permission: [RoleList.Admin, RoleList.User]
 });
 
 

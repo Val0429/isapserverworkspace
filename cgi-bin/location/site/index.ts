@@ -13,7 +13,7 @@ import { LocationRegion } from 'workspace/custom/models/db/_index';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
     apiToken: "4-2_location_site_CRUD"
 });
 

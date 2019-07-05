@@ -11,7 +11,7 @@ import licenseService from 'services/license';
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
+    // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
     apiToken: "5-4_door_elevator_CRUD"
 });
 

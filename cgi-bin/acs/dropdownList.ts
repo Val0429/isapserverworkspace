@@ -8,8 +8,8 @@ import {
 import { IDropDownList, DropDownList } from '../../custom/models'
 
 var action = new Action({
-    loginRequired: true,
-    permission: [RoleList.Admin, RoleList.User]
+    loginRequired: false,
+    // permission: [RoleList.Admin, RoleList.User]
 });
 
 /// CRUD start /////////////////////////////////
