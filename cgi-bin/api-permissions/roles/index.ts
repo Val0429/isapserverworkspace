@@ -74,6 +74,11 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`APIRoles <${objectId}> not exists.`]);
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
+    //destroy child permissions
+    let parent = new APIRoles();
+    parent.id = objectId;
+    let permissions = await new Parse.Query(APIPermissions).equalTo("a", parent).find();
+    ParseObject.destroyAll(permissions);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
