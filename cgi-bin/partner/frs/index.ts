@@ -145,6 +145,14 @@ action.get(
                     pageSize: _paging.pageSize,
                 },
                 results: servers.map((value, index, array) => {
+                    let userGroups = value.getValue('userGroups').map((value1, index1, array1) => {
+                        return {
+                            type: Enum.EPeopleType[value1.type],
+                            objectId: value1.objectId,
+                            name: value1.name,
+                        };
+                    });
+
                     return {
                         objectId: value.id,
                         customId: value.getValue('customId'),
@@ -155,7 +163,7 @@ action.get(
                         wsport: value.getValue('wsport'),
                         account: value.getValue('account'),
                         password: value.getValue('password'),
-                        userGroups: value.getValue('userGroups'),
+                        userGroups: userGroups,
                     };
                 }),
             };
