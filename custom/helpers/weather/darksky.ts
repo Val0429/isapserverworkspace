@@ -58,10 +58,10 @@ export class Darksky {
                         (error, response, body) => {
                             if (error) {
                                 return reject(error);
+                            } else if ('error' in body) {
+                                return reject(`${body.code}, ${body.error}`);
                             } else if (response.statusCode !== 200) {
                                 return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
-                            } else if (body.error) {
-                                return reject(`${body.code}, ${body.error}`);
                             }
 
                             resolve(body);
@@ -116,10 +116,10 @@ export class Darksky {
                         (error, response, body) => {
                             if (error) {
                                 return reject(error);
+                            } else if ('error' in body) {
+                                return reject(`${body.code}, ${body.error}`);
                             } else if (response.statusCode !== 200) {
                                 return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
-                            } else if (body.error) {
-                                return reject(`${body.code}, ${body.error}`);
                             }
 
                             resolve(body);
