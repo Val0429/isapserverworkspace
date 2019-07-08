@@ -30,8 +30,8 @@ class Action {
     /**
      *
      */
-    private _action$: Rx.Subject<Action.IAction> = new Rx.Subject();
-    public get action$(): Rx.Subject<Action.IAction> {
+    private _action$: Rx.Subject<Action.IAction_Demographic | Action.IAction_RepeatVisitor> = new Rx.Subject();
+    public get action$(): Rx.Subject<Action.IAction_Demographic | Action.IAction_RepeatVisitor> {
         return this._action$;
     }
 
@@ -350,27 +350,53 @@ class Action {
 
                                         value.image = await Draw.Resize(value.image, size, image.isFill, image.isTransparent);
 
-                                        let report: IDB.ReportDemographic = new IDB.ReportDemographic();
+                                        if ('faceId' in value) {
+                                            let report: IDB.ReportRepeatVisitor = new IDB.ReportRepeatVisitor();
 
-                                        report.setValue('site', site);
-                                        report.setValue('area', area);
-                                        report.setValue('device', device);
-                                        report.setValue('date', value.date);
-                                        report.setValue('imageSrc', '');
-                                        report.setValue('age', feature.age);
-                                        report.setValue('gender', feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
-                                        report.setValue('userGroups', value.groups);
+                                            report.setValue('site', site);
+                                            report.setValue('area', area);
+                                            report.setValue('device', device);
+                                            report.setValue('date', value.date);
+                                            report.setValue('imageSrc', '');
+                                            report.setValue('age', feature.age);
+                                            report.setValue('gender', feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
+                                            report.setValue('faceId', value.faceId);
 
-                                        await report.save(null, { useMasterKey: true }).fail((e) => {
-                                            throw e;
-                                        });
+                                            await report.save(null, { useMasterKey: true }).fail((e) => {
+                                                throw e;
+                                            });
 
-                                        let imageSrc: string = `images_report/demographic/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
-                                        File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
+                                            let imageSrc: string = `images_report/repeat_visitor/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+                                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
 
-                                        report.setValue('imageSrc', imageSrc);
+                                            report.setValue('imageSrc', imageSrc);
 
-                                        this._save$.next({ report: report });
+                                            await report.save(null, { useMasterKey: true }).fail((e) => {
+                                                throw e;
+                                            });
+                                        } else {
+                                            let report: IDB.ReportDemographic = new IDB.ReportDemographic();
+
+                                            report.setValue('site', site);
+                                            report.setValue('area', area);
+                                            report.setValue('device', device);
+                                            report.setValue('date', value.date);
+                                            report.setValue('imageSrc', '');
+                                            report.setValue('age', feature.age);
+                                            report.setValue('gender', feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
+                                            report.setValue('userGroups', value.groups);
+
+                                            await report.save(null, { useMasterKey: true }).fail((e) => {
+                                                throw e;
+                                            });
+
+                                            let imageSrc: string = `images_report/demographic/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+                                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
+
+                                            report.setValue('imageSrc', imageSrc);
+
+                                            this._save$.next({ report: report });
+                                        }
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
                                     }
@@ -403,11 +429,21 @@ namespace Action {
     /**
      *
      */
-    export interface IAction {
+    export interface IAction_Base {
         device: IDB.Device;
         date: Date;
         image: Buffer;
+    }
+
+    /**
+     *
+     */
+    export interface IAction_Demographic extends IAction_Base {
         groups: Enum.EPeopleType[];
+    }
+
+    export interface IAction_RepeatVisitor extends IAction_Base {
+        faceId: string;
     }
 
     /**
