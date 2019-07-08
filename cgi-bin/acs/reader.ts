@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, Door
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
@@ -45,6 +45,17 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let filter = data.parameters as any;
     if(filter.name){
         query.matches("readername", new RegExp(filter.name), "i");
+    }
+    if(filter.vacant && filter.vacant=="true"){
+        let doors = await new Parse.Query(Door)           
+            .find();
+        
+        let usedreaders=[];
+        for (let door of doors.map(x=>ParseObject.toOutputJSON(x))){
+            if(door.readerin)usedreaders.push(...door.readerin);
+            if(door.readerout)usedreaders.push(...door.readerout);
+        }
+        query.notContainedIn("objectId", usedreaders.map(x=>x.objectId));
     }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
