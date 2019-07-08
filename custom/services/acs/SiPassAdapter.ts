@@ -680,7 +680,7 @@ export class SiPassAdapter {
     }
 
     async postCardHolder(cardholeder: siPassClient.ICardholderObject) {
-        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
+        //Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
 
         let a = await this.siPassPersion.CreatePerson(this.siPassHrParam, cardholeder);
 
@@ -688,7 +688,7 @@ export class SiPassAdapter {
     }
 
     async putCardHolder(cardholeder: siPassClient.ICardholderObject) {
-        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
+        //Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
 
         let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder);
 
