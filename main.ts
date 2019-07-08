@@ -10,6 +10,7 @@ export let ready$: Rx.Subject<{}> = new Rx.Subject();
 
 app.use(history());
 app.use(`/images`, express.static(`workspace/custom/assets/images`));
+app.use(`/images_report`, express.static(`workspace/custom/assets/images_report`));
 app.use(`/logs`, express.static(`workspace/custom/assets/logs`));
 
 import { Print, Utility, DateTime, File } from './custom/helpers';
