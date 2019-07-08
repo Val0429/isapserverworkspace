@@ -294,7 +294,7 @@ export class CMSService {
             .subscribe({
                 next: (x) => {
                     let now: Date = new Date();
-                    let timestamp: number = now.getTime();
+                    let timestamp: number = now.setSeconds(0, 0);
 
                     sources.forEach((value, index, array) => {
                         value.channels.forEach((value1, index1, array1) => {
