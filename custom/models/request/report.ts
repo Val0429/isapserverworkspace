@@ -33,6 +33,11 @@ export interface IDemographicSummary extends ISummaryBase {}
 
 export interface IHumanDetectionSummary extends ISummaryBase {}
 
+export interface IHumanDetectionThreshold extends IDateRange {
+    areaId: string;
+    type: 'medium' | 'high';
+}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;

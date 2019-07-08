@@ -63,6 +63,20 @@ action.post(
                 })(),
             );
 
+            let currHDSummary: number = undefined;
+            tasks.push(
+                (async () => {
+                    currHDSummary = await report.GetHumanDetectionSummary();
+                })(),
+            );
+
+            let prevHDSummary: number = undefined;
+            tasks.push(
+                (async () => {
+                    prevHDSummary = await report.GetHumanDetectionSummary(report.prevDateRange.startDate, report.prevDateRange.endDate);
+                })(),
+            );
+
             let currSRSummary: IResponse.IReport.IComplex_SalesRecord = undefined;
             tasks.push(
                 (async () => {
@@ -91,6 +105,11 @@ action.post(
                 femaleVariety: prevDemoSummary.femalePercent !== 0 ? Utility.Round(currDemoSummary.femalePercent / prevDemoSummary.femalePercent - 1, 2) : NaN,
             };
 
+            let hd: IResponse.IReport.IComplex_Data = {
+                value: currHDSummary,
+                variety: prevHDSummary - currHDSummary,
+            };
+
             let revenue: IResponse.IReport.IComplex_Data = {
                 value: currSRSummary.revenue,
                 variety: prevSRSummary.revenue !== 0 ? Utility.Round(currSRSummary.revenue / prevSRSummary.revenue - 1, 2) : NaN,
@@ -117,7 +136,7 @@ action.post(
 
             return {
                 peopleCounting: pc,
-                humanDetection: undefined,
+                humanDetection: hd,
                 dwellTime: undefined,
                 demographic: demo,
                 visitor: undefined,
@@ -221,6 +240,41 @@ export class ReportComplex extends Report {
             summary.femalePercent = Utility.Round(1 - summary.malePercent, 2);
 
             return summary;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get report summary
+     * @param startDate
+     * @param endDate
+     */
+    public async GetHumanDetectionSummary(): Promise<number>;
+    public async GetHumanDetectionSummary(startDate: Date, endDate: Date): Promise<number>;
+    public async GetHumanDetectionSummary(startDate?: Date, endDate?: Date): Promise<number> {
+        try {
+            let summarys = await this.GetReports(IDB.ReportHumanDetectionSummary, [], startDate, endDate);
+            if (summarys.length === 0) {
+                return NaN;
+            }
+
+            let summary = summarys.reduce<IResponse.IReport.IComplex_Average>(
+                (prev, curr, index, array) => {
+                    prev.total += curr.getValue('total');
+                    prev.count += curr.getValue('count');
+
+                    return prev;
+                },
+                {
+                    total: 0,
+                    count: 0,
+                },
+            );
+
+            let average: number = summary.count !== 0 ? Utility.Round(summary.total / summary.count, 0) : 0;
+
+            return average;
         } catch (e) {
             throw e;
         }

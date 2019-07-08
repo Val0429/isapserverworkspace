@@ -34,6 +34,11 @@ export interface IComplex_Count {
     out: number;
 }
 
+export interface IComplex_Average {
+    total: number;
+    count: number;
+}
+
 export interface IComplex {
     peopleCounting: IComplex_Data;
     humanDetection: IComplex_Data;
@@ -143,6 +148,42 @@ export interface IDemographicSummary {
     officeHours: ISummaryOfficeHour[];
     genderRange: IGenderRange;
     summaryDatas: IDemographicSummaryData[];
+}
+
+export interface IHumanDetectionSummaryTableData {
+    site: IObject;
+    area: IObject;
+    date: Date;
+    type: string;
+    total: number;
+    prevTotal?: number;
+    count: number;
+    prevCount?: number;
+    maxValue: number;
+    mediumThreshold?: number;
+    mediumThresholdCount?: number;
+    highThreshold?: number;
+    highThresholdCount?: number;
+}
+
+export interface IHumanDetectionSummaryChartData extends ISummaryDataBase {
+    total: number;
+    count: number;
+}
+
+export interface IHumanDetectionSummary {
+    weathers: ISummaryWeather[];
+    officeHours: ISummaryOfficeHour[];
+    summaryTableDatas: IHumanDetectionSummaryTableData[];
+    summaryChartDatas: IHumanDetectionSummaryChartData[];
+}
+
+export interface IHumanDetectionThreshold {
+    site: IObject;
+    area: IObject;
+    date: Date;
+    total: number;
+    imageSrcs: string[];
 }
 
 export interface ISendUser extends IObject {
