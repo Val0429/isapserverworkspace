@@ -153,14 +153,35 @@ import {
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 16, name: "貴賓" });
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 17, name: "電梯卡" });
 
-        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 1, name: "License" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 1, name: "一般員工" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 2, name: "工程專用" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 3, name: "公務專用" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 4, name: "主管專用" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 5, name: "殘障專用" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "License", key: 6, name: "業務" });
 
-        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason1", key: 1, name: "CreateReason1" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason2", key: 1, name: "CreateReason2" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason3", key: 1, name: "CreateReason3" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason1", key: 1, name: "ApplyReason1" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason2", key: 1, name: "ApplyReason2" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason3", key: 1, name: "ApplyReason3" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason1", key: 1, name: "新申請" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason1", key: 2, name: "補發-更名" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason1", key: 3, name: "補發-損壞" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason1", key: 4, name: "補發-遺失" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason2", key: 1, name: "補發-更名" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason2", key: 2, name: "補發-損壞" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason2", key: 3, name: "補發-遺失" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason3", key: 1, name: "補發-更名" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason3", key: 2, name: "補發-損壞" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "CreateReason3", key: 3, name: "補發-遺失" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason1", key: 1, name: "新申請" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason1", key: 2, name: "補發-損壞" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason1", key: 3, name: "補發-遺失" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason2", key: 1, name: "補發-損壞" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason2", key: 2, name: "補發-遺失" });
+
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason3", key: 1, name: "補發-損壞" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ApplyReason3", key: 2, name: "補發-遺失" });
     }
 
     ////////////////////////////

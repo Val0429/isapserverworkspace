@@ -82,7 +82,7 @@ export class HumanResourceAdapter {
             });
 
             res = await this.sqlClient.request()
-                .query(`select * from vieMember where EmpNo in (''${strEmp}) order by CompCode, EmpNo`);
+                .query(`select distinct * from vieMember where EmpNo in (''${strEmp}) order by CompCode, EmpNo`);
         }
 
         return res["recordset"];
@@ -100,7 +100,7 @@ export class HumanResourceAdapter {
             });
 
             res = await this.sqlClient.request()
-                .query(`select * from vieSupporter where SupporterNo in (''${strEmp}) order by CompCode, SupporterNo`);
+                .query(`select distinct * from vieSupporter where SupporterNo in (''${strEmp}) order by CompCode, SupporterNo`);
         }
 
         return res["recordset"];

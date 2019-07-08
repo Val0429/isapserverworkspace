@@ -11,7 +11,7 @@ import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 export class ACSService {
     private waitTimer = null;
     private startDelayTime: number = 5 // sec
-    private cycleTime: number = 600; // sec
+    private cycleTime: number = 1200; // sec
 
     constructor() {
         var me = this;
