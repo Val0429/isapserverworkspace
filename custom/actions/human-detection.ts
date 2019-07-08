@@ -365,7 +365,7 @@ class Action {
                                             throw e;
                                         });
 
-                                        let imageSrc: string = `human_detection/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+                                        let imageSrc: string = `images_report/human_detection/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
                                         File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
 
                                         report.setValue('imageSrc', imageSrc);

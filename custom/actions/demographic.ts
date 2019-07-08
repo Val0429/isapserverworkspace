@@ -365,7 +365,7 @@ class Action {
                                             throw e;
                                         });
 
-                                        let imageSrc: string = `demographic/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+                                        let imageSrc: string = `images_report/demographic/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
                                         File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
 
                                         report.setValue('imageSrc', imageSrc);
