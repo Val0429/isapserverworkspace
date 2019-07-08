@@ -24,7 +24,7 @@ export interface IReportTemplate extends IDateRange {
     /**
      * 總結模式
      */
-    type: Enum.ESummaryType;
+    type: Enum.EDatePeriodType;
 
     /**
      * 地區

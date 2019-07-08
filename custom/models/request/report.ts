@@ -31,21 +31,28 @@ export interface IPeopleCountingSummary extends ISummaryBase {}
 
 export interface IDemographicSummary extends ISummaryBase {}
 
-export interface ITemplateC extends IDateRange {
+export interface IHumanDetectionSummary extends ISummaryBase {}
+
+export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;
-    type: Enum.ESummaryType;
     siteIds: string[];
     tagIds: string[];
     sendDates: IDaySingle[];
     sendUserIds: string[];
 }
 
+export interface ITemplateC_Type extends ITemplateC_Base {
+    type: Enum.EDatePeriodType;
+}
+
+export interface ITemplateC_Date extends ITemplateC_Base, IDateRange {}
+
 export interface ITemplateU {
     objectId: string;
     name?: string;
     mode?: Enum.EDeviceMode;
-    type?: Enum.ESummaryType;
+    type?: Enum.EDatePeriodType;
     siteIds?: string[];
     tagIds?: string[];
     startDate?: Date;

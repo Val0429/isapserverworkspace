@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = IRequest.IReport.ITemplateC[];
+type InputC = (IRequest.IReport.ITemplateC_Type | IRequest.IReport.ITemplateC_Date)[];
 
 type OutputC = IResponse.IMultiData[];
 
@@ -65,13 +65,17 @@ action.post(
                         template.setValue('user', data.user);
                         template.setValue('name', value.name);
                         template.setValue('mode', value.mode);
-                        template.setValue('type', value.type);
                         template.setValue('sites', sites);
                         template.setValue('tags', tags);
-                        template.setValue('startDate', value.startDate);
-                        template.setValue('endDate', value.endDate);
                         template.setValue('sendDates', value.sendDates);
                         template.setValue('sendUsers', sendUsers);
+
+                        if ('type' in value) {
+                            template.setValue('type', value.type);
+                        } else {
+                            template.setValue('startDate', value.startDate);
+                            template.setValue('endDate', value.endDate);
+                        }
 
                         await template.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -188,15 +192,20 @@ action.get(
                             };
                         });
 
+                    let type: string = value.getValue('type') ? Enum.EDatePeriodType[value.getValue('type')] : undefined;
+
+                    let startDate: Date = value.getValue('startDate') ? value.getValue('startDate') : undefined;
+                    let endDate: Date = value.getValue('endDate') ? value.getValue('endDate') : undefined;
+
                     return {
                         objectId: value.id,
                         name: value.getValue('name'),
                         mode: Enum.EDeviceMode[value.getValue('mode')],
-                        type: Enum.ESummaryType[value.getValue('type')],
+                        type: type,
                         sites: sites,
                         tags: tags,
-                        startDate: value.getValue('startDate'),
-                        endDate: value.getValue('endDate'),
+                        startDate: startDate,
+                        endDate: endDate,
                         sendDates: value.getValue('sendDates'),
                         sendUsers: sendUsers,
                     };

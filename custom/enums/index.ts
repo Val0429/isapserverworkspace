@@ -1,3 +1,4 @@
+export * from './date-period-type';
 export * from './device-brand';
 export * from './device-direction';
 export * from './device-mode';
