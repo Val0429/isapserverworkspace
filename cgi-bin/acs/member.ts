@@ -243,12 +243,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
             }
         }
     }
+
+
     // CustomFields
     if (obj) {
         let fields = obj.get("CustomFields");
         let inputs = update.get("CustomFields");
 
-        if (!fields) {
+        if (fields == undefined) {
             // CustomFields
             fields = [
                 { "FiledName": "CustomDateControl4__CF" },
@@ -307,7 +309,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
             ];
         }
 
-        if (!inputs) {
+        if (inputs != undefined) {
             for (let i = 0; i < fields.length; i++) {
                 const db = fields[i];
 
