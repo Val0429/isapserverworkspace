@@ -5,7 +5,6 @@ import { Print, FRSService } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as Main from '../../main';
-import { type } from 'os';
 
 class Service {
     /**
