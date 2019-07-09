@@ -11,6 +11,11 @@ class Service {
     /**
      *
      */
+    private _initialization$: Rx.Subject<{}> = new Rx.Subject();
+
+    /**
+     *
+     */
     private _config = {
         protocol: 'http',
         ip: '172.16.10.109',
@@ -38,9 +43,8 @@ class Service {
      *
      */
     constructor() {
-        let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
-        initialization$
+        this._initialization$
             .debounceTime(1000)
             .zip(next$.startWith(0))
             .subscribe({
@@ -58,7 +62,7 @@ class Service {
         IDB.ServerFRS.notice$.subscribe({
             next: (x) => {
                 if (x.crud === 'u') {
-                    initialization$.next();
+                    this._initialization$.next();
                 }
             },
         });
@@ -66,14 +70,14 @@ class Service {
         IDB.Device.notice$.subscribe({
             next: (x) => {
                 if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.data.get('model') === Enum.EDeviceModelIsap.frs) {
-                    initialization$.next();
+                    this._initialization$.next();
                 }
             },
         });
 
         Main.ready$.subscribe({
             next: async () => {
-                initialization$.next();
+                this._initialization$.next();
             },
         });
     }
@@ -90,6 +94,7 @@ class Service {
             await this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
+            this._initialization$.next();
         }
     }
 
@@ -275,6 +280,15 @@ class Service {
                 next: (e) => {
                     Print.Log(e, new Error(), 'error');
                     ws.Close();
+                },
+            });
+            ws.close$.subscribe({
+                next: async (e) => {
+                    try {
+                        this._initialization$.next();
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
+                    }
                 },
             });
             ws.message$.subscribe({

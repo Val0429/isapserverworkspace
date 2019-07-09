@@ -10,6 +10,11 @@ class Service {
     /**
      *
      */
+    private _initialization$: Rx.Subject<{}> = new Rx.Subject();
+
+    /**
+     *
+     */
     private _hanwhas: PeopleCounting.Hanwha[] = [];
     public get hanwhas(): PeopleCounting.Hanwha[] {
         return this._hanwhas;
@@ -24,9 +29,8 @@ class Service {
      *
      */
     constructor() {
-        let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
-        initialization$
+        this._initialization$
             .debounceTime(1000)
             .zip(next$.startWith(0))
             .subscribe({
@@ -44,14 +48,14 @@ class Service {
         IDB.Device.notice$.subscribe({
             next: (x) => {
                 if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.data.get('brand') === Enum.EDeviceBrand.hanwha) {
-                    initialization$.next();
+                    this._initialization$.next();
                 }
             },
         });
 
         Main.ready$.subscribe({
             next: async () => {
-                initialization$.next();
+                this._initialization$.next();
             },
         });
     }

@@ -9,6 +9,11 @@ class Action {
     /**
      *
      */
+    private _initialization$: Rx.Subject<{}> = new Rx.Subject();
+
+    /**
+     *
+     */
     private _config = Config.deviceHumanDetection;
 
     /**
@@ -36,9 +41,8 @@ class Action {
      *
      */
     constructor() {
-        let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
-        initialization$
+        this._initialization$
             .debounceTime(1000)
             .zip(next$.startWith(0))
             .subscribe({
@@ -56,14 +60,14 @@ class Action {
         IDB.ServerHumanDetection.notice$.subscribe({
             next: (x) => {
                 if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
-                    initialization$.next();
+                    this._initialization$.next();
                 }
             },
         });
 
         Main.ready$.subscribe({
             next: async () => {
-                initialization$.next();
+                this._initialization$.next();
             },
         });
     }

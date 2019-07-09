@@ -10,6 +10,11 @@ class Service {
     /**
      *
      */
+    private _initialization$: Rx.Subject<{}> = new Rx.Subject();
+
+    /**
+     *
+     */
     private _frss: FRSService[] = [];
     public get frss(): FRSService[] {
         return this._frss;
@@ -29,9 +34,8 @@ class Service {
      *
      */
     constructor() {
-        let initialization$: Rx.Subject<{}> = new Rx.Subject();
         let next$: Rx.Subject<{}> = new Rx.Subject();
-        initialization$
+        this._initialization$
             .debounceTime(1000)
             .zip(next$.startWith(0))
             .subscribe({
@@ -49,7 +53,7 @@ class Service {
         IDB.ServerFRS.notice$.subscribe({
             next: (x) => {
                 if (x.crud === 'u') {
-                    initialization$.next();
+                    this._initialization$.next();
                 }
             },
         });
@@ -57,14 +61,14 @@ class Service {
         IDB.Device.notice$.subscribe({
             next: (x) => {
                 if ((x.crud === 'c' || x.crud === 'u' || x.crud === 'd') && x.data.get('model') === Enum.EDeviceModelIsap.frs) {
-                    initialization$.next();
+                    this._initialization$.next();
                 }
             },
         });
 
         Main.ready$.subscribe({
             next: async () => {
-                initialization$.next();
+                this._initialization$.next();
             },
         });
     }
