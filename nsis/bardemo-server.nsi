@@ -1,19 +1,19 @@
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
 
-!define PRODUCT_NAME "BarDemo Server"
-!define PRODUCT_VERSION "2.02.01"
+!define PRODUCT_NAME "Bar Server"
+!define PRODUCT_VERSION "2.03.00"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
 !define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
-!define OUTPUT_NAME "bardemo-server"
+!define OUTPUT_NAME "bar-server"
 
 !system 'md "${PATH_OUT}"'	
 OutFile "${PATH_OUT}\${OUTPUT_NAME}-v${PRODUCT_VERSION}.exe"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 
-InstallDir "$PROGRAMFILES64\BarDemo"
+InstallDir "$PROGRAMFILES64\Bar"
 
 RequestExecutionLevel admin
 

@@ -1,15 +1,15 @@
 !include "MUI2.nsh"
 
-!define PRODUCT_NAME "BarDemo Server"
-!define PRODUCT_VERSION "2.02.01"
+!define PRODUCT_NAME "Bar Server"
+!define PRODUCT_VERSION "2.03.00"
 !define MONGO "mongodb-win32-x86_64-2008plus-ssl-3.6.7-rc1-signed.msi"
 !define NODE "node-v8.12.0-x64.msi"
 ; !define VCREDIST "vc_redist.x64.exe"
 ; !define VCREDIST2010 "vcredist_x64.exe"
 ; !define NETFRAMEWORK "NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
-!define OUTPUT_NAME "bardemo-server" 
+!define OUTPUT_NAME "bar-server" 
 
-InstallDir "$TEMP\BarDemo\Temp"
+InstallDir "$TEMP\Bar\Temp"
 OutFile "Release\${OUTPUT_NAME}-v${PRODUCT_VERSION}-FULL.exe"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 
