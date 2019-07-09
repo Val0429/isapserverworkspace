@@ -20,8 +20,8 @@ class Service {
         protocol: 'http',
         ip: '172.16.10.109',
         port: 6060,
-        account: 'Min',
-        password: '1',
+        account: 'whc',
+        password: 'whc',
     };
 
     /**

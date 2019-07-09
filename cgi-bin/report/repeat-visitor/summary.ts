@@ -124,7 +124,7 @@ export class ReportRepeatVisitor extends Report {
                     });
 
                     let frequencyIndex: number = this._frequencyRanges.findIndex((value2, index2, array2) => {
-                        return value2.min <= faces.length && value2.max > faces.length;
+                        return value2.min <= faces.length && (!value2.max || value2.max > faces.length);
                     });
 
                     let currIndex: number = faces.findIndex((value2, index2, array2) => {
@@ -133,7 +133,7 @@ export class ReportRepeatVisitor extends Report {
 
                     if (frequencyIndex === index && currIndex === 0) {
                         let ageIndex: number = this._ageRanges.findIndex((value2, index2, array2) => {
-                            return value2.min <= faces[0].getValue('age') && value2.max > faces[0].getValue('age');
+                            return value2.min <= faces[0].getValue('age') && (!value2.max || value2.max > faces[0].getValue('age'));
                         });
 
                         totalRanges[ageIndex] += 1;
@@ -202,7 +202,7 @@ export class ReportRepeatVisitor extends Report {
                 }
 
                 let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
-                    return value1.min <= faces.length && value1.max > faces.length;
+                    return value1.min <= faces.length && (!value1.max || value1.max > faces.length);
                 });
 
                 summary.frequencyRanges[frequencyIndex] += 1;

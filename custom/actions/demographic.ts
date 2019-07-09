@@ -189,7 +189,7 @@ class Action {
             let isEmployee = (report.getValue('userGroups') || []).indexOf(Enum.EPeopleType.employee) > -1;
 
             let ageIndex: number = this._ageRanges.findIndex((value, index, array) => {
-                return value.min <= report.getValue('age') && value.max > report.getValue('age');
+                return value.min <= report.getValue('age') && (!value.max || value.max > report.getValue('age'));
             });
 
             if (reportSummary) {
