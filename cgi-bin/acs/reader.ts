@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, Door
+    Restful, FileHelper, ParseObject, Door, DoorGroup
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
@@ -46,6 +46,51 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.name){
         query.matches("readername", new RegExp(filter.name), "i");
     }
+    if(filter.doorname){
+        let doors = await new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i").find();
+        let doorreaders = [];
+        for(let door of doors){
+            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
+            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
+        }
+        
+        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
+        query.containedIn("objectId", readerIds);
+    }
+
+    if(filter.doorgroup){
+        let groups = await new Parse.Query(DoorGroup)
+            .matches("groupname", new RegExp(filter.doorgroup), "i")
+            .include("doors")
+            .find();
+        let doors = [];
+        for(let group of groups){
+            doors.push(...group.get("doors"));
+        }
+        
+        let doorreaders = [];
+        for(let door of doors){
+            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
+            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
+        }
+        
+        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId); 
+        
+        query.containedIn("objectId", readerIds);
+    }
+
+    if(filter.doorname){
+        let doors = await new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i").find();
+        let doorreaders = [];
+        for(let door of doors){
+            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
+            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
+        }
+        
+        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
+        query.containedIn("objectId", readerIds);
+    }
+    
     if(filter.vacant && filter.vacant=="true"){
         let doors = await new Parse.Query(Door)           
             .find();
