@@ -320,7 +320,7 @@ class Service {
                                     case Enum.EDeviceMode.demographic:
                                         Action.Demographic.action$.next({
                                             device: value1,
-                                            date: result.timestamp,
+                                            date: new Date(result.timestamp),
                                             image: image,
                                             faceId: result.objectId,
                                         });
