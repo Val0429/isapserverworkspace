@@ -19,13 +19,11 @@ var action = new Action({
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<any>;
-type OutputR = Restful.OutputR<any>;
 
-action.get<InputR, OutputR>({ inputType: "InputR" }, async () => {
+action.get<any, any>({ inputType: "InputR" }, async () => {
     this.waitTimer = setTimeout(() => {
         syncData();
-    }, 1000 * this.startDelayTime);
+    }, 1000);
 
     async function syncData () {
         let now: Date = new Date();
@@ -187,7 +185,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async () => {
         }
     }
 
-    return null;
+    return {success:true};
 });
 
 
