@@ -42,6 +42,21 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
     }
 
+    let hStart = obj.get("StartDate");
+    let hEnd = obj.get("EndDate");
+
+    let cStart = obj.get("Credentials")[0]["StartDate"];
+    let cEnd = obj.get("Credentials")[0]["EndDate"];
+
+    if ( cEnd <= cStart)
+        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+    if ( hStart > cStart)
+        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+    if ( hEnd < cStart)
+        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
     // AccessRules
     let accessLevels = await new Parse.Query(AccessLevel).find();
 
@@ -188,6 +203,11 @@ const fieldNames = {
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Member);
+    var { objectId } = data.inputType;
+
+    if (objectId) {
+        query.matches("id", new RegExp(objectId), "i");
+    }
 
     let filter = data.parameters;
     if (filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
@@ -209,6 +229,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
+
     return Restful.Pagination(query, data.parameters);
 });
 
@@ -224,6 +245,29 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(Member).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
     /// 2) Modify
+
+    let cardno = "";
+    try {
+        cardno = obj.get("Credentials")[0]["CardNumber"];
+    }
+    catch (e) {
+        throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
+    }
+
+    let hStart = obj.get("StartDate");
+    let hEnd = obj.get("EndDate");
+
+    let cStart = obj.get("Credentials")[0]["StartDate"];
+    let cEnd = obj.get("Credentials")[0]["EndDate"];
+
+    if ( cEnd <= cStart)
+        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+    if ( hStart > cStart)
+        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+    if ( hEnd < cStart)
+        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
 
     // AccessRules
     let accessLevels = await new Parse.Query(AccessLevel).find();
@@ -326,20 +370,13 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         update.set("CustomFields", fields);
     }
 
-    // update.set("Vehicle1", {});
-    // update.set("Vehicle2", {});
-    // update.set("VisitorDetails", {
-    //     "VisitorCardStatus": 0,
-    //     "VisitorCustomValues": {}
-    // });
-
     await obj.save({ ...ParseObject.toOutputJSON(update), objectId: undefined });
 
     Log.Info(`${this.constructor.name}`, `putMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`);
 
     /// 3) Output
     let ret = ParseObject.toOutputJSON(obj);
-    console.log(ret);
+    console.log( JSON.stringify(ret));
 
     let holder = await siPassAdapter.postCardHolder(ret);
     console.log(holder);

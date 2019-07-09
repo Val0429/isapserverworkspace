@@ -54,7 +54,7 @@ export class HRService {
         let now: Date = new Date();
 
         clearTimeout(this.waitTimer);
-        this.checkCycleTime = 600;
+        this.checkCycleTime = 1200;
 
 
         // if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
@@ -431,13 +431,17 @@ export class HRService {
                                 // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
 
 
+                                let endDate = "2100-12-31T23:59:59" ;
+                                if (record["OffDate"] ) 
+                                    endDate = JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) ;
+
                                 let d = {
                                     AccessRules: [],
                                     ApbWorkgroupId: a,
                                     Attributes: {},
                                     Credentials: [],
-                                    EmployeeNumber: record["EmpNo"],
-                                    EndDate: record["OffDate"] ? JSON.stringify(record["OffDate"]).replace(/\//g, "-") : "2100-12-31T23:59:59",
+                                    EmployeeNumber: record["EmpNo"] ? record["EmpNo"] : "",
+                                    EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
                                     FirstName: record["EngName"] ? record["EngName"] : "_",
                                     GeneralInformation: "",
                                     LastName: record["EmpName"] ? record["EmpName"] : "_",
@@ -446,14 +450,14 @@ export class HRService {
                                     {
                                         Address: "",
                                         ContactDetails: {
-                                            Email: record["EMail"],
-                                            MobileNumber: record["Cellular"],
+                                            Email: record["EMail"] ? record["EMail"] : "",
+                                            MobileNumber: record["Cellular"] ? record["Cellular"] : "",
                                             MobileServiceProviderId: "0",
                                             PagerNumber: "",
                                             PagerServiceProviderId: "0",
                                             PhoneNumber: ""
                                         },
-                                        DateOfBirth: record["BirthDate"] ? JSON.stringify(record["BirthDate"]).replace(/\//g, "-") : "",
+                                        DateOfBirth: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : "",
                                         PayrollNumber: "",
                                         Title: "",
                                         UserDetails: {
@@ -465,7 +469,7 @@ export class HRService {
                                     PrimaryWorkgroupId: a,
                                     PrimaryWorkgroupName: b,
                                     SmartCardProfileId: "0",
-                                    StartDate: record["EntDate"] ? JSON.stringify(record["EntDate"]).replace(/\//g, "-") : "",
+                                    StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
                                     Status: 61,
                                     Token: "-1",
                                     TraceDetails: {
@@ -480,7 +484,7 @@ export class HRService {
                                     CustomFields: [
                                         {
                                             FiledName: "CustomDateControl4__CF",
-                                            FieldValue: record["UpdDate"] ? JSON.stringify(record["UpdDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["UpdDate"] ? JSON.parse(JSON.stringify(record["UpdDate"]).replace(/\//g, "-")) : ""
                                         },
                                         {
                                             FiledName: "CustomDropdownControl1__CF",
@@ -488,58 +492,55 @@ export class HRService {
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl1__CF",
-                                            FieldValue: record["EmpNo"]
+                                            FieldValue: record["EmpNo"] ? record["EmpNo"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl3__CF",
-                                            FieldValue: record["AddUser"]
+                                            FieldValue: record["AddUser"] ? record["AddUser"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl6__CF",
-                                            FieldValue: record["CompName"]
+                                            FieldValue: record["CompName"] ? record["CompName"] : "" 
                                         },
                                         {
                                             FiledName: "CustomDropdownControl2__CF_CF",
-                                            FieldValue: record["Sex"]
+                                            FieldValue: record["Sex"] ? record["Sex"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF",
-                                            FieldValue: record["MVPN"]
+                                            FieldValue: record["MVPN"] ? record["MVPN"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                                            FieldValue: record["DeptChiName"]
+                                            FieldValue: record["DeptChiName"] ? record["DeptChiName"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                            FieldValue: record["CostCenter"]
+                                            FieldValue: record["CostCenter"] ? record["CostCenter"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                            FieldValue: record["LocationName"]
+                                            FieldValue: record["LocationName"] ? record["LocationName"] : "" 
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                            FieldValue: record["RegionName"]
+                                            FieldValue: record["RegionName"] ? record["RegionName"] : "" 
                                         },
                                         {
                                             FiledName: "CustomDateControl1__CF_CF",
-                                            FieldValue: record["BirthDate"] ? JSON.stringify(record["BirthDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : ""
                                         },
                                         {
                                             FiledName: "CustomDateControl1__CF_CF_CF",
-                                            FieldValue: record["EntDate"] ? JSON.stringify(record["EntDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : ""
                                         },
                                         {
                                             FiledName: "CustomDateControl1__CF",
-                                            FieldValue: record["OffDate"] ? JSON.stringify(record["OffDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : ""
                                         }
                                     ],
                                     "_links": []
                                 }
-
-                                console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
 
                                 console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
                                 await this.CCure800SqlAdapter.writeMember(d);
@@ -547,12 +548,18 @@ export class HRService {
                                 console.log(`======================= ${sessionId}`);
                                 if (sessionId != "") {
                                     // 5.1 write data to SiPass database
+                                    console.log(JSON.stringify(d));
                                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
 
                                     let holder = await siPassAdapter.postCardHolder(d);
-
-                                    await delay(1000);
                                 }
+
+                                console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+                                
+                                delete d["_links"];
+                                d["_id"] = new mongo.ObjectID().toHexString();
+                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+                                await delay(1000);
                             }
                         }
                         catch (ex) {
@@ -614,8 +621,8 @@ export class HRService {
                                     ApbWorkgroupId: a,
                                     Attributes: {},
                                     Credentials: [],
-                                    EmployeeNumber: record["SupporterNo"],
-                                    EndDate: record["OffDate"] ? JSON.stringify(record["OffDate"]).replace(/\//g, "-") : "2100-12-31T23:59:59",
+                                    EmployeeNumber: record["SupporterNo"] ? record["SupporterNo"] : "",
+                                    EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
                                     FirstName: record["EngName"] ? record["EngName"] : "_",
                                     GeneralInformation: "",
                                     LastName: record["SupporterName"] ? record["SupporterName"] : "_",
@@ -624,14 +631,14 @@ export class HRService {
                                     {
                                         Address: "",
                                         ContactDetails: {
-                                            Email: record["EMail"],
-                                            MobileNumber: record["Cellular"],
+                                            Email: record["EMail"] ? record["EMail"] : "",
+                                            MobileNumber: record["Cellular"] ? record["Cellular"] : "",
                                             MobileServiceProviderId: "0",
                                             PagerNumber: "",
                                             PagerServiceProviderId: "0",
                                             PhoneNumber: ""
                                         },
-                                        DateOfBirth: record["BirthDate"] ? JSON.stringify(record["BirthDate"]).replace(/\//g, "-") : "",
+                                        DateOfBirth: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : "",
                                         PayrollNumber: "",
                                         Title: "",
                                         UserDetails: {
@@ -643,7 +650,7 @@ export class HRService {
                                     PrimaryWorkgroupId: a,
                                     PrimaryWorkgroupName: b,
                                     SmartCardProfileId: "0",
-                                    StartDate: record["EntDate"] ? JSON.stringify(record["EntDate"]).replace(/\//g, "-") : "",
+                                    StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
                                     Status: 61,
                                     Token: "-1",
                                     TraceDetails: {
@@ -658,7 +665,7 @@ export class HRService {
                                     CustomFields: [
                                         {
                                             FiledName: "CustomDateControl4__CF",
-                                            FieldValue: record["UpdDate"] ? JSON.stringify(record["UpdDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["UpdDate"] ? JSON.parse(JSON.stringify(record["UpdDate"]).replace(/\//g, "-")) : ""
                                         },
                                         {
                                             FiledName: "CustomDropdownControl1__CF",
@@ -666,58 +673,55 @@ export class HRService {
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl1__CF",
-                                            FieldValue: record["EmpNo"]
+                                            FieldValue: record["EmpNo"] ? record["EmpNo"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl3__CF",
-                                            FieldValue: record["AddUser"]
+                                            FieldValue: record["AddUser"] ? record["AddUser"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl6__CF",
-                                            FieldValue: record["CompName"]
+                                            FieldValue: record["CompName"] ? record["CompName"] : ""
                                         },
                                         {
                                             FiledName: "CustomDropdownControl2__CF_CF",
-                                            FieldValue: record["Sex"]
+                                            FieldValue: record["Sex"] ? record["Sex"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF",
-                                            FieldValue: record["MVPN"]
+                                            FieldValue: record["MVPN"] ? record["MVPN"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                                            FieldValue: record["DeptChiName"]
+                                            FieldValue: record["DeptChiName"] ? record["DeptChiName"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                            FieldValue: record["CostCenter"]
+                                            FieldValue: record["CostCenter"] ? record["CostCenter"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                            FieldValue: record["LocationName"]
+                                            FieldValue: record["LocationName"] ? record["LocationName"] : ""
                                         },
                                         {
                                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                            FieldValue: record["RegionName"]
+                                            FieldValue: record["RegionName"] ? record["RegionName"] : ""
                                         },
                                         {
                                             FiledName: "CustomDateControl1__CF_CF",
-                                            FieldValue: record["BirthDate"] ? JSON.stringify(record["BirthDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : ""
                                         },
                                         {
                                             FiledName: "CustomDateControl1__CF_CF_CF",
-                                            FieldValue: record["EntDate"] ? JSON.stringify(record["EntDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : ""
                                         },
                                         {
                                             FiledName: "CustomDateControl1__CF",
-                                            FieldValue: record["OffDate"] ? JSON.stringify(record["OffDate"]).replace(/\//g, "-") : ""
+                                            FieldValue: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : ""
                                         }
                                     ],
                                     "_links": []
                                 }
-
-                                console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
 
                                 console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
                                 await this.CCure800SqlAdapter.writeMember(d);
@@ -728,9 +732,15 @@ export class HRService {
                                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["SupporterNo"]} ${record["SupporterName"]}`);
 
                                     let holder = await siPassAdapter.postCardHolder(d);
-
-                                    await delay(1000);
                                 }
+
+                                console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
+
+                                delete d["_links"];
+                                d["_id"] = new mongo.ObjectID().toHexString();
+                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
+                                
+                                await delay(1000);
                             }
                         }
                         catch (ex) {

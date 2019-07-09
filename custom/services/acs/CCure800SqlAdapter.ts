@@ -53,16 +53,16 @@ export class CCure800SqlAdapter {
         let res = await this.sqlClient.request()
             .input('ApbWorkgroupId', msSQL.NVarChar(50), data["ApbWorkgroupId"])
             .input('Attributes', msSQL.NVarChar(50), JSON.stringify(data["Attributes"]))
-            .input('Credentials_CardNumber', msSQL.NVarChar(50), data["Credentials"]["CardNumber"])
-            .input('Credentials_EndDate', msSQL.NVarChar(50), data["Credentials"]["EndDate"])
-            .input('Credentials_Pin', msSQL.NVarChar(50), data["Credentials"]["Pin"])
-            .input('Credentials_ProfileId', msSQL.NVarChar(50), data["Credentials"]["ProfileId"])
-            .input('Credentials_ProfileName', msSQL.NVarChar(50), data["Credentials"]["ProfileName"])
-            .input('Credentials_StartDate', msSQL.NVarChar(50), data["Credentials"]["StartDate"])
-            .input('Credentials_FacilityCode', msSQL.NVarChar(50), data["Credentials"]["FacilityCode"])
-            .input('Credentials_CardTechnologyCode', msSQL.NVarChar(50), data["Credentials"]["CardTechnologyCode"])
-            .input('Credentials_PinMode', msSQL.NVarChar(50), data["Credentials"]["PinMode"])
-            .input('Credentials_PinDigit', msSQL.NVarChar(50), data["Credentials"]["PinDigit"])
+            .input('Cred_CardNumber', msSQL.NVarChar(50), data["Credentials"]["CardNumber"])
+            .input('Cred_EndDate', msSQL.NVarChar(50), data["Credentials"]["EndDate"])
+            .input('Cred_Pin', msSQL.NVarChar(50), data["Credentials"]["Pin"])
+            .input('Cred_ProfileId', msSQL.NVarChar(50), data["Credentials"]["ProfileId"])
+            .input('Cred_ProfileName', msSQL.NVarChar(50), data["Credentials"]["ProfileName"])
+            .input('Cred_StartDate', msSQL.NVarChar(50), data["Credentials"]["StartDate"])
+            .input('Cred_FacilityCode', msSQL.NVarChar(50), data["Credentials"]["FacilityCode"])
+            .input('Cred_CardTechnologyCode', msSQL.NVarChar(50), data["Credentials"]["CardTechnologyCode"])
+            .input('Cred_PinMode', msSQL.NVarChar(50), data["Credentials"]["PinMode"])
+            .input('Cred_PinDigit', msSQL.NVarChar(50), data["Credentials"]["PinDigit"])
 
             .input('EmployeeNumber', msSQL.NVarChar(50), data["EmployeeNumber"])
             .input('EndDate', msSQL.NVarChar(50), data["EndDate"])
@@ -71,18 +71,18 @@ export class CCure800SqlAdapter {
             .input('LastName', msSQL.NVarChar(50), data["LastName"])
             .input('NonPartitionWorkGroups', msSQL.NVarChar(50), data["NonPartitionWorkGroups"])
 
-            .input('PersonalDetails_Address', msSQL.NVarChar(50), data["PersonalDetails"]["Address"])
-            .input('PersonalDetails_ContactDetails_Email', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["Email"])
-            .input('PersonalDetails_ContactDetails_MobileNumber', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["MobileNumber"])
-            .input('PersonalDetails_ContactDetails_MobileServiceProviderId', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"])
-            .input('PersonalDetails_ContactDetails_PagerNumber', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["PagerNumber"])
-            .input('PersonalDetails_ContactDetails_PagerServiceProviderId', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"])
-            .input('PersonalDetails_ContactDetails_PhoneNumber', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["PhoneNumber"])
-            .input('PersonalDetails_DateOfBirth', msSQL.NVarChar(50), data["PersonalDetails"]["DateOfBirth"])
-            .input('PersonalDetails_PayrollNumber', msSQL.NVarChar(50), data["PersonalDetails"]["PayrollNumber"])
-            .input('PersonalDetails_Title', msSQL.NVarChar(50), data["PersonalDetails"]["Title"])
-            .input('PersonalDetails_UserDetails_UserName', msSQL.NVarChar(50), data["PersonalDetails"]["UserDetails"]["UserName"])
-            .input('PersonalDetails_UserDetails_Password', msSQL.NVarChar(50), data["PersonalDetails"]["UserDetails"]["Password"])
+            .input('PD_Address', msSQL.NVarChar(50), data["PersonalDetails"]["Address"])
+            .input('PD_CD_Email', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["Email"])
+            .input('PD_CD_MobileNumber', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["MobileNumber"])
+            .input('PD_CD_MobileServiceProviderId', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"])
+            .input('PD_CD_PagerNumber', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["PagerNumber"])
+            .input('PD_CD_PagerServiceProviderId', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"])
+            .input('PD_CD_PhoneNumber', msSQL.NVarChar(50), data["PersonalDetails"]["ContactDetails"]["PhoneNumber"])
+            .input('PD_DateOfBirth', msSQL.NVarChar(50), data["PersonalDetails"]["DateOfBirth"])
+            .input('PD_PayrollNumber', msSQL.NVarChar(50), data["PersonalDetails"]["PayrollNumber"])
+            .input('PD_Title', msSQL.NVarChar(50), data["PersonalDetails"]["Title"])
+            .input('PD_UD_UserName', msSQL.NVarChar(50), data["PersonalDetails"]["UserDetails"]["UserName"])
+            .input('PD_UD_Password', msSQL.NVarChar(50), data["PersonalDetails"]["UserDetails"]["Password"])
 
             .input('Potrait', msSQL.NVarChar(50), data["Potrait"])
             .input('PrimaryWorkgroupId', msSQL.NVarChar(50), data["PrimaryWorkgroupId"])
@@ -137,13 +137,13 @@ export class CCure800SqlAdapter {
             .input('AccessRules38', msSQL.NVarChar(50), rules[37])
             .input('AccessRules39', msSQL.NVarChar(50), rules[38])
             .input('AccessRules40', msSQL.NVarChar(50), rules[39])
-            .query(`insert into Momber([TimeStamp] ,[ApbWorkgroupId] ,[Attributes] 
-                ,[Credentials_CardNumber] ,[Credentials_EndDate] ,[Credentials_Pin] ,[Credentials_ProfileId] ,[Credentials_ProfileName] ,[Credentials_StartDate] ,[Credentials_FacilityCode]
-                ,[Credentials_CardTechnologyCode] ,[Credentials_PinMode] ,[Credentials_PinDigit]
+            .query(`insert into Member([TimeStamp] ,[ApbWorkgroupId] ,[Attributes] 
+                ,[Cred_CardNumber] ,[Cred_EndDate] ,[Cred_Pin] ,[Cred_ProfileId] ,[Cred_ProfileName] ,[Cred_StartDate] ,[Cred_FacilityCode]
+                ,[Cred_CardTechnologyCode] ,[Cred_PinMode] ,[Cred_PinDigit]
                 ,[EmployeeNumber] ,[EndDate] ,[FirstName] ,[GeneralInformation] ,[LastName] ,[NonPartitionWorkGroups] 
-                ,[PersonalDetails_Address] ,[PersonalDetails_ContactDetails_Email] ,[PersonalDetails_ContactDetails_MobileNumber] ,[PersonalDetails_ContactDetails_MobileServiceProviderId]
-                ,[PersonalDetails_ContactDetails_PagerNumber] ,[PersonalDetails_ContactDetails_PagerServiceProviderId] ,[PersonalDetails_ContactDetails_PhoneNumber] ,[PersonalDetails_DateOfBirth]
-                ,[PersonalDetails_PayrollNumber] ,[PersonalDetails_Title] ,[PersonalDetails_UserDetails_UserName] ,[PersonalDetails_UserDetails_Password]
+                ,[PD_Address] ,[PD_CD_Email] ,[PD_CD_MobileNumber] ,[PD_CD_MobileServiceProviderId]
+                ,[PD_CD_PagerNumber] ,[PD_CD_PagerServiceProviderId] ,[PD_CD_PhoneNumber] ,[PD_DateOfBirth]
+                ,[PD_PayrollNumber] ,[PD_Title] ,[PD_UD_UserName] ,[PD_UD_Password]
                 ,[Potrait] ,[PrimaryWorkgroupId] ,[PrimaryWorkgroupName] ,[SmartCardProfileId] ,[StartDate] ,[Status] ,[Token] ,[TraceDetails] ,[Vehicle1] ,[Vehicle2] 
                 ,[VisitorDetails_VisitorCardStatus] ,[VisitorDetails_VisitorCustomValues]
                 ,[AccessRules1] ,[AccessRules2] ,[AccessRules3] ,[AccessRules4] ,[AccessRules5] ,[AccessRules6] ,[AccessRules7] ,[AccessRules8] ,[AccessRules9] ,[AccessRules10]
@@ -152,19 +152,19 @@ export class CCure800SqlAdapter {
                 ,[AccessRules31] ,[AccessRules32] ,[AccessRules33] ,[AccessRules34] ,[AccessRules35] ,[AccessRules36] ,[AccessRules37] ,[AccessRules38] ,[AccessRules39] ,[AccessRules40])
                 values (
                     getdate(), @ApbWorkgroupId ,@Attributes 
-                    ,@Credentials_CardNumber ,@Credentials_EndDate ,@Credentials_Pin ,@Credentials_ProfileId ,@Credentials_ProfileName ,@Credentials_StartDate ,@Credentials_FacilityCode
-                    ,@Credentials_CardTechnologyCode ,@Credentials_PinMode ,@Credentials_PinDigit
+                    ,@Cred_CardNumber ,@Cred_EndDate ,@Cred_Pin ,@Cred_ProfileId ,@Cred_ProfileName ,@Cred_StartDate ,@Cred_FacilityCode
+                    ,@Cred_CardTechnologyCode ,@Cred_PinMode ,@Cred_PinDigit
                     ,@EmployeeNumber ,@EndDate ,@FirstName ,@GeneralInformation ,@LastName ,@NonPartitionWorkGroups 
-                    ,@PersonalDetails_Address ,@PersonalDetails_ContactDetails_Email ,@PersonalDetails_ContactDetails_MobileNumber ,@PersonalDetails_ContactDetails_MobileServiceProviderId
-                    ,@PersonalDetails_ContactDetails_PagerNumber ,@PersonalDetails_ContactDetails_PagerServiceProviderId ,@PersonalDetails_ContactDetails_PhoneNumber ,@PersonalDetails_DateOfBirth
-                    ,@PersonalDetails_PayrollNumber ,@PersonalDetails_Title ,@PersonalDetails_UserDetails_UserName ,@PersonalDetails_UserDetails_Password
+                    ,@PD_Address ,@PD_CD_Email ,@PD_CD_MobileNumber ,@PD_CD_MobileServiceProviderId
+                    ,@PD_CD_PagerNumber ,@PD_CD_PagerServiceProviderId ,@PD_CD_PhoneNumber ,@PD_DateOfBirth
+                    ,@PD_PayrollNumber ,@PD_Title ,@PD_UD_UserName ,@PD_UD_Password
                     ,@Potrait ,@PrimaryWorkgroupId ,@PrimaryWorkgroupName ,@SmartCardProfileId ,@StartDate ,@Status ,@Token ,@TraceDetails ,@Vehicle1 ,@Vehicle2 
                     ,@VisitorDetails_VisitorCardStatus ,@VisitorDetails_VisitorCustomValues
                     ,@AccessRules1 ,@AccessRules2 ,@AccessRules3 ,@AccessRules4 ,@AccessRules5 ,@AccessRules6 ,@AccessRules7 ,@AccessRules8 ,@AccessRules9 ,@AccessRules10
                     ,@AccessRules11 ,@AccessRules12 ,@AccessRules13 ,@AccessRules14 ,@AccessRules15 ,@AccessRules16 ,@AccessRules17 ,@AccessRules18 ,@AccessRules19 ,@AccessRules20
                     ,@AccessRules21 ,@AccessRules22 ,@AccessRules23 ,@AccessRules24 ,@AccessRules25 ,@AccessRules26 ,@AccessRules27 ,@AccessRules28 ,@AccessRules29 ,@AccessRules30
                     ,@AccessRules31 ,@AccessRules32 ,@AccessRules33 ,@AccessRules34 ,@AccessRules35 ,@AccessRules36 ,@AccessRules37 ,@AccessRules38 ,@AccessRules39 ,@AccessRules40);
-                select top 1 * from Momber where EmployeeNumber >= @EmployeeNumber order by TimeStamp desc`);
+                select top 1 * from Member where EmployeeNumber >= @EmployeeNumber order by TimeStamp desc`);
 
         return res["recordset"][0];
     }

@@ -76,15 +76,15 @@ export interface IMember {      // CRUD
     system?: number,            // 0: iSap 4: FET
     Attributes?: {},
     Credentials?: {
-        CardNumber?: string,
-        EndDate?: string,
-        Pin?: string,
-        ProfileId?: number,
-        ProfileName?: string,
-        StartDate?: string,
+        CardNumber: string,
+        EndDate: string,
+        Pin: string,
+        ProfileId: number,
+        ProfileName: string,
+        StartDate: string,
         FacilityCode?: number,
         CardTechnologyCode?: number,
-        PinMode?: number,
+        PinMode: number,
         PinDigit?: number
     }[],
     AccessRules?: any[],
