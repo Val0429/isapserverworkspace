@@ -14,7 +14,7 @@ export class Report {
     /**
      *
      */
-    private _sites: IDB.LocationSite[] = [];
+    protected _sites: IDB.LocationSite[] = [];
 
     /**
      *
@@ -55,7 +55,7 @@ export class Report {
     /**
      *
      */
-    private _dateGap: number = 0;
+    protected _dateGap: number = 0;
     public get dateGap(): number {
         return this._dateGap;
     }
@@ -63,7 +63,7 @@ export class Report {
     /**
      *
      */
-    private _officeHours: IDB.OfficeHour[] = [];
+    protected _officeHours: IDB.OfficeHour[] = [];
     public get officeHours(): IResponse.IReport.ISummaryOfficeHour[] {
         let officeHours = this._officeHours.map<IResponse.IReport.ISummaryOfficeHour>((value, index, array) => {
             let sites: IResponse.IObject[] = (value.getValue('sites') || []).map((value1, index1, array1) => {
@@ -87,7 +87,7 @@ export class Report {
     /**
      *
      */
-    private _weathers: IDB.Weather[] = [];
+    protected _weathers: IDB.Weather[] = [];
     public get weathers(): IResponse.IReport.ISummaryWeather[] {
         let weathers = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
             let site: IResponse.IObject = {
@@ -228,7 +228,6 @@ export class Report {
      * @param startDate
      * @param endDate
      */
-
     public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[]): Promise<T[]>;
     public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<T[]>;
     public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate?: Date, endDate?: Date): Promise<T[]> {
@@ -237,7 +236,7 @@ export class Report {
             endDate = endDate || this.currDateRange.endDate;
 
             let reportQuery: Parse.Query = new Parse.Query(collection)
-                .equalTo('type', Enum.ESummaryType.hour)
+                // .equalTo('type', Enum.ESummaryType.hour)
                 .containedIn('site', this._sites)
                 .greaterThanOrEqualTo('date', startDate)
                 .lessThan('date', endDate);
@@ -247,7 +246,7 @@ export class Report {
             let reports: Parse.Object[] = await reportQuery
                 .limit(reportTotal)
                 .ascending(['date'])
-                .include(['site', 'area', 'device', 'device.groups', ...includes])
+                .include(['site', 'area', 'device', ...includes])
                 .find()
                 .fail((e) => {
                     throw e;

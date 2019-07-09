@@ -45,7 +45,7 @@ export interface IComplex {
     dwellTime: IComplex_Data;
     demographic: IComplex_Data_Demographic;
     visitor: IComplex_Data;
-    repeatCustomer: IComplex_Data;
+    repeatVisitor: IComplex_Data;
     revenue: IComplex_Data;
     transaction: IComplex_Data;
     conversion: IComplex_Data;
@@ -184,6 +184,24 @@ export interface IHumanDetectionThreshold {
     date: Date;
     total: number;
     imageSrcs: string[];
+}
+
+export interface IRepeatVisitorSummaryChartData {
+    total: number;
+    totalRanges: number[];
+    maleRanges: number[];
+    femaleRanges: number[];
+}
+
+export interface IRepeatVisitorSummaryTableData {
+    site: IObject;
+    date: Date;
+    frequencyRanges: number[];
+}
+
+export interface IRepeatVisitorSummary {
+    summaryChartDatas: IRepeatVisitorSummaryChartData[];
+    summaryTableDatas: IRepeatVisitorSummaryTableData[];
 }
 
 export interface ISendUser extends IObject {

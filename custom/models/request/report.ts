@@ -38,6 +38,8 @@ export interface IHumanDetectionThreshold extends IDateRange {
     type: 'medium' | 'high';
 }
 
+export interface IRepeatVisitorSummary extends ISummaryBase {}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;

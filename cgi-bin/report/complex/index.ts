@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
@@ -91,6 +91,20 @@ action.post(
                 })(),
             );
 
+            let currRVSummary: number = undefined;
+            tasks.push(
+                (async () => {
+                    currRVSummary = await report.GetRepeatVisitorSummary();
+                })(),
+            );
+
+            let prevRVSummary: number = undefined;
+            tasks.push(
+                (async () => {
+                    prevRVSummary = await report.GetRepeatVisitorSummary(report.prevDateRange.startDate, report.prevDateRange.endDate);
+                })(),
+            );
+
             await Promise.all(tasks);
 
             let pc: IResponse.IReport.IComplex_Data = {
@@ -108,6 +122,11 @@ action.post(
             let hd: IResponse.IReport.IComplex_Data = {
                 value: currHDSummary,
                 variety: prevHDSummary - currHDSummary,
+            };
+
+            let rv: IResponse.IReport.IComplex_Data = {
+                value: currRVSummary,
+                variety: prevRVSummary - currRVSummary,
             };
 
             let revenue: IResponse.IReport.IComplex_Data = {
@@ -140,7 +159,7 @@ action.post(
                 dwellTime: undefined,
                 demographic: demo,
                 visitor: undefined,
-                repeatCustomer: undefined,
+                repeatVisitor: rv,
                 revenue: revenue,
                 transaction: transaction,
                 conversion: conversion,
@@ -155,6 +174,51 @@ action.post(
 );
 
 export class ReportComplex extends Report {
+    /**
+     *
+     */
+    private _frequencyRanges: { min: number; max: number }[] = [];
+
+    /**
+     * Initialization
+     * @param input
+     * @param userSiteIds
+     */
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
+        try {
+            await super.Initialization(input, userSiteIds);
+
+            this.GetFrequencyRange();
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get frequency range
+     */
+    private GetFrequencyRange() {
+        try {
+            let frequencyRange: string = Config.deviceRepeatVisitor.frequencyRange;
+            this._frequencyRanges = frequencyRange
+                .split('-')
+                .map(Number)
+                .reduce((prev, curr, index, array) => {
+                    if (index !== 0) {
+                        curr += prev[index - 1].min;
+                        prev[index - 1].max = curr;
+                    }
+
+                    return prev.concat({
+                        min: curr,
+                        max: undefined,
+                    });
+                }, []);
+        } catch (e) {
+            throw e;
+        }
+    }
+
     /**
      * Get weather with one site and one day
      */
@@ -273,6 +337,60 @@ export class ReportComplex extends Report {
             );
 
             let average: number = summary.count !== 0 ? Utility.Round(summary.total / summary.count, 0) : 0;
+
+            return average;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get report summary
+     * @param startDate
+     * @param endDate
+     */
+    public async GetRepeatVisitorSummary(): Promise<number>;
+    public async GetRepeatVisitorSummary(startDate: Date, endDate: Date): Promise<number>;
+    public async GetRepeatVisitorSummary(startDate?: Date, endDate?: Date): Promise<number> {
+        try {
+            let summarys = await this.GetReports(IDB.ReportRepeatVisitor, [], startDate, endDate);
+            if (summarys.length === 0) {
+                return NaN;
+            }
+
+            let summary = summarys.reduce<IResponse.IReport.IComplex_Average>(
+                (prev, curr, index, array) => {
+                    let faces = array.filter((value1, index1, array1) => {
+                        return value1.getValue('faceId') === curr.getValue('faceId');
+                    });
+
+                    let currIndex: number = faces.findIndex((value1, index1, array1) => {
+                        return value1.id === curr.id;
+                    });
+                    if (currIndex !== 0) {
+                        return prev;
+                    }
+
+                    let currCount: number = faces.length;
+
+                    let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
+                        return value1.min <= currCount && value1.max > currCount;
+                    });
+
+                    if (frequencyIndex !== 0) {
+                        prev.count += 1;
+                    }
+                    prev.total += 1;
+
+                    return prev;
+                },
+                {
+                    total: 0,
+                    count: 0,
+                },
+            );
+
+            let average: number = summary.total !== 0 ? Utility.Round(summary.count / summary.total, 2) : 0;
 
             return average;
         } catch (e) {
