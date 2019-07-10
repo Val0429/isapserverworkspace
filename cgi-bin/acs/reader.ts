@@ -7,6 +7,7 @@ import {
 
 import { Log } from 'helpers/utility';
 import { IReader, Reader } from '../../custom/models'
+import { LocationArea, LocationSite } from 'workspace/custom/models/db/_index';
 
 
 var action = new Action({
@@ -43,56 +44,79 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Reader);
     let filter = data.parameters as any;
+
+    let groupQuery = new Parse.Query(DoorGroup);
+    
+    if(filter.sitename){
+        let siteQuery = new Parse.Query(LocationSite)
+            .matches("name", new RegExp(filter.sitename), "i");
+        let areaQuery = new Parse.Query(LocationArea)
+            .matchesQuery("site", siteQuery);
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("doors")
+            .include("area.site")
+            .find();
+
+        let readerIds = getReaderIds(groups);
+        query.containedIn("objectId", readerIds);
+    }
+    if(filter.areaname){
+        let areaQuery = new Parse.Query(LocationArea)
+            .matches("name", new RegExp(filter.areaname), "i");
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("doors")
+            .include("area")
+            .find();            
+        
+        let readerIds = getReaderIds(groups);
+        query.containedIn("objectId", readerIds);
+    }
+
+    if(filter.doorgroup){        
+        let groups = await groupQuery.matches("groupname", new RegExp(filter.doorgroup), "i")
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("doors")
+            .find();        
+        
+        let readerIds = getReaderIds(groups);        
+        query.containedIn("objectId", readerIds);
+    }
+
+    if(filter.doorname){
+        let doors = await new Parse.Query(Door)
+            .matches("doorname", new RegExp(filter.doorname), "i")
+            .limit(Number.MAX_SAFE_INTEGER)
+            .find();
+        let doorreaders = [];
+        for(let door of doors){
+            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
+            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
+        }
+        
+        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
+        query.containedIn("objectId", readerIds);
+    }
+    if(filter.readerIO){
+        let doors = await new Parse.Query(Door)            
+            .limit(Number.MAX_SAFE_INTEGER)
+            .find();
+        let doorreaders = [];
+        for(let door of doors){
+            if(filter.readerIO =="IN" && door.get("readerin"))doorreaders.push(...door.get("readerin"));
+            if(filter.readerIO =="OUT" && door.get("readerout"))doorreaders.push(...door.get("readerout"));
+        }
+        
+        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
+        query.containedIn("objectId", readerIds);
+    }
     if(filter.name){
         query.matches("readername", new RegExp(filter.name), "i");
     }
-    if(filter.doorname){
-        let doors = await new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i").find();
-        let doorreaders = [];
-        for(let door of doors){
-            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
-            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
-        }
-        
-        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
-        query.containedIn("objectId", readerIds);
-    }
-
-    if(filter.doorgroup){
-        let groups = await new Parse.Query(DoorGroup)
-            .matches("groupname", new RegExp(filter.doorgroup), "i")
-            .include("doors")
-            .find();
-        let doors = [];
-        for(let group of groups){
-            doors.push(...group.get("doors"));
-        }
-        
-        let doorreaders = [];
-        for(let door of doors){
-            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
-            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
-        }
-        
-        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId); 
-        
-        query.containedIn("objectId", readerIds);
-    }
-
-    if(filter.doorname){
-        let doors = await new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i").find();
-        let doorreaders = [];
-        for(let door of doors){
-            if(door.get("readerin"))doorreaders.push(...door.get("readerin"));
-            if(door.get("readerout"))doorreaders.push(...door.get("readerout"));
-        }
-        
-        let readerIds = doorreaders.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
-        query.containedIn("objectId", readerIds);
-    }
-    
     if(filter.vacant && filter.vacant=="true"){
-        let doors = await new Parse.Query(Door)           
+        let doors = await new Parse.Query(Door)
+            .limit(Number.MAX_SAFE_INTEGER)
             .find();
         
         let usedreaders=[];
@@ -150,3 +174,19 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+function getReaderIds(groups: DoorGroup[]) {
+    let doors = [];
+    for (let group of groups) {
+        doors.push(...group.get("doors"));
+    }
+    let doorreaders = [];
+    for (let door of doors) {
+        if (door.get("readerin"))
+            doorreaders.push(...door.get("readerin"));
+        if (door.get("readerout"))
+            doorreaders.push(...door.get("readerout"));
+    }
+    let readerIds = doorreaders.map(x => ParseObject.toOutputJSON(x)).map(x => x.objectId);
+    return readerIds;
+}
+
