@@ -19,10 +19,10 @@ Main.ready$.subscribe({
         createIndex('UserInfo', 'index', { user: 1 });
         createIndex('Weather', 'index', { site: 1 });
 
-        createIndex('ReportDemographicSummary', 'index', { faceId: 1, type: 1, date: 1, site: 1 });
-        createIndex('ReportHumanDetectionSummary', 'index', { type: 1, date: 1, site: 1 });
+        createIndex('ReportDemographicSummary', 'index', { type: 1, site: 1, date: 1 });
+        createIndex('ReportHumanDetectionSummary', 'index', { type: 1, site: 1, date: 1 });
         createIndex('ReportHumanDetection', 'index', { date: 1, site: 1, area: 1 });
-        createIndex('ReportPeopleCountingSummary', 'index', { type: 1, date: 1, site: 1 });
-        createIndex('ReportRepeatVisitor', 'index', { type: 1, date: 1, site: 1 });
+        createIndex('ReportPeopleCountingSummary', 'index', { type: 1, site: 1, date: 1 });
+        createIndex('ReportRepeatVisitor', 'index', { site: 1, date: 1 });
     },
 });
