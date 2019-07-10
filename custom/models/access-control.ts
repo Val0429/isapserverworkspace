@@ -165,6 +165,7 @@ export interface IAccessLevel {     // CRUD  V
     doorgroup?: DoorGroup,
     elevator?: Elevator,
     elevatorgroup?: ElevatorGroup,
+    floor?: Floor[],
     reader?: Reader[],
     timeschedule?: TimeSchedule
 }

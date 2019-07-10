@@ -33,7 +33,7 @@ export default new Action<Input, Output>({
     let sessionId: string, user: Parse.User;
     let permissions=[];
     if ('username' in data.inputType) {
-        
+console.log("12341234")        ;
         /// Try login
         try {
             user = await Parse.User.logIn(data.inputType.username, data.inputType.password);

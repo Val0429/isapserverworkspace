@@ -6,7 +6,6 @@ let config: Config = {
     database: "FET",
     connectionTimeout: 15000
 };
-
 export default config;
 
 /**

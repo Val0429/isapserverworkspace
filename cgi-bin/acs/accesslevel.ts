@@ -40,12 +40,19 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         let r = {
             ObjectToken: e.get("readerid"),
             ObjectName: e.get("readername"),
-            RuleToken:"12",
             RuleType:3,
-            StartDate:null,
-            EndDate:null,
-            ArmingRightsId:null,
-            ControlModeId:null
+        }
+
+        rules.push(r);
+    }
+
+    for (let idx = 0; idx < data.inputType.floor.length; idx++) {
+        let e = data.inputType.floor[idx];
+        
+        let r = {
+            ObjectToken: e.get("floorid"),
+            ObjectName: e.get("floorname"),
+            RuleType:8,
         }
 
         rules.push(r);
