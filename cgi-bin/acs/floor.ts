@@ -47,7 +47,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
     let filter = data.parameters as any;
 
-    let groupQuery = new Parse.Query(ElevatorGroup);
+    let groupQuery = new Parse.Query(ElevatorGroup)
+                    .include("elevators")
+                    .include("area.site");
     
     if(filter.sitename){
         let siteQuery = new Parse.Query(LocationSite)
@@ -55,9 +57,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let areaQuery = new Parse.Query(LocationArea)
             .matchesQuery("site", siteQuery);
         let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)
-            .include("elevators")
-            .include("area.site")
+            .limit(Number.MAX_SAFE_INTEGER)            
             .find();
         
         let floorIds = getFloorIds(groups);
@@ -68,8 +68,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
             .matches("name", new RegExp(filter.areaname), "i");
         let groups = await groupQuery.matchesQuery("area", areaQuery)
             .limit(Number.MAX_SAFE_INTEGER)
-            .include("elevators")
-            .include("area")
             .find();            
         
         let floorIds = getFloorIds(groups);
@@ -79,7 +77,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.groupname){        
         let groups = await groupQuery.matches("groupname", new RegExp(filter.groupname), "i")
             .limit(Number.MAX_SAFE_INTEGER)
-            .include("elevators")
             .find();        
         
             let floorIds = getFloorIds(groups);
@@ -104,6 +101,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters);
+    
 });
 
 /********************************
