@@ -34,6 +34,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     /// 2) Sync to ACS Services
     let rules = [] ;
+    if(data.inputType.reader && data.inputType.reader.length>0)
     for (let idx = 0; idx < data.inputType.reader.length; idx++) {
         let e = data.inputType.reader[idx];
         
@@ -45,7 +46,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
         rules.push(r);
     }
-
+    if(data.inputType.floor && data.inputType.floor.length>0)
     for (let idx = 0; idx < data.inputType.floor.length; idx++) {
         let e = data.inputType.floor[idx];
         
