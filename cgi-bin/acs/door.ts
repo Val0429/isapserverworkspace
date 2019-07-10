@@ -2,12 +2,14 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, DoorGroup
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
 import { IDoor, Door } from '../../custom/models'
 import licenseService from 'services/license';
+import { LocationSite } from 'workspace/custom/models/db/location-site';
+import { LocationArea } from 'workspace/custom/models/db/location-area';
 
 
 var action = new Action({
@@ -97,12 +99,50 @@ type OutputR = Restful.OutputR<IDoor>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
+    
     var query = new Parse.Query(Door)
         .include("readerout")
         .include("readerin");
     let filter = data.parameters as any;
     if(filter.name){
         query.matches("doorname", new RegExp(filter.name), "i");
+    }
+    let groupQuery = new Parse.Query(DoorGroup);
+    
+    if(filter.sitename){
+        let siteQuery = new Parse.Query(LocationSite)
+            .matches("name", new RegExp(filter.sitename), "i");
+        let areaQuery = new Parse.Query(LocationArea)
+            .matchesQuery("site", siteQuery);
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("doors")
+            .include("area.site")
+            .find();
+        let doorIds = getDoorIds(groups);
+        query.containedIn("objectId", doorIds);
+    }
+    if(filter.areaname){
+        let areaQuery = new Parse.Query(LocationArea)
+            .matches("name", new RegExp(filter.areaname), "i");
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("doors")
+            .include("area")
+            .find();            
+        
+        let doorIds = getDoorIds(groups);
+        query.containedIn("objectId", doorIds);
+    }
+
+    if(filter.doorgroup){        
+        let groups = await groupQuery.matches("groupname", new RegExp(filter.doorgroup), "i")
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("doors")
+            .find();        
+        
+        let doorIds = getDoorIds(groups);
+        query.containedIn("objectId", doorIds);
     }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
@@ -152,3 +192,12 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+function getDoorIds(groups: DoorGroup[]) {
+    let doors = [];
+    for (let group of groups) {
+        doors.push(...group.get("doors"));
+    }
+    let doorIds = doors.map(x => ParseObject.toOutputJSON(x)).map(x => x.objectId);
+    return doorIds;
+}
+
