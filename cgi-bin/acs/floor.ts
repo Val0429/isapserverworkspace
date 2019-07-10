@@ -2,11 +2,13 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, ElevatorGroup, Elevator
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
 import { IFloor, Floor } from '../../custom/models'
+import { LocationSite } from 'workspace/custom/models/db/location-site';
+import { LocationArea } from 'workspace/custom/models/db/location-area';
 
 
 var action = new Action({
@@ -44,6 +46,58 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(Floor);
     /// 2) With Extra Filters
     let filter = data.parameters as any;
+
+    let groupQuery = new Parse.Query(ElevatorGroup);
+    
+    if(filter.sitename){
+        let siteQuery = new Parse.Query(LocationSite)
+            .matches("name", new RegExp(filter.sitename), "i");
+        let areaQuery = new Parse.Query(LocationArea)
+            .matchesQuery("site", siteQuery);
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("elevators")
+            .include("area.site")
+            .find();
+        
+        let floorIds = getFloorIds(groups);
+        query.containedIn("objectId", floorIds);
+    }
+    if(filter.areaname){
+        let areaQuery = new Parse.Query(LocationArea)
+            .matches("name", new RegExp(filter.areaname), "i");
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("elevators")
+            .include("area")
+            .find();            
+        
+        let floorIds = getFloorIds(groups);
+        query.containedIn("objectId", floorIds);
+    }
+
+    if(filter.groupname){        
+        let groups = await groupQuery.matches("groupname", new RegExp(filter.groupname), "i")
+            .limit(Number.MAX_SAFE_INTEGER)
+            .include("elevators")
+            .find();        
+        
+            let floorIds = getFloorIds(groups);
+            query.containedIn("objectId", floorIds);
+    }
+    if(filter.elevatorname){
+        let elevators = await new Parse.Query(Elevator)
+            .matches("elevatorname", new RegExp(filter.elevatorname), "i")
+            .limit(Number.MAX_SAFE_INTEGER)
+            .find();
+        let floors = [];
+        for(let elevator of elevators){
+            if(elevator.get("reader"))floors.push(...elevator.get("reader"));            
+        }
+        
+        let floorIds = floors.map(x=>ParseObject.toOutputJSON(x)).map(x=>x.objectId);        
+        query.containedIn("objectId", floorIds);
+    }
     if(filter.name){
         query.matches("floorname", new RegExp(filter.name), "i");
     }
@@ -91,3 +145,15 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+function getFloorIds(groups: ElevatorGroup[]) {
+    let elevators = [];
+    for (let group of groups) {
+        elevators.push(...group.get("elevators"));
+    }
+    let floors = [];
+    for(let elevator of elevators){
+        if(elevator.get("reader"))floors.push(...elevator.get("reader"));            
+    }
+    let floorIds = floors.map(x => ParseObject.toOutputJSON(x)).map(x => x.objectId);
+    return floorIds;
+}
