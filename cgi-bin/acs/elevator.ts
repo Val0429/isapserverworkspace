@@ -2,12 +2,13 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, ElevatorGroup
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
 import { IElevator, Elevator } from '../../custom/models'
 import licenseService from 'services/license';
+import { LocationSite, LocationArea } from 'workspace/custom/models/db/_index';
 
 var action = new Action({
     loginRequired: true,
@@ -76,6 +77,43 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Elevator);
     let filter = data.parameters as any;
+
+    let groupQuery = new Parse.Query(ElevatorGroup)
+                        .include("elevators")
+                        .include("area.site");
+
+    if(filter.sitename){
+        let siteQuery = new Parse.Query(LocationSite)
+                        .matches("name", new RegExp(filter.sitename), "i");
+        let areaQuery = new Parse.Query(LocationArea)
+                    .matchesQuery("site", siteQuery);
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+                    .limit(Number.MAX_SAFE_INTEGER)            
+                    .find();
+
+        let elevatorIds = getElevatorIds(groups);
+        query.containedIn("objectId", elevatorIds);
+    }
+    if(filter.areaname){
+        let areaQuery = new Parse.Query(LocationArea)
+                        .matches("name", new RegExp(filter.areaname), "i");
+        let groups = await groupQuery.matchesQuery("area", areaQuery)
+                        .limit(Number.MAX_SAFE_INTEGER)
+                        .find();            
+
+        let elevatorIds = getElevatorIds(groups);
+        query.containedIn("objectId", elevatorIds);
+    }
+
+    if(filter.groupname){        
+            let groups = await groupQuery.matches("groupname", new RegExp(filter.groupname), "i")
+            .limit(Number.MAX_SAFE_INTEGER)
+            .find();        
+
+            let elevatorIds = getElevatorIds(groups);
+            query.containedIn("objectId", elevatorIds);
+    }    
+
     if(filter.name){
         query.matches("elevatorname", new RegExp(filter.name), "i");
     }
@@ -126,3 +164,11 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+function getElevatorIds(groups: ElevatorGroup[]) {
+    let elevators = [];
+    for (let group of groups) {
+        elevators.push(...group.get("elevators"));
+    }
+    let elevatorIds = elevators.map(x => ParseObject.toOutputJSON(x)).map(x => x.objectId);
+    return elevatorIds;
+}
