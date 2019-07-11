@@ -57,8 +57,8 @@ export class HRService {
         this.checkCycleTime = 1200;
 
 
-        // if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
-        if (now.getMinutes() < 70) {
+        if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
+        // if (now.getMinutes() < 70) {
             let memChange = [];
             let memNew = [];
             let memOff = [];
@@ -127,12 +127,13 @@ export class HRService {
             }
 
             // 3.0 SiPass Connection
-            let sessionId = await siPassAdapter.sessionToken;
+            let sessionId = "" ;
+            // let sessionId = await siPassAdapter.sessionToken;
 
-            if (!sessionId) {
-                this.checkCycleTime = 5;
-                Log.Info(`${this.constructor.name}`, `SiPass Connect Fail`);
-            }
+            // if (!sessionId) {
+            //     this.checkCycleTime = 5;
+            //     Log.Info(`${this.constructor.name}`, `SiPass Connect Fail`);
+            // }
 
             // 3.0 Cleae Temp Data
             let EmpNo: string[] = [];

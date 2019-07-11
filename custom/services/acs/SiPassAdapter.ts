@@ -63,7 +63,7 @@ export class SiPassAdapter {
     async enableReconnect() {
         let me = this;
 
-        this.checkConnectionTimer =  setInterval(async () => {
+        this.checkConnectionTimer = setInterval(async () => {
             if (!this.sessionToken) {
                 me.siPassAccount = new siPassClient.SiPassHrAccountService(me.siPassHrParam);
                 me.sessionToken = await me.Login();
@@ -691,6 +691,46 @@ export class SiPassAdapter {
         //Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
 
         let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder);
+
+        return JSON.parse(a);
+    }
+
+    async getAllCredentialProfiles() {
+        let a = await this.siPassPersion.GetAllCredentialProfiles(this.siPassHrParam);
+        // console.log("===================    Get GetAllCredentialProfiles   ========== ");
+        // console.log(a);
+
+        // [
+        //     {
+        //         "Token": "1",
+        //         "Name": "基礎",
+        //         "PINDigits": 0,
+        //         "CardNumberDigits": 7,
+        //         "IsBase": true,
+        //         "CardTechnology": "HID Proximity Corporate 1000 35/48 Bit",
+        //         "FacilityCode": "469",
+        //         "CardTechnologyCode": 10,
+        //         "ValidityCode": "0",
+        //         "IsUsed": true,
+        //         "PinMode": [
+        //             {
+        //                 "Type": 1,
+        //                 "Name": "Card",
+        //                 "FullName": "Card",
+        //                 "IsUsed": true
+        //             },
+        //             {
+        //                 "Type": 2,
+        //                 "Name": "Pin",
+        //                 "FullName": "Pin"
+        //             }
+        //         ],
+        //         "PINModeValue": {
+        //             "Name": "CARD",
+        //             "FullName": "CARD"
+        //         }
+        //     }
+        // ]
 
         return JSON.parse(a);
     }

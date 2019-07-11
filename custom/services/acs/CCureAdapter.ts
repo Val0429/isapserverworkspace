@@ -34,6 +34,10 @@ export class CCureAdapter {
 
         this._reader = CCUREReader.getInstance();
         this._signal = new SignalObject(false);
+
+        (async () => {
+            await this.Login();
+        })();
     }
 
     async getRecords() {
