@@ -29,7 +29,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     let name = data.inputType.tablename ;
     let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name).first();
-    if ( nameObject) {
+    if ( nameObject != null) {
         throw Errors.throw(Errors.CustomNotExists, [`Permssion table name is duplicate.`]);
     }
 
