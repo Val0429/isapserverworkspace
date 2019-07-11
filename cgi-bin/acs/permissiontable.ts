@@ -27,6 +27,12 @@ type OutputC = Restful.OutputC<IPermissionTable>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
 
+    let name = data.inputType.tablename ;
+    let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name).first();
+    if ( nameObject) {
+        throw Errors.throw(Errors.CustomNotExists, [`Permssion table name is duplicate.`]);
+    }
+
     let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
     let maxId = firstObject.get("tableid");
     data.inputType.tableid = maxId + 1;
