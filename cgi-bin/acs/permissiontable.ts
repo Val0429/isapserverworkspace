@@ -69,7 +69,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             }
         }
         let ag = {
-            token: data.inputType.tableid,
+            token: data.inputType.tableid + "",
             name: data.inputType.tablename,
             accessLevels: al
         };
@@ -185,7 +185,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         }
 
         let ag = {
-            token: data.inputType.tableid,
+            token: data.inputType.tableid + "",
             name: data.inputType.tablename,
             accessLevels: al
         };

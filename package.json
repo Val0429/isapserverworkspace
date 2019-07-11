@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.5.0",
     "delay": "^4.3.0",
     "moment": "^2.24.0",
     "mssql": "^5.1.0"

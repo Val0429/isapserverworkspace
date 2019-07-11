@@ -138,7 +138,8 @@ export class Member extends ParseObject<IMember> { }
 
 
 export interface ITimeSchedule {    // R daily V
-    timeid?: string,                // 1: SiPass 2: CCure800
+    system?: number,                // 0: iSap 1: SiPass 2: CCure800
+    timeid?: number,
     timename?: string,
     status?: number
 }
@@ -158,7 +159,7 @@ export class TimeSchedule extends ParseObject<ITimeSchedule> { }
 export interface IAccessLevel {     // CRUD  V
     system?: number                // 0: iSap 1: SiPass 2: CCure800
     type?: string,
-    levelid?: string,
+    levelid?: number,
     levelname?: string,
     status?: number,
     door?: Door,
@@ -174,7 +175,7 @@ export class AccessLevel extends ParseObject<IAccessLevel> { }
 
 
 export interface IPermissionTable {     // CRUD  V
-    tableid?: string,
+    tableid?: number,
     tablename?: string,
     ccureToken?: string;
     sipassToken?: string;
@@ -203,9 +204,40 @@ export class PermissionTable extends ParseObject<IPermissionTable> { }
 // export class AccessPolicy extends ParseObject<IAccessPolicy> { }
 
 
+
+export interface ICredentialProfiles {     // R  V
+    system?: number,
+    Token?: string,
+    Name?: string,
+    PINDigits?: number,
+    CardNumberDigits?: number,
+    IsBase?: boolean,
+    CardTechnology?: string,
+    FacilityCode?: string,
+    CardTechnologyCode?: number,
+    ValidityCode?: string,
+    IsUsed?: boolean,
+    PinMode?: [
+        {
+            Type?: number,
+            Name?: string,
+            FullName?: string,
+            IsUsed?: boolean
+        }
+    ],
+    PINModeValue?: {
+        Name?: string,
+        FullName?: string
+    }
+}
+@registerSubclass()
+export class CredentialProfiles extends ParseObject<ICredentialProfiles> { }
+
+
+
 export interface IWorkGroup {       // R  V
     system?: number,                // 1: SiPass
-    groupid?: string,
+    groupid?: number,
     groupname?: string,
     // type: number,
     // accesspolicyrules: AccessPolicy[],

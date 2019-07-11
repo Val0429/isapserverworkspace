@@ -26,7 +26,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
 
     let max = await new Parse.Query(AccessLevel).descending("levelid").first();
-    data.inputType.levelid = (+max + 1) + "" ;
+    data.inputType.levelid = +max + 1 ;
     data.inputType.levelname = "name " + data.inputType.levelid ;
     
     var obj = new AccessLevel(data.inputType);
@@ -59,7 +59,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }
 
     let d = {
-        token: data.inputType.levelid,
+        token: data.inputType.levelid + "",
         name: data.inputType.levelname,
         accessRule: rules,
         timeScheduleToken: data.inputType.timeschedule.get("timeid")
@@ -133,7 +133,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     }
 
     let d = {
-        token: data.inputType.levelid,
+        token: data.inputType.levelid + "",
         name: data.inputType.levelname,
         accessRule: rules,
         timeScheduleToken: data.inputType.timeschedule.get("timeid")
