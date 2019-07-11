@@ -26,16 +26,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var obj = new APIRoles(data.inputType);
     await obj.save(null, { useMasterKey: true });
     
-    let parameters = data.parameters as any;
-    if(parameters.permissions && parameters.permissions.length>0){
-        //set permissions
-        for(let permission of parameters.permissions){
-            let  token = new APITokens();
-            token.id = permission.objectId;
-            let value = permission.value;
-            let result = await APIPermissions.set(token, obj, value);
-        }
-    }
+    await savePermissions(data.parameters, obj);
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -68,7 +59,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`APIRoles <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
-    
+    await deletePermissions(obj);
+    await savePermissions(data.parameters, obj);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -87,13 +79,28 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
     //destroy child permissions
-    let parent = new APIRoles();
-    parent.id = objectId;
-    let permissions = await new Parse.Query(APIPermissions).equalTo("a", parent).find();
-    ParseObject.destroyAll(permissions);
+    await deletePermissions(obj);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
 /// CRUD end ///////////////////////////////////
 
 export default action;
+async function deletePermissions(obj: APIRoles) {
+    let permissions = await new Parse.Query(APIPermissions).equalTo("a", obj).find();
+    await ParseObject.destroyAll(permissions);
+}
+
+async function savePermissions(parameters: any, obj: APIRoles) {
+    if (!parameters.permissions || parameters.permissions.length <= 0) return;
+    
+    //set permissions
+    for (let permission of parameters.permissions) {
+        let token = new APITokens();
+        token.id = permission.objectId;
+        let value = permission.value;             
+        let result = await APIPermissions.set(token, obj, value);
+    }
+    
+}
+
