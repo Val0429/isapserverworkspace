@@ -244,21 +244,23 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Member).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
+
     /// 2) Modify
+    let update = new Member(data.inputType);
 
     let cardno = "";
     try {
-        cardno = obj.get("Credentials")[0]["CardNumber"];
+        cardno = update.get("Credentials")[0]["CardNumber"];
     }
     catch (e) {
         throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
     }
 
-    let hStart = obj.get("StartDate");
-    let hEnd = obj.get("EndDate");
+    let hStart = update.get("StartDate");
+    let hEnd = update.get("EndDate");
 
-    let cStart = obj.get("Credentials")[0]["StartDate"];
-    let cEnd = obj.get("Credentials")[0]["EndDate"];
+    let cStart = update.get("Credentials")[0]["StartDate"];
+    let cEnd = update.get("Credentials")[0]["EndDate"];
 
     if ( cEnd <= cStart)
         throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
@@ -271,7 +273,6 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     // AccessRules
     let accessLevels = await new Parse.Query(AccessLevel).find();
-    let update = new Member(data.inputType);
 
     let rules = update.get("AccessRules");
 
