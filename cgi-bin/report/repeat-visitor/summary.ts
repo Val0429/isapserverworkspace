@@ -72,9 +72,9 @@ export class ReportRepeatVisitor extends Report {
      */
     public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
         try {
-            await super.Initialization(input, userSiteIds);
+            await super.Initialization(input, userSiteIds, { useWeather: false });
 
-            this.GetFrequencyRange();
+            this._frequencyRanges = this.GetFrequencyRange();
 
             this._reports = await this.GetReports(IDB.ReportRepeatVisitor, []);
         } catch (e) {
@@ -85,10 +85,11 @@ export class ReportRepeatVisitor extends Report {
     /**
      * Get frequency range
      */
-    private GetFrequencyRange() {
+    private GetFrequencyRange(): { min: number; max: number }[] {
         try {
             let frequencyRange: string = Config.deviceRepeatVisitor.frequencyRange;
-            this._frequencyRanges = frequencyRange
+
+            return frequencyRange
                 .split('-')
                 .map(Number)
                 .reduce((prev, curr, index, array) => {
@@ -113,48 +114,48 @@ export class ReportRepeatVisitor extends Report {
      */
     public SummaryChartDatas(reports: IDB.ReportRepeatVisitor[]): IResponse.IReport.IRepeatVisitorSummaryChartData[] {
         try {
+            let reportsFaceIdDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = value.getValue('faceId');
+
+                if (!reportsFaceIdDictionary[key]) {
+                    reportsFaceIdDictionary[key] = [];
+                }
+
+                reportsFaceIdDictionary[key].push(value);
+            });
+
             let summarys = this._frequencyRanges.map<IResponse.IReport.IRepeatVisitorSummaryChartData>((value, index, array) => {
                 let totalRanges: number[] = new Array(this._ageRanges.length).fill(0);
                 let maleRanges: number[] = new Array(this._ageRanges.length).fill(0);
                 let femaleRanges: number[] = new Array(this._ageRanges.length).fill(0);
 
-                let faces = reports.filter((value1, index1, array1) => {
-                    let faces = array1.filter((value2, index2, array2) => {
-                        return value2.getValue('faceId') === value1.getValue('faceId');
-                    });
-
-                    let frequencyIndex: number = this._frequencyRanges.findIndex((value2, index2, array2) => {
-                        return value2.min <= faces.length && (!value2.max || value2.max > faces.length);
-                    });
-
-                    let currIndex: number = faces.findIndex((value2, index2, array2) => {
-                        return value2.id === value1.id;
-                    });
-
-                    if (frequencyIndex === index && currIndex === 0) {
-                        let ageIndex: number = this._ageRanges.findIndex((value2, index2, array2) => {
-                            return value2.min <= faces[0].getValue('age') && (!value2.max || value2.max > faces[0].getValue('age'));
-                        });
-
-                        totalRanges[ageIndex] += 1;
-                        if (faces[0].getValue('gender') === Enum.EGender.male) {
-                            maleRanges[ageIndex] += 1;
-                        } else {
-                            femaleRanges[ageIndex] += 1;
-                        }
-
-                        return true;
-                    }
-
-                    return false;
-                });
-
                 return {
-                    total: faces.length,
+                    total: 0,
                     totalRanges: totalRanges,
                     maleRanges: maleRanges,
                     femaleRanges: femaleRanges,
                 };
+            });
+            Object.keys(reportsFaceIdDictionary).forEach((value, index, array) => {
+                let faces = reportsFaceIdDictionary[value];
+
+                let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
+                    return value1.min <= faces.length && (!value1.max || value1.max > faces.length);
+                });
+
+                let ageIndex: number = this._ageRanges.findIndex((value1, index1, array1) => {
+                    return value1.min <= faces[0].getValue('age') && (!value1.max || value1.max > faces[0].getValue('age'));
+                });
+
+                summarys[frequencyIndex].total += 1;
+
+                summarys[frequencyIndex].totalRanges[ageIndex] += 1;
+                if (faces[0].getValue('gender') === Enum.EGender.male) {
+                    summarys[frequencyIndex].maleRanges[ageIndex] += 1;
+                } else {
+                    summarys[frequencyIndex].femaleRanges[ageIndex] += 1;
+                }
             });
 
             return summarys;
@@ -169,46 +170,59 @@ export class ReportRepeatVisitor extends Report {
      */
     public SummaryTableDatas(reports: IDB.ReportRepeatVisitor[]): IResponse.IReport.IRepeatVisitorSummaryTableData[] {
         try {
-            let summarys = reports.reduce<IResponse.IReport.IRepeatVisitorSummaryTableData[]>((prev, curr, index, array) => {
-                let date: Date = this.GetTypeDate(curr.getValue('date'));
+            let reportsSiteDateFaceIdDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = value.getValue('site').id;
+                let key1: string = this.GetTypeDate(value.getValue('date')).toISOString();
+                let key2: string = value.getValue('faceId');
 
-                let summary = prev.find((value1, index1, array1) => {
-                    return value1.site.objectId === curr.getValue('site').id && value1.date.getTime() === date.getTime();
-                });
-                if (!summary) {
-                    let base = this.GetBaseSummaryData(curr);
-
-                    let frequencyRanges: number[] = new Array(this._frequencyRanges.length).fill(0);
-
-                    summary = {
-                        site: base.site,
-                        date: base.date,
-                        frequencyRanges: frequencyRanges,
-                    };
-
-                    prev.push(summary);
+                if (!reportsSiteDateFaceIdDictionary[key]) {
+                    reportsSiteDateFaceIdDictionary[key] = {};
+                }
+                if (!reportsSiteDateFaceIdDictionary[key][key1]) {
+                    reportsSiteDateFaceIdDictionary[key][key1] = {};
+                }
+                if (!reportsSiteDateFaceIdDictionary[key][key1][key2]) {
+                    reportsSiteDateFaceIdDictionary[key][key1][key2] = [];
                 }
 
-                let faces = array.filter((value1, index1, array1) => {
-                    let date1: Date = this.GetTypeDate(value1.getValue('date'));
-                    return value1.getValue('site').id === curr.getValue('site').id && date1.getTime() === date.getTime() && value1.getValue('faceId') === curr.getValue('faceId');
+                reportsSiteDateFaceIdDictionary[key][key1][key2].push(value);
+            });
+
+            let summarys: IResponse.IReport.IRepeatVisitorSummaryTableData[] = [];
+            Object.keys(reportsSiteDateFaceIdDictionary).forEach((value, index, array) => {
+                let site = reportsSiteDateFaceIdDictionary[value];
+
+                Object.keys(site).forEach((value1, index1, array1) => {
+                    let date = site[value1];
+
+                    let summary: IResponse.IReport.IRepeatVisitorSummaryTableData = undefined;
+
+                    Object.keys(date).forEach((value2, index2, array2) => {
+                        let faces = date[value2];
+
+                        if (!summary) {
+                            let base = this.GetBaseSummaryData(faces[0]);
+
+                            let frequencyRanges: number[] = new Array(this._frequencyRanges.length).fill(0);
+
+                            summary = {
+                                site: base.site,
+                                date: base.date,
+                                frequencyRanges: frequencyRanges,
+                            };
+                        }
+
+                        let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
+                            return value1.min <= faces.length && (!value1.max || value1.max > faces.length);
+                        });
+
+                        summary.frequencyRanges[frequencyIndex] += 1;
+                    });
+
+                    summarys.push(summary);
                 });
-
-                let currIndex: number = faces.findIndex((value1, index1, array1) => {
-                    return value1.id === curr.id;
-                });
-                if (currIndex !== 0) {
-                    return prev;
-                }
-
-                let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
-                    return value1.min <= faces.length && (!value1.max || value1.max > faces.length);
-                });
-
-                summary.frequencyRanges[frequencyIndex] += 1;
-
-                return prev;
-            }, []);
+            });
 
             return summarys;
         } catch (e) {

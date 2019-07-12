@@ -41,8 +41,8 @@ action.post(
             let summaryTableDatas = await report.GetSummaryTableDatas();
 
             return {
-                weathers: report.weathers,
-                officeHours: report.officeHours,
+                weathers: report.summaryWeathers,
+                officeHours: report.summaryOfficeHours,
                 summaryChartDatas: summaryChartDatas,
                 summaryTableDatas: summaryTableDatas,
             };
@@ -98,27 +98,48 @@ export class ReportHumanDetection extends Report {
      */
     public SummaryChartDatas(reports: IDB.ReportHumanDetectionSummary[]): IResponse.IReport.IHumanDetectionSummaryChartData[] {
         try {
-            let summarys = reports.reduce<IResponse.IReport.IHumanDetectionSummaryChartData[]>((prev, curr, index, array) => {
-                let date: Date = this.GetTypeDate(curr.getValue('date'));
+            let reportsDateDeviceDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = this.GetTypeDate(value.getValue('date')).toISOString();
+                let key1: string = value.getValue('device').id;
 
-                let summary = prev.find((value1, index1, array1) => {
-                    return value1.device.objectId === curr.getValue('device').id && value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.total += curr.getValue('total');
-                    summary.count += curr.getValue('count');
-                } else {
-                    let base = this.GetBaseSummaryData(curr);
-
-                    prev.push({
-                        ...base,
-                        total: curr.getValue('total'),
-                        count: curr.getValue('count'),
-                    });
+                if (!reportsDateDeviceDictionary[key]) {
+                    reportsDateDeviceDictionary[key] = {};
+                }
+                if (!reportsDateDeviceDictionary[key][key1]) {
+                    reportsDateDeviceDictionary[key][key1] = [];
                 }
 
-                return prev;
-            }, []);
+                reportsDateDeviceDictionary[key][key1].push(value);
+            });
+
+            let summarys: IResponse.IReport.IHumanDetectionSummaryChartData[] = [];
+            Object.keys(reportsDateDeviceDictionary).forEach((value, index, array) => {
+                let date = reportsDateDeviceDictionary[value];
+
+                Object.keys(date).forEach((value1, index1, array1) => {
+                    let devices = date[value1];
+
+                    let summary: IResponse.IReport.IHumanDetectionSummaryChartData = undefined;
+
+                    devices.forEach((value2, index2, array2) => {
+                        if (index2 === 0) {
+                            let base = this.GetBaseSummaryData(value2);
+
+                            summary = {
+                                ...base,
+                                total: 0,
+                                count: 0,
+                            };
+                        }
+
+                        summary.total += value2.getValue('total');
+                        summary.count += value2.getValue('count');
+                    });
+
+                    summarys.push(summary);
+                });
+            });
 
             return summarys;
         } catch (e) {
@@ -132,32 +153,64 @@ export class ReportHumanDetection extends Report {
      */
     public async SummaryTableDatas(reports: IDB.ReportHumanDetectionSummary[]): Promise<IResponse.IReport.IHumanDetectionSummaryTableData[]> {
         try {
-            let summarys = reports.reduce<IResponse.IReport.IHumanDetectionSummaryTableData[]>((prev, curr, index, array) => {
-                let date: Date = this.GetTypeDate(curr.getValue('date'));
+            let reportsDateAreaDictionary: object = {};
+            let reportsAreaDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = this.GetTypeDate(value.getValue('date')).toISOString();
+                let key1: string = value.getValue('area').id;
 
-                let summary = prev.find((value1, index1, array1) => {
-                    return value1.area.objectId === curr.getValue('area').id && value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.total += curr.getValue('total');
-                    summary.count += curr.getValue('count');
-                    summary.maxValue = summary.maxValue > curr.getValue('max').getValue('value') ? summary.maxValue : curr.getValue('max').getValue('value');
-                } else {
-                    let base = this.GetBaseSummaryData(curr);
-
-                    prev.push({
-                        site: base.site,
-                        area: base.area,
-                        date: base.date,
-                        type: base.type,
-                        total: curr.getValue('total'),
-                        count: curr.getValue('count'),
-                        maxValue: curr.getValue('max').getValue('value'),
-                    });
+                if (!reportsDateAreaDictionary[key]) {
+                    reportsDateAreaDictionary[key] = {};
+                }
+                if (!reportsDateAreaDictionary[key][key1]) {
+                    reportsDateAreaDictionary[key][key1] = [];
                 }
 
-                return prev;
-            }, []);
+                reportsDateAreaDictionary[key][key1].push(value);
+
+                if (!reportsAreaDictionary[key1]) {
+                    reportsAreaDictionary[key1] = [];
+                }
+
+                if (reportsAreaDictionary[key1].indexOf(value.getValue('device').id) === -1) {
+                    reportsAreaDictionary[key1].push(value.getValue('device').id);
+                }
+            });
+
+            let summarys: IResponse.IReport.IHumanDetectionSummaryTableData[] = [];
+            Object.keys(reportsDateAreaDictionary).forEach((value, index, array) => {
+                let date = reportsDateAreaDictionary[value];
+
+                Object.keys(date).forEach((value1, index1, array1) => {
+                    let areas = date[value1];
+
+                    let summary: IResponse.IReport.IHumanDetectionSummaryTableData = undefined;
+
+                    areas.forEach((value2, index2, array2) => {
+                        if (index2 === 0) {
+                            let base = this.GetBaseSummaryData(value2);
+
+                            summary = {
+                                site: base.site,
+                                area: base.area,
+                                date: base.date,
+                                type: base.type,
+                                total: 0,
+                                count: 0,
+                                maxValue: undefined,
+                            };
+                        }
+
+                        summary.total += value2.getValue('total');
+                        summary.count += value2.getValue('count');
+                        summary.maxValue = summary.maxValue && summary.maxValue > value2.getValue('max').getValue('value') ? summary.maxValue : value2.getValue('max').getValue('value');
+                    });
+
+                    summary.total *= (reportsAreaDictionary[summary.area.objectId] || []).length;
+
+                    summarys.push(summary);
+                });
+            });
 
             summarys = await Promise.all(
                 summarys.map(async (value, index, array) => {
@@ -169,7 +222,7 @@ export class ReportHumanDetection extends Report {
 
                     let startDate: Date = new Date(value.date);
                     let endDate: Date = new Date(value.date);
-                    switch (this._type) {
+                    switch (this.type) {
                         case Enum.ESummaryType.hour:
                             endDate = new Date(endDate.setHours(endDate.getHours() + 1));
                             break;
@@ -194,31 +247,58 @@ export class ReportHumanDetection extends Report {
                             throw e;
                         });
 
-                    let thresholds = reports.reduce<{ date: Date; total: number }[]>((prev1, curr1, index1, array1) => {
-                        let threshold = prev1.find((value2, index2, array2) => {
-                            return value2.date.getTime() === curr1.getValue('date').getTime();
-                        });
-                        if (threshold) {
-                            threshold.total += curr1.getValue('value');
-                        } else {
-                            prev1.push({
-                                date: curr1.getValue('date'),
-                                total: curr1.getValue('value'),
-                            });
+                    let reportsDateDictionary: object = {};
+                    reports.forEach((value1, index1, array1) => {
+                        let key: string = value1.getValue('date').toISOString();
+
+                        if (!reportsDateDictionary[key]) {
+                            reportsDateDictionary[key] = [];
                         }
 
-                        return prev1;
-                    }, []);
+                        reportsDateDictionary[key].push(value1);
+                    });
+
+                    let thresholds: { date: Date; total: number }[] = [];
+                    Object.keys(reportsDateDictionary).forEach((value1, index1, array1) => {
+                        let dates = reportsDateDictionary[value1];
+
+                        let threshold: { date: Date; total: number } = undefined;
+
+                        dates.forEach((value2, index2, array2) => {
+                            if (index2 === 0) {
+                                threshold = {
+                                    date: value2.getValue('date'),
+                                    total: 0,
+                                };
+                            }
+
+                            threshold.total += value2.getValue('value');
+                        });
+
+                        thresholds.push(threshold);
+                    });
+
+                    let thresholdsLevelDictionary: object = {};
+                    thresholds.forEach((value1, index1, array1) => {
+                        let key: string = 'low';
+                        if (value1.total > mediumCount && value1.total <= highCount) {
+                            key = 'medium';
+                        } else if (value1.total > highCount) {
+                            key = 'high';
+                        }
+
+                        if (!thresholdsLevelDictionary[key]) {
+                            thresholdsLevelDictionary[key] = [];
+                        }
+
+                        thresholdsLevelDictionary[key].push(value1);
+                    });
 
                     value.mediumThreshold = mediumCount;
-                    value.mediumThresholdCount = thresholds.filter((value1, index1, array1) => {
-                        return value1.total > mediumCount && value1.total <= highCount;
-                    }).length;
+                    value.mediumThresholdCount = (thresholdsLevelDictionary['medium'] || []).length;
 
                     value.highThreshold = highCount;
-                    value.highThresholdCount = thresholds.filter((value1, index1, array1) => {
-                        return value1.total > highCount;
-                    }).length;
+                    value.highThresholdCount = (thresholdsLevelDictionary['high'] || []).length;
 
                     return value;
                 }),

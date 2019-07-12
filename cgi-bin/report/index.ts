@@ -14,14 +14,58 @@ export class Report {
     /**
      *
      */
-    protected _sites: IDB.LocationSite[] = [];
+    private _sites: IDB.LocationSite[] = [];
 
     /**
      *
      */
-    protected _type: Enum.ESummaryType = Enum.ESummaryType.hour;
-    public get type(): string {
-        return Enum.ESummaryType[this._type];
+    private _siteIds: Report.IPublicData<string[]> = undefined;
+    public get siteIds(): string[] {
+        if (!this._siteIds || this._siteIds.initTime < this._initTime) {
+            let data = this._sites.map((value, index, array) => {
+                return value.id;
+            });
+
+            this._siteIds = {
+                initTime: new Date().getTime(),
+                data: data,
+            };
+        }
+
+        return JSON.parse(JSON.stringify(this._siteIds.data));
+    }
+
+    /**
+     *
+     */
+    private _sitesIdDictionary: Report.IPublicData<Report.IKeyValueObject> = undefined;
+    public get sitesIdDictionary(): Report.IKeyValueObject {
+        if (!this._sitesIdDictionary || this._sitesIdDictionary.initTime < this._initTime) {
+            let data = {};
+            this._sites.forEach((value, index, array) => {
+                let key: string = value.id;
+
+                data[key] = {
+                    objectId: key,
+                    name: value.getValue('name'),
+                };
+            });
+
+            this._sitesIdDictionary = {
+                initTime: new Date().getTime(),
+                data: data,
+            };
+        }
+
+        return JSON.parse(JSON.stringify(this._sitesIdDictionary.data));
+    }
+
+    /**
+     *
+     */
+    private _type: Enum.ESummaryType = Enum.ESummaryType.hour;
+    public get type(): Enum.ESummaryType {
+        return this._type;
     }
 
     /**
@@ -55,7 +99,7 @@ export class Report {
     /**
      *
      */
-    protected _dateGap: number = 0;
+    private _dateGap: number = 0;
     public get dateGap(): number {
         return this._dateGap;
     }
@@ -63,58 +107,110 @@ export class Report {
     /**
      *
      */
-    protected _officeHours: IDB.OfficeHour[] = [];
-    public get officeHours(): IResponse.IReport.ISummaryOfficeHour[] {
-        let officeHours = this._officeHours.map<IResponse.IReport.ISummaryOfficeHour>((value, index, array) => {
-            let sites: IResponse.IObject[] = (value.getValue('sites') || []).map((value1, index1, array1) => {
+    private _officeHours: IDB.OfficeHour[] = [];
+
+    /**
+     *
+     */
+    private _summaryOfficeHours: Report.IPublicData<IResponse.IReport.ISummaryOfficeHour[]> = undefined;
+    public get summaryOfficeHours(): IResponse.IReport.ISummaryOfficeHour[] {
+        if (!this._summaryOfficeHours || this._summaryOfficeHours.initTime < this._initTime) {
+            let data = this._officeHours.map<IResponse.IReport.ISummaryOfficeHour>((value, index, array) => {
+                let sites: IResponse.IObject[] = (value.getValue('sites') || []).map((value1, index1, array1) => {
+                    return this.sitesIdDictionary[value1.id];
+                });
+
                 return {
-                    objectId: value1.id,
-                    name: value1.getValue('name'),
+                    objectId: value.id,
+                    name: value.getValue('name'),
+                    dayRanges: value.getValue('dayRanges'),
+                    sites: sites,
                 };
             });
 
-            return {
-                objectId: value.id,
-                name: value.getValue('name'),
-                dayRanges: value.getValue('dayRanges'),
-                sites: sites,
+            this._summaryOfficeHours = {
+                initTime: new Date().getTime(),
+                data: data,
             };
-        });
+        }
 
-        return officeHours;
+        return JSON.parse(JSON.stringify(this._summaryOfficeHours.data));
     }
 
     /**
      *
      */
-    protected _weathers: IDB.Weather[] = [];
-    public get weathers(): IResponse.IReport.ISummaryWeather[] {
-        let weathers = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
-            let site: IResponse.IObject = {
-                objectId: value.getValue('site').id,
-                name: value.getValue('site').getValue('name'),
-            };
+    private _weathers: IDB.Weather[] = [];
 
-            return {
-                site: site,
-                date: value.getValue('date'),
-                icon: value.getValue('icon'),
-                temperatureMin: value.getValue('temperatureMin'),
-                temperatureMax: value.getValue('temperatureMax'),
-            };
-        });
+    /**
+     *
+     */
+    private _summaryWeathers: Report.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
+    public get summaryWeathers(): IResponse.IReport.ISummaryWeather[] {
+        if (!this._summaryWeathers || this._summaryWeathers.initTime < this._initTime) {
+            let data = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
+                let site: IResponse.IObject = this.sitesIdDictionary[value.getValue('site').id];
 
-        return weathers;
+                return {
+                    site: site,
+                    date: value.getValue('date'),
+                    icon: value.getValue('icon'),
+                    temperatureMin: value.getValue('temperatureMin'),
+                    temperatureMax: value.getValue('temperatureMax'),
+                };
+            });
+
+            this._summaryWeathers = {
+                initTime: new Date().getTime(),
+                data: data,
+            };
+        }
+
+        return JSON.parse(JSON.stringify(this._summaryWeathers.data));
     }
+
+    /**
+     *
+     */
+    private _devices: IDB.Device[] = [];
+
+    /**
+     *
+     */
+    private _devicesIdDictionary: Report.IKeyValue<IDB.Device> = undefined;
+    public get devicesIdDictionary(): Report.IKeyValue<IDB.Device> {
+        if (!this._devicesIdDictionary) {
+            this._devicesIdDictionary = {};
+
+            this._devices.forEach((value, index, array) => {
+                let key: string = value.id;
+
+                this._devicesIdDictionary[key] = value;
+            });
+        }
+
+        return this._devicesIdDictionary;
+    }
+
+    /**
+     *
+     */
+    private _initTime: number = 0;
 
     /**
      * Initialization
      * @param input
      * @param userSiteIds
      */
-    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[], option?: Report.IInitOption): Promise<void> {
         try {
-            this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
+            option = {
+                ...{
+                    useOfficeHour: true,
+                    useWeather: true,
+                },
+                ...option,
+            };
 
             this._type = input.type;
 
@@ -130,21 +226,29 @@ export class Report {
                 endDate: new Date(this.currDateRange.startDate),
             };
 
+            this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
+
             let tasks = [];
 
-            tasks.push(
-                (async () => {
-                    this._officeHours = await this.GetOfficeHours();
-                })(),
-            );
+            if (option.useOfficeHour) {
+                tasks.push(
+                    (async () => {
+                        this._officeHours = await this.GetOfficeHours();
+                    })(),
+                );
+            }
 
-            tasks.push(
-                (async () => {
-                    this._weathers = await this.GetWeathers();
-                })(),
-            );
+            if (option.useWeather) {
+                tasks.push(
+                    (async () => {
+                        this._weathers = await this.GetWeathers();
+                    })(),
+                );
+            }
 
             await Promise.all(tasks);
+
+            this._initTime = new Date().getTime();
         } catch (e) {
             throw e;
         }
@@ -195,11 +299,16 @@ export class Report {
     /**
      * Get type date
      * @param date
+     * @param type
      */
-    public GetTypeDate(date: Date): Date {
+    public GetTypeDate(date: Date): Date;
+    public GetTypeDate(date: Date, type: Enum.ESummaryType): Date;
+    public GetTypeDate(date: Date, type?: Enum.ESummaryType): Date {
         try {
+            type = type || this._type;
+
             date = new Date(date);
-            switch (this._type) {
+            switch (type) {
                 case Enum.ESummaryType.hour:
                     date = new Date(date.setMinutes(0, 0, 0));
                     break;
@@ -245,14 +354,33 @@ export class Report {
 
             let reports: Parse.Object[] = await reportQuery
                 .limit(reportTotal)
-                .ascending(['date'])
-                .include(['site', 'area', 'device', ...includes])
+                // .ascending(['date'])
+                .include(includes)
                 .find()
                 .fail((e) => {
                     throw e;
                 });
 
             reports = this.OfficeHourFilter(reports);
+
+            let deviceIds: string[] = reports
+                .map((value, index, array) => {
+                    return value.get('device').id;
+                })
+                .filter((value, index, array) => {
+                    return array.indexOf(value) === index;
+                });
+
+            let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
+                .containedIn('objectId', deviceIds)
+                .include(['site', 'area', 'groups'])
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            this._devices.push(...devices);
+            this._devicesIdDictionary = undefined;
 
             return reports as T[];
         } catch (e) {
@@ -267,11 +395,18 @@ export class Report {
         try {
             let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
                 .containedIn('sites', this._sites)
-                .include('sites')
                 .find()
                 .fail((e) => {
                     throw e;
                 });
+
+            officeHours.forEach((value, index, array) => {
+                let sites = value.getValue('sites').filter((value1, index1, array1) => {
+                    return this.siteIds.indexOf(value1.id) > -1;
+                });
+
+                value.setValue('sites', sites);
+            });
 
             return officeHours;
         } catch (e) {
@@ -300,7 +435,6 @@ export class Report {
 
             let weatherRecord: IDB.Weather[] = await weatherQuery
                 .limit(weatherTotal)
-                .include('site')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -333,7 +467,6 @@ export class Report {
 
             let salesRecord: IDB.ReportSalesRecord[] = await recordQuery
                 .limit(recordTotal)
-                .include('site')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -376,18 +509,43 @@ export class Report {
                     );
                 });
 
-            let sites = this._sites.map<IResponse.IObject>((value, index, array) => {
-                return {
-                    objectId: value.id,
-                    name: value.getValue('name'),
-                };
+            let salesRecordsSiteDateDictionary: object = {};
+            salesRecords.forEach((value, index, array) => {
+                let key: string = value.getValue('site').id;
+                let key1: string = this.GetTypeDate(value.getValue('date')).toISOString();
+
+                if (!salesRecordsSiteDateDictionary[key]) {
+                    salesRecordsSiteDateDictionary[key] = {};
+                }
+                if (!salesRecordsSiteDateDictionary[key][key1]) {
+                    salesRecordsSiteDateDictionary[key][key1] = [];
+                }
+
+                salesRecordsSiteDateDictionary[key][key1].push(value);
+            });
+
+            let reportsSiteDateDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = value.getValue('site').id;
+                let key1: string = this.GetTypeDate(value.getValue('date')).toISOString();
+
+                if (!reportsSiteDateDictionary[key]) {
+                    reportsSiteDateDictionary[key] = {};
+                }
+                if (!reportsSiteDateDictionary[key][key1]) {
+                    reportsSiteDateDictionary[key][key1] = [];
+                }
+
+                reportsSiteDateDictionary[key][key1].push(value);
             });
 
             let summarys = new Array<IResponse.IReport.ISalesRecordSummaryData>().concat(
-                ...sites.map((value, index, array) => {
+                ...Object.keys(this.sitesIdDictionary).map((value, index, array) => {
+                    let site = this.sitesIdDictionary[value];
+
                     return dates.map<IResponse.IReport.ISalesRecordSummaryData>((value1, index1, array1) => {
                         return {
-                            site: value,
+                            site: site,
                             date: value1,
                             revenue: 0,
                             transaction: 0,
@@ -396,34 +554,20 @@ export class Report {
                     });
                 }),
             );
-
             summarys = summarys.map<IResponse.IReport.ISalesRecordSummaryData>((value, index, array) => {
-                let salesRecord = salesRecords
-                    .filter((value1, index1, array1) => {
-                        return value1.getValue('site').id === value.site.objectId && this.GetTypeDate(value1.getValue('date')).getTime() === value.date.getTime();
-                    })
-                    .reduce(
-                        (prev1, curr1, index1, array1) => {
-                            prev1.revenue += curr1.getValue('revenue');
-                            prev1.transaction += curr1.getValue('transaction');
+                let salesRecord = {
+                    revenue: 0,
+                    transaction: 0,
+                };
+                ((salesRecordsSiteDateDictionary[value.site.objectId] || {})[value.date.toISOString()] || []).forEach((value1, index1, array1) => {
+                    salesRecord.revenue += value1.getValue('revenue');
+                    salesRecord.transaction += value1.getValue('transaction');
+                });
 
-                            return prev1;
-                        },
-                        {
-                            revenue: 0,
-                            transaction: 0,
-                        },
-                    );
-
-                let traffic = reports
-                    .filter((value1, index1, array1) => {
-                        let date: Date = this.GetTypeDate(value1.getValue('date'));
-
-                        return value1.getValue('site').id === value.site.objectId && date.getTime() === value.date.getTime();
-                    })
-                    .reduce<number>((prev1, curr1, index1, array1) => {
-                        return prev1 + curr1.getValue('in') - (curr1.getValue('inEmployee') || 0);
-                    }, 0);
+                let traffic: number = 0;
+                ((reportsSiteDateDictionary[value.site.objectId] || {})[value.date.toISOString()] || []).forEach((value1, index1, array1) => {
+                    traffic += value1.getValue('in') - (value1.getValue('inEmployee') || 0);
+                });
 
                 return {
                     site: value.site,
@@ -477,22 +621,24 @@ export class Report {
         try {
             let date: Date = this.GetTypeDate(data.getValue('date'));
 
+            let _device = this.devicesIdDictionary[data.getValue('device').id];
+
             let site: IResponse.IObject = {
-                objectId: data.getValue('site').id,
-                name: data.getValue('site').getValue('name'),
+                objectId: _device.getValue('site').id,
+                name: _device.getValue('site').getValue('name'),
             };
 
             let area: IResponse.IObject = {
-                objectId: data.getValue('area').id,
-                name: data.getValue('area').getValue('name'),
+                objectId: _device.getValue('area').id,
+                name: _device.getValue('area').getValue('name'),
             };
 
             let device: IResponse.IObject = {
-                objectId: data.getValue('device').id,
-                name: data.getValue('device').getValue('name'),
+                objectId: _device.id,
+                name: _device.getValue('name'),
             };
 
-            let deviceGroups: IResponse.IObject[] = (data.getValue('device').getValue('groups') || []).map((value1, index1, array1) => {
+            let deviceGroups: IResponse.IObject[] = (_device.getValue('groups') || []).map((value1, index1, array1) => {
                 return {
                     objectId: value1.id,
                     name: value1.getValue('name'),
@@ -505,12 +651,44 @@ export class Report {
                 device: device,
                 deviceGroups: deviceGroups,
                 date: date,
-                type: this.type,
+                type: Enum.ESummaryType[this.type],
             };
 
             return base;
         } catch (e) {
             throw e;
         }
+    }
+}
+
+export namespace Report {
+    /**
+     *
+     */
+    export interface IPublicData<T> {
+        initTime: number;
+        data: T;
+    }
+
+    /**
+     *
+     */
+    export interface IKeyValue<T> {
+        [key: string]: T;
+    }
+
+    /**
+     *
+     */
+    export interface IKeyValueObject {
+        [key: string]: IResponse.IObject;
+    }
+
+    /**
+     *
+     */
+    export interface IInitOption {
+        useOfficeHour?: boolean;
+        useWeather?: boolean;
     }
 }

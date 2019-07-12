@@ -39,8 +39,8 @@ action.post(
             let summaryDatas = report.GetSummaryDatas();
 
             return {
-                weathers: report.weathers,
-                officeHours: report.officeHours,
+                weathers: report.summaryWeathers,
+                officeHours: report.summaryOfficeHours,
                 genderRange: genderRange,
                 summaryDatas: summaryDatas,
             };
@@ -95,27 +95,23 @@ export class ReportDemographic extends Report {
      */
     public GetGenderRange(): IResponse.IReport.IGenderRange {
         try {
-            let genderRange = this._currReports.reduce<IResponse.IReport.IGenderRange>(
-                (prev, curr, index, array) => {
-                    prev.maleRanges = this.MerageArray(curr.getValue('maleRanges'), prev.maleRanges);
-                    prev.femaleRanges = this.MerageArray(curr.getValue('femaleRanges'), prev.femaleRanges);
-                    prev.totalRanges = this.MerageArray(prev.maleRanges, prev.femaleRanges);
+            let genderRange: IResponse.IReport.IGenderRange = {
+                totalRanges: [],
+                maleRanges: [],
+                femaleRanges: [],
+                totalEmployeeRanges: [],
+                maleEmployeeRanges: [],
+                femaleEmployeeRanges: [],
+            };
+            this._currReports.forEach((value, index, array) => {
+                genderRange.maleRanges = this.MerageArray(value.getValue('maleRanges'), genderRange.maleRanges);
+                genderRange.femaleRanges = this.MerageArray(value.getValue('femaleRanges'), genderRange.femaleRanges);
+                genderRange.totalRanges = this.MerageArray(genderRange.maleRanges, genderRange.femaleRanges);
 
-                    prev.maleEmployeeRanges = this.MerageArray(curr.getValue('maleEmployeeRanges'), prev.maleEmployeeRanges);
-                    prev.femaleEmployeeRanges = this.MerageArray(curr.getValue('femaleEmployeeRanges'), prev.femaleEmployeeRanges);
-                    prev.totalEmployeeRanges = this.MerageArray(prev.maleEmployeeRanges, prev.femaleEmployeeRanges);
-
-                    return prev;
-                },
-                {
-                    totalRanges: [],
-                    maleRanges: [],
-                    femaleRanges: [],
-                    totalEmployeeRanges: [],
-                    maleEmployeeRanges: [],
-                    femaleEmployeeRanges: [],
-                },
-            );
+                genderRange.maleEmployeeRanges = this.MerageArray(value.getValue('maleEmployeeRanges'), genderRange.maleEmployeeRanges);
+                genderRange.femaleEmployeeRanges = this.MerageArray(value.getValue('femaleEmployeeRanges'), genderRange.femaleEmployeeRanges);
+                genderRange.totalEmployeeRanges = this.MerageArray(genderRange.maleEmployeeRanges, genderRange.femaleEmployeeRanges);
+            });
 
             return genderRange;
         } catch (e) {
@@ -129,41 +125,60 @@ export class ReportDemographic extends Report {
      */
     public SummaryDatas(reports: IDB.ReportDemographicSummary[]): IResponse.IReport.IDemographicSummaryData[] {
         try {
-            let summarys = reports.reduce<IResponse.IReport.IDemographicSummaryData[]>((prev, curr, index, array) => {
-                let date: Date = this.GetTypeDate(curr.getValue('date'));
+            let reportsDateDeviceDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = this.GetTypeDate(value.getValue('date')).toISOString();
+                let key1: string = value.getValue('device').id;
 
-                let summary = prev.find((value1, index1, array1) => {
-                    return value1.device.objectId === curr.getValue('device').id && value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.maleTotal += curr.getValue('maleTotal');
-                    summary.maleRanges = this.MerageArray(summary.maleRanges, curr.getValue('maleRanges'));
-                    summary.femaleTotal += curr.getValue('femaleTotal');
-                    summary.femaleRanges = this.MerageArray(summary.femaleRanges, curr.getValue('femaleRanges'));
-                    summary.maleEmployeeTotal += curr.getValue('maleEmployeeTotal') || 0;
-                    summary.maleEmployeeRanges = this.MerageArray(summary.maleEmployeeRanges, curr.getValue('maleEmployeeRanges'));
-                    summary.femaleEmployeeTotal += curr.getValue('femaleEmployeeTotal') || 0;
-                    summary.femaleEmployeeRanges = this.MerageArray(summary.femaleEmployeeRanges, curr.getValue('femaleEmployeeRanges'));
-                } else {
-                    let base = this.GetBaseSummaryData(curr);
-
-                    summary = {
-                        ...base,
-                        maleTotal: curr.getValue('maleTotal'),
-                        maleRanges: curr.getValue('maleRanges'),
-                        femaleTotal: curr.getValue('femaleTotal'),
-                        femaleRanges: curr.getValue('femaleRanges'),
-                        maleEmployeeTotal: curr.getValue('maleEmployeeTotal') || 0,
-                        maleEmployeeRanges: curr.getValue('maleEmployeeRanges') || new Array(Demographic.ageRanges.length).fill(0),
-                        femaleEmployeeTotal: curr.getValue('femaleEmployeeTotal') || 0,
-                        femaleEmployeeRanges: curr.getValue('femaleEmployeeRanges') || new Array(Demographic.ageRanges.length).fill(0),
-                    };
-
-                    prev.push(summary);
+                if (!reportsDateDeviceDictionary[key]) {
+                    reportsDateDeviceDictionary[key] = {};
+                }
+                if (!reportsDateDeviceDictionary[key][key1]) {
+                    reportsDateDeviceDictionary[key][key1] = [];
                 }
 
-                return prev;
-            }, []);
+                reportsDateDeviceDictionary[key][key1].push(value);
+            });
+
+            let summarys: IResponse.IReport.IDemographicSummaryData[] = [];
+            Object.keys(reportsDateDeviceDictionary).forEach((value, index, array) => {
+                let date = reportsDateDeviceDictionary[value];
+
+                Object.keys(date).forEach((value1, index1, array1) => {
+                    let devices = date[value1];
+
+                    let summary: IResponse.IReport.IDemographicSummaryData = undefined;
+
+                    devices.forEach((value2, index2, array2) => {
+                        if (index2 === 0) {
+                            let base = this.GetBaseSummaryData(value2);
+
+                            summary = {
+                                ...base,
+                                maleTotal: 0,
+                                maleRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                femaleTotal: 0,
+                                femaleRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                maleEmployeeTotal: 0,
+                                maleEmployeeRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                femaleEmployeeTotal: 0,
+                                femaleEmployeeRanges: new Array(Demographic.ageRanges.length).fill(0),
+                            };
+                        }
+
+                        summary.maleTotal += value2.getValue('maleTotal');
+                        summary.maleRanges = this.MerageArray(summary.maleRanges, value2.getValue('maleRanges'));
+                        summary.femaleTotal += value2.getValue('femaleTotal');
+                        summary.femaleRanges = this.MerageArray(summary.femaleRanges, value2.getValue('femaleRanges'));
+                        summary.maleEmployeeTotal += value2.getValue('maleEmployeeTotal') || 0;
+                        summary.maleEmployeeRanges = this.MerageArray(summary.maleEmployeeRanges, value2.getValue('maleEmployeeRanges'));
+                        summary.femaleEmployeeTotal += value2.getValue('femaleEmployeeTotal') || 0;
+                        summary.femaleEmployeeRanges = this.MerageArray(summary.femaleEmployeeRanges, value2.getValue('femaleEmployeeRanges'));
+                    });
+
+                    summarys.push(summary);
+                });
+            });
 
             return summarys;
         } catch (e) {
@@ -184,10 +199,6 @@ export class ReportDemographic extends Report {
                 let prevSummary = prevSummarys.find((value1, index1, array1) => {
                     return value1.device.objectId === value.device.objectId && value1.date.getTime() === value.date.getTime() - this.dateGap;
                 });
-
-                // let malePercentVariety: number = prevSummary && prevSummary.malePercent !== 0 ? Utility.Round(value.malePercent / prevSummary.malePercent - 1, 2) : NaN;
-
-                // let femalePercentVariety: number = prevSummary && prevSummary.femalePercent !== 0 ? Utility.Round(value.femalePercent / prevSummary.femalePercent - 1, 2) : NaN;
 
                 let prevMaleTotal: number = prevSummary ? prevSummary.maleTotal : NaN;
                 let prevMaleRanges: number[] = prevSummary ? prevSummary.maleRanges : new Array(Demographic.ageRanges.length).fill(NaN);

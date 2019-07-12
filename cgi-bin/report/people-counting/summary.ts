@@ -40,8 +40,8 @@ action.post(
             let summaryDatas = report.GetSummaryDatas();
 
             return {
-                weathers: report.weathers,
-                officeHours: report.officeHours,
+                weathers: report.summaryWeathers,
+                officeHours: report.summaryOfficeHours,
                 peakHours: peakHours,
                 salesRecords: salesRecords,
                 summaryDatas: summaryDatas,
@@ -97,39 +97,62 @@ export class ReportPeopleCounting extends Report {
      */
     public GetPeakHours(): IResponse.IReport.IPeakHour[] {
         try {
-            let peakHours = this._currReports.reduce<IResponse.IReport.IPeakHour[]>((prev, curr, index, array) => {
-                let traffic: number = curr.getValue('in') - (curr.getValue('inEmployee') || 0);
+            let reportsSiteDateDateDictionary: object = {};
+            this._currReports.forEach((value, index, array) => {
+                let key: string = value.getValue('site').id;
+                let key1: string = this.GetTypeDate(value.getValue('date'), Enum.ESummaryType.day).toISOString();
+                let key2: string = value.getValue('date').toISOString();
 
-                let data: IResponse.IReport.IPeakHourData = {
-                    date: curr.getValue('date'),
-                    level: traffic,
-                };
-
-                let peakHour = prev.find((value1, index1, array1) => {
-                    return value1.date.getTime() === new Date(curr.getValue('date')).setHours(0, 0, 0, 0) && value1.site.objectId === curr.getValue('site').id;
-                });
-                if (peakHour) {
-                    let peakHourData = peakHour.peakHourDatas.find((value1, index1, array1) => {
-                        return value1.date.getTime() === curr.getValue('date').getTime();
-                    });
-                    if (peakHourData) {
-                        peakHourData.level += traffic;
-                    } else {
-                        peakHour.peakHourDatas.push(data);
-                    }
-                } else {
-                    prev.push({
-                        site: {
-                            objectId: curr.getValue('site').id,
-                            name: curr.getValue('site').getValue('name'),
-                        },
-                        date: new Date(new Date(curr.getValue('date')).setHours(0, 0, 0, 0)),
-                        peakHourDatas: [data],
-                    });
+                if (!reportsSiteDateDateDictionary[key]) {
+                    reportsSiteDateDateDictionary[key] = {};
+                }
+                if (!reportsSiteDateDateDictionary[key][key1]) {
+                    reportsSiteDateDateDictionary[key][key1] = {};
+                }
+                if (!reportsSiteDateDateDictionary[key][key1][key2]) {
+                    reportsSiteDateDateDictionary[key][key1][key2] = [];
                 }
 
-                return prev;
-            }, []);
+                reportsSiteDateDateDictionary[key][key1][key2].push(value);
+            });
+
+            let peakHours: IResponse.IReport.IPeakHour[] = [];
+            Object.keys(reportsSiteDateDateDictionary).forEach((value, index, array) => {
+                let site = reportsSiteDateDateDictionary[value];
+
+                Object.keys(site).forEach((value1, inedx1, array1) => {
+                    let date = site[value1];
+
+                    let peakHour: IResponse.IReport.IPeakHour = {
+                        site: undefined,
+                        date: new Date(value1),
+                        peakHourDatas: [],
+                    };
+
+                    Object.keys(date).forEach((value2, index2, array2) => {
+                        let dates = date[value2];
+
+                        let peakHourData: IResponse.IReport.IPeakHourData = undefined;
+
+                        dates.forEach((value3, index3, array3) => {
+                            if (index3 === 0) {
+                                peakHour.site = this.sitesIdDictionary[value3.getValue('site').id];
+
+                                peakHourData = {
+                                    date: value3.getValue('date'),
+                                    level: 0,
+                                };
+                            }
+
+                            peakHourData.level += value3.getValue('in') - (value3.getValue('inEmployee') || 0);
+                        });
+
+                        peakHour.peakHourDatas.push(peakHourData);
+                    });
+
+                    peakHours.push(peakHour);
+                });
+            });
 
             let datas: number[] = [].concat(
                 ...peakHours.map((value, index, array) => {
@@ -165,31 +188,52 @@ export class ReportPeopleCounting extends Report {
      */
     public SummaryDatas(reports: IDB.ReportPeopleCountingSummary[]): IResponse.IReport.IPeopleCountingSummaryData[] {
         try {
-            let summarys = reports.reduce<IResponse.IReport.IPeopleCountingSummaryData[]>((prev, curr, index, array) => {
-                let date: Date = this.GetTypeDate(curr.getValue('date'));
+            let reportsDateDeviceDictionary: object = {};
+            reports.forEach((value, index, array) => {
+                let key: string = this.GetTypeDate(value.getValue('date')).toISOString();
+                let key1: string = value.getValue('device').id;
 
-                let summary = prev.find((value1, index1, array1) => {
-                    return value1.device.objectId === curr.getValue('device').id && value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.in += curr.getValue('in');
-                    summary.out += curr.getValue('out');
-                    summary.inEmployee += curr.getValue('inEmployee') || 0;
-                    summary.outEmployee += curr.getValue('outEmployee') || 0;
-                } else {
-                    let base = this.GetBaseSummaryData(curr);
-
-                    prev.push({
-                        ...base,
-                        in: curr.getValue('in'),
-                        out: curr.getValue('out'),
-                        inEmployee: curr.getValue('inEmployee') || 0,
-                        outEmployee: curr.getValue('outEmployee') || 0,
-                    });
+                if (!reportsDateDeviceDictionary[key]) {
+                    reportsDateDeviceDictionary[key] = {};
+                }
+                if (!reportsDateDeviceDictionary[key][key1]) {
+                    reportsDateDeviceDictionary[key][key1] = [];
                 }
 
-                return prev;
-            }, []);
+                reportsDateDeviceDictionary[key][key1].push(value);
+            });
+
+            let summarys: IResponse.IReport.IPeopleCountingSummaryData[] = [];
+            Object.keys(reportsDateDeviceDictionary).forEach((value, index, array) => {
+                let date = reportsDateDeviceDictionary[value];
+
+                Object.keys(date).forEach((value1, index1, array1) => {
+                    let devices = date[value1];
+
+                    let summary: IResponse.IReport.IPeopleCountingSummaryData = undefined;
+
+                    devices.forEach((value2, index2, array2) => {
+                        if (index2 === 0) {
+                            let base = this.GetBaseSummaryData(value2);
+
+                            summary = {
+                                ...base,
+                                in: 0,
+                                out: 0,
+                                inEmployee: 0,
+                                outEmployee: 0,
+                            };
+                        }
+
+                        summary.in += value2.getValue('in');
+                        summary.out += value2.getValue('out');
+                        summary.inEmployee += value2.getValue('inEmployee') || 0;
+                        summary.outEmployee += value2.getValue('outEmployee') || 0;
+                    });
+
+                    summarys.push(summary);
+                });
+            });
 
             return summarys;
         } catch (e) {
@@ -210,10 +254,6 @@ export class ReportPeopleCounting extends Report {
                 let prevSummary = prevSummarys.find((value1, index1, array1) => {
                     return value1.device.objectId === value.device.objectId && value1.date.getTime() === value.date.getTime() - this.dateGap;
                 });
-
-                // let inVariety: number = prevSummary && prevSummary.in !== 0 ? Utility.Round(value.in / prevSummary.in - 1, 2) : NaN;
-
-                // let outVariety: number = prevSummary && prevSummary.out !== 0 ? Utility.Round(value.out / prevSummary.out - 1, 2) : NaN;
 
                 let prevIn: number = prevSummary ? prevSummary.in : NaN;
                 let prevOut: number = prevSummary ? prevSummary.out : NaN;

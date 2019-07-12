@@ -32,61 +32,115 @@ action.post(
             let _input: InputC = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let area: IDB.LocationArea = new IDB.LocationArea();
-            area.id = _input.areaId;
+            let _area: IDB.LocationArea = await new Parse.Query(IDB.LocationArea)
+                .equalTo('objectId', _input.areaId)
+                .include('site')
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+            if (!_area) {
+                throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
+            }
 
-            let reports: IDB.ReportHumanDetection[] = await new Parse.Query(IDB.ReportHumanDetection)
-                .equalTo('area', area)
-                .greaterThanOrEqualTo('date', _input.startDate)
-                .lessThan('date', _input.endDate)
-                .ascending(['date'])
-                .include(['site', 'area'])
+            let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
+                .containedIn('sites', [_area.getValue('site')])
                 .find()
                 .fail((e) => {
                     throw e;
                 });
 
-            let thresholds = reports.reduce<IResponse.IReport.IHumanDetectionThreshold[]>((prev, curr, index, array) => {
-                let threshold = prev.find((value1, index1, array1) => {
-                    return value1.area.objectId === curr.getValue('area').id && value1.date.getTime() === curr.getValue('date').getTime();
+            let reports: IDB.ReportHumanDetection[] = await new Parse.Query(IDB.ReportHumanDetection)
+                .equalTo('area', _area)
+                .greaterThanOrEqualTo('date', _input.startDate)
+                .lessThan('date', _input.endDate)
+                .find()
+                .fail((e) => {
+                    throw e;
                 });
-                if (threshold) {
-                    threshold.total += curr.getValue('value');
-                    threshold.imageSrcs.push(curr.getValue('imageSrc'));
-                } else {
-                    let site: IResponse.IObject = {
-                        objectId: curr.getValue('site').id,
-                        name: curr.getValue('site').getValue('name'),
-                    };
 
-                    let area: IResponse.IObject = {
-                        objectId: curr.getValue('area').id,
-                        name: curr.getValue('area').getValue('name'),
-                    };
+            reports = reports.filter((value, index, array) => {
+                let date: Date = value.getValue('date');
+                let day: number = date.getDay();
+                let hour: number = new Date(date).setFullYear(2000, 0, 1);
 
-                    prev.push({
-                        site: site,
-                        area: area,
-                        date: curr.getValue('date'),
-                        total: curr.getValue('value'),
-                        imageSrcs: [curr.getValue('imageSrc')],
+                return !!officeHours.find((value1, index1, array1) => {
+                    return !!value1.getValue('dayRanges').find((value2, index2, array2) => {
+                        let startDay: number = parseInt(value2.startDay);
+                        let endDay: number = value2.endDay === '0' ? 7 : parseInt(value2.endDay);
+                        let startDate: number = value2.startDate.getTime();
+                        let endDate: number = value2.endDate.getTime();
+
+                        return startDay <= day && day <= endDay && startDate <= hour && hour < endDate;
                     });
+                });
+            });
+
+            let reportsDateDictionary: object = {};
+            reports.forEach((value1, index1, array1) => {
+                let key: string = value1.getValue('date').toISOString();
+
+                if (!reportsDateDictionary[key]) {
+                    reportsDateDictionary[key] = [];
                 }
 
-                return prev;
-            }, []);
+                reportsDateDictionary[key].push(value1);
+            });
 
-            if (_input.type === 'medium') {
-                thresholds = thresholds.filter((value, index, array) => {
-                    return value.total > mediumThreshold && value.total <= highThreshold;
-                });
-            } else if (_input.type === 'high') {
-                thresholds = thresholds.filter((value, index, array) => {
-                    return value.total > highThreshold;
-                });
-            }
+            let thresholds: IResponse.IReport.IHumanDetectionThreshold[] = [];
+            Object.keys(reportsDateDictionary).forEach((value1, index1, array1) => {
+                let dates = reportsDateDictionary[value1];
 
-            return thresholds;
+                let threshold: IResponse.IReport.IHumanDetectionThreshold = undefined;
+
+                dates.forEach((value2, index2, array2) => {
+                    if (index2 === 0) {
+                        let site: IResponse.IObject = {
+                            objectId: _area.getValue('site').id,
+                            name: _area.getValue('site').getValue('name'),
+                        };
+
+                        let area: IResponse.IObject = {
+                            objectId: _area.id,
+                            name: _area.getValue('name'),
+                        };
+
+                        threshold = {
+                            site: site,
+                            area: area,
+                            date: value2.getValue('date'),
+                            total: 0,
+                            imageSrcs: [],
+                        };
+                    }
+
+                    threshold.total += value2.getValue('value');
+                    threshold.imageSrcs.push(value2.getValue('imageSrc'));
+                });
+
+                thresholds.push(threshold);
+            });
+
+            let mediumCount: number = mediumThreshold;
+            let highCount: number = highThreshold;
+
+            let thresholdsLevelDictionary: object = {};
+            thresholds.forEach((value1, index1, array1) => {
+                let key: string = 'low';
+                if (value1.total > mediumCount && value1.total <= highCount) {
+                    key = 'medium';
+                } else if (value1.total > highCount) {
+                    key = 'high';
+                }
+
+                if (!thresholdsLevelDictionary[key]) {
+                    thresholdsLevelDictionary[key] = [];
+                }
+
+                thresholdsLevelDictionary[key].push(value1);
+            });
+
+            return thresholdsLevelDictionary[_input.type] || [];
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;

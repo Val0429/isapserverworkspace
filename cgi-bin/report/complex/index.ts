@@ -188,7 +188,7 @@ export class ReportComplex extends Report {
         try {
             await super.Initialization(input, userSiteIds);
 
-            this.GetFrequencyRange();
+            this._frequencyRanges = this.GetFrequencyRange();
         } catch (e) {
             throw e;
         }
@@ -197,10 +197,11 @@ export class ReportComplex extends Report {
     /**
      * Get frequency range
      */
-    private GetFrequencyRange() {
+    private GetFrequencyRange(): { min: number; max: number }[] {
         try {
             let frequencyRange: string = Config.deviceRepeatVisitor.frequencyRange;
-            this._frequencyRanges = frequencyRange
+
+            return frequencyRange
                 .split('-')
                 .map(Number)
                 .reduce((prev, curr, index, array) => {
@@ -224,11 +225,11 @@ export class ReportComplex extends Report {
      */
     public GetWeather(): IResponse.IReport.ISummaryWeather {
         try {
-            if (!this.weathers || this.weathers.length !== 1 || !this.weathers[0]) {
+            if (!this.summaryWeathers || this.summaryWeathers.length !== 1 || !this.summaryWeathers[0]) {
                 return undefined;
             }
 
-            return this.weathers[0];
+            return this.summaryWeathers[0];
         } catch (e) {
             throw e;
         }
@@ -251,18 +252,14 @@ export class ReportComplex extends Report {
                 };
             }
 
-            let summary = summarys.reduce<IResponse.IReport.IComplex_Count>(
-                (prev, curr, index, array) => {
-                    prev.in += curr.getValue('in') - (curr.getValue('inEmployee') || 0);
-                    prev.out += curr.getValue('out') - (curr.getValue('outEmployee') || 0);
-
-                    return prev;
-                },
-                {
-                    in: 0,
-                    out: 0,
-                },
-            );
+            let summary: IResponse.IReport.IComplex_Count = {
+                in: 0,
+                out: 0,
+            };
+            summarys.forEach((value, index, array) => {
+                summary.in += value.getValue('in') - (value.getValue('inEmployee') || 0);
+                summary.out += value.getValue('out') - (value.getValue('outEmployee') || 0);
+            });
 
             return summary;
         } catch (e) {
@@ -287,18 +284,14 @@ export class ReportComplex extends Report {
                 };
             }
 
-            let summary = summarys.reduce<IResponse.IReport.IComplex_Gender>(
-                (prev, curr, index, array) => {
-                    prev.malePercent += curr.getValue('maleTotal') - (curr.getValue('maleEmployeeTotal') || 0);
-                    prev.femalePercent += curr.getValue('femaleTotal') - (curr.getValue('femaleEmployeeTotal') || 0);
-
-                    return prev;
-                },
-                {
-                    malePercent: 0,
-                    femalePercent: 0,
-                },
-            );
+            let summary: IResponse.IReport.IComplex_Gender = {
+                malePercent: 0,
+                femalePercent: 0,
+            };
+            summarys.forEach((value, index, array) => {
+                summary.malePercent += value.getValue('maleTotal') - (value.getValue('maleEmployeeTotal') || 0);
+                summary.femalePercent += value.getValue('femaleTotal') - (value.getValue('femaleEmployeeTotal') || 0);
+            });
 
             summary.malePercent = Utility.Round(summary.malePercent / (summary.malePercent + summary.femalePercent), 2);
             summary.femalePercent = Utility.Round(1 - summary.malePercent, 2);
@@ -323,20 +316,24 @@ export class ReportComplex extends Report {
                 return NaN;
             }
 
-            let summary = summarys.reduce<IResponse.IReport.IComplex_Average>(
-                (prev, curr, index, array) => {
-                    prev.total += curr.getValue('total');
-                    prev.count += curr.getValue('count');
+            let summary: IResponse.IReport.IComplex_Average = {
+                total: 0,
+                count: 0,
+            };
+            summarys.forEach((value, index, array) => {
+                summary.total += value.getValue('total');
+                summary.count += value.getValue('count');
+            });
 
-                    return prev;
-                },
-                {
-                    total: 0,
-                    count: 0,
-                },
-            );
+            let devices = summarys.filter((value, index, array) => {
+                return (
+                    array.findIndex((value1, index1, array1) => {
+                        return value1.getValue('device').id === value.getValue('device').id;
+                    }) === index
+                );
+            });
 
-            let average: number = summary.count !== 0 ? Utility.Round(summary.total / summary.count, 0) : 0;
+            let average: number = summary.count !== 0 ? Utility.Round((summary.total * devices.length) / summary.count, 0) : 0;
 
             return average;
         } catch (e) {
@@ -358,37 +355,33 @@ export class ReportComplex extends Report {
                 return NaN;
             }
 
-            let summary = summarys.reduce<IResponse.IReport.IComplex_Average>(
-                (prev, curr, index, array) => {
-                    let faces = array.filter((value1, index1, array1) => {
-                        return value1.getValue('faceId') === curr.getValue('faceId');
-                    });
+            let summarysFaceIdDictionary: object = {};
+            summarys.forEach((value, index, array) => {
+                let key: string = value.getValue('faceId');
 
-                    let currIndex: number = faces.findIndex((value1, index1, array1) => {
-                        return value1.id === curr.id;
-                    });
-                    if (currIndex !== 0) {
-                        return prev;
-                    }
+                if (!summarysFaceIdDictionary[key]) {
+                    summarysFaceIdDictionary[key] = [];
+                }
 
-                    let currCount: number = faces.length;
+                summarysFaceIdDictionary[key].push(value);
+            });
 
-                    let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
-                        return value1.min <= currCount && value1.max > currCount;
-                    });
+            let summary: IResponse.IReport.IComplex_Average = {
+                total: 0,
+                count: 0,
+            };
+            Object.keys(summarysFaceIdDictionary).forEach((value, index, array) => {
+                let faces = summarysFaceIdDictionary[value];
 
-                    if (frequencyIndex !== 0) {
-                        prev.count += 1;
-                    }
-                    prev.total += 1;
+                let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
+                    return value1.min <= faces.length && value1.max > faces.length;
+                });
 
-                    return prev;
-                },
-                {
-                    total: 0,
-                    count: 0,
-                },
-            );
+                if (frequencyIndex !== 0) {
+                    summary.count += 1;
+                }
+                summary.total += 1;
+            });
 
             let average: number = summary.total !== 0 ? Utility.Round(summary.count / summary.total, 2) : 0;
 
@@ -415,18 +408,14 @@ export class ReportComplex extends Report {
                 };
             }
 
-            let summary = summarys.reduce<IResponse.IReport.IComplex_SalesRecord>(
-                (prev, curr, index, array) => {
-                    prev.revenue += curr.getValue('revenue');
-                    prev.transaction += curr.getValue('transaction');
-
-                    return prev;
-                },
-                {
-                    revenue: 0,
-                    transaction: 0,
-                },
-            );
+            let summary: IResponse.IReport.IComplex_SalesRecord = {
+                revenue: 0,
+                transaction: 0,
+            };
+            summarys.forEach((value, index, array) => {
+                summary.revenue += value.getValue('revenue');
+                summary.transaction += value.getValue('transaction');
+            });
 
             return summary;
         } catch (e) {
