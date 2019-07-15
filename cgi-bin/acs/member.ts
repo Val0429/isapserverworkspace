@@ -31,7 +31,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     let cardno = "";
     try {
-        cardno = obj.get("Credentials")[0]["CardNumber"];
+        cardno = data.inputType.Credentials[0].CardNumber;
     }
     catch (e) {
         throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
@@ -250,7 +250,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     let cardno = "";
     try {
-        cardno = update.get("Credentials")[0]["CardNumber"];
+        cardno = data.inputType.Credentials[0].CardNumber;
     }
     catch (e) {
         throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);

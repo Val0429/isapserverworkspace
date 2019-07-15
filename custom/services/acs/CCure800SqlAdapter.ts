@@ -41,7 +41,7 @@ export class CCure800SqlAdapter {
     }
 
     async writeMember(data) {
-        Log.Info(`${this.constructor.name}`, `writeMember ${ JSON.stringify(data).substring(0, 100)}`);
+        Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
 
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
         let access = data["AccessRules"];
@@ -49,6 +49,113 @@ export class CCure800SqlAdapter {
         for (let i = 0; i < access.length; i++) {
             rules[i] = access[i]["objectName"];
         }
+
+        let CustomDateControl3__CF1 = "";
+        let CustomDateControl3__CF2 = "";
+        let CustomDateControl3__CF3 = "";
+        let CustomDateControl3__CF4 = "";
+        let CustomDateControl3__CF5 = "";
+
+        let CustomDateControl3__CF6 = "";
+        let CustomDateControl3__CF7 = "";
+        let CustomDateControl3__CF8 = "";
+
+        let CustomDateControl3__CF9 = "";
+        let CustomDateControl3__CF10 = "";
+        let CustomDateControl3__CF11 = "";
+        let CustomDateControl3__CF12 = "";
+        let CustomDateControl4__CF = "";
+        let CustomDropdownControl1__CF = "";
+        let CustomDropdownControl2__CF1 = "";
+        let CustomDropdownControl2__CF2 = "";
+        let CustomDropdownControl3__CF1 = "";
+        let CustomDropdownControl3__CF2 = "";
+        let CustomDropdownControl3__CF3 = "";
+        let CustomDropdownControl3__CF4 = "";
+        let CustomDropdownControl3__CF5 = "";
+        let CustomDropdownControl3__CF6 = "";
+        let CustomTextBoxControl1__CF = "";
+        let CustomTextBoxControl2__CF = "";
+        let CustomTextBoxControl3__CF = "";
+        let CustomTextBoxControl5__CF1 = "";
+        let CustomTextBoxControl5__CF2 = "";
+        let CustomTextBoxControl5__CF3 = "";
+        let CustomTextBoxControl5__CF4 = "";
+        let CustomTextBoxControl5__CF5 = "";
+        let CustomTextBoxControl5__CF6 = "";
+        let CustomTextBoxControl5__CF7 = "";
+        let CustomTextBoxControl5__CF8 = "";
+        let CustomTextBoxControl5__CF9 = "";
+        let CustomTextBoxControl5__CF10 = "";
+        let CustomTextBoxControl6__CF = "";
+        let CustomTextBoxControl7__CF1 = "";
+        let CustomTextBoxControl7__CF2 = "";
+        let CustomTextBoxControl7__CF3 = "";
+        let CustomTextBoxControl7__CF4 = "";
+        let CustomTextBoxControl7__CF5 = "";
+        let CustomTextBoxControl7__CF6 = "";
+        let CustomTextBoxControl7__CF7 = "";
+        let CustomTextBoxControl7__CF8 = "";
+        let CustomTextBoxControl7__CF9 = "";
+        let CustomTextBoxControl7__CF10 = "";
+        let CustomTextBoxControl7__CF11 = "";
+        let CustomTextBoxControl7__CF12 = "";
+
+        for (let i = 0; i < data["CustomFields"]; i++) {
+            const field = data["CustomFields"][i];
+
+            switch (field["FiledName"]) {
+                case "CustomDateControl3__CF": CustomDateControl3__CF1 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF": CustomDateControl3__CF2 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF": CustomDateControl3__CF3 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF": CustomDateControl3__CF4 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF": CustomDateControl3__CF5 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF": CustomDateControl3__CF6 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF7 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF8 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF9 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF10 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF11 = field["FieldValue"];    break ;
+                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF12 = field["FieldValue"];    break ;
+                case "CustomDateControl4__CF": CustomDateControl4__CF = field["FieldValue"];    break ;
+                case "CustomDropdownControl1__CF": CustomDropdownControl1__CF = field["FieldValue"];    break ;
+                case "CustomDropdownControl2__CF": CustomDropdownControl2__CF1 = field["FieldValue"];    break ;
+                case "CustomDropdownControl2__CF_CF": CustomDropdownControl2__CF2 = field["FieldValue"];    break ;
+                case "CustomDropdownControl3__CF": CustomDropdownControl3__CF1 = field["FieldValue"];    break ;
+                case "CustomDropdownControl3__CF_CF": CustomDropdownControl3__CF2 = field["FieldValue"];    break ;
+                case "CustomDropdownControl3__CF_CF_CF": CustomDropdownControl3__CF3 = field["FieldValue"];    break ;
+                case "CustomDropdownControl3__CF_CF_CF_CF": CustomDropdownControl3__CF4 = field["FieldValue"];    break ;
+                case "CustomDropdownControl3__CF_CF_CF_CF_CF": CustomDropdownControl3__CF5 = field["FieldValue"];    break ;
+                case "CustomDropdownControl3__CF_CF_CF_CF_CF_CF": CustomDropdownControl3__CF6 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl1__CF": CustomTextBoxControl1__CF = field["FieldValue"];    break ;
+                case "CustomTextBoxControl2__CF": CustomTextBoxControl2__CF = field["FieldValue"];    break ;
+                case "CustomTextBoxControl3__CF": CustomTextBoxControl3__CF = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF": CustomTextBoxControl5__CF1 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF": CustomTextBoxControl5__CF2 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF": CustomTextBoxControl5__CF3 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF": CustomTextBoxControl5__CF4 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF_CF": CustomTextBoxControl5__CF5 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF": CustomTextBoxControl5__CF6 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl5__CF7 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl5__CF8 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl5__CF9 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl5__CF10 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl6__CF":CustomTextBoxControl6__CF = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF":CustomTextBoxControl7__CF1 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF":CustomTextBoxControl7__CF2 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF":CustomTextBoxControl7__CF3 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF":CustomTextBoxControl7__CF4 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF":CustomTextBoxControl7__CF5 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF6 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF7 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF8 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF9 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF10 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF11 = field["FieldValue"];    break ;
+                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF":CustomTextBoxControl7__CF12 = field["FieldValue"];    break ;
+            }
+        }
+
 
         let res = await this.sqlClient.request()
             .input('ApbWorkgroupId', msSQL.Char(50), data["ApbWorkgroupId"])
@@ -70,6 +177,10 @@ export class CCure800SqlAdapter {
             .input('GeneralInformation', msSQL.Char(50), data["GeneralInformation"])
             .input('LastName', msSQL.NVarChar(50), data["LastName"])
             .input('NonPartitionWorkGroups', msSQL.Char(50), data["NonPartitionWorkGroups"])
+            .input('PhoneNumber', msSQL.Char(50), data["PersonalDetails"]["ContactDetails"]["MobileNumber"])
+            .input('FinalDate', msSQL.Char(50), msSQL.Char(50), data["EndDate"])
+            .input('IniDate', msSQL.Char(50), data["StartDate"])
+            .input('Pin', msSQL.Char(50), data["Credentials"]["Pin"])
 
             .input('PD_Address', msSQL.Char(50), data["PersonalDetails"]["Address"])
             .input('PD_CD_Email', msSQL.Char(50), data["PersonalDetails"]["ContactDetails"]["Email"])
@@ -96,6 +207,55 @@ export class CCure800SqlAdapter {
             .input('Vehicle2', msSQL.Char(50), JSON.stringify(data["Vehicle2"]))
             .input('VisitorDetails_VisitorCardStatus', msSQL.Char(50), data["VisitorDetails"]["VisitorCardStatus"])
             .input('VisitorDetails_VisitorCustomValues', msSQL.Char(50), JSON.stringify(data["VisitorDetails"]["VisitorCustomValues"]))
+
+            .input('CustomDateControl3__CF1', msSQL.Char(50),CustomDateControl3__CF1)
+            .input('CustomDateControl3__CF2', msSQL.Char(50),CustomDateControl3__CF2)
+            .input('CustomDateControl3__CF3', msSQL.Char(50),CustomDateControl3__CF3)
+            .input('CustomDateControl3__CF4', msSQL.Char(50),CustomDateControl3__CF4)
+            .input('CustomDateControl3__CF5', msSQL.Char(50),CustomDateControl3__CF5)
+            .input('CustomDateControl3__CF6', msSQL.Char(50),CustomDateControl3__CF6)
+            .input('CustomDateControl3__CF7', msSQL.Char(50),CustomDateControl3__CF7)
+            .input('CustomDateControl3__CF8', msSQL.Char(50),CustomDateControl3__CF8)
+            .input('CustomDateControl3__CF9', msSQL.Char(50),CustomDateControl3__CF9)
+            .input('CustomDateControl3__CF10', msSQL.Char(50),CustomDateControl3__CF10)
+            .input('CustomDateControl3__CF11', msSQL.Char(50),CustomDateControl3__CF11)
+            .input('CustomDateControl3__CF12', msSQL.Char(50),CustomDateControl3__CF12)
+            .input('CustomDateControl4__CF', msSQL.Char(50),CustomDateControl4__CF)
+            .input('CustomDropdownControl1__CF', msSQL.Char(50),CustomDropdownControl1__CF)
+            .input('CustomDropdownControl2__CF1', msSQL.Char(50),CustomDropdownControl2__CF1)
+            .input('CustomDropdownControl2__CF2', msSQL.Char(50),CustomDropdownControl2__CF2)
+            .input('CustomDropdownControl3__CF1', msSQL.Char(50),CustomDropdownControl3__CF1)
+            .input('CustomDropdownControl3__CF2', msSQL.Char(50),CustomDropdownControl3__CF2)
+            .input('CustomDropdownControl3__CF3', msSQL.Char(50),CustomDropdownControl3__CF3)
+            .input('CustomDropdownControl3__CF4', msSQL.Char(50),CustomDropdownControl3__CF4)
+            .input('CustomDropdownControl3__CF5', msSQL.Char(50),CustomDropdownControl3__CF5)
+            .input('CustomDropdownControl3__CF6', msSQL.Char(50),CustomDropdownControl3__CF6)
+            .input('CustomTextBoxControl1__CF', msSQL.Char(50),CustomTextBoxControl1__CF)
+            .input('CustomTextBoxControl2__CF', msSQL.Char(50),CustomTextBoxControl2__CF)
+            .input('CustomTextBoxControl3__CF', msSQL.Char(50),CustomTextBoxControl3__CF)
+            .input('CustomTextBoxControl5__CF1', msSQL.Char(50),CustomTextBoxControl5__CF1)
+            .input('CustomTextBoxControl5__CF2', msSQL.Char(50),CustomTextBoxControl5__CF2)
+            .input('CustomTextBoxControl5__CF3', msSQL.Char(50),CustomTextBoxControl5__CF3)
+            .input('CustomTextBoxControl5__CF4', msSQL.Char(50),CustomTextBoxControl5__CF4)
+            .input('CustomTextBoxControl5__CF5', msSQL.Char(50),CustomTextBoxControl5__CF5)
+            .input('CustomTextBoxControl5__CF6', msSQL.Char(50),CustomTextBoxControl5__CF6)
+            .input('CustomTextBoxControl5__CF7', msSQL.Char(50),CustomTextBoxControl5__CF7)
+            .input('CustomTextBoxControl5__CF8', msSQL.Char(50),CustomTextBoxControl5__CF8)
+            .input('CustomTextBoxControl5__CF9', msSQL.Char(50),CustomTextBoxControl5__CF9)
+            .input('CustomTextBoxControl5__CF10', msSQL.Char(50),CustomTextBoxControl5__CF10)
+            .input('CustomTextBoxControl6__CF', msSQL.Char(50),CustomTextBoxControl6__CF)
+            .input('CustomTextBoxControl7__CF1', msSQL.Char(50),CustomTextBoxControl7__CF1)
+            .input('CustomTextBoxControl7__CF2', msSQL.Char(50),CustomTextBoxControl7__CF2)
+            .input('CustomTextBoxControl7__CF3', msSQL.Char(50),CustomTextBoxControl7__CF3)
+            .input('CustomTextBoxControl7__CF4', msSQL.Char(50),CustomTextBoxControl7__CF4)
+            .input('CustomTextBoxControl7__CF5', msSQL.Char(50),CustomTextBoxControl7__CF5)
+            .input('CustomTextBoxControl7__CF6', msSQL.Char(50),CustomTextBoxControl7__CF6)
+            .input('CustomTextBoxControl7__CF7', msSQL.Char(50),CustomTextBoxControl7__CF7)
+            .input('CustomTextBoxControl7__CF8', msSQL.Char(50),CustomTextBoxControl7__CF8)
+            .input('CustomTextBoxControl7__CF9', msSQL.Char(50),CustomTextBoxControl7__CF9)
+            .input('CustomTextBoxControl7__CF10', msSQL.Char(50),CustomTextBoxControl7__CF10)
+            .input('CustomTextBoxControl7__CF11', msSQL.Char(50),CustomTextBoxControl7__CF11)
+            .input('CustomTextBoxControl7__CF12', msSQL.Char(50),CustomTextBoxControl7__CF12)
 
             .input('AccessRules1', msSQL.Char(50), rules[0])
             .input('AccessRules2', msSQL.Char(50), rules[1])
@@ -146,10 +306,20 @@ export class CCure800SqlAdapter {
                 ,[PD_PayrollNumber] ,[PD_Title] ,[PD_UD_UserName] ,[PD_UD_Password]
                 ,[Potrait] ,[PrimaryWorkgroupId] ,[PrimaryWorkgroupName] ,[SmartCardProfileId] ,[StartDate] ,[Status] ,[Token] ,[TraceDetails] ,[Vehicle1] ,[Vehicle2] 
                 ,[VisitorDetails_VisitorCardStatus] ,[VisitorDetails_VisitorCustomValues]
+                ,[PhoneNumber], [FinalDate], [IniDate], [Pin]
                 ,[AccessRules1] ,[AccessRules2] ,[AccessRules3] ,[AccessRules4] ,[AccessRules5] ,[AccessRules6] ,[AccessRules7] ,[AccessRules8] ,[AccessRules9] ,[AccessRules10]
                 ,[AccessRules11] ,[AccessRules12] ,[AccessRules13] ,[AccessRules14] ,[AccessRules15] ,[AccessRules16] ,[AccessRules17] ,[AccessRules18] ,[AccessRules19] ,[AccessRules20]
                 ,[AccessRules21] ,[AccessRules22] ,[AccessRules23] ,[AccessRules24] ,[AccessRules25] ,[AccessRules26] ,[AccessRules27] ,[AccessRules28] ,[AccessRules29] ,[AccessRules30]
-                ,[AccessRules31] ,[AccessRules32] ,[AccessRules33] ,[AccessRules34] ,[AccessRules35] ,[AccessRules36] ,[AccessRules37] ,[AccessRules38] ,[AccessRules39] ,[AccessRules40])
+                ,[AccessRules31] ,[AccessRules32] ,[AccessRules33] ,[AccessRules34] ,[AccessRules35] ,[AccessRules36] ,[AccessRules37] ,[AccessRules38] ,[AccessRules39] ,[AccessRules40]
+                ,[CustomDateControl3__CF1] ,[CustomDateControl3__CF2] ,[CustomDateControl3__CF3] ,[CustomDateControl3__CF4] ,[CustomDateControl3__CF5] ,[CustomDateControl3__CF6] 
+                ,[CustomDateControl3__CF7] ,[CustomDateControl3__CF8] ,[CustomDateControl3__CF9] ,[CustomDateControl3__CF10],[CustomDateControl3__CF11],[CustomDateControl3__CF12] 
+                ,[CustomDateControl4__CF] ,[CustomDropdownControl1__CF] ,[CustomDropdownControl2__CF1] ,[CustomDropdownControl2__CF2] ,[CustomDropdownControl3__CF1] ,[CustomDropdownControl3__CF2] 
+                ,[CustomDropdownControl3__CF3] ,[CustomDropdownControl3__CF4] ,[CustomDropdownControl3__CF5] ,[CustomDropdownControl3__CF6] ,[CustomTextBoxControl1__CF] 
+                ,[CustomTextBoxControl2__CF] ,[CustomTextBoxControl3__CF] ,[CustomTextBoxControl5__CF1] ,[CustomTextBoxControl5__CF2] ,[CustomTextBoxControl5__CF3] 
+                ,[CustomTextBoxControl5__CF4] ,[CustomTextBoxControl5__CF5] ,[CustomTextBoxControl5__CF6] ,[CustomTextBoxControl5__CF7] ,[CustomTextBoxControl5__CF8] 
+                ,[CustomTextBoxControl5__CF9] ,[CustomTextBoxControl5__CF10] ,[CustomTextBoxControl6__CF] ,[CustomTextBoxControl7__CF1] ,[CustomTextBoxControl7__CF2] 
+                ,[CustomTextBoxControl7__CF3] ,[CustomTextBoxControl7__CF4] ,[CustomTextBoxControl7__CF5] ,[CustomTextBoxControl7__CF6] ,[CustomTextBoxControl7__CF7] 
+                ,[CustomTextBoxControl7__CF8] ,[CustomTextBoxControl7__CF9] ,[CustomTextBoxControl7__CF10],[CustomTextBoxControl7__CF11],[CustomTextBoxControl7__CF12])
                 values (
                     getdate(), @ApbWorkgroupId ,@Attributes 
                     ,@Cred_CardNumber ,@Cred_EndDate ,@Cred_Pin ,@Cred_ProfileId ,@Cred_ProfileName ,@Cred_StartDate ,@Cred_FacilityCode
@@ -160,10 +330,20 @@ export class CCure800SqlAdapter {
                     ,@PD_PayrollNumber ,@PD_Title ,@PD_UD_UserName ,@PD_UD_Password
                     ,@Potrait ,@PrimaryWorkgroupId ,@PrimaryWorkgroupName ,@SmartCardProfileId ,@StartDate ,@Status ,@Token ,@TraceDetails ,@Vehicle1 ,@Vehicle2 
                     ,@VisitorDetails_VisitorCardStatus ,@VisitorDetails_VisitorCustomValues
+                    ,@PhoneNumber, @FinalDate, @IniDate, @Pin
                     ,@AccessRules1 ,@AccessRules2 ,@AccessRules3 ,@AccessRules4 ,@AccessRules5 ,@AccessRules6 ,@AccessRules7 ,@AccessRules8 ,@AccessRules9 ,@AccessRules10
                     ,@AccessRules11 ,@AccessRules12 ,@AccessRules13 ,@AccessRules14 ,@AccessRules15 ,@AccessRules16 ,@AccessRules17 ,@AccessRules18 ,@AccessRules19 ,@AccessRules20
                     ,@AccessRules21 ,@AccessRules22 ,@AccessRules23 ,@AccessRules24 ,@AccessRules25 ,@AccessRules26 ,@AccessRules27 ,@AccessRules28 ,@AccessRules29 ,@AccessRules30
-                    ,@AccessRules31 ,@AccessRules32 ,@AccessRules33 ,@AccessRules34 ,@AccessRules35 ,@AccessRules36 ,@AccessRules37 ,@AccessRules38 ,@AccessRules39 ,@AccessRules40);
+                    ,@AccessRules31 ,@AccessRules32 ,@AccessRules33 ,@AccessRules34 ,@AccessRules35 ,@AccessRules36 ,@AccessRules37 ,@AccessRules38 ,@AccessRules39 ,@AccessRules40
+                    ,@CustomDateControl3__CF1 ,@CustomDateControl3__CF2 ,@CustomDateControl3__CF3 ,@CustomDateControl3__CF4 ,@CustomDateControl3__CF5 ,@CustomDateControl3__CF6 
+                    ,@CustomDateControl3__CF7 ,@CustomDateControl3__CF8 ,@CustomDateControl3__CF9 ,@CustomDateControl3__CF10,@CustomDateControl3__CF11,@CustomDateControl3__CF12 
+                    ,@CustomDateControl4__CF ,@CustomDropdownControl1__CF ,@CustomDropdownControl2__CF1 ,@CustomDropdownControl2__CF2 ,@CustomDropdownControl3__CF1 
+                    ,@CustomDropdownControl3__CF2 ,@CustomDropdownControl3__CF3 ,@CustomDropdownControl3__CF4 ,@CustomDropdownControl3__CF5 ,@CustomDropdownControl3__CF6 
+                    ,@CustomTextBoxControl2__CF ,@CustomTextBoxControl3__CF ,@CustomTextBoxControl5__CF1 ,@CustomTextBoxControl5__CF2 ,@CustomTextBoxControl5__CF3 
+                    ,@CustomTextBoxControl5__CF4 ,@CustomTextBoxControl5__CF5 ,@CustomTextBoxControl5__CF6 ,@CustomTextBoxControl5__CF7 ,@CustomTextBoxControl5__CF8 
+                    ,@CustomTextBoxControl5__CF9 ,@CustomTextBoxControl5__CF10 ,@CustomTextBoxControl6__CF 
+                    ,@CustomTextBoxControl7__CF1 ,@CustomTextBoxControl7__CF2 ,@CustomTextBoxControl7__CF3 ,@CustomTextBoxControl7__CF4 ,@CustomTextBoxControl7__CF5 ,@CustomTextBoxControl7__CF6 
+                    ,@CustomTextBoxControl7__CF7 ,@CustomTextBoxControl7__CF8 ,@CustomTextBoxControl7__CF9 ,@CustomTextBoxControl7__CF10,@CustomTextBoxControl7__CF11,@CustomTextBoxControl7__CF12);
                 select top 1 * from Member where EmployeeNumber >= @EmployeeNumber order by TimeStamp desc`);
 
         return res["recordset"][0];
