@@ -29,35 +29,34 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Member(data.inputType);
 
-    let cardno = "";
-    try {
-        cardno = data.inputType.Credentials[0].CardNumber;
+    if (siPassAdapter.sessionToken == "")
+        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+
+
+    let cardno = data.inputType.Credentials[0].CardNumber;;
+
+    if (cardno != "") {
+        let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
+        if (cnt != null) {
+            throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
+        }
+
+        let hStart = obj.get("StartDate");
+        let hEnd = obj.get("EndDate");
+
+        let cStart = obj.get("Credentials")[0]["StartDate"];
+        let cEnd = obj.get("Credentials")[0]["EndDate"];
+
+        if (cEnd <= cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+        if (hStart > cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+        if (hEnd < cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
     }
-    catch (e) {
-        throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
-    }
 
-    let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
-    if (cnt != null) {
-        throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
-    }
-
-    let hStart = obj.get("StartDate");
-    let hEnd = obj.get("EndDate");
-
-    let cStart = obj.get("Credentials")[0]["StartDate"];
-    let cEnd = obj.get("Credentials")[0]["EndDate"];
-
-    if ( cEnd <= cStart)
-        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-    if ( hStart > cStart)
-        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-    if ( hEnd < cStart)
-        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-    
-    // AccessRules
     // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
                             .containedIn("tableid", obj.get("AccessRules"))
@@ -156,27 +155,31 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let ret = ParseObject.toOutputJSON(obj);
     console.log(ret);
 
-    let holder = await siPassAdapter.postCardHolder(ret);
-    console.log(holder);
+    
+    setTimeout( async ()=> {
 
-    try {
-        let config = {
-            server: Config.ccuresqlserver.server,
-            port: Config.ccuresqlserver.port,
-            user: Config.ccuresqlserver.user,
-            password: Config.ccuresqlserver.password,
-            database: Config.ccuresqlserver.database,
-            requestTimeout: 300000,
-            connectionTimeout: 300000 //ms
+        let holder = await siPassAdapter.postCardHolder(ret);
+        console.log(holder);
+
+        try {
+            let config = {
+                server: Config.ccuresqlserver.server,
+                port: Config.ccuresqlserver.port,
+                user: Config.ccuresqlserver.user,
+                password: Config.ccuresqlserver.password,
+                database: Config.ccuresqlserver.database,
+                requestTimeout: 300000,
+                connectionTimeout: 300000 //ms
+            }
+
+            await this.CCure800SqlAdapter.connect(config);
+            await this.CCure800SqlAdapter.writeMember(ret);
+            await this.CCure800SqlAdapter.disconnect();
         }
-
-        await this.CCure800SqlAdapter.connect(config);
-        await this.CCure800SqlAdapter.writeMember(ret);
-        await this.CCure800SqlAdapter.disconnect();
-    }
-    catch (ex) {
-        console.log(`${this.constructor.name}`, ex);
-    }
+        catch (ex) {
+            console.log(`${this.constructor.name}`, ex);
+        }
+    }, 1000);
 
     Log.Info(`${this.constructor.name}`, `postMember ${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`);
 
@@ -245,28 +248,24 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 2) Modify
     let update = new Member(data.inputType);
 
-    let cardno = "";
-    try {
-        cardno = data.inputType.Credentials[0].CardNumber;
+    let cardno = data.inputType.Credentials[0].CardNumber;;
+
+    if (cardno != "") {
+        let hStart = update.get("StartDate");
+        let hEnd = update.get("EndDate");
+
+        let cStart = update.get("Credentials")[0]["StartDate"];
+        let cEnd = update.get("Credentials")[0]["EndDate"];
+
+        if (cEnd <= cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+        if (hStart > cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+
+        if (hEnd < cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
     }
-    catch (e) {
-        throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is empty.`]);
-    }
-
-    let hStart = update.get("StartDate");
-    let hEnd = update.get("EndDate");
-
-    let cStart = update.get("Credentials")[0]["StartDate"];
-    let cEnd = update.get("Credentials")[0]["EndDate"];
-
-    if ( cEnd <= cStart)
-        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-    if ( hStart > cStart)
-        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-    if ( hEnd < cStart)
-        throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
 
     // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
@@ -370,10 +369,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     /// 3) Output
     let ret = ParseObject.toOutputJSON(obj);
-    console.log( JSON.stringify(ret));
+    console.log(JSON.stringify(ret));
 
-    let holder = await siPassAdapter.postCardHolder(ret);
-    console.log(holder);
+    setTimeout( async ()=> {
+        let holder = await siPassAdapter.postCardHolder(ret);
+        console.log(holder);
+    }, 1000);
 
     return ret;
 });
