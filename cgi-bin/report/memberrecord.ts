@@ -50,7 +50,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
         query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).matches("CustomFields.FieldValue", new RegExp(resignDate), "i");
     } 
-   
+    if(filter.HideEmptyCardNumber && filter.HideEmptyCardNumber=="true") {        
+        query.exists("Credentials.CardNumber");
+    }
     if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).matches("CustomFields.FieldValue", new RegExp(filter.CompanyName), "i");
     
     
