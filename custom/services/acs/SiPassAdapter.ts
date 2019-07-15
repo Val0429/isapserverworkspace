@@ -1,5 +1,6 @@
 import { Config } from 'core/config.gen';
 
+import * as delay from 'delay';
 import { Log } from 'helpers/utility';
 
 import * as siPassClient from '../../modules/acs/sipass';
@@ -68,7 +69,7 @@ export class SiPassAdapter {
                 me.siPassAccount = new siPassClient.SiPassHrAccountService(me.siPassHrParam);
                 me.sessionToken = await me.Login();
             }
-        }, 1000);
+        }, 5000);
     }
     async getRecords(date: string, bH: string, bM: string, bS: string, eH: string, eM: string, eS: string) {
 

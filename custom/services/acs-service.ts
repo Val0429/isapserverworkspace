@@ -44,8 +44,8 @@ export class ACSService {
         }
 
         if (this.cycleTime != 5) {
-            // if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
-            if (now.getMinutes() != 70) {
+            if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
+            // if (now.getMinutes() != 70) {
                 // 0.0 Initial Adapter
                 Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
