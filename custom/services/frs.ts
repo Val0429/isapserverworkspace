@@ -83,6 +83,15 @@ class Service {
             await this.Search();
 
             await this.EnableLiveStream();
+
+            this._devices
+                .sort((a, b) => {
+                    return b.getValue('mode') - a.getValue('mode');
+                })
+                .forEach((value, index, array) => {
+                    let config: IDB.ICameraFRS = value.getValue('config') as IDB.ICameraFRS;
+                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
+                });
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             this._initialization$.next();
@@ -128,15 +137,6 @@ class Service {
             this._frsConfigs = this._frsConfigs.filter((value, index, array) => {
                 return frsConfigIds.indexOf(value.id) === index;
             });
-
-            this._devices
-                .sort((a, b) => {
-                    return b.getValue('mode') - a.getValue('mode');
-                })
-                .forEach((value, index, array) => {
-                    let config: IDB.ICameraFRS = value.getValue('config') as IDB.ICameraFRS;
-                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
-                });
         } catch (e) {
             throw e;
         }

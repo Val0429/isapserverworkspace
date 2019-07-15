@@ -83,6 +83,15 @@ class Service {
             await this.Search();
 
             this.EnableLiveStream();
+
+            this._devices
+                .sort((a, b) => {
+                    return b.getValue('mode') - a.getValue('mode');
+                })
+                .forEach((value, index, array) => {
+                    let config: IDB.ICameraCMS = value.getValue('config') as IDB.ICameraCMS;
+                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
+                });
         } catch (e) {
             Print.Log(e, new Error(), 'error');
         }
@@ -127,15 +136,6 @@ class Service {
             this._cmsConfigs = this._cmsConfigs.filter((value, index, array) => {
                 return cmsConfigIds.indexOf(value.id) === index;
             });
-
-            this._devices
-                .sort((a, b) => {
-                    return b.getValue('mode') - a.getValue('mode');
-                })
-                .forEach((value, index, array) => {
-                    let config: IDB.ICameraCMS = value.getValue('config') as IDB.ICameraCMS;
-                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
-                });
         } catch (e) {
             throw e;
         }
