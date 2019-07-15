@@ -74,7 +74,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         lr = r ;
         
     }
-    records.push(lr);    
+    if(lr)records.push(lr);    
     
     if(filter.start){
         let start = new Date(filter.start);
