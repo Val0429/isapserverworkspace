@@ -85,6 +85,7 @@ class Service {
             await this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
+            this._initialization$.next();
         }
     }
 
@@ -166,6 +167,11 @@ class Service {
                     frs.liveStreamCatch$.subscribe({
                         next: (x) => {
                             Print.Log(`${value.id}(server) -> ${x}`, new Error(), 'error');
+                        },
+                    });
+                    frs.liveStreamClose$.subscribe({
+                        next: (x) => {
+                            this._initialization$.next();
                         },
                     });
                     frs.liveStream$.subscribe({

@@ -52,6 +52,14 @@ export class FRSService {
     /**
      * Live stream catch
      */
+    private _liveStreamClose$: Rx.Subject<{}> = new Rx.Subject();
+    public get liveStreamClose$(): Rx.Subject<{}> {
+        return this._liveStreamClose$;
+    }
+
+    /**
+     * Live stream catch
+     */
     private _liveStreamCatch$: Rx.Subject<string> = new Rx.Subject();
     public get liveStreamCatch$(): Rx.Subject<string> {
         return this._liveStreamCatch$;
@@ -344,11 +352,12 @@ export class FRSService {
         ws.error$.subscribe({
             next: (e) => {
                 this._liveStreamCatch$.next(e.message);
+                ws.Close();
             },
         });
         ws.close$.subscribe({
             next: (e) => {
-                ws.Connect();
+                this._liveStreamClose$.next();
             },
         });
 
