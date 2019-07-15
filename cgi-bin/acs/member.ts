@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, Config
+    Restful, FileHelper, ParseObject, Config, PermissionTable
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
@@ -56,23 +56,20 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     if ( hEnd < cStart)
         throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
+    
     // AccessRules
-    let accessLevels = await new Parse.Query(AccessLevel).find();
+    // AccessRules
+    let permissionTables = await new Parse.Query(PermissionTable)
+                            .containedIn("tableid", obj.get("AccessRules"))
+                            .limit(Number.MAX_SAFE_INTEGER).find();
 
-    let rules = obj.get("AccessRules");
-    if (rules) {
-        for (let i = 0; i < rules.length; i++) {
-            const rid = rules[i];
-
-            for (let j = 0; j < accessLevels.length; j++) {
-                const level = accessLevels[j];
-
-                if (level.get("levelid") == rid)
-                    rules.splice(i, 1, level);
-            }
-        }
+    let rules=[];
+    for (const rid of obj.get("AccessRules")) {            
+        let permission = permissionTables.find(x=>x.get("tableid")== rid);
+        if(!permission)continue;
+        rules.push(permission);
     }
+    obj.set("AccessRules", rules);
 
     // CustomFields
     let fields = [
@@ -272,22 +269,18 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
 
     // AccessRules
-    let accessLevels = await new Parse.Query(AccessLevel).find();
+    let permissionTables = await new Parse.Query(PermissionTable)
+                            .containedIn("tableid", update.get("AccessRules"))
+                            .limit(Number.MAX_SAFE_INTEGER).find();
 
-    let rules = update.get("AccessRules");
-
-    if (rules) {
-        for (let i = 0; i < rules.length; i++) {
-            const rid = rules[i];
-
-            for (let j = 0; j < accessLevels.length; j++) {
-                const level = accessLevels[j];
-
-                if (level.get("levelid") == rid)
-                    rules.splice(i, 1, level);
-            }
-        }
+    let rules=[];
+    for (const rid of update.get("AccessRules")) {            
+        let permission = permissionTables.find(x=>x.get("tableid")== rid);
+        if(!permission)continue;
+        rules.push(permission);
     }
+    obj.set("AccessRules", rules);
+    
 
 
     // CustomFields
