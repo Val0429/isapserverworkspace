@@ -33,13 +33,14 @@ export default new Action<Input, Output>({
     let sessionId: string, user: Parse.User;
     let permissions=[];
     if ('username' in data.inputType) {
-console.log("12341234")        ;
+
         /// Try login
         try {
             user = await Parse.User.logIn(data.inputType.username, data.inputType.password);
             /// fetch all roles
             
             await Promise.all(user.get("roles").map( r => r.fetch() ) );
+            await Promise.all(user.get("apiRoles").map( r => r.fetch() ) );
             let apiRoles=user.get("apiRoles");
             if(apiRoles){
                 let apiRole = new APIRoles();
@@ -65,6 +66,10 @@ console.log("12341234")        ;
     } else {
         if (!data.session) throw Errors.throw(Errors.CustomUnauthorized, ["This session is not valid or is already expired."]);
         user = data.user;
+
+        await Promise.all(user.get("roles").map( r => r.fetch() ) );
+        await Promise.all(user.get("apiRoles").map( r => r.fetch() ) );
+
         sessionId = data.session.getSessionToken();
         let apiRoles=user.get("apiRoles");
         if(apiRoles){
