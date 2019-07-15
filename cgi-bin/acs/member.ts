@@ -65,8 +65,21 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let rules=[];
     for (const rid of obj.get("AccessRules")) {            
         let permission = permissionTables.find(x=>x.get("tableid")== rid);
+        console.log("permission", permission);
         if(!permission)continue;
-        rules.push(permission);
+        let newRule = {
+            ArmingRightsId: null,
+            ControlModeId: null,
+            EndDate: null,
+            ObjectName: permission.get("tablename"),
+            ObjectToken: "",
+            RuleToken: permission.get("tableid"),
+            RuleType: 4,
+            Side: 0,
+            StartDate: null,
+            TimeScheduleToken: 0
+        };
+        rules.push(newRule);
     }
     obj.set("AccessRules", rules);
 
@@ -274,11 +287,23 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     let rules=[];
     for (const rid of update.get("AccessRules")) {            
-        let permission = permissionTables.find(x=>x.get("tableid")== rid);
+        let permission = permissionTables.find(x=>x.get("tableid")== rid);        
         if(!permission)continue;
-        rules.push(permission);
+        let newRule = {
+                ArmingRightsId: null,
+                ControlModeId: null,
+                EndDate: null,
+                ObjectName: permission.get("tablename"),
+                ObjectToken: "",
+                RuleToken: permission.get("tableid"),
+                RuleType: 4,
+                Side: 0,
+                StartDate: null,
+                TimeScheduleToken: 0
+        };
+        rules.push(newRule);
     }
-    obj.set("AccessRules", rules);
+    update.set("AccessRules", rules);
     
 
 
