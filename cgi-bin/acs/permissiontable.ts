@@ -25,20 +25,16 @@ type InputC = Restful.InputC<IPermissionTable>;
 type OutputC = Restful.OutputC<IPermissionTable>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    /// 1) Create Object
+    /// 1) Check data.inputType
+    if (siPassAdapter.sessionToken == "")
+        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
 
+    /// 2) Create Object
     let name = data.inputType.tablename ;
     let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name).first();
     if ( nameObject != null) {
         throw Errors.throw(Errors.CustomNotExists, [`Permssion table name is duplicate.`]);
     }
-
-    let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
-    let maxId = firstObject.get("tableid");
-    data.inputType.tableid = maxId + 1;
-
-    var obj = new PermissionTable(data.inputType);
-    await obj.save(null, { useMasterKey: true });
 
     // 2.0 Modify Access Group
     {
@@ -47,18 +43,21 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         if (data.inputType.accesslevels) {
             for (let i = 0; i < data.inputType.accesslevels.length; i++) {
                 let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
-
                 let ar = [];
                 if (level["readers"]) {
                     for (let j = 0; j < level["readers"].length; j++) {
                         const r = level["readers"][j];
 
-                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: 12, RuleType: 3 });
+                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: r["readerid"], RuleType: 2 });
                     }
+
+                    let firstObject = await new Parse.Query(AccessLevel).descending("levelid").first();
+                    let maxId = firstObject.get("levelid");
+                    data.inputType.tableid = maxId + 1;
 
                     al.push({
                         name: level["levelname"],
-                        token: level["levelid"],
+                        token: maxId + 1,
                         accessRule: ar,
                         timeScheduleToken: level["timeschedule"]["timeid"]
                     });
@@ -66,16 +65,15 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
                 let d = {
                     name: level["levelname"],
-                    token: level["levelid"],
+                    token: maxId + 1,
                     accessRule: ar,
-                    timeScheduleToken: level["timeschedule"]["timename"]
+                    timeScheduleToken: level["timeschedule"]["timeid"]
                 };
-
                 await siPassAdapter.postAccessLevel(d);
             }
         }
         let ag = {
-            token: data.inputType.tableid + "",
+            token: "-1",
             name: data.inputType.tablename,
             accessLevels: al
         };
@@ -92,6 +90,16 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
         }
     }
+
+    
+    let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
+    let maxId = firstObject.get("tableid");
+    data.inputType.tableid = maxId + 1;
+
+    var obj = new PermissionTable(data.inputType);
+    await obj.save(null, { useMasterKey: true });
+
+    
 
     Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
 

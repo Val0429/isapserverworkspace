@@ -32,34 +32,36 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let query = new Parse.Query(AttendanceRecords);
 
     /// 2) With Extra Filters
+
     query = Restful.Filter(query, data.inputType)
         .addAscending("card_no")
         .addAscending("date_occurred")
         .addAscending("time_occurred");
-    
+
     let filter = data.parameters as any;
-    if(filter.CardNumber){
+    if (filter.CardNumber) {
         query.equalTo("card_no", filter.CardNumber);
     }
 
     let records = [];
     let rs = await query.limit(pageSize).find();
 
+
     let lr = null;
     if (rs.length >= 1) {
         lr = rs[0];
-        if(lr.get("date_occurred") && lr.get("time_occurred")){
-            let dateTime = lr.get("date_occurred")+lr.get("time_occurred");            
-            lr.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());            
+        if (lr.get("date_occurred") && lr.get("time_occurred")) {
+            let dateTime = lr.get("date_occurred") + lr.get("time_occurred");
+            lr.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
             records.push(lr);
         }
     }
 
     for (let i = 1; i < rs.length; i++) {
         let r = rs[i];
-        if(!r.get("date_occurred") ||!r.get("time_occurred"))continue;
-        let dateTime = r.get("date_occurred")+r.get("time_occurred")
-        
+        if (!r.get("date_occurred") || !r.get("time_occurred")) continue;
+        let dateTime = r.get("date_occurred") + r.get("time_occurred")
+
         r.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
         if (r.get("card_no") != lr.get("card_no")) {
             records.push(lr);
@@ -71,20 +73,29 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                 records.push(r);
             }
         }
-        lr = r ;
-        
-    }
-    if(lr)records.push(lr);    
-    
-    if(filter.start){
-        let start = new Date(filter.start);
-        records = records.filter(x=>x.get("date_time_occurred") >= start);
-    }
-    if(filter.end){
-        let end= new Date(filter.end);
-        records = records.filter(x=>x.get("date_time_occurred") <= end);
+        lr = r;
+
     }
 
+    if (filter.start) {
+        let start = new Date(filter.start);
+        records = records.filter((x) => {
+            if (x) 
+                return x.get("date_time_occurred") >= start;
+            else
+                return false ;
+        });
+    }
+    if (filter.end) {
+        let end = new Date(filter.end);
+        records = records.filter((x) => {
+            if (x) 
+                return x.get("date_time_occurred") <= end;
+            else
+                return false ;
+        });
+    }
+    
     /// 3) Output
     return Restful.Pagination(records, data.inputType);
 });

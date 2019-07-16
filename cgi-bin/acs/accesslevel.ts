@@ -23,17 +23,12 @@ type InputC = Restful.InputC<IAccessLevel>;
 type OutputC = Restful.OutputC<IAccessLevel>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    /// 1) Create Object
-
-    let max = await new Parse.Query(AccessLevel).descending("levelid").first();
-    data.inputType.levelid = +max + 1 ;
-    data.inputType.levelname = "name " + data.inputType.levelid ;
-    
-    var obj = new AccessLevel(data.inputType);
-    await obj.save(null, { useMasterKey: true });
-
-    /// 2) Sync to ACS Services
+    /// 1) Sync to ACS Services
     let rules = [] ;
+
+    if (siPassAdapter.sessionToken == "")
+        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+        
     if(data.inputType.reader && data.inputType.reader.length>0)
     for (let idx = 0; idx < data.inputType.reader.length; idx++) {
         let e = data.inputType.reader[idx];
@@ -41,7 +36,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         let r = {
             ObjectToken: e.get("readerid"),
             ObjectName: e.get("readername"),
-            RuleType:3,
+            RuleType:2,
         }
 
         rules.push(r);
@@ -53,21 +48,33 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         let r = {
             ObjectToken: e.get("floorid"),
             ObjectName: e.get("floorname"),
-            RuleType:8,
+            RuleType:4,
         }
 
         rules.push(r);
     }
 
     let d = {
-        token: data.inputType.levelid + "",
+        token: "-1",
         name: data.inputType.levelname,
         accessRule: rules,
-        timeScheduleToken: data.inputType.timeschedule.get("timeid")
+        timeScheduleToken: data.inputType.timeschedule.get("timename")
     }
-    await siPassAdapter.postAccessLevel(d);
 
+    let accessLevel = await siPassAdapter.postAccessLevel(d);
     Log.Info(`${this.constructor.name}`, `postAccessLevel ${data.inputType.levelid} ${data.inputType.levelname}`);
+
+    /// 1) Create Object
+    // let firstObj = await new Parse.Query(AccessLevel).descending("levelid").first();
+    // let max = 0 ;
+    // if ( firstObj != null)
+    //     max = +firstObj.get("levelid") + 1 ;
+
+    data.inputType.levelid = accessLevel["Token"] ;
+    data.inputType.levelname = "name " + data.inputType.levelid ;
+
+    var obj = new AccessLevel(data.inputType);
+    await obj.save(null, { useMasterKey: true });
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);

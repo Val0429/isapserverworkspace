@@ -26,6 +26,7 @@ type InputC = Restful.InputC<IDoor>;
 type OutputC = Restful.OutputC<IDoor>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+    // let count: number = await new Parse.Query(Door).count();
     let count: number = await new Promise((resolve, reject) => {
         new Parse.Query(Door).count().then(
             (count) => {
@@ -35,7 +36,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 resolve(-1);
             }
         );
-    }) as number;;
+    }) as number;
 
     if (count == -1)
         throw Errors.throw(Errors.CustomBadRequest, ["License invalid."]);
@@ -75,6 +76,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         else {
             console.log(count, amount);
             if ( count + 1 <= amount) {
+
+                let name = data.inputType.doorname ;
+                let nameObject = await new Parse.Query(Door).equalTo("doorname", name).first();
+                if ( nameObject != null) {
+                    throw Errors.throw(Errors.CustomNotExists, [`Door <${name}> is duplicate.`]);
+                }
 
                 /// 1) Create Object
                 var obj = new Door(data.inputType);

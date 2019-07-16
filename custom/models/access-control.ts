@@ -14,6 +14,7 @@ export interface IDoor {    // CRUD daily V
     system?: number,         // 0: iSap 1: SiPass 2: CCure800
     doorid?: number,
     doorname: string,
+    area?: IDB.LocationArea,
     readerin?: Reader[],
     readerout?: Reader[],
     status?: number
@@ -34,6 +35,7 @@ export interface IFloorGroup {  // CRUD V
     system: number,             // 0: iSap
     groupid: number,
     groupname: string,
+    area?: IDB.LocationArea,
     floors: Floor[],
     status: number
 }
@@ -44,6 +46,7 @@ export interface IElevator {    // CRUD V
     system: number,             // 0: iSap 1: SiPass 2: CCure800
     elevatorid?: number,
     elevatorname: string,
+    area?: IDB.LocationArea,
     reader?: Floor[],
     status?: number
 }
@@ -74,7 +77,7 @@ export class ElevatorGroup extends ParseObject<IElevatorGroup> { }
 
 export interface IMember {      // CRUD
     system?: number,            // 0: iSap 4: FET
-    Attributes?: {},
+    Attributes: {},
     Credentials?: {
         CardNumber: string,
         EndDate: string,
@@ -82,53 +85,58 @@ export interface IMember {      // CRUD
         ProfileId: number,
         ProfileName: string,
         StartDate: string,
-        FacilityCode?: number,
-        CardTechnologyCode?: number,
+        FacilityCode: number,
+        CardTechnologyCode: number,
         PinMode: number,
         PinDigit?: number
     }[],
     AccessRules?: any[],
-    EmployeeNumber?: string,
-    EndDate?: string,
-    FirstName?: string,
-    GeneralInformation?: string,
-    LastName?: string,
+    EmployeeNumber: string,
+    EndDate: string,
+    FirstName: string,
+    GeneralInformation: string,
+    LastName: string,
     PersonalDetails?: {
-        Address?: string,
-        ContactDetails?: {
-            Email?: string,
-            MobileNumber?: string,
-            MobileServiceProviderId?: string,
-            PagerNumber?: string,
-            PagerServiceProviderId?: string,
-            PhoneNumber?: string
+        Address: string,
+        ContactDetails: {
+            Email: string,
+            MobileNumber: string,
+            MobileServiceProviderId: string,
+            PagerNumber: string,
+            PagerServiceProviderId: string,
+            PhoneNumber: string
         },
-        DateOfBirth?: string,
-        PayrollNumber?: string,
-        Title?: string,
-        UserDetails?: {
-            Password?: string,
-            UserName?: string
+        DateOfBirth: string,
+        PayrollNumber: string,
+        Title: string,
+        UserDetails: {
+            Password: string,
+            UserName: string
         }
     },
-    PrimaryWorkgroupId?: number,
-    ApbWorkgroupId?: number,
-    PrimaryWorkgroupName?: string,
-    NonPartitionWorkGroups?: any[],
-    SmartCardProfileId?: string,
-    StartDate?: string,
-    Status?: number,
-    Token?: string,
-    TraceDetails?: {},
-    // Vehicle1?: {},
-    // Vehicle2?: {},
+    PrimaryWorkgroupId: number,
+    ApbWorkgroupId: number,
+    PrimaryWorkgroupName: string,
+    NonPartitionWorkGroups: any[],
+    SmartCardProfileId: string,
+    StartDate: string,
+    Status: number,
+    Token: string,
+    TraceDetails: {},
+    Vehicle1: {},
+    Vehicle2: {},
     Potrait?: string,
-    PrimaryWorkGroupAccessRule?: any[],
-    NonPartitionWorkgroupAccessRules?: any[],
-    VisitorDetails?: {},
+    PrimaryWorkGroupAccessRule: any[],
+    NonPartitionWorkgroupAccessRules: any[],
+    VisitorDetails?: {
+        VisitorCardStatus: number,
+        VisitorCustomValues : {
+            
+        }
+    },
     CustomFields?: {
-        FiledName?: string,
-        FieldValue?: any
+        FiledName: string,
+        FieldValue: any
     }[],
     FingerPrints?: any[],
     CardholderPortrait?: string
@@ -159,7 +167,7 @@ export class TimeSchedule extends ParseObject<ITimeSchedule> { }
 export interface IAccessLevel {     // CRUD  V
     system?: number                // 0: iSap 1: SiPass 2: CCure800
     type?: string,
-    levelid?: number,
+    levelid?: string,
     levelname?: string,
     status?: number,
     door?: Door,

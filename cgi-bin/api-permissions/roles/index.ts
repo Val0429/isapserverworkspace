@@ -23,6 +23,11 @@ type OutputC = Restful.OutputC<IAPIRoles>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
+    let dbRole = await new Parse.Query(APIRoles).equalTo("identifier", data.inputType.identifier).first();
+    if (dbRole!= null) {
+        throw Errors.throw(Errors.CustomNotExists, [`Role <${data.inputType.identifier}> is duplicate.`]);
+    }
+
     var obj = new APIRoles(data.inputType);
     await obj.save(null, { useMasterKey: true });
     

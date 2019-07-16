@@ -11,6 +11,8 @@ import * as msSQL from 'mssql';
 import * as delay from 'delay';
 
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
+import { ParseObject } from 'core/cgi-package';
+import moment = require('moment');
 
 
 // import { CCUREReader } from './ccureReader'
@@ -60,7 +62,7 @@ export class AttendanceRecord {
         clearTimeout(this.waitTimer);
 
         if (now.getMinutes() == 5) {  // Startup @XX:05
-        // if (now.getMinutes() != 5) {
+        // if (now.getMinutes() != 70) {
             // 0.0 Initial Adapter
             Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
@@ -90,8 +92,25 @@ export class AttendanceRecord {
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
 
                 records = await cCureAdapter.getRecords();
+
                 records.forEach( async (r) => {
+                    r["rowguid"] = r["reportId"] + "";
+                    r["date_occurred"] = moment(r["updateTime"]).format("YYYYMMDD") ;
+                    r["time_occurred"] = moment(r["updateTime"]).format('HHmmss');
+                    r["card_no"] = r["cardNum"] + "";
+                    r["point_no"] = r["doorId"] + "";
+                    r["point_name"] = r["doorName"];
+                    r["category"] = r["messageCode"];
+
+                    delete r["reportId"];
+                    delete r["updateTime"];
+                    delete r["cardNum"];
+                    delete r["doorId"];
+                    delete r["doorName"];
+                    delete r["messageCode"];
+
                     let o = new AttendanceRecords(r);
+
                     await o.save();
                     await delay(100);
                 });

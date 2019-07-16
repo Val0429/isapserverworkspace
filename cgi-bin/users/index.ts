@@ -21,6 +21,12 @@ type OutputC = Restful.OutputC<IUser>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Users
     var user = new Parse.User();
+
+    let dbUser = await new Parse.Query(Parse.Role).equalTo("name", data.inputType.username).first();
+    if (dbUser!= null) {
+        throw Errors.throw(Errors.CustomNotExists, [`User <${data.inputType.username}> is duplicate.`]);
+    }
+
     var roles = data.inputType.roles;
 
     /// 2) Check Role

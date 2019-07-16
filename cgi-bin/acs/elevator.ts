@@ -24,6 +24,7 @@ type InputC = Restful.InputC<IElevator>;
 type OutputC = Restful.OutputC<IElevator>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+    // let count: number = await new Parse.Query(Elevator).count();
     let count: number = await new Promise((resolve, reject) => {
         new Parse.Query(Elevator).count().then(
             (count) => {
@@ -33,7 +34,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 resolve(-1);
             }
         );
-    }) as number;;
+    }) as number;
 
     if (count == -1)
         throw Errors.throw(Errors.CustomBadRequest, ["License invalid."]);
