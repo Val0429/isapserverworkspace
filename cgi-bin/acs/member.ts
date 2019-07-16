@@ -263,7 +263,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         let cardno = data.inputType.Credentials[0].CardNumber;;
 
         if (cardno != "") {
-            let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
+            let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).notEqualTo("_id", objectId).first();
             if (cnt != null) {
                 throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
             }
