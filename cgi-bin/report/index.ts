@@ -255,6 +255,26 @@ export class Report {
     }
 
     /**
+     * Dispose class
+     */
+    public Dispose(): void {
+        try {
+            this._devices.length = 0;
+            this._officeHours.length = 0;
+            this._sites.length = 0;
+            this._weathers.length = 0;
+
+            this._devicesIdDictionary = null;
+            this._siteIds = null;
+            this._sitesIdDictionary = null;
+            this._summaryOfficeHours = null;
+            this._summaryWeathers = null;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Get allow site
      * @param userSiteIds
      * @param siteIds
@@ -524,6 +544,8 @@ export class Report {
                 salesRecordsSiteDateDictionary[key][key1].push(value);
             });
 
+            salesRecords.length = 0;
+
             let reportsSiteDateDictionary: object = {};
             reports.forEach((value, index, array) => {
                 let key: string = value.getValue('site').id;
@@ -577,6 +599,9 @@ export class Report {
                     traffic: traffic,
                 };
             });
+
+            salesRecordsSiteDateDictionary = null;
+            reportsSiteDateDictionary = null;
 
             return summarys;
         } catch (e) {

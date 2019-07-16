@@ -34,13 +34,20 @@ action.post(
 
             await report.Initialization(_input, _userInfo.siteIds);
 
+            let weathers = report.summaryWeathers;
+
+            let officeHours = report.summaryOfficeHours;
+
             let genderRange = report.GetGenderRange();
 
             let summaryDatas = report.GetSummaryDatas();
 
+            report.Dispose();
+            report = null;
+
             return {
-                weathers: report.summaryWeathers,
-                officeHours: report.summaryOfficeHours,
+                weathers: weathers,
+                officeHours: officeHours,
                 genderRange: genderRange,
                 summaryDatas: summaryDatas,
             };
@@ -85,6 +92,20 @@ export class ReportDemographic extends Report {
             );
 
             await Promise.all(tasks);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Dispose
+     */
+    public Dispose() {
+        try {
+            this._currReports.length = 0;
+            this._prevReports.length = 0;
+
+            super.Dispose();
         } catch (e) {
             throw e;
         }
@@ -180,6 +201,8 @@ export class ReportDemographic extends Report {
                 });
             });
 
+            reportsDateDeviceDictionary = null;
+
             return summarys;
         } catch (e) {
             throw e;
@@ -235,6 +258,9 @@ export class ReportDemographic extends Report {
                     prevFemaleEmployeeRanges: prevFemaleEmployeeRanges,
                 };
             }, []);
+
+            currSummarys.length = 0;
+            prevSummarys.length = 0;
 
             return summarys;
         } catch (e) {

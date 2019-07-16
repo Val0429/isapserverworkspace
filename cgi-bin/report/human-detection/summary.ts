@@ -36,13 +36,20 @@ action.post(
 
             await report.Initialization(_input, _userInfo.siteIds);
 
+            let weathers = report.summaryWeathers;
+
+            let officeHours = report.summaryOfficeHours;
+
             let summaryChartDatas = report.GetSummaryChartDatas();
 
             let summaryTableDatas = await report.GetSummaryTableDatas();
 
+            report.Dispose();
+            report = null;
+
             return {
-                weathers: report.summaryWeathers,
-                officeHours: report.summaryOfficeHours,
+                weathers: weathers,
+                officeHours: officeHours,
                 summaryChartDatas: summaryChartDatas,
                 summaryTableDatas: summaryTableDatas,
             };
@@ -87,6 +94,20 @@ export class ReportHumanDetection extends Report {
             );
 
             await Promise.all(tasks);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Dispose
+     */
+    public Dispose() {
+        try {
+            this._currReports.length = 0;
+            this._prevReports.length = 0;
+
+            super.Dispose();
         } catch (e) {
             throw e;
         }
@@ -140,6 +161,8 @@ export class ReportHumanDetection extends Report {
                     summarys.push(summary);
                 });
             });
+
+            reportsDateDeviceDictionary = null;
 
             return summarys;
         } catch (e) {
@@ -212,6 +235,9 @@ export class ReportHumanDetection extends Report {
                 });
             });
 
+            reportsDateAreaDictionary = null;
+            reportsAreaDictionary = null;
+
             summarys = await Promise.all(
                 summarys.map(async (value, index, array) => {
                     let area: IDB.LocationArea = new IDB.LocationArea();
@@ -258,6 +284,8 @@ export class ReportHumanDetection extends Report {
                         reportsDateDictionary[key].push(value1);
                     });
 
+                    reports.length = 0;
+
                     let thresholds: { date: Date; total: number }[] = [];
                     Object.keys(reportsDateDictionary).forEach((value1, index1, array1) => {
                         let dates = reportsDateDictionary[value1];
@@ -278,6 +306,8 @@ export class ReportHumanDetection extends Report {
                         thresholds.push(threshold);
                     });
 
+                    reportsDateDictionary = null;
+
                     let thresholdsLevelDictionary: object = {};
                     thresholds.forEach((value1, index1, array1) => {
                         let key: string = 'low';
@@ -294,11 +324,15 @@ export class ReportHumanDetection extends Report {
                         thresholdsLevelDictionary[key].push(value1);
                     });
 
+                    thresholds.length = 0;
+
                     value.mediumThreshold = mediumCount;
                     value.mediumThresholdCount = (thresholdsLevelDictionary['medium'] || []).length;
 
                     value.highThreshold = highCount;
                     value.highThresholdCount = (thresholdsLevelDictionary['high'] || []).length;
+
+                    thresholdsLevelDictionary = null;
 
                     return value;
                 }),
@@ -374,6 +408,9 @@ export class ReportHumanDetection extends Report {
                     highThresholdCount: value.highThresholdCount,
                 };
             }, []);
+
+            currSummarys.length = 0;
+            prevSummarys.length = 0;
 
             return summarys;
         } catch (e) {

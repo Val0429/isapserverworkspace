@@ -33,15 +33,22 @@ action.post(
 
             await report.Initialization(_input, _userInfo.siteIds);
 
+            let weathers = report.summaryWeathers;
+
+            let officeHours = report.summaryOfficeHours;
+
             let peakHours = report.GetPeakHours();
 
             let salesRecords = await report.GetSalesRecordSummarys();
 
             let summaryDatas = report.GetSummaryDatas();
 
+            report.Dispose();
+            report = null;
+
             return {
-                weathers: report.summaryWeathers,
-                officeHours: report.summaryOfficeHours,
+                weathers: weathers,
+                officeHours: officeHours,
                 peakHours: peakHours,
                 salesRecords: salesRecords,
                 summaryDatas: summaryDatas,
@@ -87,6 +94,20 @@ export class ReportPeopleCounting extends Report {
             );
 
             await Promise.all(tasks);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Dispose
+     */
+    public Dispose() {
+        try {
+            this._currReports.length = 0;
+            this._prevReports.length = 0;
+
+            super.Dispose();
         } catch (e) {
             throw e;
         }
@@ -154,6 +175,8 @@ export class ReportPeopleCounting extends Report {
                 });
             });
 
+            reportsSiteDateDateDictionary = null;
+
             let datas: number[] = [].concat(
                 ...peakHours.map((value, index, array) => {
                     return value.peakHourDatas.map((value1, index1, array1) => {
@@ -163,6 +186,8 @@ export class ReportPeopleCounting extends Report {
             );
 
             let levels: number[] = [Utility.Percentile(datas, 0), Utility.Percentile(datas, 0.2), Utility.Percentile(datas, 0.4), Utility.Percentile(datas, 0.6), Utility.Percentile(datas, 0.8), Utility.Percentile(datas, 1)];
+
+            datas.length = 0;
 
             peakHours = peakHours.map((value, index, array) => {
                 value.peakHourDatas = value.peakHourDatas.map((value1, index1, array1) => {
@@ -235,6 +260,8 @@ export class ReportPeopleCounting extends Report {
                 });
             });
 
+            reportsDateDeviceDictionary = null;
+
             return summarys;
         } catch (e) {
             throw e;
@@ -278,6 +305,9 @@ export class ReportPeopleCounting extends Report {
                     prevOutEmployee: prevOutEmployee,
                 };
             }, []);
+
+            currSummarys.length = 0;
+            prevSummarys.length = 0;
 
             return summarys;
         } catch (e) {

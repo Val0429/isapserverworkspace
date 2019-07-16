@@ -107,6 +107,11 @@ action.post(
 
             await Promise.all(tasks);
 
+            let weather = report.GetWeather();
+
+            report.Dispose();
+            report = null;
+
             let pc: IResponse.IReport.IComplex_Data = {
                 value: currPCSummary.in,
                 variety: prevPCSummary.in !== 0 ? Utility.Round(currPCSummary.in / prevPCSummary.in - 1, 2) : NaN,
@@ -164,7 +169,7 @@ action.post(
                 transaction: transaction,
                 conversion: conversion,
                 asp: asp,
-                weather: report.GetWeather(),
+                weather: weather,
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -261,6 +266,8 @@ export class ReportComplex extends Report {
                 summary.out += value.getValue('out') - (value.getValue('outEmployee') || 0);
             });
 
+            summarys.length = 0;
+
             return summary;
         } catch (e) {
             throw e;
@@ -292,6 +299,8 @@ export class ReportComplex extends Report {
                 summary.malePercent += value.getValue('maleTotal') - (value.getValue('maleEmployeeTotal') || 0);
                 summary.femalePercent += value.getValue('femaleTotal') - (value.getValue('femaleEmployeeTotal') || 0);
             });
+
+            summarys.length = 0;
 
             summary.malePercent = Utility.Round(summary.malePercent / (summary.malePercent + summary.femalePercent), 2);
             summary.femalePercent = Utility.Round(1 - summary.malePercent, 2);
@@ -333,6 +342,8 @@ export class ReportComplex extends Report {
                 );
             });
 
+            summarys.length = 0;
+
             let average: number = summary.count !== 0 ? Utility.Round((summary.total * devices.length) / summary.count, 0) : 0;
 
             return average;
@@ -366,6 +377,8 @@ export class ReportComplex extends Report {
                 summarysFaceIdDictionary[key].push(value);
             });
 
+            summarys.length = 0;
+
             let summary: IResponse.IReport.IComplex_Average = {
                 total: 0,
                 count: 0,
@@ -382,6 +395,8 @@ export class ReportComplex extends Report {
                 }
                 summary.total += 1;
             });
+
+            summarysFaceIdDictionary = null;
 
             let average: number = summary.total !== 0 ? Utility.Round(summary.count / summary.total, 2) : 0;
 
@@ -416,6 +431,8 @@ export class ReportComplex extends Report {
                 summary.revenue += value.getValue('revenue');
                 summary.transaction += value.getValue('transaction');
             });
+
+            summarys.length = 0;
 
             return summary;
         } catch (e) {

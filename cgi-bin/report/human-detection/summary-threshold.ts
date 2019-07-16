@@ -76,6 +76,8 @@ action.post(
                 });
             });
 
+            officeHours.length = 0;
+
             let reportsDateDictionary: object = {};
             reports.forEach((value1, index1, array1) => {
                 let key: string = value1.getValue('date').toISOString();
@@ -86,6 +88,8 @@ action.post(
 
                 reportsDateDictionary[key].push(value1);
             });
+
+            reports.length = 0;
 
             let thresholds: IResponse.IReport.IHumanDetectionThreshold[] = [];
             Object.keys(reportsDateDictionary).forEach((value1, index1, array1) => {
@@ -121,6 +125,8 @@ action.post(
                 thresholds.push(threshold);
             });
 
+            reportsDateDictionary = null;
+
             let mediumCount: number = mediumThreshold;
             let highCount: number = highThreshold;
 
@@ -139,6 +145,8 @@ action.post(
 
                 thresholdsLevelDictionary[key].push(value1);
             });
+
+            thresholds.length = 0;
 
             return thresholdsLevelDictionary[_input.type] || [];
         } catch (e) {

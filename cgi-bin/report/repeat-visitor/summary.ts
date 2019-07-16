@@ -38,6 +38,9 @@ action.post(
 
             let summaryTableDatas = report.GetSummaryTableDatas();
 
+            report.Dispose();
+            report = null;
+
             return {
                 summaryChartDatas: summaryChartDatas,
                 summaryTableDatas: summaryTableDatas,
@@ -77,6 +80,19 @@ export class ReportRepeatVisitor extends Report {
             this._frequencyRanges = this.GetFrequencyRange();
 
             this._reports = await this.GetReports(IDB.ReportRepeatVisitor, []);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Dispose
+     */
+    public Dispose() {
+        try {
+            this._reports.length = 0;
+
+            super.Dispose();
         } catch (e) {
             throw e;
         }
@@ -158,6 +174,8 @@ export class ReportRepeatVisitor extends Report {
                 }
             });
 
+            reportsFaceIdDictionary = null;
+
             return summarys;
         } catch (e) {
             throw e;
@@ -223,6 +241,8 @@ export class ReportRepeatVisitor extends Report {
                     summarys.push(summary);
                 });
             });
+
+            reportsSiteDateFaceIdDictionary = null;
 
             return summarys;
         } catch (e) {
