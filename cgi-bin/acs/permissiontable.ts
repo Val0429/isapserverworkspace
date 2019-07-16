@@ -57,7 +57,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
                     al.push({
                         name: level["levelname"],
-                        token: maxId + 1,
+                        token: "-1",
                         accessRule: ar,
                         timeScheduleToken: level["timeschedule"]["timeid"]
                     });
@@ -65,7 +65,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
                 let d = {
                     name: level["levelname"],
-                    token: maxId + 1,
+                    token: "-1",
                     accessRule: ar,
                     timeScheduleToken: level["timeschedule"]["timeid"]
                 };

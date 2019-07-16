@@ -271,7 +271,7 @@ export class ACSService {
                                         if (lev == null) {
                                             let d = {
                                                 system: 1,
-                                                levelid: +level["Token"],
+                                                levelid: level["Token"],
                                                 levelname: level["Name"],
                                                 status: 1,
                                                 reader: rs,

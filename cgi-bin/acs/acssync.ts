@@ -166,7 +166,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
 
                         Log.Info(`CGI acsSync`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
 
-                        obj = await new Parse.Query(Floor).equalTo("floorid", r["Token"]).first();
+                        let obj = await new Parse.Query(Floor).equalTo("floorid", r["Token"]).first();
 
                         if (obj == null) {
                             let d = {
