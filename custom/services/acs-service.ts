@@ -384,127 +384,127 @@ export class ACSService {
 
                     Log.Info(`${this.constructor.name}`, `SiPass 2.a Get Card Holder List`);
                     {
-                        let grouplist = await siPassAdapter.getCardHolderList();
-                        console.log("Card Holder List", grouplist);
+                        // let grouplist = await siPassAdapter.getCardHolderList();
+                        // console.log("Card Holder List", grouplist);
 
-                        if (grouplist) {
+                        // if (grouplist) {
 
-                            for (let idx = 0; idx < grouplist.length; idx++) {
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass Cardholders ${grouplist[idx]["Token"]}`);
+                        //     for (let idx = 0; idx < grouplist.length; idx++) {
+                        //         Log.Info(`${this.constructor.name}`, `Import data SiPass Cardholders ${grouplist[idx]["Token"]}`);
 
-                                let holder = await siPassAdapter.getCardHolder(grouplist[idx]["Token"]);
+                        //         let holder = await siPassAdapter.getCardHolder(grouplist[idx]["Token"]);
 
-                                obj = await new Parse.Query(Member).equalTo("Token", holder["Token"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 1,
-                                        Attributes: holder["Attributes"],
-                                        Credentials: holder["Credentials"],
-                                        AccessRules: holder["AccessRules"],
-                                        EmployeeNumber: holder["EmployeeNumber"],
-                                        EndDate: holder["EndDate"],
-                                        FirstName: holder["FirstName"],
-                                        GeneralInformation: holder["GeneralInformation"],
-                                        LastName: holder["LastName"],
-                                        PersonalDetails: {
-                                            Address: holder["PersonalDetails"] ? holder["PersonalDetails"]["Address"]: "",
-                                            ContactDetails: {
-                                                Email: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["Email"]: "" : "",
-                                                MobileNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["MobileNumber"]: "" : "",
-                                                MobileServiceProviderId: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"]: "" : "",
-                                                PagerNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PagerNumber"]: "" : "",
-                                                PagerServiceProviderId: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"]: "" : "",
-                                                PhoneNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PhoneNumber"]: "" : "",
-                                            },
-                                            DateOfBirth: holder["PersonalDetails"] ? holder["PersonalDetails"]["DateOfBirth"] : "",
-                                            PayrollNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["PayrollNumber"] : "",
-                                            Title: holder["PersonalDetails"] ? holder["PersonalDetails"]["Title"] : "",
-                                            UserDetails: {
-                                                Password: holder["PersonalDetails"] ? holder["PersonalDetails"]["UserDetails"] ? holder["PersonalDetails"]["UserDetails"]["Password"] : "" : "",
-                                                UserName: holder["PersonalDetails"] ? holder["PersonalDetails"]["UserDetails"] ? holder["PersonalDetails"]["UserDetails"]["UserName"] : "" : "",
-                                            }
-                                        },
-                                        PrimaryWorkgroupId: holder["PrimaryWorkgroupId"],
-                                        ApbWorkgroupId: holder["ApbWorkgroupId"],
-                                        PrimaryWorkgroupName: holder["PrimaryWorkgroupName"],
-                                        NonPartitionWorkGroups: holder["NonPartitionWorkGroups"],
-                                        SmartCardProfileId: holder["SmartCardProfileId"],
-                                        StartDate: holder["StartDate"],
-                                        Status: holder["Status"],
-                                        Token: holder["Token"],
-                                        TraceDetails: holder["TraceDetails"],
-                                        Vehicle1: {
-                                            CarColor: holder["Vehicle1"] ? holder["Vehicle1"]["CarColor"] : "",
-                                            CarModelNumber: holder["Vehicle1"] ? holder["Vehicle1"]["CarModelNumber"] : "",
-                                            CarRegistrationNumber: holder["Vehicle1"] ? holder["Vehicle1"]["CarRegistrationNumber"] : ""
-                                        },
-                                        Vehicle2: {
-                                            CarColor: holder["Vehicle2"] ? holder["Vehicle2"]["CarColor"] : "",
-                                            CarModelNumber: holder["Vehicle2"] ? holder["Vehicle2"]["CarModelNumber"] : "",
-                                            CarRegistrationNumber: holder["Vehicle2"] ? holder["Vehicle2"]["CarRegistrationNumber"] : ""
-                                        },
-                                        Potrait: holder["Potrait"],
-                                        PrimaryWorkGroupAccessRule: holder["PrimaryWorkGroupAccessRule"],
-                                        NonPartitionWorkgroupAccessRules: holder["NonPartitionWorkgroupAccessRules"],
-                                        VisitorDetails: {
-                                            VisitedEmployeeFirstName: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitedEmployeeFirstName"] : "",
-                                            VisitedEmployeeLastName: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitedEmployeeLastName"] : "",
-                                            VisitorCardStatus: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCardStatus"] : "",
-                                            VisitorCustomValues: {
-                                                Company: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Company"] : "" : "",
-                                                Profile: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Profile"] : "" : "",
-                                                Reason: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Reason"] : "" : "",
-                                                License: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["License"] : "" : "",
-                                                Email: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Email"] : "" : "",
-                                                RestrictedUser: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["RestrictedUser"] : "" : "",
-                                            }
-                                        },
-                                        CustomFields: holder["CustomFields"],
-                                        FingerPrints: holder["FingerPrints"],
-                                        CardholderPortrait: holder["CardholderPortrait"]
-                                    }
-                                    let o = new Member(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 1);
-                                    obj.set("Attributes", holder["Attributes"]);
-                                    obj.set("Credentials", holder["Credentials"]);
-                                    obj.set("AccessRules", holder["AccessRules"]);
-                                    obj.set("EmployeeNumber", holder["EmployeeNumber"]);
-                                    obj.set("EndDate", holder["EndDate"]);
-                                    obj.set("FirstName", holder["FirstName"]);
-                                    obj.set("GeneralInformation", holder["GeneralInformation"]);
-                                    obj.set("LastName", holder["LastName"]);
-                                    obj.set("PersonalDetails", holder["PersonalDetails"]);
-                                    obj.set("PrimaryWorkgroupId", holder["PrimaryWorkgroupId"]);
+                        //         obj = await new Parse.Query(Member).equalTo("Token", holder["Token"]).first();
+                        //         if (obj == null) {
+                        //             let d = {
+                        //                 system: 1,
+                        //                 Attributes: holder["Attributes"],
+                        //                 Credentials: holder["Credentials"],
+                        //                 AccessRules: holder["AccessRules"],
+                        //                 EmployeeNumber: holder["EmployeeNumber"],
+                        //                 EndDate: holder["EndDate"],
+                        //                 FirstName: holder["FirstName"],
+                        //                 GeneralInformation: holder["GeneralInformation"],
+                        //                 LastName: holder["LastName"],
+                        //                 PersonalDetails: {
+                        //                     Address: holder["PersonalDetails"] ? holder["PersonalDetails"]["Address"]: "",
+                        //                     ContactDetails: {
+                        //                         Email: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["Email"]: "" : "",
+                        //                         MobileNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["MobileNumber"]: "" : "",
+                        //                         MobileServiceProviderId: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"]: "" : "",
+                        //                         PagerNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PagerNumber"]: "" : "",
+                        //                         PagerServiceProviderId: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"]: "" : "",
+                        //                         PhoneNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PhoneNumber"]: "" : "",
+                        //                     },
+                        //                     DateOfBirth: holder["PersonalDetails"] ? holder["PersonalDetails"]["DateOfBirth"] : "",
+                        //                     PayrollNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["PayrollNumber"] : "",
+                        //                     Title: holder["PersonalDetails"] ? holder["PersonalDetails"]["Title"] : "",
+                        //                     UserDetails: {
+                        //                         Password: holder["PersonalDetails"] ? holder["PersonalDetails"]["UserDetails"] ? holder["PersonalDetails"]["UserDetails"]["Password"] : "" : "",
+                        //                         UserName: holder["PersonalDetails"] ? holder["PersonalDetails"]["UserDetails"] ? holder["PersonalDetails"]["UserDetails"]["UserName"] : "" : "",
+                        //                     }
+                        //                 },
+                        //                 PrimaryWorkgroupId: holder["PrimaryWorkgroupId"],
+                        //                 ApbWorkgroupId: holder["ApbWorkgroupId"],
+                        //                 PrimaryWorkgroupName: holder["PrimaryWorkgroupName"],
+                        //                 NonPartitionWorkGroups: holder["NonPartitionWorkGroups"],
+                        //                 SmartCardProfileId: holder["SmartCardProfileId"],
+                        //                 StartDate: holder["StartDate"],
+                        //                 Status: holder["Status"],
+                        //                 Token: holder["Token"],
+                        //                 TraceDetails: holder["TraceDetails"],
+                        //                 Vehicle1: {
+                        //                     CarColor: holder["Vehicle1"] ? holder["Vehicle1"]["CarColor"] : "",
+                        //                     CarModelNumber: holder["Vehicle1"] ? holder["Vehicle1"]["CarModelNumber"] : "",
+                        //                     CarRegistrationNumber: holder["Vehicle1"] ? holder["Vehicle1"]["CarRegistrationNumber"] : ""
+                        //                 },
+                        //                 Vehicle2: {
+                        //                     CarColor: holder["Vehicle2"] ? holder["Vehicle2"]["CarColor"] : "",
+                        //                     CarModelNumber: holder["Vehicle2"] ? holder["Vehicle2"]["CarModelNumber"] : "",
+                        //                     CarRegistrationNumber: holder["Vehicle2"] ? holder["Vehicle2"]["CarRegistrationNumber"] : ""
+                        //                 },
+                        //                 Potrait: holder["Potrait"],
+                        //                 PrimaryWorkGroupAccessRule: holder["PrimaryWorkGroupAccessRule"],
+                        //                 NonPartitionWorkgroupAccessRules: holder["NonPartitionWorkgroupAccessRules"],
+                        //                 VisitorDetails: {
+                        //                     VisitedEmployeeFirstName: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitedEmployeeFirstName"] : "",
+                        //                     VisitedEmployeeLastName: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitedEmployeeLastName"] : "",
+                        //                     VisitorCardStatus: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCardStatus"] : "",
+                        //                     VisitorCustomValues: {
+                        //                         Company: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Company"] : "" : "",
+                        //                         Profile: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Profile"] : "" : "",
+                        //                         Reason: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Reason"] : "" : "",
+                        //                         License: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["License"] : "" : "",
+                        //                         Email: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Email"] : "" : "",
+                        //                         RestrictedUser: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["RestrictedUser"] : "" : "",
+                        //                     }
+                        //                 },
+                        //                 CustomFields: holder["CustomFields"],
+                        //                 FingerPrints: holder["FingerPrints"],
+                        //                 CardholderPortrait: holder["CardholderPortrait"]
+                        //             }
+                        //             let o = new Member(d);
+                        //             await o.save();
+                        //         }
+                        //         else {
+                        //             obj.set("system", 1);
+                        //             obj.set("Attributes", holder["Attributes"]);
+                        //             obj.set("Credentials", holder["Credentials"]);
+                        //             obj.set("AccessRules", holder["AccessRules"]);
+                        //             obj.set("EmployeeNumber", holder["EmployeeNumber"]);
+                        //             obj.set("EndDate", holder["EndDate"]);
+                        //             obj.set("FirstName", holder["FirstName"]);
+                        //             obj.set("GeneralInformation", holder["GeneralInformation"]);
+                        //             obj.set("LastName", holder["LastName"]);
+                        //             obj.set("PersonalDetails", holder["PersonalDetails"]);
+                        //             obj.set("PrimaryWorkgroupId", holder["PrimaryWorkgroupId"]);
 
-                                    obj.set("ApbWorkgroupId", holder["ApbWorkgroupId"]);
-                                    obj.set("PrimaryWorkgroupName", holder["PrimaryWorkgroupName"]);
-                                    obj.set("NonPartitionWorkGroups", holder["NonPartitionWorkGroups"]);
-                                    obj.set("SmartCardProfileId", holder["SmartCardProfileId"]);
-                                    obj.set("StartDate", holder["StartDate"]);
-                                    obj.set("Status", holder["Status"]);
-                                    obj.set("Token", holder["Token"]);
-                                    obj.set("TraceDetails", holder["TraceDetails"]);
-                                    obj.set("Vehicle1", holder["Vehicle1"]);
-                                    obj.set("Vehicle2", holder["Vehicle2"]);
+                        //             obj.set("ApbWorkgroupId", holder["ApbWorkgroupId"]);
+                        //             obj.set("PrimaryWorkgroupName", holder["PrimaryWorkgroupName"]);
+                        //             obj.set("NonPartitionWorkGroups", holder["NonPartitionWorkGroups"]);
+                        //             obj.set("SmartCardProfileId", holder["SmartCardProfileId"]);
+                        //             obj.set("StartDate", holder["StartDate"]);
+                        //             obj.set("Status", holder["Status"]);
+                        //             obj.set("Token", holder["Token"]);
+                        //             obj.set("TraceDetails", holder["TraceDetails"]);
+                        //             obj.set("Vehicle1", holder["Vehicle1"]);
+                        //             obj.set("Vehicle2", holder["Vehicle2"]);
 
-                                    obj.set("Potrait", holder["Potrait"]);
-                                    obj.set("PrimaryWorkGroupAccessRule", holder["PrimaryWorkGroupAccessRule"]);
-                                    obj.set("NonPartitionWorkgroupAccessRules", holder["NonPartitionWorkgroupAccessRules"]);
-                                    obj.set("VisitorDetails", holder["VisitorDetails"]);
+                        //             obj.set("Potrait", holder["Potrait"]);
+                        //             obj.set("PrimaryWorkGroupAccessRule", holder["PrimaryWorkGroupAccessRule"]);
+                        //             obj.set("NonPartitionWorkgroupAccessRules", holder["NonPartitionWorkgroupAccessRules"]);
+                        //             obj.set("VisitorDetails", holder["VisitorDetails"]);
 
-                                    obj.set("CustomFields", holder["CustomFields"]);
-                                    obj.set("FingerPrints", holder["FingerPrints"]);
-                                    obj.set("CardholderPortrait", holder["CardholderPortrait"]);
-                                    obj.save();
-                                }
+                        //             obj.set("CustomFields", holder["CustomFields"]);
+                        //             obj.set("FingerPrints", holder["FingerPrints"]);
+                        //             obj.set("CardholderPortrait", holder["CardholderPortrait"]);
+                        //             obj.save();
+                        //         }
 
-                                // await this.mongoDb.collection("Member").findOneAndUpdate({ "Token": d["Token"] }, { $set: d }, { upsert: true });
-                                await delay(200);
-                            }
-                        }
+                        //         // await this.mongoDb.collection("Member").findOneAndUpdate({ "Token": d["Token"] }, { $set: d }, { upsert: true });
+                        //         await delay(200);
+                        //     }
+                        // }
                     }
                     await delay(1000);
                 }
@@ -525,7 +525,7 @@ export class ACSService {
 
                                 if (obj == null) {
                                     let d = {
-                                        system: 2,
+                                        system: 800,
                                         timeid: +r["timespecId"],
                                         timename: r["timespecName"],
                                         status: 1
@@ -534,6 +534,7 @@ export class ACSService {
                                     await o.save();
                                 }
                                 else {
+                                    obj.set("system", 800);
                                     obj.set("timeid", +r["timespecId"]);
                                     obj.set("timename", r["timespecName"]);
 
@@ -558,7 +559,7 @@ export class ACSService {
                                 obj = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
                                 if (obj == null) {
                                     let d = {
-                                        system: 2,
+                                        system: 800,
                                         doorid: +r["doorId"],
                                         doorname: r["doorName"],
                                         status: 1
@@ -567,6 +568,7 @@ export class ACSService {
                                     await o.save();
                                 }
                                 else {
+                                    obj.set("system", 800);
                                     obj.set("doorid", +r["doorId"]);
                                     obj.set("doorname", r["doorName"]);
 
@@ -592,7 +594,7 @@ export class ACSService {
                         //             obj = await new Parse.Query(DoorGroup).equalTo("groupid", +r["floorId"]).first();
                         //             if (obj == null) {
                         //                 let d = {
-                        //                     system: 2,
+                        //                     system: 800,
                         //                     groupid: +r["floorId"],
                         //                     groupname: r["floorName"],
                         //                     status: 1
@@ -601,6 +603,7 @@ export class ACSService {
                         //                 await o.save();
                         //             }
                         //             else {
+                        //                 obj.set("system", 800);
                         //                 obj.set("groupid", +r["floorId"]);
                         //                 obj.set("groupname", r["floorName"]);
 
@@ -626,7 +629,7 @@ export class ACSService {
                                 obj = await new Parse.Query(Reader).equalTo("readerid", r["deviceId"]).first();
                                 if (obj == null) {
                                     let d = {
-                                        system: 2,
+                                        system: 800,
                                         readerid: +r["deviceId"],
                                         readername: r["deviceName"],
                                         status: 1
@@ -636,6 +639,7 @@ export class ACSService {
                                     await obj.save();
                                 }
                                 else {
+                                    obj.set("system", 800);
                                     obj.set("readerid", +r["deviceId"]);
                                     obj.set("readername", r["deviceName"]);
 
@@ -670,7 +674,7 @@ export class ACSService {
 
                                 if (obj == null) {
                                     let d = {
-                                        system: 2,
+                                        system: 800,
                                         floorid: +r["floorId"],
                                         floorname: r["floorName"],
                                         status: 1
@@ -679,6 +683,7 @@ export class ACSService {
                                     let o1 = await o.save();
                                 }
                                 else {
+                                    obj.set("system", 800);
                                     obj.set("floorid", +r["floorId"]);
                                     obj.set("floorname", r["floorName"]);
                                     obj.save();
@@ -705,7 +710,7 @@ export class ACSService {
 
                         //             if (obj == null) {
                         //                 let d = {
-                        //                     system: 2,
+                        //                     system: 800,
                         //                     elevatorid: +r["elevatorId"],
                         //                     elevatorname: r["elevatorName"],
                         //                     status: 1
@@ -714,6 +719,7 @@ export class ACSService {
                         //                 let o1 = await o.save();
                         //             }
                         //             else {
+                        //                 obj.set("system", 800);
                         //                 obj.set("elevatorid", +r["elevatorId"]);
                         //                 obj.set("elevatorname", r["elevatorName"]);
                         //                 obj.save();
@@ -740,7 +746,7 @@ export class ACSService {
 
                                 if (obj == null) {
                                     let d = {
-                                        system: 2,
+                                        system: 800,
                                         tableid: +r["permissionTableId"],
                                         tablename: r["permissionTableName"],
                                         status: 1
@@ -749,6 +755,7 @@ export class ACSService {
                                     let o1 = await o.save();
                                 }
                                 else {
+                                    obj.set("system", 800);
                                     obj.set("tableid", +r["permissionTableId"]);
                                     obj.set("tablename", r["permissionTableName"]);
                                     obj.save();
@@ -775,7 +782,7 @@ export class ACSService {
 
                         //             if (obj == null) {
                         //                 let d = {
-                        //                     system: 2,
+                        //                     system: 800,
                         //                     EmployeeNumber: r["employeeNo"],
                         //                     status: 1
                         //                 };
@@ -783,6 +790,7 @@ export class ACSService {
                         //                 let o1 = await o.save();
                         //             }
                         //             else {
+                        //                 obj.set("system", 800);                            
                         //                 obj.set("EmployeeNumber", r["employeeNo"]);
                         //                 obj.save();
                         //             }
