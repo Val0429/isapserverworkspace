@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print, CMSService } from '../helpers';
+import { Print, Utility, File, CMSService } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as Main from '../../main';
@@ -209,6 +209,10 @@ class Service {
                 cms.liveStream$.subscribe({
                     next: async (x) => {
                         try {
+                            let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
+                            File.WriteFile(temp, x.image);
+                            x.image = null;
+
                             let devices = this._devices.filter((value1, index1, array1) => {
                                 let config = value1.getValue('config') as IDB.ICameraCMS;
                                 return config.nvrId === x.nvr && config.channelId === x.channel;
@@ -220,7 +224,7 @@ class Service {
                                         Action.HumanDetection.action$.next({
                                             device: value1,
                                             date: new Date(x.timestamp),
-                                            image: x.image,
+                                            image: temp,
                                         });
                                         break;
                                     case Enum.EDeviceMode.heatmap:

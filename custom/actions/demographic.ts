@@ -347,12 +347,13 @@ class Action {
                                             height: image.height,
                                         };
 
-                                        let feature = await demo.demo.GetAnalysis(value.image);
+                                        let buffer: Buffer = File.ReadFile(value.image);
+                                        let feature = await demo.demo.GetAnalysis(buffer);
                                         if (!feature) {
                                             return;
                                         }
 
-                                        value.image = await Draw.Resize(value.image, size, image.isFill, image.isTransparent);
+                                        buffer = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
 
                                         if ('faceId' in value) {
                                             let report: IDB.ReportRepeatVisitor = new IDB.ReportRepeatVisitor();
@@ -371,7 +372,8 @@ class Action {
                                             });
 
                                             let imageSrc: string = `images_report/repeat_visitor/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
-                                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
+                                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+                                            buffer = null;
 
                                             report.setValue('imageSrc', imageSrc);
 
@@ -395,7 +397,8 @@ class Action {
                                             });
 
                                             let imageSrc: string = `images_report/demographic/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
-                                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
+                                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+                                            buffer = null;
 
                                             report.setValue('imageSrc', imageSrc);
 
@@ -436,7 +439,7 @@ namespace Action {
     export interface IAction_Base {
         device: IDB.Device;
         date: Date;
-        image: Buffer;
+        image: string;
     }
 
     /**

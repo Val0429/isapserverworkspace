@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print, FRSService } from '../helpers';
+import { Print, Utility, File, FRSService } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as Main from '../../main';
@@ -177,6 +177,10 @@ class Service {
                     frs.liveStream$.subscribe({
                         next: async (x) => {
                             try {
+                                let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
+                                File.WriteFile(temp, x.image);
+                                x.image = null;
+
                                 let devices = this._devices.filter((value1, index1, array1) => {
                                     let config = value1.getValue('config') as IDB.ICameraFRS;
                                     return config.sourceid === x.camera;
@@ -212,7 +216,7 @@ class Service {
                                             Action.Demographic.action$.next({
                                                 device: value1,
                                                 date: x.date,
-                                                image: x.image,
+                                                image: temp,
                                                 groups: groups,
                                             });
                                             break;

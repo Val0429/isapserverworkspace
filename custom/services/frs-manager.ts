@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print, Ws, FRSService } from '../helpers';
+import { Print, File, Utility, Ws } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
 import * as Main from '../../main';
@@ -304,12 +304,16 @@ class Service {
                                 return;
                             }
 
+                            let image: Buffer = await this.GetSnapshot(result.currentUrl);
+
+                            let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
+                            File.WriteFile(temp, image);
+                            image = null;
+
                             let devices = this._devices.filter((value1, index1, array1) => {
                                 let config = value1.getValue('config') as IDB.ICameraFRS;
                                 return config.server.id === frsConfig.id;
                             });
-
-                            let image: Buffer = await this.GetSnapshot(result.currentUrl);
 
                             let relation = result.relations.find((value1, index1, array1) => {
                                 return value1.frsId === result.currentSource.frsId;
@@ -335,7 +339,7 @@ class Service {
                                         Action.Demographic.action$.next({
                                             device: value1,
                                             date: new Date(result.timestamp),
-                                            image: image,
+                                            image: temp,
                                             faceId: result.objectId,
                                         });
                                         break;

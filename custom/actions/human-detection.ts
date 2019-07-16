@@ -310,7 +310,8 @@ class Action {
                                             });
                                         }
 
-                                        let locations = await hd.hd.GetAnalysis(value.image);
+                                        let buffer: Buffer = File.ReadFile(value.image);
+                                        let locations = await hd.hd.GetAnalysis(buffer);
 
                                         if (hdConfig.roiTest && locations.length > 0) {
                                             locations.forEach((value, index, array) => {
@@ -343,17 +344,17 @@ class Action {
                                         }
 
                                         if (hdConfig.roiTest) {
-                                            let buffer: Buffer = await Draw.Rectangle(rects, value.image);
-                                            buffer = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
+                                            let test: Buffer = await Draw.Rectangle(rects, buffer);
+                                            test = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
 
-                                            File.WriteFile(`/test/${device.id}_${new Date().getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`, buffer);
+                                            File.WriteFile(`/test/${device.id}_${new Date().getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`, test);
 
                                             rects.splice(0, rects.length - locations.length);
                                         }
 
-                                        value.image = await Draw.Rectangle(rects, value.image);
+                                        buffer = await Draw.Rectangle(rects, buffer);
 
-                                        value.image = await Draw.Resize(value.image, size, image.isFill, image.isTransparent);
+                                        buffer = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
 
                                         let report: IDB.ReportHumanDetection = new IDB.ReportHumanDetection();
 
@@ -370,7 +371,8 @@ class Action {
                                         });
 
                                         let imageSrc: string = `images_report/human_detection/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
-                                        File.WriteFile(`${File.assetsPath}/${imageSrc}`, value.image);
+                                        File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+                                        buffer = null;
 
                                         report.setValue('imageSrc', imageSrc);
 
@@ -410,7 +412,7 @@ namespace Action {
     export interface IAction {
         device: IDB.Device;
         date: Date;
-        image: Buffer;
+        image: string;
     }
 
     /**
