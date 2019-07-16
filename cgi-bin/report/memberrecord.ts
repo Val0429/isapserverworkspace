@@ -53,7 +53,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(!filter.ShowEmptyCardNumber || filter.ShowEmptyCardNumber!="true") {        
         query.exists("Credentials.CardNumber").notEqualTo("Credentials.CardNumber", "");
     }
-    
+    if(filter.PermissionTable && filter.PermissionTable.lengh>0) {        
+        query.containedIn("AccessRules.RuleToken", filter.PermissionTable);
+    }
+
     if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).matches("CustomFields.FieldValue", new RegExp(filter.CompanyName), "i");
     
     
