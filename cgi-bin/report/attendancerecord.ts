@@ -40,64 +40,50 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 
     let filter = data.parameters as any;
     if (filter.CardNumber) {
-        query.equalTo("card_no", filter.CardNumber);
+        query.matches("card_no", new RegExp(filter.CardNumber), "i");
     }
 
-    let records = [];
-    let rs = await query.limit(pageSize).find();
-
-
-    let lr = null;
-    if (rs.length >= 1) {
-        lr = rs[0];
-        if (lr.get("date_occurred") && lr.get("time_occurred")) {
-            let dateTime = lr.get("date_occurred") + lr.get("time_occurred");
-            lr.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
-            records.push(lr);
+    let results = [];
+    let records = await query.limit(pageSize).find();
+    
+    for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
+        if (!record.date_occurred || !record.time_occurred) continue;
+        let dateTime = record.date_occurred + record.time_occurred;
+        record.date_time_occurred = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
+        let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);                
+        //start, assume in and out at the same time
+        if(thisDayRecords.length<2){
+            results.push(Object.assign({},record));
+            results.push(Object.assign({},record));
         }
-    }
-
-    for (let i = 1; i < rs.length; i++) {
-        let r = rs[i];
-        if (!r.get("date_occurred") || !r.get("time_occurred")) continue;
-        let dateTime = r.get("date_occurred") + r.get("time_occurred")
-
-        r.set("date_time_occurred", moment(dateTime, 'YYYYMMDDHHmmss').toDate());
-        if (r.get("card_no") != lr.get("card_no")) {
-            records.push(lr);
-            records.push(r);
-        }
-        else {
-            if (r.get("date_occurred") != lr.get("date_occurred")) {
-                records.push(lr);
-                records.push(r);
-            }
-        }
-        lr = r;
-
+        //update out / end record
+        else {            
+            for(const key of Object.keys(record)){
+                thisDayRecords[1][key] = record[key];
+            }            
+        } 
+        
     }
 
     if (filter.start) {
-        let start = new Date(filter.start);
-        records = records.filter((x) => {
-            if (x) 
-                return x.get("date_time_occurred") >= start;
-            else
-                return false ;
-        });
+        let start = new Date(filter.start);        
+        results = results.filter(x => x.date_time_occurred && x.date_time_occurred >= start);            
     }
     if (filter.end) {
         let end = new Date(filter.end);
-        records = records.filter((x) => {
-            if (x) 
-                return x.get("date_time_occurred") <= end;
-            else
-                return false ;
-        });
+        results = results.filter(x => x.date_time_occurred && x.date_time_occurred <= end);            
     }
     
     /// 3) Output
-    return Restful.Pagination(records, data.inputType);
+    return {
+        paging:{
+            page:1,
+            pageSize,
+            total:results.length,
+            totalPages:Math.ceil(results.length / pageSize)
+        },
+        results
+    };
 });
 
 
