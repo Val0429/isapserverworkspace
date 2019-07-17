@@ -57,8 +57,8 @@ export class HRService {
         this.checkCycleTime = 1200;
 
 
-        if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
-        // if (now.getMinutes() < 70) {
+        // if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
+        if (now.getMinutes() < 70) {
             let memChange = [];
             let memNew = [];
             let memOff = [];

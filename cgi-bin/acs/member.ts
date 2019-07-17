@@ -27,8 +27,10 @@ type OutputC = Restful.OutputC<IMember>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    if (siPassAdapter.sessionToken == "")
+    if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
+        Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
         throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+    }
 
     if (data.inputType.Credentials[0]) {
         let cardno = data.inputType.Credentials[0].CardNumber;;
@@ -180,6 +182,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             connectionTimeout: 50000 //ms
         }
 
+        this.CCure800SqlAdapter = new CCure800SqlAdapter();
         await this.CCure800SqlAdapter.connect(config);
         await this.CCure800SqlAdapter.writeMember(ret);
         await this.CCure800SqlAdapter.disconnect();

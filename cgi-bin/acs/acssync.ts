@@ -32,7 +32,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
         Log.Info(`CGI acsSync`, `SiPass SessionToken ${siPassSessionId}`);
         Log.Info(`CGI acsSync`, `getHours ${now.getHours()} getMinutes ${now.getMinutes()}`);
 
-        if (siPassAdapter.sessionToken == "") {
+        if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
             Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
             throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
         }

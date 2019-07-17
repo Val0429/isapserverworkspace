@@ -24,54 +24,86 @@ type OutputC = Restful.OutputC<IAccessLevel>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
-    let rules = [] ;
+    let rules = [];
 
-    if (siPassAdapter.sessionToken == "")
+    if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
+        Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
         throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-        
-    if(data.inputType.reader && data.inputType.reader.length>0)
-    for (let idx = 0; idx < data.inputType.reader.length; idx++) {
-        let e = data.inputType.reader[idx];
-        
-        let r = {
-            ObjectToken: e.get("readerid"),
-            ObjectName: e.get("readername"),
-            RuleType:2,
+    }
+
+    // = = = RuleType = = = =
+    // Unknown = 0
+    // AccessPointGroup = 1
+    // AccessPoint = 2
+    // AccessLevel = 3
+    // AccessGroup = 4
+    // ExternalAreaPointGroup = 5
+    // ExternalAreaPoint = 6
+    // FloorPointGroup = 7
+    // FloorPoint = 8
+    // IntrusionAreaPointGroup = 9
+    // IntrusionAreaPoint = 10
+    // OfflineAccessGroup = 11
+    // VenueBooking = 12
+
+    if (data.inputType.reader && data.inputType.reader.length > 0) {
+        for (let idx = 0; idx < data.inputType.reader.length; idx++) {
+            let e = data.inputType.reader[idx];
+
+            let r = {
+                token: "-1",
+                name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
+                timeScheduleToken: data.inputType.timeschedule.get("timename"),
+                accessRule: [
+                    {
+                        objectName: e.get("readername"),
+                        objectToken: e.get("readerid"),
+                        ruleToken: e.get("readerid"),
+                        ruleType: 2
+                    }
+                ]
+            }
+
+            let r1 = await siPassAdapter.postAccessLevel(r);
+            Log.Info(`${this.constructor.name}`, `postAccessLevel ${r1["token"]} ${r1["name"]}`);
+
+            rules.push(r1);
         }
-
-        rules.push(r);
     }
-    if(data.inputType.floor && data.inputType.floor.length>0)
-    for (let idx = 0; idx < data.inputType.floor.length; idx++) {
-        let e = data.inputType.floor[idx];
-        
-        let r = {
-            ObjectToken: e.get("floorid"),
-            ObjectName: e.get("floorname"),
-            RuleType:4,
+
+    if (data.inputType.floor && data.inputType.floor.length > 0) {
+        for (let idx = 0; idx < data.inputType.floor.length; idx++) {
+            let e = data.inputType.floor[idx];
+
+            let r = {
+                token: "-1",
+                name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
+                timeScheduleToken: data.inputType.timeschedule.get("timename"),
+                accessRule: [
+                    {
+                        objectName: e.get("floorname"),
+                        objectToken: e.get("floorid"),
+                        ruleToken: e.get("floorid"),
+                        ruleType: 8
+                    }
+                ]
+            }
+
+            let r1 = await siPassAdapter.postAccessLevel(r);
+            Log.Info(`${this.constructor.name}`, `postAccessLevel ${r1["token"]} ${r1["name"]}`);
+
+            rules.push(r1);
         }
-
-        rules.push(r);
     }
-
-    let d = {
-        token: "-1",
-        name: data.inputType.levelname,
-        accessRule: rules,
-        timeScheduleToken: data.inputType.timeschedule.get("timename")
-    }
-
-    let accessLevel = await siPassAdapter.postAccessLevel(d);
-    Log.Info(`${this.constructor.name}`, `postAccessLevel ${data.inputType.levelid} ${data.inputType.levelname}`);
 
     /// 1) Create Object
-    // let firstObj = await new Parse.Query(AccessLevel).descending("levelid").first();
-    // let max = 0 ;
-    // if ( firstObj != null)
-    //     max = +firstObj.get("levelid") + 1 ;
+    let firstObj = await new Parse.Query(AccessLevel).descending("levelid").first();
+    let max = 0 ;
+    if ( firstObj != null)
+        max = +firstObj.get("levelid") + 1 ;
 
-    data.inputType.levelid = accessLevel["Token"] ;
-    data.inputType.levelname = "name " + data.inputType.levelid ;
+    data.inputType.levelid = max + "";
+    data.inputType.levelname = "name " + data.inputType.levelid;
 
     var obj = new AccessLevel(data.inputType);
     await obj.save(null, { useMasterKey: true });
@@ -91,14 +123,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(AccessLevel);
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
-    
+
     let filter = data.parameters as any;
-    if(filter.timename){
-        let tsQuery = new Parse.Query(TimeSchedule).matches("timename", new RegExp(filter.timename), "i");    
+    if (filter.timename) {
+        let tsQuery = new Parse.Query(TimeSchedule).matches("timename", new RegExp(filter.timename), "i");
         query.matchesQuery("timeschedule", tsQuery);
     }
-    if(filter.doorname){
-        let tsDoor = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i");    
+    if (filter.doorname) {
+        let tsDoor = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i");
         query.matchesQuery("door", tsDoor);
     }
     /// 3) Output
@@ -122,19 +154,19 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     Log.Info(`${this.constructor.name}`, `putAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
 
     /// 3) Sync to ACS Services
-    let rules = [] ;
+    let rules = [];
     for (let idx = 0; idx < data.inputType.reader.length; idx++) {
         let e = data.inputType.reader[idx];
-        
+
         let r = {
             ObjectToken: e.get("readerid"),
             ObjectName: e.get("readername"),
-            RuleToken:"12",
-            RuleType:2,
-            StartDate:null,
-            EndDate:null,
-            ArmingRightsId:null,
-            ControlModeId:null
+            RuleToken: "12",
+            RuleType: 2,
+            StartDate: null,
+            EndDate: null,
+            ArmingRightsId: null,
+            ControlModeId: null
         }
 
         rules.push(r);

@@ -28,7 +28,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
 
     var query = new Parse.Query(Member)
-        .equalTo("system", 2)
+        .equalTo("system", 800)
         .contains("AccessRules.ObjectToken", data.request.parameters["tableid"] );
 
     /// 2) With Extra Filters

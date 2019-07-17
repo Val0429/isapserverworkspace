@@ -62,7 +62,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data SiPass TimeSchedule ${r["Name"]}-${r["Token"]}`);
 
-                                obj = await new Parse.Query(TimeSchedule).equalTo("timeid", +r["Token"]).first();
+                                obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["Name"]).first();
                                 if (obj == null) {
                                     let d = {
                                         system: 1,
@@ -97,7 +97,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
 
-                                obj = await new Parse.Query(Reader).equalTo("readerid", +r["Token"]).first();
+                                obj = await new Parse.Query(Reader).equalTo("readername", r["Name"]).first();
                                 if (obj == null) {
                                     let d = {
                                         system: 1,
@@ -133,7 +133,7 @@ export class ACSService {
 
                         //             Log.Info(`${this.constructor.name}`, `Import data SiPass Door ${r["Name"]}-${r["Token"]}`);
 
-                        //             obj = await new Parse.Query(Door).equalTo("doorid", +r["Token"]).first();
+                        //             obj = await new Parse.Query(Door).equalTo("doorname", r["Name"]).first();
                         //             if (obj == null) {
                         //                 let d = {
                         //                     system: 1,
@@ -168,7 +168,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
 
-                                obj = await new Parse.Query(Floor).equalTo("floorid", +r["Token"]).first();
+                                obj = await new Parse.Query(Floor).equalTo("floorname", r["Name"]).first();
 
                                 if (obj == null) {
                                     let d = {
@@ -204,7 +204,7 @@ export class ACSService {
 
                         //             Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
 
-                        //             obj = await new Parse.Query(Elevator).equalTo("elevatorid", r["Token"]).first();
+                        //             obj = await new Parse.Query(Elevator).equalTo("elevatorname", r["Name"]).first();
                         //             if (obj == null) {
                         //                 let d = {
                         //                     system: 1,
@@ -334,7 +334,7 @@ export class ACSService {
 
                                 let group = await siPassAdapter.getWorkGroup(grouplist[idx]["Token"]);
 
-                                obj = await new Parse.Query(WorkGroup).equalTo("groupid", group["Token"]).first();
+                                obj = await new Parse.Query(WorkGroup).equalTo("groupname", group["Name"]).first();
                                 if (obj == null) {
                                     let d = {
                                         system: 1,
@@ -521,7 +521,7 @@ export class ACSService {
                             for (let idx = 0; idx < records.length; idx++) {
                                 const r = records[idx];
                                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
-                                obj = await new Parse.Query(TimeSchedule).equalTo("timeid", r["timespecId"]).first();
+                                obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["timespecName"]).first();
 
                                 if (obj == null) {
                                     let d = {
@@ -556,7 +556,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);
 
-                                obj = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
+                                obj = await new Parse.Query(Door).equalTo("doorname", r["doorName"]).first();
                                 if (obj == null) {
                                     let d = {
                                         system: 800,
@@ -591,7 +591,7 @@ export class ACSService {
 
                         //             Log.Info(`${this.constructor.name}`, `Import data CCURE800 DoorGroups ${r["floorName"]}-${r["floorId"]}`);
 
-                        //             obj = await new Parse.Query(DoorGroup).equalTo("groupid", +r["floorId"]).first();
+                        //             obj = await new Parse.Query(DoorGroup).equalTo("groupname", r["floorName"]).first();
                         //             if (obj == null) {
                         //                 let d = {
                         //                     system: 800,
@@ -626,7 +626,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
 
-                                obj = await new Parse.Query(Reader).equalTo("readerid", r["deviceId"]).first();
+                                obj = await new Parse.Query(Reader).equalTo("readername", r["deviceName"]).first();
                                 if (obj == null) {
                                     let d = {
                                         system: 800,
@@ -670,7 +670,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
 
-                                obj = await new Parse.Query(Floor).equalTo("floorid", r["Token"]).first();
+                                obj = await new Parse.Query(Floor).equalTo("floorname", r["floorName"]).first();
 
                                 if (obj == null) {
                                     let d = {
@@ -706,7 +706,7 @@ export class ACSService {
 
                         //             Log.Info(`${this.constructor.name}`, `Import data CCURE800 Elevators ${r["elevatorName"]}-${r["elevatorId"]}`);
 
-                        //             obj = await new Parse.Query(Elevator).equalTo("elevatorid", r["elevatorId"]).first();
+                        //             obj = await new Parse.Query(Elevator).equalTo("elevatorname", r["elevatorName"]).first();
 
                         //             if (obj == null) {
                         //                 let d = {
@@ -742,7 +742,7 @@ export class ACSService {
 
                                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
 
-                                obj = await new Parse.Query(PermissionTable).equalTo("elevatorid", r["elevatorId"]).first();
+                                obj = await new Parse.Query(PermissionTable).equalTo("tablename", r["permissionTableName"]).first();
 
                                 if (obj == null) {
                                     let d = {
@@ -778,7 +778,7 @@ export class ACSService {
 
                         //             Log.Info(`${this.constructor.name}`, `Import data CCURE800 CardHolderList ${r["lastName"]}-${r["employeeNo"]}`);
 
-                        //             obj = await new Parse.Query(Member).equalTo("elevatorid", r["employeeNo"]).first();
+                        //             obj = await new Parse.Query(Member).equalTo("EmployeeNumber", r["employeeNo"]).first();
 
                         //             if (obj == null) {
                         //                 let d = {

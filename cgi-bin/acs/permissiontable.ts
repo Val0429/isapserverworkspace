@@ -26,8 +26,10 @@ type OutputC = Restful.OutputC<IPermissionTable>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    if (siPassAdapter.sessionToken == "")
+    if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
+        Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
         throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+    }
 
     /// 2) Create Object
     let name = data.inputType.tablename ;
