@@ -44,11 +44,28 @@ type OutputR = Restful.OutputR<IAPIRoles>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(APIRoles);
-    /// 2) With Extra Filters
-    query = Restful.Filter(query, data.inputType);
-    /// 3) Output
-    return Restful.Pagination(query, data.parameters);
+    let page = data.parameters.paging.page || 1;
+    let pageSize = data.parameters.paging.pageSize || 10;
+    var query = new Parse.Query(APIRoles).limit(Number.MAX_SAFE_INTEGER);
+    let output = await query.find();
+    let filter = data.parameters as any;
+    //must implement regex on mongo query
+    if(filter.name){
+        output = output.filter(x=>x.get("identifier").search(new RegExp(filter.name, "i"))>=0);
+    }    
+    let total = output.length;
+    let results = output.splice((page-1)*pageSize, pageSize).map(x=>ParseObject.toOutputJSON(x));
+    
+    return {
+        paging:{
+            page,
+            pageSize,
+            total,
+            totalPages:Math.ceil(total / pageSize)
+        },
+        results
+    }
+    
 });
 
 /********************************

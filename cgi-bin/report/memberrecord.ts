@@ -50,8 +50,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
         query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).matches("CustomFields.FieldValue", new RegExp(resignDate), "i");
     } 
-    if(!filter.ShowEmptyCardNumber || filter.ShowEmptyCardNumber!="true") {        
+    if(!filter.CardNumber && (!filter.ShowEmptyCardNumber || filter.ShowEmptyCardNumber!="true")) {        
         query.exists("Credentials.CardNumber").notEqualTo("Credentials.CardNumber", "");
+    }
+    if(!filter.CardNumber && filter.CardNumbers) {        
+        query.containedIn("Credentials.CardNumber", filter.CardNumbers);
     }
     if(filter.PermissionTable && filter.PermissionTable.lengh>0) {        
         query.containedIn("AccessRules.RuleToken", filter.PermissionTable);
