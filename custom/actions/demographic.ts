@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print, File, Draw, Demographic } from '../helpers';
+import { Print, File, Draw, Demographic, DateTime } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
 
@@ -371,7 +371,7 @@ class Action {
                                                 throw e;
                                             });
 
-                                            let imageSrc: string = `images_report/repeat_visitor/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+                                            let imageSrc: string = `images_report/repeat_visitor/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
                                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
                                             buffer = null;
 
@@ -396,7 +396,7 @@ class Action {
                                                 throw e;
                                             });
 
-                                            let imageSrc: string = `images_report/demographic/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+                                            let imageSrc: string = `images_report/demographic/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
                                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
                                             buffer = null;
 
