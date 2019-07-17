@@ -1,6 +1,7 @@
 export interface ICampaignIndexC {
     name: string;
     type: string;
+    year: number;
     budget: number;
     description: string;
     siteIds: string[];
@@ -11,6 +12,7 @@ export interface ICampaignIndexC {
 export interface ICampaignIndexU {
     objectId: string;
     type?: string;
+    year?: number;
     budget?: number;
     description?: string;
     siteIds?: string[];

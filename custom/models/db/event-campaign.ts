@@ -16,6 +16,11 @@ export interface IEventCampaign extends IDateRange {
     type: string;
 
     /**
+     * 年度
+     */
+    year: number;
+
+    /**
      * 預算
      */
     budget: number;

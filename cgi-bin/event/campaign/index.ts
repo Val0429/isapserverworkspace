@@ -47,6 +47,7 @@ action.post(
 
                         campaign.setValue('name', value.name);
                         campaign.setValue('type', value.type);
+                        campaign.setValue('year', value.year);
                         campaign.setValue('budget', value.budget);
                         campaign.setValue('description', value.description);
                         campaign.setValue('sites', sites);
@@ -136,6 +137,7 @@ action.get(
                         objectId: value.id,
                         name: value.getValue('name'),
                         type: value.getValue('type'),
+                        year: value.getValue('year'),
                         budget: value.getValue('budget'),
                         description: value.getValue('description'),
                         sites: sites,
@@ -185,6 +187,9 @@ action.put(
 
                         if (value.type || value.type === '') {
                             campaign.setValue('type', value.type);
+                        }
+                        if (value.year || value.year === 0) {
+                            campaign.setValue('year', value.year);
                         }
                         if (value.budget || value.budget === 0) {
                             campaign.setValue('budget', value.budget);
