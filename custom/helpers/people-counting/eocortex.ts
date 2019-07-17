@@ -154,8 +154,6 @@ export class Eocortex {
 
             let result: Eocortex.ICount = await new Promise<Eocortex.ICount>((resolve, reject) => {
                 try {
-                    let datetime = new DateTime();
-
                     HttpClient.get(
                         {
                             url: url,
@@ -167,7 +165,7 @@ export class Eocortex {
                                     <query_name>get_people_counters</query_name>
                                     <query_params>
                                         <channel_id>${channelId}</channel_id>
-                                        <search_time>${datetime.ToString(date, 'YYYY-MM-DD HH:mm:ss')}</search_time>
+                                        <search_time>${DateTime.ToString(date, 'YYYY-MM-DD HH:mm:ss')}</search_time>
                                     </query_params>
                                 </query>`,
                         },

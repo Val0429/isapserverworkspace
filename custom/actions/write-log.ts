@@ -72,9 +72,8 @@ class Action {
                 return;
             }
 
-            let datetime = new DateTime();
             let now: Date = new Date();
-            let date: string = datetime.ToString(now, 'YYYY-MM-DD');
+            let date: string = DateTime.ToString(now, 'YYYY-MM-DD');
 
             let log: string = messages.reduce((prev, curr, index, array) => {
                 return `${prev}${curr}\r\n`;
