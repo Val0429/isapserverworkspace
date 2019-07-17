@@ -11,59 +11,59 @@ import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
 
 const defaultFields = [
-    { "FiledName": "CustomDateControl4__CF" },
-    { "FiledName": "CustomDropdownControl1__CF" },
-    { "FiledName": "CustomTextBoxControl1__CF" },
-    { "FiledName": "CustomTextBoxControl2__CF" },
-    { "FiledName": "CustomTextBoxControl3__CF" },
-    { "FiledName": "CustomTextBoxControl6__CF" },
-    { "FiledName": "CustomDateControl2__CF" },
-    { "FiledName": "CustomDropdownControl2__CF_CF" },
-    { "FiledName": "CustomDropdownControl2__CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl5__CF" },
-    { "FiledName": "CustomDateControl1__CF_CF" },
-    { "FiledName": "CustomDateControl1__CF_CF_CF" },
-    { "FiledName": "CustomDateControl1__CF" },
-    { "FiledName": "CustomDropdownControl3__CF_CF" },
-    { "FiledName": "CustomDropdownControl3__CF_CF_CF" },
-    { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF" },
-    { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDropdownControl3__CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomTextBoxControl7__CF" },
-    { "FiledName": "CustomDateControl3__CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { "FiledName": "CustomDateControl3__CF" }
+    { FiledName: "CustomDateControl4__CF" },
+    { FiledName: "CustomDropdownControl1__CF" },
+    { FiledName: "CustomTextBoxControl1__CF" },
+    { FiledName: "CustomTextBoxControl2__CF" },
+    { FiledName: "CustomTextBoxControl3__CF" },
+    { FiledName: "CustomTextBoxControl6__CF" },
+    { FiledName: "CustomDateControl2__CF" },
+    { FiledName: "CustomDropdownControl2__CF_CF" },
+    { FiledName: "CustomDropdownControl2__CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl5__CF" },
+    { FiledName: "CustomDateControl1__CF_CF" },
+    { FiledName: "CustomDateControl1__CF_CF_CF" },
+    { FiledName: "CustomDateControl1__CF" },
+    { FiledName: "CustomDropdownControl3__CF_CF" },
+    { FiledName: "CustomDropdownControl3__CF_CF_CF" },
+    { FiledName: "CustomDropdownControl3__CF_CF_CF_CF" },
+    { FiledName: "CustomDropdownControl3__CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDropdownControl3__CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDropdownControl3__CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomTextBoxControl7__CF" },
+    { FiledName: "CustomDateControl3__CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
+    { FiledName: "CustomDateControl3__CF" }
 ];
 var action = new Action({
     loginRequired: false,
@@ -144,16 +144,11 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     
     let inputs = obj.get("CustomFields");
     let fields = Object.assign([], defaultFields);
-    if (inputs) {
-        for (let i = 0; i < fields.length; i++) {
-            for (let j = 0; j < inputs.length; j++) {
-                const input = inputs[j];
-
-                if (input["FiledName"] == fields[i]["FiledName"])
-                    fields[i]["FieldValue"] = input["FieldValue"];
-            }
-        }
-    }
+    for(let field of fields){        
+        let cf = inputs.find(x=>x.FiledName==field.FiledName);
+        if(!cf)continue;
+        field.FieldValue = cf.FieldValue;
+    }   
 
     // obj.set("Token", "-1");
     obj.set("CustomFields", fields);
@@ -313,25 +308,19 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     update.set("AccessRules", rules);
     
     // CustomFields
-    let fields = obj.get("CustomFields");
-    let inputs = update.get("CustomFields");
+    let inputs = update.get("CustomFields");    
+    
+    //only update existing fields
+    // let fields = obj.get("CustomFields");
+    // if (!fields) fields = Object.assign([], defaultFields);    
 
-    if (fields == undefined) {
-        // CustomFields
-        fields = Object.assign([], defaultFields);
-    }
+    //update the whole custom fields
+    let fields = Object.assign([], defaultFields); 
 
-    if (inputs != undefined) {
-        for (let i = 0; i < fields.length; i++) {
-            for (let j = 0; j < inputs.length; j++) {
-                const input = inputs[j];
-
-                if (input["FiledName"] == fields[i]["FiledName"]) {
-                    fields[i]["FieldValue"] = input["FieldValue"];
-                    break;
-                }
-            }
-        }
+    for(let field of fields){
+        let cf = inputs.find(x=>x.FiledName==field.FiledName);
+        if(!cf)continue;
+        field.FieldValue = cf.FieldValue;
     }
     update.set("CustomFields", fields);
 
