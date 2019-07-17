@@ -14,7 +14,9 @@ const fieldNames = {
     ResignationDate:"CustomDateControl1__CF",
     CompanyName:"CustomTextBoxControl6__CF",
     CardCustodian:"CustomTextBoxControl2__CF",
-    CardType:"CustomDropdownControl1__CF"
+    CardType:"CustomDropdownControl1__CF",
+    CardNumber:"Credentials.CardNumber",
+    RuleToken:"AccessRules.RuleToken"
 }
 
 
@@ -35,34 +37,30 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Member);   
     /// 2) Filter query 
-    let filter = data.parameters;
+    let filter = data.parameters;    
     
     if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
     if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
     if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
-    if(filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
-    if(filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue",new RegExp(filter.DepartmentName), "i");
-    if(filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue",new RegExp(filter.CostCenterName), "i");
-    if(filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue",new RegExp(filter.WorkAreaName), "i");
-    if(filter.CardCustodian) query.equalTo("CustomFields.FiledName", fieldNames.CardCustodian).matches("CustomFields.FieldValue",new RegExp(filter.CardCustodian), "i");
-    if(filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue",new RegExp(filter.CardType), "i");
+    let cf = "CustomFields.FiledName";
+    let fv = "CustomFields.FieldValue";
+    if(filter.DepartmentName) query.equalTo(cf, fieldNames.DepartmentName).matches(fv,new RegExp(filter.DepartmentName), "i");
+    if(filter.CostCenterName) query.equalTo(cf, fieldNames.CostCenterName).matches(fv,new RegExp(filter.CostCenterName), "i");
+    if(filter.WorkAreaName) query.equalTo(cf, fieldNames.WorkAreaName).matches(fv,new RegExp(filter.WorkAreaName), "i");
+    if(filter.CardCustodian) query.equalTo(cf, fieldNames.CardCustodian).matches(fv,new RegExp(filter.CardCustodian), "i");
+    if(filter.CardType) query.equalTo(cf, fieldNames.CardType).matches(fv,new RegExp(filter.CardType), "i");
+    if(filter.CompanyName) query.equalTo(cf, fieldNames.CompanyName).matches(fv, new RegExp(filter.CompanyName), "i");
+    
     if(filter.ResignationDate){
         let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
-        query.equalTo("CustomFields.FiledName", fieldNames.ResignationDate).matches("CustomFields.FieldValue", new RegExp(resignDate), "i");
+        query.equalTo(cf, fieldNames.ResignationDate).matches(fv, new RegExp(resignDate), "i");
     } 
-    if(!filter.CardNumber && (!filter.ShowEmptyCardNumber || filter.ShowEmptyCardNumber!="true")) {        
-        query.exists("Credentials.CardNumber").notEqualTo("Credentials.CardNumber", "");
-    }
-    if(!filter.CardNumber && filter.CardNumbers) {        
-        query.containedIn("Credentials.CardNumber", filter.CardNumbers);
-    }
-    if(filter.PermissionTable && filter.PermissionTable.lengh>0) {        
-        query.containedIn("AccessRules.RuleToken", filter.PermissionTable);
-    }
-
-    if(filter.CompanyName) query.equalTo("CustomFields.FiledName", fieldNames.CompanyName).matches("CustomFields.FieldValue", new RegExp(filter.CompanyName), "i");
+    if(filter.CardNumber) query.matches(fieldNames.CardNumber, new RegExp(filter.CardNumber), "i");    
+    else if(!filter.ShowEmptyCardNumber) query.exists(fieldNames.CardNumber).notEqualTo(fieldNames.CardNumber, "");
     
+    if(filter.CardNumbers) query.containedIn(fieldNames.CardNumber, filter.CardNumbers.split(","));
     
+    if(filter.PermissionTable) query.containedIn(fieldNames.RuleToken, filter.PermissionTable.split(","));
     
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
