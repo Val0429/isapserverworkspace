@@ -231,4 +231,20 @@ export namespace Utility {
             throw e;
         }
     }
+
+    /**
+     * Delay
+     * @param time
+     */
+    export async function Delay(time: number): Promise<void> {
+        try {
+            await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve();
+                }, time);
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
 }
