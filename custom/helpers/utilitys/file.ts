@@ -1,5 +1,6 @@
 import * as Fs from 'fs';
 import * as Path from 'path';
+import { execFile } from 'child_process';
 import { Parser } from './';
 
 export namespace File {
@@ -152,17 +153,35 @@ export namespace File {
     /**
      * Delete folder
      * @param path
+     * @param recursive
      */
-    export function DeleteFolder(path: string): void {
+    export function DeleteFolder(path: string, recursive: boolean = true): void {
         try {
             CreateFolder(path);
 
-            let files = ReadFolder(path);
-            files.forEach((value, index, array) => {
-                DeleteFile(`${path}/${value}`);
-            });
+            if (recursive) {
+                let files = ReadFolder(path);
+                files.forEach((value, index, array) => {
+                    DeleteFile(`${path}/${value}`);
+                });
+            }
 
             Fs.rmdirSync(path);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Delete folder by use C# app
+     * @param path
+     * @param recursive
+     */
+    export function DeleteFolderByApp(path: string, recursive: boolean = true): void {
+        try {
+            let app: string = RealPath('./workspace/custom/helpers/utilitys/DeleteFolder/DeleteFolder.exe');
+
+            execFile(app, [path, `${recursive}`]);
         } catch (e) {
             throw e;
         }

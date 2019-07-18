@@ -76,7 +76,7 @@ class Service {
      */
     private async EnableLiveStream(): Promise<void> {
         try {
-            File.DeleteFolder(`${File.assetsPath}/temp`);
+            File.DeleteFolderByApp(`${File.assetsPath}/temp`);
 
             let delay = this.GetDelayTime();
             Rx.Observable.interval(24 * 60 * 60 * 1000)
@@ -99,7 +99,7 @@ class Service {
 
                                         let date = DateTime.ToDate(value1, 'YYYYMMDD');
                                         if (date.getTime() < expired.getTime()) {
-                                            File.DeleteFolder(folder);
+                                            File.DeleteFolderByApp(folder);
                                         }
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
