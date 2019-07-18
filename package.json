@@ -7,6 +7,7 @@
   "description": "iSap Smart Community Service v1.00.00",
   "scripts": {
     "start": "npm start --prefix ./../",
+    "clean": "npm run clean --prefix ./../",
     "create-project": "git checkout --orphan"
   },
   "author": "",
