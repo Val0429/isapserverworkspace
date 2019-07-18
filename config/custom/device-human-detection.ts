@@ -25,7 +25,7 @@ export interface Config {
 
 let config: Config = {
     productId: '00111',
-    bufferCount: 5,
+    bufferCount: 10,
     roiTest: false,
     output: {
         image: {
