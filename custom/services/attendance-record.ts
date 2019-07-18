@@ -13,6 +13,7 @@ import * as delay from 'delay';
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 import moment = require('moment');
+import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 
 
 // import { CCUREReader } from './ccureReader'
@@ -48,7 +49,7 @@ export class AttendanceRecord {
     }
 
     async initialAdapterConnection() {
-        const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
+        const url = mongoDBUrl();
         this.mongoClient = await mongo.MongoClient.connect(url);
         this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
     }
