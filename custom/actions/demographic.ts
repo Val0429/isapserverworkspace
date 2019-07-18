@@ -4,6 +4,7 @@ import { IDB } from '../models';
 import { Print, File, Draw, Demographic, DateTime } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
+import { DeleteFile } from './';
 
 class Action {
     /**
@@ -348,6 +349,8 @@ class Action {
                                         };
 
                                         let buffer: Buffer = File.ReadFile(value.image);
+                                        DeleteFile.action$.next(value.image);
+
                                         let feature = await demo.demo.GetAnalysis(buffer);
                                         if (!feature) {
                                             return;

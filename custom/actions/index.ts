@@ -1,4 +1,5 @@
 export { default as WriteLog } from './write-log';
+export { default as DeleteFile } from './delete-file';
 export { default as Demographic } from './demographic';
 export { default as Email } from './email';
 export { default as HumanDetection } from './human-detection';

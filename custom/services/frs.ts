@@ -177,10 +177,6 @@ class Service {
                     frs.liveStream$.subscribe({
                         next: async (x) => {
                             try {
-                                let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
-                                File.WriteFile(temp, x.image);
-                                x.image = null;
-
                                 let devices = this._devices.filter((value1, index1, array1) => {
                                     let config = value1.getValue('config') as IDB.ICameraFRS;
                                     return config.sourceid === x.camera;
@@ -202,6 +198,9 @@ class Service {
                                     });
 
                                 devices.forEach((value1, index1, array1) => {
+                                    let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
+                                    File.WriteFile(temp, x.image);
+
                                     switch (value1.getValue('mode')) {
                                         case Enum.EDeviceMode.peopleCounting:
                                             Action.PeopleCountingSeparation.action$.next({
@@ -209,8 +208,6 @@ class Service {
                                                 date: x.date,
                                                 groups: groups,
                                             });
-                                            break;
-                                        case Enum.EDeviceMode.dwellTime:
                                             break;
                                         case Enum.EDeviceMode.demographic:
                                             Action.Demographic.action$.next({
@@ -226,6 +223,8 @@ class Service {
                                             throw `${value1.id}(device) mode not found`;
                                     }
                                 });
+
+                                x.image = null;
                             } catch (e) {
                                 Print.Log(`${value.id}(server) -> ${e}`, new Error(), 'error');
                             }

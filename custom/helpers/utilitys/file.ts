@@ -150,6 +150,25 @@ export namespace File {
     }
 
     /**
+     * Delete folder
+     * @param path
+     */
+    export function DeleteFolder(path: string): void {
+        try {
+            CreateFolder(path);
+
+            let files = ReadFolder(path);
+            files.forEach((value, index, array) => {
+                DeleteFile(`${path}/${value}`);
+            });
+
+            Fs.rmdirSync(path);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Copy filename1 to filename2
      * @param filename1
      * @param filename2

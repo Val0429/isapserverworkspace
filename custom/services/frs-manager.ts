@@ -304,12 +304,6 @@ class Service {
                                 return;
                             }
 
-                            let image: Buffer = await this.GetSnapshot(result.currentUrl);
-
-                            let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
-                            File.WriteFile(temp, image);
-                            image = null;
-
                             let devices = this._devices.filter((value1, index1, array1) => {
                                 let config = value1.getValue('config') as IDB.ICameraFRS;
                                 return config.server.id === frsConfig.id;
@@ -329,10 +323,13 @@ class Service {
                                 }
                             }
 
+                            let image: Buffer = await this.GetSnapshot(result.currentUrl);
+
                             devices.forEach((value1, index1, array1) => {
+                                let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
+                                File.WriteFile(temp, image);
+
                                 switch (value1.getValue('mode')) {
-                                    case Enum.EDeviceMode.peopleCounting:
-                                        break;
                                     case Enum.EDeviceMode.dwellTime:
                                         break;
                                     case Enum.EDeviceMode.demographic:
@@ -343,12 +340,12 @@ class Service {
                                             faceId: result.objectId,
                                         });
                                         break;
-                                    case Enum.EDeviceMode.visitor:
-                                        break;
                                     default:
                                         throw `${value1.id}(device) mode not found`;
                                 }
                             });
+
+                            image = null;
                         }
                     } catch (e) {
                         Print.Log(e, new Error(), 'error');
