@@ -26,10 +26,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
     let rules = [];
 
-    if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
-        Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-    }
+    // if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
+    //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+    //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+    // }
 
     // = = = RuleType = = = =
     // Unknown = 0

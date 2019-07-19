@@ -34,14 +34,7 @@ export class ACSService {
         clearTimeout(this.waitTimer);
         this.cycleTime = 1200;
 
-        let siPassSessionId = siPassAdapter.sessionToken;
-        Log.Info(`${this.constructor.name}`, ` SiPass SessionToken ${siPassSessionId}`);
-        Log.Info(`${this.constructor.name}`, ` getHours ${now.getHours()} getMinutes ${now.getMinutes()}`);
-
-        if (!siPassSessionId) {
-            this.cycleTime = 5;
-            Log.Info(`${this.constructor.name}`, `SiPass Connect Fail`);
-        }
+        
 
         if (this.cycleTime != 5) {
             if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
@@ -50,7 +43,7 @@ export class ACSService {
                 Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
                 let obj: any;
-                if (siPassSessionId != "") {
+               
                     Log.Info(`${this.constructor.name}`, `SiPass 2.2 Time Schedule`);
                     {
                         let records = await siPassAdapter.getTimeSchedule();
@@ -363,6 +356,7 @@ export class ACSService {
 
                     Log.Info(`${this.constructor.name}`, `SiPass 2.9 Get All Credential Profiles`);
                     {
+                       
                         let records = await siPassAdapter.getAllCredentialProfiles();
                         console.log("Readers", records);
 
@@ -507,7 +501,7 @@ export class ACSService {
                         // }
                     }
                     await delay(1000);
-                }
+                
 
 
                 // 3.0 get data from CCure800

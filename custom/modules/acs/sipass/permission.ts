@@ -11,7 +11,7 @@ export class SiPassPermissionService {
     }
 
     //-----------------------------PermissionTable-------------------------------//
-    public async GetAllPermissionTables(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    public async GetAllPermissionTables(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
 
@@ -19,7 +19,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -60,7 +60,7 @@ export class SiPassPermissionService {
         return JSON.stringify(result);
     }
 
-    public async GetPermissionTable(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessGroupObject) {
+    public async GetPermissionTable(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessGroupObject,sessionId:string) {
 
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
@@ -70,7 +70,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -112,7 +112,7 @@ export class SiPassPermissionService {
 
     }
 
-    public async CreatePermissionTable(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessGroupObject) {
+    public async CreatePermissionTable(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessGroupObject,sessionId:string) {
 
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
@@ -124,7 +124,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -171,7 +171,7 @@ export class SiPassPermissionService {
         return JSON.stringify(result);
 
     }
-    public async UpdatePermissionTable(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessGroupObject) {
+    public async UpdatePermissionTable(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessGroupObject,sessionId:string) {
 
         //console.log(data.sessionId);
         //console.log(data.uniqueId);
@@ -183,7 +183,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -234,7 +234,7 @@ export class SiPassPermissionService {
 
 
     //-----------------------------Permission-------------------------------//
-    public async GetAllPermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    public async GetAllPermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
 
@@ -245,7 +245,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -287,7 +287,7 @@ export class SiPassPermissionService {
         return JSON.stringify(result);
     }
 
-    public async GetPermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject) {
+    public async GetPermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject,sessionId:string) {
 
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
@@ -297,7 +297,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -341,7 +341,7 @@ export class SiPassPermissionService {
 
     }
 
-    public async CreatePermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject) {
+    public async CreatePermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject,sessionId:string) {
 
         //console.log(data.sessionId);
         //console.log(data.uniqueId);
@@ -352,7 +352,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -400,7 +400,7 @@ export class SiPassPermissionService {
         //console.log('\n.........................................');        
         return JSON.stringify(result);
     }
-    public async UpdatePermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject) {
+    public async UpdatePermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject,sessionId:string) {
 
         // create the request Body
         var requestBody = data2;
@@ -409,7 +409,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -460,7 +460,7 @@ export class SiPassPermissionService {
     }
 
     //-----------------------------WorkGroup-------------------------------//
-    public async GetAllWorkGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    public async GetAllWorkGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
 
@@ -468,7 +468,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -509,7 +509,7 @@ export class SiPassPermissionService {
         return JSON.stringify(result);
     }
 
-    public async GetWrokGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IWorkGroupObject) {
+    public async GetWrokGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IWorkGroupObject,sessionId:string) {
 
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
@@ -519,7 +519,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -561,7 +561,7 @@ export class SiPassPermissionService {
 
     }
 
-    public async CreateWorkGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IWorkGroupObject) {
+    public async CreateWorkGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IWorkGroupObject,sessionId:string) {
 
         //console.log(data.sessionId);
         //console.log(data.uniqueId);
@@ -571,7 +571,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -620,7 +620,7 @@ export class SiPassPermissionService {
         return JSON.stringify(result);
 
     }
-    public async UpdateWorkGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IWorkGroupObject) {
+    public async UpdateWorkGroup(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IWorkGroupObject,sessionId:string) {
 
         // create the request Body
         var requestBody = data2;
@@ -629,7 +629,7 @@ export class SiPassPermissionService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 

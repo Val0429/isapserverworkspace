@@ -96,25 +96,25 @@ export class SiPassHrAccountService {
 
         let token = result.Token;
 
-        if (token) {
-            data.sessionId = result.Token;
-            this.m_IsConnected = true;
+        // if (token) {
+        //     //data.sessionId = result.Token;
+        //     this.m_IsConnected = true;
 
-            var me = this;
-            this.m_WaitTimer = setTimeout(() => {
-                me.MaintainSessionRenewel(data);
-            }, 1000 * this.m_StartDelayTime);
-        }
-        else {
-            data.sessionId = "";
-            this.m_IsConnected = false;
-        }
+        //     var me = this;
+        //     this.m_WaitTimer = setTimeout(() => {
+        //         me.MaintainSessionRenewel(data);
+        //     }, 1000 * this.m_StartDelayTime);
+        // }
+        // else {
+        //     //data.sessionId = "";
+        //     this.m_IsConnected = false;
+        // }
 
         return JSON.stringify(result);
 
     }
 
-    public async Logout(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    public async Logout(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
         //console.log(data.sessionId);
         //console.log(data.clientUniqueId);
 
@@ -122,7 +122,7 @@ export class SiPassHrAccountService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -167,68 +167,68 @@ export class SiPassHrAccountService {
         return JSON.stringify(result);
     }
 
-    public async SessionRenewel(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    // public async SessionRenewel(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
 
+    //     //console.log(data.sessionId);
+    //     //console.log(data.uniqueId);
+
+
+    //     // prepare the header
+    //     var requestHeader = {
+    //         'Content-Type': 'application/json',
+    //         'Language': 'English',
+    //         'Authorization': data.sessionId,
+    //         'clientUniqueId': data.uniqueId
+    //     };
+
+    //     let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication/`;
+
+    //     console.info(`url = ${url}`);
+    //     console.info(`requestHeader = ${requestHeader}`);
+
+    //     let result: any = await new Promise<any>((resolve, reject) => {
+    //         try {
+    //             HttpClient.get(
+    //                 {
+    //                     url: url,
+    //                     json: true,
+    //                     headers: requestHeader
+    //                 },
+    //                 (error, response, body) => {
+    //                     if (error) {
+    //                         return reject(error);
+    //                     } else if (response.statusCode !== 200) {
+    //                         return reject(
+    //                             `{"status" : "error"}`,
+    //                         );
+    //                     }
+
+    //                     resolve(body);
+    //                 },
+    //             );
+    //         } catch (e) {
+    //             return reject(e);
+    //         }
+    //     }).catch((e) => {
+
+    //         return JSON.stringify(e);
+
+    //     });
+
+    //     return JSON.stringify(result);
+
+    // }
+
+
+    public async GetSessionTimeout(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
         //console.log(data.sessionId);
         //console.log(data.uniqueId);
-
 
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
-            'clientUniqueId': data.uniqueId
-        };
-
-        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication/`;
-
-        console.info(`url = ${url}`);
-        console.info(`requestHeader = ${requestHeader}`);
-
-        let result: any = await new Promise<any>((resolve, reject) => {
-            try {
-                HttpClient.get(
-                    {
-                        url: url,
-                        json: true,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-
-            return JSON.stringify(e);
-
-        });
-
-        return JSON.stringify(result);
-
-    }
-
-
-    public async GetSessionTimeout(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
-        //console.log(data.sessionId);
-        //console.log(data.uniqueId);
-
-        // prepare the header
-        var requestHeader = {
-            'Content-Type': 'application/json',
-            'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -270,61 +270,61 @@ export class SiPassHrAccountService {
     }
 
 
-    private async MaintainSessionRenewel(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    // private async MaintainSessionRenewel(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
 
-        clearTimeout(this.m_WaitTimer);
+    //     clearTimeout(this.m_WaitTimer);
 
-        if (this.m_IsConnected == true) {
-            // prepare the header
-            var requestHeader = {
-                'Content-Type': 'application/json',
-                'Language': 'English',
-                'Authorization': data.sessionId,
-                'clientUniqueId': data.uniqueId
-            };
+    //     if (this.m_IsConnected == true) {
+    //         // prepare the header
+    //         var requestHeader = {
+    //             'Content-Type': 'application/json',
+    //             'Language': 'English',
+    //             'Authorization': data.sessionId,
+    //             'clientUniqueId': data.uniqueId
+    //         };
 
-            let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication/`;
+    //         let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Authentication/`;
 
-            console.info(`MaintainSessionRenewel`);
-            console.log(`requestHeader =` + JSON.stringify(requestHeader));
+    //         console.info(`MaintainSessionRenewel`);
+    //         console.log(`requestHeader =` + JSON.stringify(requestHeader));
 
-            let result: any = await new Promise<any>((resolve, reject) => {
-                try {
-                    HttpClient.get(
-                        {
-                            url: url,
-                            json: true,
-                            headers: requestHeader
-                        },
-                        (error, response, body) => {
-                            if (error) {
-                                return reject(error);
-                            } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `{"status" : "error"}`,
-                                );
-                            }
+    //         let result: any = await new Promise<any>((resolve, reject) => {
+    //             try {
+    //                 HttpClient.get(
+    //                     {
+    //                         url: url,
+    //                         json: true,
+    //                         headers: requestHeader
+    //                     },
+    //                     (error, response, body) => {
+    //                         if (error) {
+    //                             return reject(error);
+    //                         } else if (response.statusCode !== 200) {
+    //                             return reject(
+    //                                 `{"status" : "error"}`,
+    //                             );
+    //                         }
 
-                            resolve(body);
-                        },
-                    );
-                } catch (e) {
-                    return reject(e);
-                }
-            }).catch((e) => {
-                this.m_IsConnected = false;
-                return JSON.stringify(e);
+    //                         resolve(body);
+    //                     },
+    //                 );
+    //             } catch (e) {
+    //                 return reject(e);
+    //             }
+    //         }).catch((e) => {
+    //             this.m_IsConnected = false;
+    //             return JSON.stringify(e);
 
-            });
-        }
+    //         });
+    //     }
 
-        let now: Date = new Date();
-        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.m_CycleTime;
+    //     let now: Date = new Date();
+    //     var s = (now.getMinutes() * 60 + now.getSeconds()) % this.m_CycleTime;
 
-        this.m_WaitTimer = setTimeout(() => {
-            this.MaintainSessionRenewel(data);
-        }, (this.m_CycleTime - s) * 1000);
-    }
+    //     this.m_WaitTimer = setTimeout(() => {
+    //         this.MaintainSessionRenewel(data);
+    //     }, (this.m_CycleTime - s) * 1000);
+    // }
 }
 
 
@@ -353,10 +353,10 @@ export class SiPassMsAccountService {
         //this.m_SessionId = data.sessionId;
 
 
-        var me = this;
-        this.m_WaitTimer = setTimeout(() => {
-            me.MaintainSessionRenewel(data);
-        }, 1000 * this.m_StartDelayTime);
+        // var me = this;
+        // this.m_WaitTimer = setTimeout(() => {
+        //     me.MaintainSessionRenewel(data);
+        // }, 1000 * this.m_StartDelayTime);
     }
 
 
@@ -419,7 +419,7 @@ export class SiPassMsAccountService {
         });
         //console.dir(result, {depth: null})
         // console.log(result); 
-        data.sessionId = result.Token;
+        //data.sessionId = result.Token;
         this.m_IsConnected = true;
         //console.log(result);        
         console.info(`result = ` + JSON.stringify(result));
@@ -427,7 +427,7 @@ export class SiPassMsAccountService {
 
     }
 
-    public async Logout(data: SiPassDataStructure.SiPassMsApiGlobalParameter) {
+    public async Logout(data: SiPassDataStructure.SiPassMsApiGlobalParameter, sessionId:string) {
         //console.log(data.sessionId);
         //console.log(data.clientUniqueId);
 
@@ -435,7 +435,7 @@ export class SiPassMsAccountService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -478,112 +478,112 @@ export class SiPassMsAccountService {
         return JSON.stringify(result);
     }
 
-    public async SessionRenewel(data: SiPassDataStructure.SiPassMsApiGlobalParameter) {
+    // public async SessionRenewel(data: SiPassDataStructure.SiPassMsApiGlobalParameter) {
 
-        //console.log(data.sessionId);
-        //console.log(data.uniqueId);
-
-
-        // prepare the header
-        var requestHeader = {
-            'Content-Type': 'application/json',
-            'Language': 'English',
-            'Authorization': data.sessionId,
-            'clientUniqueId': data.uniqueId
-        };
-
-        let url: string = `https://${data.domain}:${data.port}/api/management/V1/authentication/renew`;
-
-        console.info(`url = ${url}`);
-        console.info(`requestHeader = ${requestHeader}`);
-
-        let result: any = await new Promise<any>((resolve, reject) => {
-            try {
-                HttpClient.get(
-                    {
-                        url: url,
-                        json: true,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-
-            return JSON.stringify(e);
-
-        });
-
-        return JSON.stringify(result);
-
-    }
+    //     //console.log(data.sessionId);
+    //     //console.log(data.uniqueId);
 
 
-    private async MaintainSessionRenewel(data: SiPassDataStructure.SiPassMsApiGlobalParameter) {
+    //     // prepare the header
+    //     var requestHeader = {
+    //         'Content-Type': 'application/json',
+    //         'Language': 'English',
+    //         'Authorization': data.sessionId,
+    //         'clientUniqueId': data.uniqueId
+    //     };
 
-        clearTimeout(this.m_WaitTimer);
+    //     let url: string = `https://${data.domain}:${data.port}/api/management/V1/authentication/renew`;
 
-        if (this.m_IsConnected == true) {
-            // prepare the header
-            var requestHeader = {
-                'Content-Type': 'application/json',
-                'Language': 'English',
-                'Authorization': data.sessionId,
-                'clientUniqueId': data.uniqueId
-            };
+    //     console.info(`url = ${url}`);
+    //     console.info(`requestHeader = ${requestHeader}`);
 
-            let url: string = `https://${data.domain}:${data.port}/api/management/V1/authentication/renew`;
+    //     let result: any = await new Promise<any>((resolve, reject) => {
+    //         try {
+    //             HttpClient.get(
+    //                 {
+    //                     url: url,
+    //                     json: true,
+    //                     headers: requestHeader
+    //                 },
+    //                 (error, response, body) => {
+    //                     if (error) {
+    //                         return reject(error);
+    //                     } else if (response.statusCode !== 200) {
+    //                         return reject(
+    //                             `{"status" : "error"}`,
+    //                         );
+    //                     }
 
-            console.info(`MaintainSessionRenewel`);
-            console.log(`requestHeader =` + JSON.stringify(requestHeader));
+    //                     resolve(body);
+    //                 },
+    //             );
+    //         } catch (e) {
+    //             return reject(e);
+    //         }
+    //     }).catch((e) => {
 
-            let result: any = await new Promise<any>((resolve, reject) => {
-                try {
-                    HttpClient.get(
-                        {
-                            url: url,
-                            json: true,
-                            headers: requestHeader
-                        },
-                        (error, response, body) => {
-                            if (error) {
-                                return reject(error);
-                            } else if (response.statusCode !== 200) {
-                                return reject(
-                                    `{"status" : "error"}`,
-                                );
-                            }
+    //         return JSON.stringify(e);
 
-                            resolve(body);
-                        },
-                    );
-                } catch (e) {
-                    return reject(e);
-                }
-            }).catch((e) => {
-                this.m_IsConnected = false;
-                return JSON.stringify(e);
+    //     });
 
-            });
-        }
+    //     return JSON.stringify(result);
 
-        let now: Date = new Date();
-        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.m_CycleTime;
+    // }
 
-        this.m_WaitTimer = setTimeout(() => {
-            this.MaintainSessionRenewel(data);
-        }, (this.m_CycleTime - s) * 1000);
-    }
+
+    // private async MaintainSessionRenewel(data: SiPassDataStructure.SiPassMsApiGlobalParameter) {
+
+    //     clearTimeout(this.m_WaitTimer);
+
+    //     if (this.m_IsConnected == true) {
+    //         // prepare the header
+    //         var requestHeader = {
+    //             'Content-Type': 'application/json',
+    //             'Language': 'English',
+    //             'Authorization': data.sessionId,
+    //             'clientUniqueId': data.uniqueId
+    //         };
+
+    //         let url: string = `https://${data.domain}:${data.port}/api/management/V1/authentication/renew`;
+
+    //         console.info(`MaintainSessionRenewel`);
+    //         console.log(`requestHeader =` + JSON.stringify(requestHeader));
+
+    //         let result: any = await new Promise<any>((resolve, reject) => {
+    //             try {
+    //                 HttpClient.get(
+    //                     {
+    //                         url: url,
+    //                         json: true,
+    //                         headers: requestHeader
+    //                     },
+    //                     (error, response, body) => {
+    //                         if (error) {
+    //                             return reject(error);
+    //                         } else if (response.statusCode !== 200) {
+    //                             return reject(
+    //                                 `{"status" : "error"}`,
+    //                             );
+    //                         }
+
+    //                         resolve(body);
+    //                     },
+    //                 );
+    //             } catch (e) {
+    //                 return reject(e);
+    //             }
+    //         }).catch((e) => {
+    //             this.m_IsConnected = false;
+    //             return JSON.stringify(e);
+
+    //         });
+    //     }
+
+    //     let now: Date = new Date();
+    //     var s = (now.getMinutes() * 60 + now.getSeconds()) % this.m_CycleTime;
+
+    //     this.m_WaitTimer = setTimeout(() => {
+    //         this.MaintainSessionRenewel(data);
+    //     }, (this.m_CycleTime - s) * 1000);
+    // }
 }

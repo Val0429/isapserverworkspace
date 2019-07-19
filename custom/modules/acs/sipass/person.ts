@@ -9,7 +9,7 @@ export class SiPassPersonService {
 
     }
 
-    public async GetAllPersons(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    public async GetAllPersons(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
 
@@ -17,7 +17,7 @@ export class SiPassPersonService {
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
           
@@ -61,7 +61,7 @@ export class SiPassPersonService {
         return JSON.stringify(result);
     }
 
-    public async GetPerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject) {
+    public async GetPerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject, sessionId:string) {
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
 
@@ -69,7 +69,7 @@ export class SiPassPersonService {
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
           
@@ -112,7 +112,7 @@ export class SiPassPersonService {
         return JSON.stringify(result);
     }
     
-    public async CreatePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject) {
+    public async CreatePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject, sessionId:string) {
 
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
@@ -124,7 +124,7 @@ export class SiPassPersonService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -171,7 +171,7 @@ export class SiPassPersonService {
         return JSON.stringify(result);
 
     }
-    public async UpdatePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject) {
+    public async UpdatePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject, sessionId:string) {
 
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
@@ -183,7 +183,7 @@ export class SiPassPersonService {
         var requestHeader = {
             'Content-Type': 'application/json',
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
 
@@ -232,7 +232,7 @@ export class SiPassPersonService {
         return JSON.stringify(result);
     }
 
-    public async GetAllCredentialProfiles(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
+    public async GetAllCredentialProfiles(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
         // console.log(data.sessionId);
         // console.log(data.uniqueId);
 
@@ -240,7 +240,7 @@ export class SiPassPersonService {
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
           

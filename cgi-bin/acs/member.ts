@@ -81,10 +81,10 @@ type OutputC = Restful.OutputC<IMember>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
-        Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-    }
+    // if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
+    //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+    //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+    // }
 
     if (data.inputType.Credentials[0]) {
         let cardno = data.inputType.Credentials[0].CardNumber;;
@@ -160,7 +160,6 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // });
     
     let ret = ParseObject.toOutputJSON(obj);
-
     let holder = await siPassAdapter.postCardHolder(ret);
     obj.set("Token", holder["Token"]);
 
@@ -254,8 +253,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     let update = new Member(data.inputType);
 
     /// 3) Check data.inputType    
-    if (siPassAdapter.sessionToken == "")
-        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+    // if (siPassAdapter.sessionToken == "")
+    //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
 
     if (data.inputType.Credentials[0]) {
         let cardno = data.inputType.Credentials[0].CardNumber;;

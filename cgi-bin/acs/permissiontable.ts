@@ -26,10 +26,10 @@ type OutputC = Restful.OutputC<IPermissionTable>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
-        Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-        throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-    }
+    // if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
+    //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+    //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+    // }
 
     /// 2) Create Object
     let name = data.inputType.tablename ;
@@ -39,63 +39,63 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }
 
     // 2.0 Modify Access Group
-    {
-        let al = [];
+    
+    let al = [];
 
-        if (data.inputType.accesslevels) {
-            for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-                let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
-                let ar = [];
-                if (level["readers"]) {
-                    for (let j = 0; j < level["readers"].length; j++) {
-                        const r = level["readers"][j];
+    if (data.inputType.accesslevels) {
+        for (let i = 0; i < data.inputType.accesslevels.length; i++) {
+            let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
+            let ar = [];
+            if (level["readers"]) {
+                for (let j = 0; j < level["readers"].length; j++) {
+                    const r = level["readers"][j];
 
-                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: r["readerid"], RuleType: 2 });
-                    }
-
-                    let firstObject = await new Parse.Query(AccessLevel).descending("levelid").first();
-                    let maxId = firstObject.get("levelid");
-                    data.inputType.tableid = maxId + 1;
-
-                    al.push({
-                        name: level["levelname"],
-                        token: "-1",
-                        accessRule: ar,
-                        timeScheduleToken: level["timeschedule"]["timeid"]
-                    });
+                    ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: r["readerid"], RuleType: 2 });
                 }
 
-                let d = {
+                let firstObject = await new Parse.Query(AccessLevel).descending("levelid").first();
+                let maxId = firstObject.get("levelid");
+                data.inputType.tableid = maxId + 1;
+
+                al.push({
                     name: level["levelname"],
                     token: "-1",
                     accessRule: ar,
                     timeScheduleToken: level["timeschedule"]["timeid"]
-                };
-                await siPassAdapter.postAccessLevel(d);
+                });
             }
-        }
-        let ag = {
-            token: "-1",
-            name: data.inputType.tablename,
-            accessLevels: al
-        };
 
-        Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
-        await siPassAdapter.postAccessGroup(ag);
-
-        for (let i = 0; i < al.length; i++) {
-            const e = al[i];
-
-            let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 2).first();
-
-            if (ccure == null)
-                throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
+            let d = {
+                name: level["levelname"],
+                token: "-1",
+                accessRule: ar,
+                timeScheduleToken: level["timeschedule"]["timeid"]
+            };
+            //await siPassAdapter.postAccessLevel(d);
         }
     }
+    let ag = {
+        token: "-1",
+        name: data.inputType.tablename,
+        accessLevels: al
+    };
+
+    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
+    //await siPassAdapter.postAccessGroup(ag);
+
+    for (let i = 0; i < al.length; i++) {
+        const e = al[i];
+
+        let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 2).first();
+
+        if (ccure == null)
+            throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
+    }
+    
 
     
     let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
-    let maxId = firstObject.get("tableid");
+    let maxId = firstObject ? firstObject.get("tableid") : 0;
     data.inputType.tableid = maxId + 1;
 
     var obj = new PermissionTable(data.inputType);
@@ -195,7 +195,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
                         timeScheduleToken: level["timeschedule"]["timename"]
                     };
     
-                    await siPassAdapter.postAccessLevel(d);
+                    //await siPassAdapter.postAccessLevel(d);
                 }
             }
         }
@@ -207,7 +207,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         };
 
         Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
-        await siPassAdapter.putAccessGroup(ag);
+        //await siPassAdapter.putAccessGroup(ag);
 
         for (let i = 0; i < al.length; i++) {
             const e = al[i];

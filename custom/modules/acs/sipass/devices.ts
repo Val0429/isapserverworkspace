@@ -9,15 +9,15 @@ export class SiPassDeviceService {
 
     }
 
-    public async GetAllDevices(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
-        console.log(data.sessionId);
+    public async GetAllDevices(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
+        console.log(sessionId);
         console.log(data.uniqueId);
 
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };        
                 
@@ -59,15 +59,15 @@ export class SiPassDeviceService {
     }
 
 
-    public async GetAllDoors(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
-        console.log(data.sessionId);
+    public async GetAllDoors(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
+        console.log(sessionId);
         console.log(data.uniqueId);
 
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
                         
@@ -108,15 +108,15 @@ export class SiPassDeviceService {
          return JSON.stringify(result);
     }
 
-    public async GetAllFloors(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
-        console.log(data.sessionId);
+    public async GetAllFloors(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
+        console.log(sessionId);
         console.log(data.uniqueId);
 
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
                 
@@ -157,15 +157,15 @@ export class SiPassDeviceService {
          return JSON.stringify(result);
     }
 
-    public async GetAllElevators(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
-        console.log(data.sessionId);
+    public async GetAllElevators(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {
+        console.log(sessionId);
         console.log(data.uniqueId);
 
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
                 

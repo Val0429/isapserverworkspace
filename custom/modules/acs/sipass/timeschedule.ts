@@ -9,15 +9,15 @@ export class SiPassTimeScheuleService {
 
     }
 
-    public async GetTimeScheules(data: SiPassDataStructure.SiPassHrApiGlobalParameter) {
-        console.log(data.sessionId);
+    public async GetTimeScheules(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
+        console.log(sessionId);
         console.log(data.uniqueId);
 
         // prepare the header
         var requestHeader = {
             'Content-Type': 'application/json',            
             'Language': 'English',
-            'Authorization': data.sessionId,
+            'Authorization': sessionId,
             'clientUniqueId': data.uniqueId
         };
                     

@@ -368,7 +368,7 @@ export class SiPassHrApiGlobalParameter {
     public uniqueId: string;
     public domain: string;
     public port: string;
-    public sessionId: string;
+    //public sessionId: string;
 
 
     constructor(data: IConnectionInfo) {
@@ -378,7 +378,7 @@ export class SiPassHrApiGlobalParameter {
         this.uniqueId = data.uniqueId;
         this.domain = data.domain;
         this.port = data.port;
-        this.sessionId = data.sessionId;
+        //this.sessionId = data.sessionId;
     }
 
 }
@@ -390,7 +390,7 @@ export class SiPassMsApiGlobalParameter {
     public uniqueId: string;
     public domain: string;
     public port: string;
-    public sessionId: string;
+    //public sessionId: string;
 
 
     constructor(data: IConnectionInfo) {
@@ -400,7 +400,7 @@ export class SiPassMsApiGlobalParameter {
         this.uniqueId = data.uniqueId;
         this.domain = data.domain;
         this.port = data.port;
-        this.sessionId = data.sessionId;
+        //this.sessionId = data.sessionId;
     }
 }
 

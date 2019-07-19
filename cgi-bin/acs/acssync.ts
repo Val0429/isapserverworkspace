@@ -28,15 +28,15 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
     async function syncData() {
         let now: Date = new Date();
 
-        let siPassSessionId = siPassAdapter.sessionToken;
-        Log.Info(`CGI acsSync`, `SiPass SessionToken ${siPassSessionId}`);
-        Log.Info(`CGI acsSync`, `getHours ${now.getHours()} getMinutes ${now.getMinutes()}`);
+        // let siPassSessionId = siPassAdapter.sessionToken;
+        // Log.Info(`CGI acsSync`, `SiPass SessionToken ${siPassSessionId}`);
+        // Log.Info(`CGI acsSync`, `getHours ${now.getHours()} getMinutes ${now.getMinutes()}`);
 
-        if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
-            Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-            throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-        }
-        else {
+        // if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
+        //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+        //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+        // }
+        // else {
             let obj: any;
 
             Log.Info(`CGI acsSync`, `SiPass 2.3 Door Readers`);
@@ -189,7 +189,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
             }
             await delay(1000);
         }
-    }
+    //}
 
     return { success: true };
 });
