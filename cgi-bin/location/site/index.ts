@@ -81,6 +81,13 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['office hour not found']);
                         }
 
+                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                            .containedIn('objectId', value.tagIds)
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
+
                         site = new IDB.LocationSite();
 
                         site.setValue('name', value.name);
@@ -115,6 +122,16 @@ action.post(
                         await officeHour.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
+
+                        await Promise.all(
+                            tags.map(async (value1, index1, array1) => {
+                                value1.setValue('sites', value1.getValue('sites').concat(site));
+
+                                await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }),
+                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -205,6 +222,13 @@ action.get(
                     throw e;
                 });
 
+            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                .containedIn('sites', sites)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
             return {
                 paging: {
                     total: total,
@@ -252,6 +276,19 @@ action.get(
                         return value1.getValue('site').id === value.id;
                     }).length;
 
+                    let tagObjects = tags
+                        .filter((value1, index1, array1) => {
+                            return !!value1.getValue('sites').find((value2, index2, array2) => {
+                                return value2.id === value.id;
+                            });
+                        })
+                        .map<IResponse.IObject>((value1, index1, array1) => {
+                            return {
+                                objectId: value1.id,
+                                name: value1.getValue('name'),
+                            };
+                        });
+
                     return {
                         objectId: value.id,
                         region: region,
@@ -269,6 +306,7 @@ action.get(
                         latitude: value.getValue('latitude'),
                         areaCount: areaCount,
                         deviceGroupCount: deviceGroupCount,
+                        tags: tagObjects,
                     };
                 }),
             };
@@ -395,6 +433,55 @@ action.put(
                                     });
                                 }
                             }
+                        }
+                        if (value.tagIds) {
+                            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                                .containedIn('sites', [site])
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
+
+                            await Promise.all(
+                                tags.map(async (value1, index1, array1) => {
+                                    if (value.tagIds.indexOf(value1.id) < 0) {
+                                        let sites = value1.getValue('sites');
+                                        sites = sites.filter((value2, index2, array2) => {
+                                            return value2.id !== site.id;
+                                        });
+
+                                        value1.setValue('sites', sites);
+
+                                        await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                            throw e;
+                                        });
+                                    }
+                                }),
+                            );
+
+                            tags = await new Parse.Query(IDB.Tag)
+                                .containedIn('objectId', value.tagIds)
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
+
+                            await Promise.all(
+                                tags.map(async (value1, index1, array1) => {
+                                    let sites = value1.getValue('sites');
+
+                                    let _site = sites.find((value2, index2, array2) => {
+                                        return value2.id === site.id;
+                                    });
+                                    if (!_site) {
+                                        value1.setValue('sites', sites.concat(site));
+
+                                        await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                            throw e;
+                                        });
+                                    }
+                                }),
+                            );
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);

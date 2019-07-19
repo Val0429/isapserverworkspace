@@ -39,6 +39,7 @@ export interface ISiteIndexC extends IGPS {
     squareMeter?: number;
     staffNumber?: number;
     officeHourId: string;
+    tagIds: string[];
     imageBase64: string;
 }
 
@@ -52,6 +53,7 @@ export interface ISiteIndexU extends IGPS {
     squareMeter?: number;
     staffNumber?: number;
     officeHourId?: string;
+    tagIds?: string[];
     imageBase64?: string;
 }
 
