@@ -222,8 +222,6 @@ class Service {
                                                         groups: groups,
                                                     });
                                                     break;
-                                                case Enum.EDeviceMode.visitor:
-                                                    break;
                                                 default:
                                                     throw `${value1.id}(device) mode not found`;
                                             }
