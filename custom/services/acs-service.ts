@@ -28,13 +28,10 @@ export class ACSService {
     async doAccessControlSync() {
         Log.Info(`${this.constructor.name}`, `2.0 Timer Check`);
 
-        var me = this;
         let now: Date = new Date();
 
         clearTimeout(this.waitTimer);
         this.cycleTime = 1200;
-
-        
 
         if (this.cycleTime != 5) {
             if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
@@ -42,187 +39,264 @@ export class ACSService {
                 // 0.0 Initial Adapter
                 Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
-                let obj: any;
+                
                
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.2 Time Schedule`);
-                    {
-                        let records = await siPassAdapter.getTimeSchedule();
-                        console.log("Time Schedule", records);
+                    await this.syncSipassSchedule();
 
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
+                    await this.syncSipassDoorReader();
+                    
+                    await this.syncSipassFloor();
 
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass TimeSchedule ${r["Name"]}-${r["Token"]}`);
+                    await this.syncSipassAcessGroup();                    
 
-                                obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["Name"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 1,
-                                        timeid: +r["Token"],
-                                        timename: r["Name"],
-                                        status: 1
-                                    };
-                                    let o = new TimeSchedule(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 1);
-                                    obj.set("timeid", +r["Token"]);
-                                    obj.set("timename", r["Name"]);
+                    await this.syncSipassWorkgroup();
 
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("TimeSchedule").findOneAndUpdate({ "timeid": r["Token"] }, { $set: d }, { upsert: true });
-                            };
-                        }
-                    }
-                    await delay(1000);
+                    await this.syncSipassCredentialProfile();
+                
+                    await this.syncCcureTimeSchedule();
 
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.3 Door Readers`);
-                    {
-                        let records = await siPassAdapter.getReaders();
-                        console.log("Readers", records);
+                    await this.syncCcureDoor();
 
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
+                    await this.syncCcureDoorReader();
 
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
+                    await this.syncCcureFloor();
 
-                                obj = await new Parse.Query(Reader).equalTo("readername", r["Name"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 1,
-                                        readerid: +r["Token"],
-                                        readername: r["Name"],
-                                        status: 1
-                                    };
+                    await this.syncCcurePermissionTable();
 
-                                    let o = new Reader(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 1);
-                                    obj.set("readerid", +r["Token"]);
-                                    obj.set("readername", r["Name"]);
+            }
+        }
 
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("Reader").findOneAndUpdate({ "readerid": r["Token"] }, { $set: d }, { upsert: true });
-                            };
-                        }
-                    }
-                    await delay(1000);
+        now = new Date();
+        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.cycleTime;
+        Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.cycleTime - s} ] sec`);
 
-                    // Log.Info(`${this.constructor.name}`, `SiPass 2.4 Doors`);
-                    {
-                        //     let records = await siPassAdapter.getDoors();
-                        //     console.log("Doors", records);
+        this.waitTimer = setTimeout(() => {
+            this.doAccessControlSync();
+        }, (this.cycleTime - s) * 1000);
+    }
+    
+    private async syncCcurePermissionTable() {
+        Log.Info(`${this.constructor.name}`, `CCure 2.8 PermissionTables`);
+        let records = await cCureAdapter.getPermissionTables();
+        console.log("PermissionTables", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
+                let obj = await new Parse.Query(PermissionTable).equalTo("tablename", r["permissionTableName"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 800,
+                        tableid: +r["permissionTableId"],
+                        tablename: r["permissionTableName"],
+                        status: 1
+                    };
+                    let o = new PermissionTable(d);
+                    let o1 = await o.save();
+                }
+                else {
+                    obj.set("system", 800);
+                    obj.set("tableid", +r["permissionTableId"]);
+                    obj.set("tablename", r["permissionTableName"]);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
+            }
+        }
+        await delay(1000);
+    }
 
-                        //     if (records) {
-                        //         for (let idx = 0; idx < records.length; idx++) {
-                        //             const r = records[idx];
+    private async syncCcureFloor() {
+        Log.Info(`${this.constructor.name}`, `CCure 2.6 Floors`);
+        let records = await cCureAdapter.getFloors();
+        console.log("Floors", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
+                let obj = await new Parse.Query(Floor).equalTo("floorname", r["floorName"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 800,
+                        floorid: +r["floorId"],
+                        floorname: r["floorName"],
+                        status: 1
+                    };
+                    let o = new Floor(d);
+                    let o1 = await o.save();
+                }
+                else {
+                    obj.set("system", 800);
+                    obj.set("floorid", +r["floorId"]);
+                    obj.set("floorname", r["floorName"]);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
+            }
+        }
+        await delay(1000);
+    }
 
-                        //             Log.Info(`${this.constructor.name}`, `Import data SiPass Door ${r["Name"]}-${r["Token"]}`);
+    private async syncCcureDoorReader() {
+        Log.Info(`${this.constructor.name}`, `CCure 2.5 Door Readers`);
+        let records = await cCureAdapter.getReaders();
+        console.log("Readers", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
+                let obj = await new Parse.Query(Reader).equalTo("readername", r["deviceName"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 800,
+                        readerid: +r["deviceId"],
+                        readername: r["deviceName"],
+                        status: 1
+                    };
+                    obj = new Reader(d);
+                    await obj.save();
+                }
+                else {
+                    obj.set("system", 800);
+                    obj.set("readerid", +r["deviceId"]);
+                    obj.set("readername", r["deviceName"]);
+                    obj.save();
+                }
+                let door = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
+                if (door) {
+                    let readers = door.get("readerin");
+                    if (readers)
+                        readers.push(obj);
+                    else
+                        readers = [obj];
+                    door.set("readerin", readers);
+                }
+            }
+            ;
+        }
+        await delay(1000);
+    }
 
-                        //             obj = await new Parse.Query(Door).equalTo("doorname", r["Name"]).first();
-                        //             if (obj == null) {
-                        //                 let d = {
-                        //                     system: 1,
-                        //                     doorid: +r["Token"],
-                        //                     doorname: r["Name"],
-                        //                     status: 1
-                        //                 };
-                        //                 let o = new Door(d);
-                        //                 await o.save();
-                        //             }
-                        //             else {
-                        //                 obj.set("system", 1);
-                        //                 obj.set("doorid", +r["Token"]);
-                        //                 obj.set("doorname", r["Name"]);
+    private async syncCcureDoor() {
+        Log.Info(`${this.constructor.name}`, `CCure 2.3 Doors`);
+        let records = await cCureAdapter.getDoors();
+        console.log("Doors", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);
+                let obj = await new Parse.Query(Door).equalTo("doorname", r["doorName"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 800,
+                        doorid: +r["doorId"],
+                        doorname: r["doorName"],
+                        status: 1
+                    };
+                    let o = new Door(d);
+                    await o.save();
+                }
+                else {
+                    obj.set("system", 800);
+                    obj.set("doorid", +r["doorId"]);
+                    obj.set("doorname", r["doorName"]);
+                    obj.save();
+                }
+            }
+            ;
+        }
+        await delay(1000);
+    }
 
-                        //                 obj.save();
-                        //             }
-                        //             // await this.mongoDb.collection("Door").findOneAndUpdate({ "doorid": +r["Token"] }, { $set: d }, { upsert: true });
-                        //         };
-                        //     }
-                    }
-                    // await delay(1000);
+    private async syncCcureTimeSchedule() {
+        Log.Info(`${this.constructor.name}`, `CCure 2.2 Time Schedule`);
+        let records = await cCureAdapter.getTimeSchedule();
+        console.log("Time Schedule", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
+                let obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["timespecName"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 800,
+                        timeid: +r["timespecId"],
+                        timename: r["timespecName"],
+                        status: 1
+                    };
+                    let o = new TimeSchedule(d);
+                    await o.save();
+                }
+                else {
+                    obj.set("system", 800);
+                    obj.set("timeid", +r["timespecId"]);
+                    obj.set("timename", r["timespecName"]);
+                    obj.save();
+                }
+            }
+            ;
+        }
+        await delay(1000);
+    }
 
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.5 Floors`);
-                    {
-                        let records = await siPassAdapter.getFloors();
-                        console.log("Floors", records);
+    private async syncSipassCredentialProfile() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.9 Get All Credential Profiles`);
+        let records = await siPassAdapter.getAllCredentialProfiles();
+        console.log("Readers", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data SiPass CredentialProfiles ${r["Name"]}-${r["Token"]}`);
+                let obj = await new Parse.Query(CredentialProfiles).equalTo("Token", r["Token"]).first();
+                if (obj == null) {
+                    r["system"] = 1;
+                    let o = new CredentialProfiles(r);
+                    await o.save();
+                }
+            }
+            ;
+        }
+        await delay(1000);
+    }
 
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
+    private async syncSipassWorkgroup() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.8 Work Group List`);
+        let grouplist = await siPassAdapter.getWorkGroupList();
+        console.log("Work Group List", grouplist);
+        if (grouplist) {
+            for (let idx = 0; idx < grouplist.length; idx++) {
+                Log.Info(`${this.constructor.name}`, `Import data SiPass WorkGroup ${grouplist[idx]["Name"]}-${grouplist[idx]["Token"]}`);
+                let group = await siPassAdapter.getWorkGroup(grouplist[idx]["Token"]);
+                let obj = await new Parse.Query(WorkGroup).equalTo("groupname", group["Name"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 1,
+                        groupid: +group["Token"],
+                        groupname: group["Name"],
+                        type: +group["Type"],
+                        accesspolicyrules: group["AccessPolicyRules"],
+                        status: 1
+                    };
+                    let o = new WorkGroup(d);
+                    await o.save();
+                }
+                else {
+                    obj.set("system", 1);
+                    obj.set("groupid", +group["Token"]);
+                    obj.set("groupname", group["Name"]);
+                    obj.set("type", +group["Type"]);
+                    obj.set("accesspolicyrules", group["AccessPolicyRules"]);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("WorkGroup").findOneAndUpdate({ "groupid": group["Token"] }, { $set: d }, { upsert: true });
+            }
+        }
+        await delay(1000);
+    }
 
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
-
-                                obj = await new Parse.Query(Floor).equalTo("floorname", r["Name"]).first();
-
-                                if (obj == null) {
-                                    let d = {
-                                        system: 1,
-                                        floorid: +r["Token"],
-                                        floorname: r["Name"],
-                                        status: 1
-                                    };
-                                    let o = new Floor(d);
-                                    let o1 = await o.save();
-                                }
-                                else {
-                                    obj.set("system", 1);
-                                    obj.set("floorid", +r["Token"]);
-                                    obj.set("floorname", r["Name"]);
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
-                            }
-                        }
-                    }
-                    await delay(1000);
-
-                    // Log.Info(`${this.constructor.name}`, `SiPass 2.6 Elevators`);
-                    {
-                        //     let records = await siPassAdapter.getElevators();
-
-                        //     console.log("Elevators", records);
-
-                        //     if (records) {
-                        //         for (let idx = 0; idx < records.length; idx++) {
-                        //             const r = records[idx];
-
-                        //             Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
-
-                        //             obj = await new Parse.Query(Elevator).equalTo("elevatorname", r["Name"]).first();
-                        //             if (obj == null) {
-                        //                 let d = {
-                        //                     system: 1,
-                        //                     elevatorid: r["Token"],
-                        //                     elevatorname: r["Name"],
-                        //                     status: 1
-                        //                 };
-                        //                 let o = new Elevator(d);
-                        //                 await o.save();
-                        //             }
-                        //             else {
-                        //                 obj.set("system", 1);
-                        //                 obj.set("elevatorid", r["Token"]);
-                        //                 obj.set("elevatorname", r["Name"]);
-
-                        //                 obj.save();
-                        //             }
-                        //             // await this.mongoDb.collection("Elevator").findOneAndUpdate({ "elevatorid": r["Token"] }, { $set: d }, { upsert: true });
-                        //         }
-                        //     }
-                    }
-                    // await delay(1000);
-
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.7 Access Group List`);
-                    {
+    async syncSipassAcessGroup() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.7 Access Group List`);
+                    
                         let readers = await new Parse.Query(Reader).find();
 
                         let grouplist = await siPassAdapter.getAccessGroupList();
@@ -243,7 +317,7 @@ export class ACSService {
 
                                         let level = await siPassAdapter.getAccessLevel(group["AccessLevels"][j]["Token"]);
 
-                                        obj = await new Parse.Query(TimeSchedule).equalTo("timeid", +level["TimeScheduleToken"]).first();
+                                        let obj = await new Parse.Query(TimeSchedule).equalTo("timeid", +level["TimeScheduleToken"]).first();
                                         let tsid = obj.id;
 
                                         let rs = [];
@@ -289,7 +363,7 @@ export class ACSService {
                                         await delay(1000);
                                     }
                                 }
-                                obj = await new Parse.Query(PermissionTable).equalTo("tablename", group["Name"]).first();
+                                let obj = await new Parse.Query(PermissionTable).equalTo("tablename", group["Name"]).first();
                                 if (obj == null) {
                                     let d = {
                                         system: 1,
@@ -312,516 +386,103 @@ export class ACSService {
                                 await delay(1000);
                             }
                         }
-                    }
+                    
                     await delay(1000);
+    }
 
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.8 Work Group List`);
-                    {
-                        let grouplist = await siPassAdapter.getWorkGroupList();
-                        console.log("Work Group List", grouplist);
-
-                        if (grouplist) {
-                            for (let idx = 0; idx < grouplist.length; idx++) {
-
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass WorkGroup ${grouplist[idx]["Name"]}-${grouplist[idx]["Token"]}`);
-
-                                let group = await siPassAdapter.getWorkGroup(grouplist[idx]["Token"]);
-
-                                obj = await new Parse.Query(WorkGroup).equalTo("groupname", group["Name"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 1,
-                                        groupid: +group["Token"],
-                                        groupname: group["Name"],
-                                        type: +group["Type"],
-                                        accesspolicyrules: group["AccessPolicyRules"],
-                                        status: 1
-                                    };
-                                    let o = new WorkGroup(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 1);
-                                    obj.set("groupid", +group["Token"]);
-                                    obj.set("groupname", group["Name"]);
-                                    obj.set("type", +group["Type"]);
-                                    obj.set("accesspolicyrules", group["AccessPolicyRules"]);
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("WorkGroup").findOneAndUpdate({ "groupid": group["Token"] }, { $set: d }, { upsert: true });
-                            }
-                        }
-                    }
-                    await delay(1000);
-
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.9 Get All Credential Profiles`);
-                    {
-                       
-                        let records = await siPassAdapter.getAllCredentialProfiles();
-                        console.log("Readers", records);
-
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
-
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass CredentialProfiles ${r["Name"]}-${r["Token"]}`);
-                                obj = await new Parse.Query(CredentialProfiles).equalTo("Token", r["Token"]).first();
-                                if (obj == null) {
-                                    r["system"] = 1;
-                                    let o = new CredentialProfiles(r);
-                                    await o.save();
-                                }
-                            };
-                        }
-                    }
-                    await delay(1000);
-
-                    Log.Info(`${this.constructor.name}`, `SiPass 2.a Get Card Holder List`);
-                    {
-                        // let grouplist = await siPassAdapter.getCardHolderList();
-                        // console.log("Card Holder List", grouplist);
-
-                        // if (grouplist) {
-
-                        //     for (let idx = 0; idx < grouplist.length; idx++) {
-                        //         Log.Info(`${this.constructor.name}`, `Import data SiPass Cardholders ${grouplist[idx]["Token"]}`);
-
-                        //         let holder = await siPassAdapter.getCardHolder(grouplist[idx]["Token"]);
-
-                        //         obj = await new Parse.Query(Member).equalTo("Token", holder["Token"]).first();
-                        //         if (obj == null) {
-                        //             let d = {
-                        //                 system: 1,
-                        //                 Attributes: holder["Attributes"],
-                        //                 Credentials: holder["Credentials"],
-                        //                 AccessRules: holder["AccessRules"],
-                        //                 EmployeeNumber: holder["EmployeeNumber"],
-                        //                 EndDate: holder["EndDate"],
-                        //                 FirstName: holder["FirstName"],
-                        //                 GeneralInformation: holder["GeneralInformation"],
-                        //                 LastName: holder["LastName"],
-                        //                 PersonalDetails: {
-                        //                     Address: holder["PersonalDetails"] ? holder["PersonalDetails"]["Address"]: "",
-                        //                     ContactDetails: {
-                        //                         Email: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["Email"]: "" : "",
-                        //                         MobileNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["MobileNumber"]: "" : "",
-                        //                         MobileServiceProviderId: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["MobileServiceProviderId"]: "" : "",
-                        //                         PagerNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PagerNumber"]: "" : "",
-                        //                         PagerServiceProviderId: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PagerServiceProviderId"]: "" : "",
-                        //                         PhoneNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["ContactDetails"] ? holder["PersonalDetails"]["ContactDetails"]["PhoneNumber"]: "" : "",
-                        //                     },
-                        //                     DateOfBirth: holder["PersonalDetails"] ? holder["PersonalDetails"]["DateOfBirth"] : "",
-                        //                     PayrollNumber: holder["PersonalDetails"] ? holder["PersonalDetails"]["PayrollNumber"] : "",
-                        //                     Title: holder["PersonalDetails"] ? holder["PersonalDetails"]["Title"] : "",
-                        //                     UserDetails: {
-                        //                         Password: holder["PersonalDetails"] ? holder["PersonalDetails"]["UserDetails"] ? holder["PersonalDetails"]["UserDetails"]["Password"] : "" : "",
-                        //                         UserName: holder["PersonalDetails"] ? holder["PersonalDetails"]["UserDetails"] ? holder["PersonalDetails"]["UserDetails"]["UserName"] : "" : "",
-                        //                     }
-                        //                 },
-                        //                 PrimaryWorkgroupId: holder["PrimaryWorkgroupId"],
-                        //                 ApbWorkgroupId: holder["ApbWorkgroupId"],
-                        //                 PrimaryWorkgroupName: holder["PrimaryWorkgroupName"],
-                        //                 NonPartitionWorkGroups: holder["NonPartitionWorkGroups"],
-                        //                 SmartCardProfileId: holder["SmartCardProfileId"],
-                        //                 StartDate: holder["StartDate"],
-                        //                 Status: holder["Status"],
-                        //                 Token: holder["Token"],
-                        //                 TraceDetails: holder["TraceDetails"],
-                        //                 Vehicle1: {
-                        //                     CarColor: holder["Vehicle1"] ? holder["Vehicle1"]["CarColor"] : "",
-                        //                     CarModelNumber: holder["Vehicle1"] ? holder["Vehicle1"]["CarModelNumber"] : "",
-                        //                     CarRegistrationNumber: holder["Vehicle1"] ? holder["Vehicle1"]["CarRegistrationNumber"] : ""
-                        //                 },
-                        //                 Vehicle2: {
-                        //                     CarColor: holder["Vehicle2"] ? holder["Vehicle2"]["CarColor"] : "",
-                        //                     CarModelNumber: holder["Vehicle2"] ? holder["Vehicle2"]["CarModelNumber"] : "",
-                        //                     CarRegistrationNumber: holder["Vehicle2"] ? holder["Vehicle2"]["CarRegistrationNumber"] : ""
-                        //                 },
-                        //                 Potrait: holder["Potrait"],
-                        //                 PrimaryWorkGroupAccessRule: holder["PrimaryWorkGroupAccessRule"],
-                        //                 NonPartitionWorkgroupAccessRules: holder["NonPartitionWorkgroupAccessRules"],
-                        //                 VisitorDetails: {
-                        //                     VisitedEmployeeFirstName: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitedEmployeeFirstName"] : "",
-                        //                     VisitedEmployeeLastName: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitedEmployeeLastName"] : "",
-                        //                     VisitorCardStatus: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCardStatus"] : "",
-                        //                     VisitorCustomValues: {
-                        //                         Company: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Company"] : "" : "",
-                        //                         Profile: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Profile"] : "" : "",
-                        //                         Reason: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Reason"] : "" : "",
-                        //                         License: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["License"] : "" : "",
-                        //                         Email: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["Email"] : "" : "",
-                        //                         RestrictedUser: holder["VisitorDetails"] ? holder["VisitorDetails"]["VisitorCustomValues"] ? holder["VisitorDetails"]["VisitorCustomValues"]["RestrictedUser"] : "" : "",
-                        //                     }
-                        //                 },
-                        //                 CustomFields: holder["CustomFields"],
-                        //                 FingerPrints: holder["FingerPrints"],
-                        //                 CardholderPortrait: holder["CardholderPortrait"]
-                        //             }
-                        //             let o = new Member(d);
-                        //             await o.save();
-                        //         }
-                        //         else {
-                        //             obj.set("system", 1);
-                        //             obj.set("Attributes", holder["Attributes"]);
-                        //             obj.set("Credentials", holder["Credentials"]);
-                        //             obj.set("AccessRules", holder["AccessRules"]);
-                        //             obj.set("EmployeeNumber", holder["EmployeeNumber"]);
-                        //             obj.set("EndDate", holder["EndDate"]);
-                        //             obj.set("FirstName", holder["FirstName"]);
-                        //             obj.set("GeneralInformation", holder["GeneralInformation"]);
-                        //             obj.set("LastName", holder["LastName"]);
-                        //             obj.set("PersonalDetails", holder["PersonalDetails"]);
-                        //             obj.set("PrimaryWorkgroupId", holder["PrimaryWorkgroupId"]);
-
-                        //             obj.set("ApbWorkgroupId", holder["ApbWorkgroupId"]);
-                        //             obj.set("PrimaryWorkgroupName", holder["PrimaryWorkgroupName"]);
-                        //             obj.set("NonPartitionWorkGroups", holder["NonPartitionWorkGroups"]);
-                        //             obj.set("SmartCardProfileId", holder["SmartCardProfileId"]);
-                        //             obj.set("StartDate", holder["StartDate"]);
-                        //             obj.set("Status", holder["Status"]);
-                        //             obj.set("Token", holder["Token"]);
-                        //             obj.set("TraceDetails", holder["TraceDetails"]);
-                        //             obj.set("Vehicle1", holder["Vehicle1"]);
-                        //             obj.set("Vehicle2", holder["Vehicle2"]);
-
-                        //             obj.set("Potrait", holder["Potrait"]);
-                        //             obj.set("PrimaryWorkGroupAccessRule", holder["PrimaryWorkGroupAccessRule"]);
-                        //             obj.set("NonPartitionWorkgroupAccessRules", holder["NonPartitionWorkgroupAccessRules"]);
-                        //             obj.set("VisitorDetails", holder["VisitorDetails"]);
-
-                        //             obj.set("CustomFields", holder["CustomFields"]);
-                        //             obj.set("FingerPrints", holder["FingerPrints"]);
-                        //             obj.set("CardholderPortrait", holder["CardholderPortrait"]);
-                        //             obj.save();
-                        //         }
-
-                        //         // await this.mongoDb.collection("Member").findOneAndUpdate({ "Token": d["Token"] }, { $set: d }, { upsert: true });
-                        //         await delay(200);
-                        //     }
-                        // }
-                    }
-                    await delay(1000);
-                
-
-
-                // 3.0 get data from CCure800
-                {
-                    Log.Info(`${this.constructor.name}`, `CCure 2.2 Time Schedule`);
-                    {
-                        let records = await cCureAdapter.getTimeSchedule()
-                        console.log("Time Schedule", records);
-
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
-                                Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
-                                obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["timespecName"]).first();
-
-                                if (obj == null) {
-                                    let d = {
-                                        system: 800,
-                                        timeid: +r["timespecId"],
-                                        timename: r["timespecName"],
-                                        status: 1
-                                    };
-                                    let o = new TimeSchedule(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 800);
-                                    obj.set("timeid", +r["timespecId"]);
-                                    obj.set("timename", r["timespecName"]);
-
-                                    obj.save();
-                                }
-                            };
-                        }
-                    }
-                    await delay(1000);
-
-                    Log.Info(`${this.constructor.name}`, `CCure 2.3 Doors`);
-                    {
-                        let records = await cCureAdapter.getDoors();
-                        console.log("Doors", records);
-
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
-
-                                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);
-
-                                obj = await new Parse.Query(Door).equalTo("doorname", r["doorName"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 800,
-                                        doorid: +r["doorId"],
-                                        doorname: r["doorName"],
-                                        status: 1
-                                    };
-                                    let o = new Door(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 800);
-                                    obj.set("doorid", +r["doorId"]);
-                                    obj.set("doorname", r["doorName"]);
-
-                                    obj.save();
-                                }
-                            };
-                        }
-                    }
-                    await delay(1000);
-
-                    {
-                        // Log.Info(`${this.constructor.name}`, `CCure 2.4 Door Groups`);
-                        // {
-                        //     let records = await cCureAdapter.getDoorGroups();
-                        //     console.log("DoorGroups", records);
-
-                        //     if (records) {
-                        //         for (let idx = 0; idx < records.length; idx++) {
-                        //             const r = records[idx];
-
-                        //             Log.Info(`${this.constructor.name}`, `Import data CCURE800 DoorGroups ${r["floorName"]}-${r["floorId"]}`);
-
-                        //             obj = await new Parse.Query(DoorGroup).equalTo("groupname", r["floorName"]).first();
-                        //             if (obj == null) {
-                        //                 let d = {
-                        //                     system: 800,
-                        //                     groupid: +r["floorId"],
-                        //                     groupname: r["floorName"],
-                        //                     status: 1
-                        //                 };
-                        //                 let o = new DoorGroup(d);
-                        //                 await o.save();
-                        //             }
-                        //             else {
-                        //                 obj.set("system", 800);
-                        //                 obj.set("groupid", +r["floorId"]);
-                        //                 obj.set("groupname", r["floorName"]);
-
-                        //                 obj.save();
-                        //             }
-                        //         };
-                        //     }
-                        // }
-                        // await delay(1000);
-                    }
-
-                    Log.Info(`${this.constructor.name}`, `CCure 2.5 Door Readers`);
-                    {
-                        let records = await cCureAdapter.getReaders();
-                        console.log("Readers", records);
-
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
-
-                                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
-
-                                obj = await new Parse.Query(Reader).equalTo("readername", r["deviceName"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 800,
-                                        readerid: +r["deviceId"],
-                                        readername: r["deviceName"],
-                                        status: 1
-                                    };
-
-                                    obj = new Reader(d);
-                                    await obj.save();
-                                }
-                                else {
-                                    obj.set("system", 800);
-                                    obj.set("readerid", +r["deviceId"]);
-                                    obj.set("readername", r["deviceName"]);
-
-                                    obj.save();
-                                }
-
-                                let door = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
-                                if (door) {
-                                    let readers = door.get("readerin");
-                                    if(readers) readers.push(obj);
-                                    else readers = [obj];
-                                    door.set("readerin", readers);
-                                }
-                            };
-                        }
-                    }
-                    await delay(1000);
-
-                    Log.Info(`${this.constructor.name}`, `CCure 2.6 Floors`);
-                    {
-                        let records = await cCureAdapter.getFloors();
-                        console.log("Floors", records);
-
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
-
-                                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
-
-                                obj = await new Parse.Query(Floor).equalTo("floorname", r["floorName"]).first();
-
-                                if (obj == null) {
-                                    let d = {
-                                        system: 800,
-                                        floorid: +r["floorId"],
-                                        floorname: r["floorName"],
-                                        status: 1
-                                    };
-                                    let o = new Floor(d);
-                                    let o1 = await o.save();
-                                }
-                                else {
-                                    obj.set("system", 800);
-                                    obj.set("floorid", +r["floorId"]);
-                                    obj.set("floorname", r["floorName"]);
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
-                            }
-                        }
-                    }
-                    await delay(1000);
-
-                    {
-                        // Log.Info(`${this.constructor.name}`, `CCure 2.7 Elevators`);
-                        // {
-                        //     let records = await cCureAdapter.getElevators();
-                        //     console.log("Elevators", records);
-
-                        //     if (records) {
-                        //         for (let idx = 0; idx < records.length; idx++) {
-                        //             const r = records[idx];
-
-                        //             Log.Info(`${this.constructor.name}`, `Import data CCURE800 Elevators ${r["elevatorName"]}-${r["elevatorId"]}`);
-
-                        //             obj = await new Parse.Query(Elevator).equalTo("elevatorname", r["elevatorName"]).first();
-
-                        //             if (obj == null) {
-                        //                 let d = {
-                        //                     system: 800,
-                        //                     elevatorid: +r["elevatorId"],
-                        //                     elevatorname: r["elevatorName"],
-                        //                     status: 1
-                        //                 };
-                        //                 let o = new Elevator(d);
-                        //                 let o1 = await o.save();
-                        //             }
-                        //             else {
-                        //                 obj.set("system", 800);
-                        //                 obj.set("elevatorid", +r["elevatorId"]);
-                        //                 obj.set("elevatorname", r["elevatorName"]);
-                        //                 obj.save();
-                        //             }
-                        //             // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
-                        //         }
-                        //     }
-                        // }
-                        // await delay(1000);
-                    }
-
-                    Log.Info(`${this.constructor.name}`, `CCure 2.8 PermissionTables`);
-                    {
-                        let records = await cCureAdapter.getPermissionTables();
-                        console.log("PermissionTables", records);
-
-                        if (records) {
-                            for (let idx = 0; idx < records.length; idx++) {
-                                const r = records[idx];
-
-                                Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
-
-                                obj = await new Parse.Query(PermissionTable).equalTo("tablename", r["permissionTableName"]).first();
-
-                                if (obj == null) {
-                                    let d = {
-                                        system: 800,
-                                        tableid: +r["permissionTableId"],
-                                        tablename: r["permissionTableName"],
-                                        status: 1
-                                    };
-                                    let o = new PermissionTable(d);
-                                    let o1 = await o.save();
-                                }
-                                else {
-                                    obj.set("system", 800);
-                                    obj.set("tableid", +r["permissionTableId"]);
-                                    obj.set("tablename", r["permissionTableName"]);
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
-                            }
-                        }
-                    }
-                    await delay(1000);
-
-                    {
-                        // Log.Info(`${this.constructor.name}`, `CCure 2.8 CardHolderList`);
-                        // {
-                        //     let records = await cCureAdapter.getCardHolderList();
-                        //     console.log("CardHolderList", records);
-
-                        //     if (records) {
-                        //         for (let idx = 0; idx < records.length; idx++) {
-                        //             const r = records[idx];
-
-                        //             Log.Info(`${this.constructor.name}`, `Import data CCURE800 CardHolderList ${r["lastName"]}-${r["employeeNo"]}`);
-
-                        //             obj = await new Parse.Query(Member).equalTo("EmployeeNumber", r["employeeNo"]).first();
-
-                        //             if (obj == null) {
-                        //                 let d = {
-                        //                     system: 800,
-                        //                     EmployeeNumber: r["employeeNo"],
-                        //                     status: 1
-                        //                 };
-                        //                 let o = new Member(d);
-                        //                 let o1 = await o.save();
-                        //             }
-                        //             else {
-                        //                 obj.set("system", 800);                            
-                        //                 obj.set("EmployeeNumber", r["employeeNo"]);
-                        //                 obj.save();
-                        //             }
-                        //             // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
-                        //         }
-                        //     }
-                        // }
-                        // await delay(1000);
-                    }
+    private async syncSipassFloor() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.5 Floors`);
+        let records = await siPassAdapter.getFloors();
+        console.log("Floors", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
+                let obj = await new Parse.Query(Floor).equalTo("floorname", r["Name"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 1,
+                        floorid: +r["Token"],
+                        floorname: r["Name"],
+                        status: 1
+                    };
+                    let o = new Floor(d);
+                    let o1 = await o.save();
                 }
-
+                else {
+                    obj.set("system", 1);
+                    obj.set("floorid", +r["Token"]);
+                    obj.set("floorname", r["Name"]);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
-
-
-            // 4.0 report log and send smtp 
-            Log.Info(`${this.constructor.name}`, `4.0 report log and send smtp`);
-            // let file = new Parse.File("snapshot.jpg", { base64: item["attachments"]}, "image/jpg" );
-            // await file.save();
-
-            // let result = await new ScheduleActionEmail().do(
-            //     {
-            //         to: ["tulip.lin@isapsolution.com"],
-            //         subject: "subject",
-            //         body: "body",
-            //         // attachments: [file]
-            //     });
-
-            // 7.0 Database disconnect
-            // this.mongoClient.close();
         }
+        await delay(1000);
+    }
 
-        now = new Date();
-        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.cycleTime;
-        Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.cycleTime - s} ] sec`);
+    private async syncSipassDoorReader() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.3 Door Readers`);
+        let records = await siPassAdapter.getReaders();
+        console.log("Readers", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
+                let obj = await new Parse.Query(Reader).equalTo("readername", r["Name"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 1,
+                        readerid: +r["Token"],
+                        readername: r["Name"],
+                        status: 1
+                    };
+                    let o = new Reader(d);
+                    await o.save();
+                }
+                else {
+                    obj.set("system", 1);
+                    obj.set("readerid", +r["Token"]);
+                    obj.set("readername", r["Name"]);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("Reader").findOneAndUpdate({ "readerid": r["Token"] }, { $set: d }, { upsert: true });
+            }
+            ;
+        }
+        await delay(1000);
+    }
 
-        this.waitTimer = setTimeout(() => {
-            this.doAccessControlSync();
-        }, (this.cycleTime - s) * 1000);
+    private async syncSipassSchedule() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.2 Time Schedule`);
+        let records = await siPassAdapter.getTimeSchedule();
+        console.log("Time Schedule", records);
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data SiPass TimeSchedule ${r["Name"]}-${r["Token"]}`);
+                let obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["Name"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 1,
+                        timeid: +r["Token"],
+                        timename: r["Name"],
+                        status: 1
+                    };
+                    let o = new TimeSchedule(d);
+                    await o.save();
+                }
+                else {
+                    obj.set("system", 1);
+                    obj.set("timeid", +r["Token"]);
+                    obj.set("timename", r["Name"]);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("TimeSchedule").findOneAndUpdate({ "timeid": r["Token"] }, { $set: d }, { upsert: true });
+            }
+            ;
+        }
+        await delay(1000);
     }
 }
 
