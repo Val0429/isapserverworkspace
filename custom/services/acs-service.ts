@@ -37,31 +37,31 @@ export class ACSService {
             if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
             // if (now.getMinutes() != 70) {
                 // 0.0 Initial Adapter
-                Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);                
-                await Promise.all([
-                    this.syncSipassSchedule(),
+                Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
-                    this.syncSipassDoorReader(),
-                    
-                    this.syncSipassFloor(),
-
-                    //this.syncSipassAcessGroup(),
-
-                    this.syncSipassWorkgroup(),
-
-                    this.syncSipassCredentialProfile(),
                 
-                    this.syncCcureTimeSchedule(),
+               
+                    await this.syncSipassSchedule();
 
-                    this.syncCcureDoor(),
-
-                    this.syncCcureDoorReader(),
-
-                    this.syncCcureFloor(),
-
-                    this.syncCcurePermissionTable()
-                ])
+                    await this.syncSipassDoorReader();
                     
+                    await this.syncSipassFloor();
+
+                    await this.syncSipassAcessGroup();                    
+
+                    await this.syncSipassWorkgroup();
+
+                    await this.syncSipassCredentialProfile();
+                
+                    await this.syncCcureTimeSchedule();
+
+                    await this.syncCcureDoor();
+
+                    await this.syncCcureDoorReader();
+
+                    await this.syncCcureFloor();
+
+                    await this.syncCcurePermissionTable();
 
             }
         }
@@ -74,7 +74,7 @@ export class ACSService {
             this.doAccessControlSync();
         }, (this.cycleTime - s) * 1000);
     }
-
+    
     private async syncCcurePermissionTable() {
         Log.Info(`${this.constructor.name}`, `CCure 2.8 PermissionTables`);
         let records = await cCureAdapter.getPermissionTables();

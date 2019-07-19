@@ -26,14 +26,14 @@ action.get<any, any>({}, async () => {
     }, 1000);
 
     async function syncData() {
-        await Promise.all([
-            syncCCureDoors(),
-            syncSipassReaders(),
-            syncSipassFloors(),
-            syncCCureDoorReaders(),
-            syncCCureFloors()
-        ])
-            
+        
+            await syncCCureDoors();
+            await syncSipassReaders();
+
+            await syncSipassFloors();
+
+            await syncCCureDoorReaders();
+            await syncCCureFloors();
         }
     
 
