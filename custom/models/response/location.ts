@@ -11,6 +11,7 @@ export interface IRegionIndexR_Base extends IGPS {
     customId: string;
     address: string;
     imageSrc: string;
+    tags: IObject[];
 }
 
 export interface IRegionIndexR extends IRegionIndexR_Base {
@@ -68,9 +69,7 @@ export interface IAreaAll {
     name: string;
 }
 
-export interface ITreeRegion extends IRegionIndexR_Base {
-    tags: IObject[];
-}
+export interface ITreeRegion extends IRegionIndexR_Base {}
 
 export interface ITreeSite extends ISiteIndexR_Base {
     tags: IObject[];

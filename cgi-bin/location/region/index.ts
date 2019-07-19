@@ -62,6 +62,13 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                         }
 
+                        let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                            .containedIn('objectId', value.tagIds)
+                            .find()
+                            .fail((e) => {
+                                throw e;
+                            });
+
                         value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
 
                         let region: IDB.LocationRegion = await parent.addLeaf({
@@ -84,6 +91,16 @@ action.post(
                         await region.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
+
+                        await Promise.all(
+                            tags.map(async (value1, index1, array1) => {
+                                value1.setValue('regions', value1.getValue('regions').concat(region));
+
+                                await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }),
+                        );
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
 
@@ -157,6 +174,13 @@ action.get(
                     throw e;
                 });
 
+            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                .containedIn('regions', regions)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
             return {
                 paging: {
                     total: total,
@@ -169,6 +193,19 @@ action.get(
                         return value1.getValue('lft') < value.getValue('lft') && value1.getValue('rgt') > value.getValue('rgt');
                     });
 
+                    let tagObjects = tags
+                        .filter((value1, index1, array1) => {
+                            return !!value1.getValue('regions').find((value2, index2, array2) => {
+                                return value2.id === value.id;
+                            });
+                        })
+                        .map<IResponse.IObject>((value1, index1, array1) => {
+                            return {
+                                objectId: value1.id,
+                                name: value1.getValue('name'),
+                            };
+                        });
+
                     return {
                         objectId: value.id,
                         parentId: parents.length > 0 ? parents[parents.length - 1].id : _input.parentId,
@@ -179,6 +216,7 @@ action.get(
                         imageSrc: value.getValue('imageSrc'),
                         longitude: value.getValue('longitude'),
                         latitude: value.getValue('latitude'),
+                        tags: tagObjects,
                     };
                 }),
             };
@@ -241,6 +279,55 @@ action.put(
                         }
                         if (value.address || value.address === '') {
                             region.setValue('address', value.address);
+                        }
+                        if (value.tagIds) {
+                            let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
+                                .containedIn('regions', [region])
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
+
+                            await Promise.all(
+                                tags.map(async (value1, index1, array1) => {
+                                    if (value.tagIds.indexOf(value1.id) < 0) {
+                                        let regions = value1.getValue('regions');
+                                        regions = regions.filter((value2, index2, array2) => {
+                                            return value2.id !== region.id;
+                                        });
+
+                                        value1.setValue('regions', regions);
+
+                                        await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                            throw e;
+                                        });
+                                    }
+                                }),
+                            );
+
+                            tags = await new Parse.Query(IDB.Tag)
+                                .containedIn('objectId', value.tagIds)
+                                .find()
+                                .fail((e) => {
+                                    throw e;
+                                });
+
+                            await Promise.all(
+                                tags.map(async (value1, index1, array1) => {
+                                    let regions = value1.getValue('regions');
+
+                                    let _region = regions.find((value2, index2, array2) => {
+                                        return value2.id === region.id;
+                                    });
+                                    if (!_region) {
+                                        value1.setValue('regions', regions.concat(region));
+
+                                        await value1.save(null, { useMasterKey: true }).fail((e) => {
+                                            throw e;
+                                        });
+                                    }
+                                }),
+                            );
                         }
                         if (value.imageBase64) {
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
