@@ -20,7 +20,7 @@ var action = new Action({
  * R: get object
  ********************************/
 
-action.get<any, any>({ inputType: "InputR" }, async () => {
+action.get<any, any>({}, async () => {
     this.waitTimer = setTimeout(() => {
         syncData();
     }, 1000);
@@ -42,7 +42,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
             Log.Info(`CGI acsSync`, `SiPass 2.3 Door Readers`);
             {
                 let records = await siPassAdapter.getReaders();
-                console.log("Readers", records);
+                //console.log("Readers", records);
 
                 if (records) {
                     for (let idx = 0; idx < records.length; idx++) {
@@ -54,7 +54,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                         if (obj == null) {
                             let d = {
                                 system: 1,
-                                readerid: r["Token"],
+                                readerid: parseInt(r["Token"]),
                                 readername: r["Name"],
                                 status: 1
                             };
@@ -64,7 +64,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                         }
                         else {
                             obj.set("system", 1);
-                            obj.set("readerid", r["Token"]);
+                            obj.set("readerid", parseInt(r["Token"]));
                             obj.set("readername", r["Name"]);
 
                             obj.save();
@@ -78,7 +78,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
             Log.Info(`CGI acsSync`, `SiPass 2.5 Floors`);
             {
                 let records = await siPassAdapter.getFloors();
-                console.log("Floors", records);
+                //console.log("Floors", records);
 
                 if (records) {
                     for (let idx = 0; idx < records.length; idx++) {
@@ -91,7 +91,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                         if (obj == null) {
                             let d = {
                                 system: 1,
-                                floorid: r["Token"],
+                                floorid: parseInt(r["Token"]),
                                 floorname: r["Name"],
                                 status: 1
                             };
@@ -100,7 +100,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                         }
                         else {
                             obj.set("system", 1);
-                            obj.set("floorid", r["Token"]);
+                            obj.set("floorid", parseInt(r["Token"]));
                             obj.set("floorname", r["Name"]);
                             obj.save();
                         }
@@ -117,7 +117,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
             Log.Info(`CGI acsSync`, `CCure 2.5 Door Readers`);
             {
                 let records = await cCureAdapter.getReaders();
-                console.log("Readers", records);
+                //console.log("Readers", records);
 
                 if (records) {
                     for (let idx = 0; idx < records.length; idx++) {
@@ -128,8 +128,8 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                         let obj = await new Parse.Query(Reader).equalTo("readername", r["deviceName"]).first();
                         if (obj == null) {
                             let d = {
-                                system: 1,
-                                readerid: r["deviceId"],
+                                system: 800,
+                                readerid: parseInt(r["deviceId"]),
                                 readername: r["deviceName"],
                                 status: 1
                             };
@@ -138,7 +138,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                             await obj.save();
                         }
                         else {
-                            obj.set("readerid", r["deviceId"]);
+                            obj.set("readerid", parseInt(r["deviceId"]));
                             obj.set("readername", r["deviceName"]);
 
                             obj.save();
@@ -158,7 +158,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
             Log.Info(`CGI acsSync`, `CCure 2.6 Floors`);
             {
                 let records = await cCureAdapter.getFloors();
-                console.log("Floors", records);
+                //console.log("Floors", records);
 
                 if (records) {
                     for (let idx = 0; idx < records.length; idx++) {
@@ -170,8 +170,8 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
 
                         if (obj == null) {
                             let d = {
-                                system: 1,
-                                floorid: r["floorId"],
+                                system: 800,
+                                floorid: parseInt(r["floorId"]),
                                 floorname: r["floorName"],
                                 status: 1
                             };
@@ -179,7 +179,7 @@ action.get<any, any>({ inputType: "InputR" }, async () => {
                             let o1 = await o.save();
                         }
                         else {
-                            obj.set("floorid", r["floorId"]);
+                            obj.set("floorid", parseInt(r["floorId"]));
                             obj.set("floorname", r["floorName"]);
                             obj.save();
                         }
