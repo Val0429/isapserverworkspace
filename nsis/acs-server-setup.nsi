@@ -164,7 +164,12 @@ ShowInstDetails show
 ;Pages
 
   !insertmacro MUI_PAGE_LICENSE "License.txt"
-  ;!insertmacro MUI_PAGE_COMPONENTS 
+  !insertmacro MUI_PAGE_COMPONENTS
+ 
+
+Section "Stand alone MongoDb service" SEC04
+		
+SectionEnd 
   
 ;Section "Run npm start before installing service" SEC01
 	
@@ -203,6 +208,14 @@ Section
 	
 	# intall mongo
 	ExecWait '"install_mongo.bat" /s'
+	#install mongo service
+	${If} ${SectionIsSelected} ${SEC04}			
+		ExecWait '"install_mongo.bat" /s'
+	${Else}		
+		ExecWait '"install_mongo_wo_init.bat" /s'
+	${EndIf}
+	
+	
 	
 	;${If} ${SectionIsSelected} ${SEC01}		
   #run npm start for 1.5 minute	
@@ -226,7 +239,7 @@ Section
 	 IntFmt $0 "0x%08X" $0
 	 WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
 	 
-   MessageBox MB_YESNO|MB_ICONQUESTION "Reboot is required to complete installation, do you wish to reboot the system now?" IDNO +2
+   MessageBox MB_YESNO|MB_ICONQUESTION "Reboot is required in order to complete the installation, do you wish to reboot the system now?" IDNO +2
    Reboot
   
 SectionEnd
