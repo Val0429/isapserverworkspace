@@ -306,6 +306,11 @@ export class FRSService {
                 this._liveStream$.complete();
                 this._liveStreamCatch$.complete();
                 this._liveStreamStop$.complete();
+
+                ws.message$.complete();
+                ws.open$.complete();
+                ws.error$.complete();
+                ws.close$.complete();
                 ws.Close();
             },
         });
@@ -352,7 +357,6 @@ export class FRSService {
         ws.error$.subscribe({
             next: (e) => {
                 this._liveStreamCatch$.next(e.message);
-                ws.Close();
             },
         });
         ws.close$.subscribe({

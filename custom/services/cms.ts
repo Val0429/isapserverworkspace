@@ -10,20 +10,22 @@ class Service {
     /**
      *
      */
+    private _config = Config.sourceCms;
+
+    /**
+     *
+     */
     private _initialization$: Rx.Subject<{}> = new Rx.Subject();
 
     /**
      *
      */
-    private _cmss: CMSService[] = [];
+    private _cmss: Service.IObjectCMS = {};
     public get cmss(): CMSService[] {
-        return this._cmss;
+        return Object.keys(this._cmss).map((value, index, array) => {
+            return this._cmss[value].cms;
+        });
     }
-
-    /**
-     *
-     */
-    private _cmsConfigs: IDB.ServerCMS[] = [];
 
     /**
      *
@@ -83,15 +85,6 @@ class Service {
             await this.Search();
 
             this.EnableLiveStream();
-
-            this._devices
-                .sort((a, b) => {
-                    return b.getValue('mode') - a.getValue('mode');
-                })
-                .forEach((value, index, array) => {
-                    let config: IDB.ICameraCMS = value.getValue('config') as IDB.ICameraCMS;
-                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
-                });
         } catch (e) {
             Print.Log(e, new Error(), 'error');
         }
@@ -102,8 +95,11 @@ class Service {
      */
     private Stop(): void {
         try {
-            (this._cmss || []).forEach((value, index, array) => {
-                value.liveStreamStop$.next();
+            Object.keys(this._cmss).forEach((value, index, array) => {
+                let cms = this._cmss[value];
+
+                cms.initialization$.complete();
+                cms.cms.liveStreamStop$.next();
             });
         } catch (e) {
             throw e;
@@ -126,16 +122,37 @@ class Service {
                     throw e;
                 });
 
-            this._cmsConfigs = this._devices.map((value, index, array) => {
-                return (value.getValue('config') as IDB.ICameraFRS).server;
+            this._cmss = {};
+            this._devices.forEach((value, index, array) => {
+                let server = (value.getValue('config') as IDB.ICameraCMS).server;
+                let key: string = server.id;
+
+                let cms: CMSService = new CMSService();
+                cms.config = {
+                    protocol: server.getValue('protocol'),
+                    ip: server.getValue('ip'),
+                    port: server.getValue('port'),
+                    account: server.getValue('account'),
+                    password: server.getValue('password'),
+                };
+
+                cms.Initialization();
+
+                this._cmss[key] = {
+                    server: server,
+                    cms: cms,
+                    initialization$: new Rx.Subject(),
+                };
             });
 
-            let cmsConfigIds = this._cmsConfigs.map((value, index, array) => {
-                return value.id;
-            });
-            this._cmsConfigs = this._cmsConfigs.filter((value, index, array) => {
-                return cmsConfigIds.indexOf(value.id) === index;
-            });
+            this._devices
+                .sort((a, b) => {
+                    return b.getValue('mode') - a.getValue('mode');
+                })
+                .forEach((value, index, array) => {
+                    let config: IDB.ICameraCMS = value.getValue('config') as IDB.ICameraCMS;
+                    Print.Log(`${value.getValue('area').id}(area)->${value.id}(device)->${config.server.id}(server)->${value.getValue('name')}(${Enum.EDeviceMode[value.getValue('mode')]})`, new Error(), 'info');
+                });
         } catch (e) {
             throw e;
         }
@@ -161,92 +178,95 @@ class Service {
      */
     private EnableLiveStream(): void {
         try {
-            let cmsConfig = Config.sourceCms;
+            Object.keys(this._cmss).forEach(async (value, index, array) => {
+                let cms = this._cmss[value];
 
-            this._cmss = this._cmsConfigs.map((value, index, array) => {
-                let cms: CMSService = new CMSService();
-                cms.config = {
-                    protocol: value.getValue('protocol'),
-                    ip: value.getValue('ip'),
-                    port: value.getValue('port'),
-                    account: value.getValue('account'),
-                    password: value.getValue('password'),
-                };
-
-                cms.Initialization();
-
-                let delay: number = this.GetDelayTime();
-
-                let sources: CMSService.ISource[] = this._devices
-                    .filter((value1, index1, array1) => {
-                        return (value1.getValue('config') as IDB.ICameraFRS).server.id === value.id;
-                    })
-                    .reduce<CMSService.ISource[]>((prev, curr, index, array) => {
-                        let config = curr.getValue('config') as IDB.ICameraCMS;
-                        let source = prev.find((value1, index1, array1) => {
-                            return value1.nvr === config.nvrId;
-                        });
-                        if (source) {
-                            if (source.channels.indexOf(config.channelId) < 0) {
-                                source.channels.push(config.channelId);
-                            }
-                        } else {
-                            prev.push({
-                                nvr: config.nvrId,
-                                channels: [config.channelId],
-                            });
-                        }
-
-                        return prev;
-                    }, []);
-
-                cms.EnableLiveSubject(delay, cmsConfig.snapshot.intervalSecond * 1000, cmsConfig.snapshot.bufferCount, sources, cmsConfig.snapshot.isLive);
-                cms.liveStreamCatch$.subscribe({
-                    next: (x) => {
-                        Print.Log(`${value.id}(server) -> ${x}`, new Error(), 'error');
-                    },
-                });
-                cms.liveStream$.subscribe({
+                cms.initialization$.subscribe({
                     next: async (x) => {
                         try {
-                            let devices = this._devices.filter((value1, index1, array1) => {
-                                let config = value1.getValue('config') as IDB.ICameraCMS;
-                                return config.nvrId === x.nvr && config.channelId === x.channel;
-                            });
+                            let delay: number = this.GetDelayTime();
 
-                            devices.forEach((value1, index1, array1) => {
-                                let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
-                                File.WriteFile(temp, x.image);
-
-                                switch (value1.getValue('mode')) {
-                                    case Enum.EDeviceMode.humanDetection:
-                                        Action.HumanDetection.action$.next({
-                                            device: value1,
-                                            date: new Date(x.timestamp),
-                                            image: temp,
+                            let sources: CMSService.ISource[] = this._devices
+                                .filter((value1, index1, array1) => {
+                                    return (value1.getValue('config') as IDB.ICameraFRS).server.id === value;
+                                })
+                                .reduce<CMSService.ISource[]>((prev, curr, index, array) => {
+                                    let config = curr.getValue('config') as IDB.ICameraCMS;
+                                    let source = prev.find((value1, index1, array1) => {
+                                        return value1.nvr === config.nvrId;
+                                    });
+                                    if (source) {
+                                        if (source.channels.indexOf(config.channelId) < 0) {
+                                            source.channels.push(config.channelId);
+                                        }
+                                    } else {
+                                        prev.push({
+                                            nvr: config.nvrId,
+                                            channels: [config.channelId],
                                         });
-                                        break;
-                                    case Enum.EDeviceMode.heatmap:
-                                        break;
-                                    default:
-                                        throw `${value1.id}(device) mode not found`;
-                                }
-                            });
+                                    }
 
-                            x.image = null;
+                                    return prev;
+                                }, []);
+
+                            cms.cms.EnableLiveSubject(delay, this._config.snapshot.intervalSecond * 1000, this._config.snapshot.bufferCount, sources, this._config.snapshot.isLive);
+                            cms.cms.liveStreamCatch$.subscribe({
+                                next: (x) => {
+                                    Print.Log(`${value}(server) -> ${x}`, new Error(), 'error');
+                                },
+                            });
+                            cms.cms.liveStream$.subscribe({
+                                next: async (x) => {
+                                    try {
+                                        let devices = this._devices.filter((value1, index1, array1) => {
+                                            let config = value1.getValue('config') as IDB.ICameraCMS;
+                                            return config.nvrId === x.nvr && config.channelId === x.channel && config.server.id === value;
+                                        });
+
+                                        devices.forEach((value1, index1, array1) => {
+                                            let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
+                                            File.WriteFile(temp, x.image);
+
+                                            switch (value1.getValue('mode')) {
+                                                case Enum.EDeviceMode.humanDetection:
+                                                    Action.HumanDetection.action$.next({
+                                                        device: value1,
+                                                        date: new Date(x.timestamp),
+                                                        image: temp,
+                                                    });
+                                                    break;
+                                                case Enum.EDeviceMode.heatmap:
+                                                    break;
+                                                default:
+                                                    throw `${value1.id}(device) mode not found`;
+                                            }
+                                        });
+
+                                        x.image = null;
+                                    } catch (e) {
+                                        Print.Log(`${value}(server) -> ${e}`, new Error(), 'error');
+                                    }
+                                },
+                                error: (e) => {
+                                    Print.Log(`${value}(server) -> ${e}`, new Error(), 'error');
+                                },
+                                complete: () => {
+                                    Print.Log(`${value}(server) -> Complete`, new Error(), 'success');
+                                },
+                            });
                         } catch (e) {
-                            Print.Log(`${value.id}(server) -> ${e}`, new Error(), 'error');
+                            Print.Log(e, new Error(), 'error');
                         }
                     },
                     error: (e) => {
-                        Print.Log(`${value.id}(server) -> ${e}`, new Error(), 'error');
+                        Print.Log(`${value}(server) -> ${e}`, new Error(), 'error');
                     },
                     complete: () => {
-                        Print.Log(`${value.id}(server) -> Complete`, new Error(), 'success');
+                        Print.Log(`${value}(server) -> Complete`, new Error(), 'success');
                     },
                 });
 
-                return cms;
+                cms.initialization$.next();
             });
         } catch (e) {
             throw e;
@@ -255,4 +275,20 @@ class Service {
 }
 export default new Service();
 
-namespace Service {}
+namespace Service {
+    /**
+     *
+     */
+    export interface IObjectCMS {
+        [key: string]: ICMS;
+    }
+
+    /**
+     *
+     */
+    export interface ICMS {
+        server: IDB.ServerCMS;
+        cms: CMSService;
+        initialization$: Rx.Subject<{}>;
+    }
+}
