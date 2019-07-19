@@ -643,10 +643,9 @@ export class ACSService {
                                 let door = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
                                 if (door) {
                                     let readers = door.get("readerin");
-                                    if (readers) {
-                                        readers.push(obj);
-                                        door.set("readerin", readers);
-                                    }
+                                    if(readers) readers.push(obj);
+                                    else readers = [obj];
+                                    door.set("readerin", readers);
                                 }
                             };
                         }
