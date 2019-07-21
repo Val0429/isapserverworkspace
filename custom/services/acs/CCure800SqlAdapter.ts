@@ -15,7 +15,8 @@ export class CCure800SqlAdapter {
     constructor() {
         var me = this;
 
-        this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${p.dirname(__filename)}\\ccure800.mdb;`);
+        // this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${p.dirname(__filename)}\\ccure800.mdb;`);
+        this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=z:\\manager\\ccure800.mdb;`);
 
         // this.waitTimer = setTimeout(() => {
         //     me.doHumanResourcesSync();
