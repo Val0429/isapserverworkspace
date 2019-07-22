@@ -220,3 +220,11 @@ export interface ITemplateR {
     sendDates: IDaySingle[];
     sendUsers: IObject[];
 }
+
+export interface ICampaignConditionObject extends IObject {
+    sites: IObject[];
+}
+
+export interface ICampaignCondition {
+    [key: string]: ICampaignConditionObject[];
+}
