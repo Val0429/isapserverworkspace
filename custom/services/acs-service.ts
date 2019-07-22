@@ -58,19 +58,19 @@ export class ACSService {
             resolve();
         });
 
-        await Promise.all([
-            this.syncSipassDoorReader(),
-            this.syncSipassFloor(),
-            //this.syncSipassAcessGroup(),
-            this.syncSipassWorkgroup(),
-            this.syncSipassCredentialProfile(),
+ 
+        await this.syncSipassDoorReader();
+        await this.syncSipassFloor();
+        //await this.syncSipassAcessGroup();
+        await this.syncSipassWorkgroup();
+        await this.syncSipassCredentialProfile();
 
-            this.syncCcureTimeSchedule(),
-            this.syncCcureDoor(),
-            this.syncCcureDoorReader(),
-            this.syncCcureFloor(),
-            this.syncCcurePermissionTable()
-        ]);
+        await this.syncCcureTimeSchedule();
+        await this.syncCcureDoor();
+        await this.syncCcureDoorReader();
+        await this.syncCcureFloor();
+        await this.syncCcurePermissionTable();
+ 
     }
 
     private async syncCcurePermissionTable() {
