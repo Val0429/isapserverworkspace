@@ -206,7 +206,7 @@ Section
 	SetOutPath $INSTDIR
 	File /r *.bat
 	File /r *.ps1
-	#File /r /x .git /x .gitignore /x nsis ..\..\*.* 
+	File /r /x .git /x .gitignore /x nsis ..\..\*.* 
 	
   #create mongo config
   ExecWait 'Powershell -NoProfile -ExecutionPolicy Bypass -file "$INSTDIR\add_config.ps1"'
