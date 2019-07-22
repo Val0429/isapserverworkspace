@@ -58,8 +58,8 @@ export class HRService {
         this.checkCycleTime = 1200;
 
 
-        // if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
-        if (now.getMinutes() < 70) {
+        if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
+        // if (now.getMinutes() < 70) {
             let memChange = [];
             let memNew = [];
             let memOff = [];
@@ -108,24 +108,24 @@ export class HRService {
                     Log.Info(`${this.constructor.name}`, ex);
                 }
 
-                config = {
-                    server: Config.ccuresqlserver.server,
-                    port: Config.ccuresqlserver.port,
-                    user: Config.ccuresqlserver.user,
-                    password: Config.ccuresqlserver.password,
-                    database: Config.ccuresqlserver.database,
-                    requestTimeout: 300000,
-                    connectionTimeout: 300000 //ms
-                }
+                // config = {
+                //     server: Config.ccuresqlserver.server,
+                //     port: Config.ccuresqlserver.port,
+                //     user: Config.ccuresqlserver.user,
+                //     password: Config.ccuresqlserver.password,
+                //     database: Config.ccuresqlserver.database,
+                //     requestTimeout: 300000,
+                //     connectionTimeout: 300000 //ms
+                // }
 
-                try {
-                    await this.CCure800SqlAdapter.connect(config);
-                }
-                catch (ex) {
-                    this.checkCycleTime = 5;
+                // try {
+                //     await this.CCure800SqlAdapter.connect(config);
+                // }
+                // catch (ex) {
+                //     this.checkCycleTime = 5;
 
-                    Log.Info(`${this.constructor.name}`, ex);
-                }
+                //     Log.Info(`${this.constructor.name}`, ex);
+                // }
             }
 
             // 3.0 SiPass Connection
@@ -546,7 +546,7 @@ export class HRService {
                                 }
 
                                 console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-                                await this.CCure800SqlAdapter.writeMember(d);
+                                await this.CCure800SqlAdapter.writeMember(d, "NH-Employee");
 
                                 console.log(`======================= ${sessionId}`);
                                 if (sessionId != "") {
@@ -727,7 +727,7 @@ export class HRService {
                                 }
 
                                 console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                                await this.CCure800SqlAdapter.writeMember(d);
+                                await this.CCure800SqlAdapter.writeMember(d, "NH-Employee");
 
                                 console.log(`======================= ${sessionId}`);
                                 if (sessionId != "") {

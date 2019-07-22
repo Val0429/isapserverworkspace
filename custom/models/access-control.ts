@@ -164,6 +164,14 @@ export class TimeSchedule extends ParseObject<ITimeSchedule> { }
 // @registerSubclass()
 // export class AccessGroup extends ParseObject<IAccessGroup> {}
 
+export interface IAccessLevelinSiPass {     // CRUD  V
+    token?: string,
+    name?: string
+}
+@registerSubclass()
+export class AccessLevelinSiPass extends ParseObject<IAccessLevelinSiPass> {}
+
+
 export interface IAccessLevel {     // CRUD  V
     system?: number                // 0: iSap 1: SiPass 2: CCure800
     type?: string,
@@ -176,6 +184,7 @@ export interface IAccessLevel {     // CRUD  V
     elevatorgroup?: ElevatorGroup,
     floor?: Floor[],
     reader?: Reader[],
+    levelinSiPass?: AccessLevelinSiPass[],
     timeschedule?: TimeSchedule
 }
 @registerSubclass()

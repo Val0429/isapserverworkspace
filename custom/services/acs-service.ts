@@ -14,14 +14,14 @@ export class ACSService {
     private cycleTime: number = 1200; // sec
 
     constructor() {
-        var me = this;
-
+   
+        this.startSync();
         // 1.0 Login to Datebase
         Log.Info(`${this.constructor.name}`, `1.0 Login database connection`);
         // (async () => {
-        me.waitTimer = setTimeout(async () => {
-            me.doAccessControlSync();
-        }, 1000 * me.startDelayTime);
+            this.waitTimer = setTimeout(async () => {
+            this.doAccessControlSync();
+        }, 1000 * this.startDelayTime);
         // })();
     }
 
@@ -37,32 +37,8 @@ export class ACSService {
             if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
             // if (now.getMinutes() != 70) {
                 // 0.0 Initial Adapter
-                Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
-
-                
-               
-                    await this.syncSipassSchedule();
-
-                    await this.syncSipassDoorReader();
-                    
-                    await this.syncSipassFloor();
-
-                    await this.syncSipassAcessGroup();                    
-
-                    await this.syncSipassWorkgroup();
-
-                    await this.syncSipassCredentialProfile();
-                
-                    await this.syncCcureTimeSchedule();
-
-                    await this.syncCcureDoor();
-
-                    await this.syncCcureDoorReader();
-
-                    await this.syncCcureFloor();
-
-                    await this.syncCcurePermissionTable();
-
+                Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);                
+                await this.startSync();
             }
         }
 
@@ -74,7 +50,29 @@ export class ACSService {
             this.doAccessControlSync();
         }, (this.cycleTime - s) * 1000);
     }
-    
+
+    private async startSync() {
+        let me = this; 
+        await new Promise(async function (resolve, reject) {
+            await me.syncSipassSchedule();
+            resolve();
+        });
+
+        await Promise.all([
+            this.syncSipassDoorReader(),
+            this.syncSipassFloor(),
+            //this.syncSipassAcessGroup(),
+            this.syncSipassWorkgroup(),
+            this.syncSipassCredentialProfile(),
+
+            this.syncCcureTimeSchedule(),
+            this.syncCcureDoor(),
+            this.syncCcureDoorReader(),
+            this.syncCcureFloor(),
+            this.syncCcurePermissionTable()
+        ]);
+    }
+
     private async syncCcurePermissionTable() {
         Log.Info(`${this.constructor.name}`, `CCure 2.8 PermissionTables`);
         let records = await cCureAdapter.getPermissionTables();

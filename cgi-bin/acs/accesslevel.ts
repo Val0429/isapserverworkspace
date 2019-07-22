@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, TimeSchedule, Door
+    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevelinSiPass
 } from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
@@ -24,7 +24,7 @@ type OutputC = Restful.OutputC<IAccessLevel>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
-    let rules = [];
+    let levelinSiPass = [];
 
     // if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
@@ -50,24 +50,31 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         for (let idx = 0; idx < data.inputType.reader.length; idx++) {
             let e = data.inputType.reader[idx];
 
-            let r = {
-                token: "-1",
-                name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
-                timeScheduleToken: data.inputType.timeschedule.get("timename"),
-                accessRule: [
-                    {
-                        objectName: e.get("readername"),
-                        objectToken: e.get("readerid"),
-                        ruleToken: e.get("readerid"),
-                        ruleType: 2
-                    }
-                ]
+            if (e.get("system") == '1') {
+                let r = {
+                    token: "-1",
+                    name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
+                    timeScheduleToken: data.inputType.timeschedule.get("timeid"),
+                    accessRule: [
+                        {
+                            objectName: e.get("readername"),
+                            objectToken: e.get("readerid"),
+                            ruleToken: e.get("readerid"),
+                            ruleType: 2
+                        }
+                    ]
+                }
+
+                let r1 = await siPassAdapter.postAccessLevel(r, 10000);
+                if (r1["Token"] != undefined) {
+                    Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
+
+                    var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
+                    await obj1.save(null, { useMasterKey: true });
+
+                    levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+                }
             }
-
-            let r1 = await siPassAdapter.postAccessLevel(r);
-            Log.Info(`${this.constructor.name}`, `postAccessLevel ${r1["token"]} ${r1["name"]}`);
-
-            rules.push(r1);
         }
     }
 
@@ -75,35 +82,43 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         for (let idx = 0; idx < data.inputType.floor.length; idx++) {
             let e = data.inputType.floor[idx];
 
-            let r = {
-                token: "-1",
-                name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
-                timeScheduleToken: data.inputType.timeschedule.get("timename"),
-                accessRule: [
-                    {
-                        objectName: e.get("floorname"),
-                        objectToken: e.get("floorid"),
-                        ruleToken: e.get("floorid"),
-                        ruleType: 8
-                    }
-                ]
+            if (e.get("system") == '1') {
+                let r = {
+                    token: "-1",
+                    name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
+                    timeScheduleToken: data.inputType.timeschedule.get("timeid"),
+                    accessRule: [
+                        {
+                            objectName: e.get("floorname"),
+                            objectToken: e.get("floorid"),
+                            ruleToken: e.get("floorid"),
+                            ruleType: 8
+                        }
+                    ]
+                }
+
+                let r1 = await siPassAdapter.postAccessLevel(r, 10000);
+                if (r1["Token"] != undefined) {
+                    Log.Info(`${this.constructor.name}`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
+
+                    var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
+                    await obj1.save(null, { useMasterKey: true });
+
+                    levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+                }
             }
-
-            let r1 = await siPassAdapter.postAccessLevel(r);
-            Log.Info(`${this.constructor.name}`, `postAccessLevel ${r1["token"]} ${r1["name"]}`);
-
-            rules.push(r1);
         }
     }
 
     /// 1) Create Object
     let firstObj = await new Parse.Query(AccessLevel).descending("levelid").first();
-    let max = 0 ;
-    if ( firstObj != null)
-        max = +firstObj.get("levelid") + 1 ;
+    let max = 0;
+    if (firstObj != null)
+        max = +firstObj.get("levelid") + 1;
 
     data.inputType.levelid = max + "";
     data.inputType.levelname = "name " + data.inputType.levelid;
+    data.inputType.levelinSiPass = levelinSiPass ;
 
     var obj = new AccessLevel(data.inputType);
     await obj.save(null, { useMasterKey: true });
@@ -148,38 +163,79 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(AccessLevel).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`AccessLevel <${objectId}> not exists.`]);
-    /// 2) Modify
+
+    /// 2) Sync to ACS Services
+    let levelinSiPass = [];
+    if (data.inputType.reader && data.inputType.reader.length > 0) {
+        for (let idx = 0; idx < data.inputType.reader.length; idx++) {
+            let e = data.inputType.reader[idx];
+
+            let r = {
+                token: "-1",
+                name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
+                timeScheduleToken: data.inputType.timeschedule.get("timeid"),
+                accessRule: [
+                    {
+                        objectName: e.get("readername"),
+                        objectToken: e.get("readerid"),
+                        ruleToken: e.get("readerid"),
+                        ruleType: 2
+                    }
+                ]
+            }
+
+            let r1 = await siPassAdapter.postAccessLevel(r, 10000);
+            if (r1["Token"] != undefined) {
+                Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
+
+                var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
+                await obj1.save(null, { useMasterKey: true });
+
+                levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+            }
+        }
+    }
+
+    if (data.inputType.floor && data.inputType.floor.length > 0) {
+        for (let idx = 0; idx < data.inputType.floor.length; idx++) {
+            let e = data.inputType.floor[idx];
+
+            if (e.get("system") == '1') {
+                let r = {
+                    token: "-1",
+                    name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
+                    timeScheduleToken: data.inputType.timeschedule.get("timeid"),
+                    accessRule: [
+                        {
+                            objectName: e.get("floorname"),
+                            objectToken: e.get("floorid"),
+                            ruleToken: e.get("floorid"),
+                            ruleType: 8
+                        }
+                    ]
+                }
+
+                let r1 = await siPassAdapter.postAccessLevel(r, 10000);
+                if (r1["Token"] != undefined) {
+                    Log.Info(`${this.constructor.name}`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
+
+                    var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
+                    await obj1.save(null, { useMasterKey: true });
+
+                    levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+                }
+            }
+        }
+    }
+
+    data.inputType.levelinSiPass = levelinSiPass ;
+    
+    /// 3) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
 
     Log.Info(`${this.constructor.name}`, `putAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
 
-    /// 3) Sync to ACS Services
-    let rules = [];
-    for (let idx = 0; idx < data.inputType.reader.length; idx++) {
-        let e = data.inputType.reader[idx];
-
-        let r = {
-            ObjectToken: e.get("readerid"),
-            ObjectName: e.get("readername"),
-            RuleToken: "12",
-            RuleType: 2,
-            StartDate: null,
-            EndDate: null,
-            ArmingRightsId: null,
-            ControlModeId: null
-        }
-
-        rules.push(r);
-    }
-
-    let d = {
-        token: data.inputType.levelid + "",
-        name: data.inputType.levelname,
-        accessRule: rules,
-        timeScheduleToken: data.inputType.timeschedule.get("timeid")
-    }
-    await siPassAdapter.putAccessLevel(d);
-
+        
     /// 4) Output
     return ParseObject.toOutputJSON(obj);
 });

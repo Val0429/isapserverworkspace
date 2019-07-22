@@ -24,7 +24,7 @@ import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 export class AttendanceRecord {
     private waitTimer = null;
     private startDelayTime: number = 1 // sec
-    private cycleTime: number = 600; // sec
+    private cycleTime: number = 300; // sec
 
     private mongoClient: mongo.MongoClient;
     private mongoDb: mongo.Db;

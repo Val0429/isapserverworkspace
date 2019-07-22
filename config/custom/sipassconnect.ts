@@ -3,7 +3,7 @@ let config: Config = {
     "port": 8745,
     "user": "siemens",
     "password": "!QAZ1qaz",
-    "uniqueId": "590db17a8468659361f13072d0e198b7290ce7a1",
+    "uniqueId": "c6451da088d69147aeaefbffeb3767722854e8e3",
     "sessionId": ""
 };
 

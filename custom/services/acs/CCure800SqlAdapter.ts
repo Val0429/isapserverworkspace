@@ -1,9 +1,10 @@
-import { Config } from 'core/config.gen';
+﻿import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
 // import * as msSQL from 'mssql';
 import * as adodb from 'node-adodb';
 import * as p from 'path';
+import moment = require('moment');
 
 export class CCure800SqlAdapter {
     private waitTimer = null;
@@ -15,8 +16,7 @@ export class CCure800SqlAdapter {
     constructor() {
         var me = this;
 
-        // this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${p.dirname(__filename)}\\ccure800.mdb;`);
-        this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=z:\\manager\\ccure800.mdb;`);
+        this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${p.dirname(__filename)}\\mdb\\ccure800.mdb;`);
 
         // this.waitTimer = setTimeout(() => {
         //     me.doHumanResourcesSync();
@@ -46,10 +46,10 @@ export class CCure800SqlAdapter {
         // }
     }
 
-    async writeMember(data) {
+    async writeMember(data, permission = "") {
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
 
-        let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+        let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
         let access = data["AccessRules"];
 
         for (let i = 0; i < access.length; i++) {
@@ -159,7 +159,7 @@ export class CCure800SqlAdapter {
                 case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF12 = field["FieldValue"]; break;
             }
         }
-        
+
         let insert = `INSERT INTO Member(
         EmployeeNumber, PD_DateOfBirth, PD_CD_MobileNumber, CustomTextBoxControl6__CF, CustomTextBoxControl5__CF4
         ,CustomTextBoxControl5__CF3, PD_CD_Email,LastName ,PrimaryWorkgroupName ,CustomDropdownControl1__CF
@@ -181,27 +181,67 @@ export class CCure800SqlAdapter {
         ,CustomDateControl3__CF4 ,CustomDateControl3__CF8  ,CustomDateControl3__CF9 
         ,CustomDateControl3__CF10 
         ) VALUES ( 
-         '${data["EmployeeNumber"]}'     , '${data["PersonalDetails"]["DateOfBirth"]}'            , '${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}', '${CustomTextBoxControl6__CF}'        , '${CustomTextBoxControl5__CF4}'
-        ,'${CustomTextBoxControl5__CF3}' , '${data["PersonalDetails"]["ContactDetails"]["Email"]}', '${data["LastName"]}'                                         , '${data["PrimaryWorkgroupName"]}'     , '${CustomDropdownControl1__CF}'
-        ,'${data["FirstName"]}'          , '${data["StartDate"]}'                                 , '${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}', '${CustomTextBoxControl5__CF6}'       , '${CustomTextBoxControl5__CF2}'
-        ,'${CustomDropdownControl2__CF2}', '${data["EndDate"]}'                                   , '${data["EndDate"]}'                                          , '${data["Credentials"]["CardNumber"]}', '${rules[39]}'
-        ,'${data["StartDate"]}'          , '${CustomTextBoxControl1__CF}'                         , '${data["Credentials"]["Pin"]}'                               , '${CustomTextBoxControl3__CF}'        ,'${CustomDropdownControl3__CF5}'
-        ,'${CustomDropdownControl3__CF6}', '${CustomDropdownControl3__CF1}'                       , '${CustomTextBoxControl5__CF5}'                               , '${CustomTextBoxControl5__CF9}'       , '${CustomTextBoxControl5__CF1}'
-        ,'${CustomTextBoxControl5__CF10}', '${CustomTextBoxControl5__CF11}'                       , '${CustomTextBoxControl5__CF8}'                               , '${CustomDropdownControl2__CF1}'      , '${CustomTextBoxControl7__CF11}'
-        ,'${CustomTextBoxControl7__CF12}', '${CustomTextBoxControl7__CF1}'                        , '${CustomTextBoxControl7__CF8}'                               , '${CustomTextBoxControl7__CF9}'       , '${CustomTextBoxControl7__CF10}'
-        ,'${CustomDropdownControl3__CF2}', '${CustomDropdownControl3__CF3}'                       , '${CustomDropdownControl3__CF4}'                              , '${CustomTextBoxControl7__CF4}'       , '${CustomTextBoxControl7__CF5}'
-        ,'${CustomTextBoxControl7__CF6}' , '${CustomTextBoxControl7__CF2}'                        , '${CustomTextBoxControl7__CF7}'                               , '${CustomTextBoxControl7__CF3}'       , '${CustomTextBoxControl2__CF}'
+         '${data["EmployeeNumber"]}'     
+        , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + moment(data["PersonalDetails"]["DateOfBirth"]).format("YYYY-MM-DD")+ "'" : 'Null'}
+        ,'${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}'
+        ,'${CustomTextBoxControl6__CF}'
+        ,'${CustomTextBoxControl5__CF4}'
+        ,'${CustomTextBoxControl5__CF3}'
+        ,'${data["PersonalDetails"]["ContactDetails"]["Email"]}'
+        ,'${data["LastName"]}'
+        ,'${data["PrimaryWorkgroupName"]}'
+        ,'${CustomDropdownControl1__CF == '' ? '無' : CustomDropdownControl1__CF}'
+        ,'${data["FirstName"]}'
+        ,'${ moment(data["StartDate"]).format("YYYY-MM-DD")}'
+        ,'${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}'
+        ,'${CustomTextBoxControl5__CF6}'
+        ,'${CustomTextBoxControl5__CF2}'
+        ,'${CustomDropdownControl2__CF2 == '' ? '無' : CustomDropdownControl2__CF2}'
+        ,'${ moment(data["EndDate"]).format("YYYY-MM-DD")}'
+        ,'${ moment(data["EndDate"]).format("YYYY-MM-DD")}'
+        ,'${data["Credentials"]["CardNumber"] == undefined ? '' : data["Credentials"]["CardNumber"]}'
+        ,'${rules[39]}'
+        ,'${ moment(data["StartDate"]).format("YYYY-MM-DD")}'
+        ,'${CustomTextBoxControl1__CF}'
+        ,'${data["Credentials"]["Pin"] == undefined ? '' : data["Credentials"]["Pin"]}'
+        ,'${CustomTextBoxControl3__CF}'
+        ,'${CustomDropdownControl3__CF5 == '' ? '無' : CustomDropdownControl3__CF5}'
+        ,'${CustomDropdownControl3__CF6 == '' ? '無' : CustomDropdownControl3__CF6}'
+        ,'${CustomDropdownControl3__CF1 == '' ? '無' : CustomDropdownControl3__CF1}'
+        ,'${CustomTextBoxControl5__CF5}'
+        ,'${CustomTextBoxControl5__CF9}'
+        ,'${CustomTextBoxControl5__CF1}'
+        ,'${CustomTextBoxControl5__CF10}'
+        ,'${CustomTextBoxControl5__CF11}'
+        ,'${CustomTextBoxControl5__CF8}'
+        ,'${CustomDropdownControl2__CF1 == '' ? '無' : CustomDropdownControl2__CF1}'
+        ,'${CustomTextBoxControl7__CF11}'
+        ,'${CustomTextBoxControl7__CF12}'
+        ,'${CustomTextBoxControl7__CF1}'
+        ,'${CustomTextBoxControl7__CF8}'
+        ,'${CustomTextBoxControl7__CF9}'
+        ,'${CustomTextBoxControl7__CF10}'
+        ,'${CustomDropdownControl3__CF2 == '' ? '無' : CustomDropdownControl3__CF2}'
+        ,'${CustomDropdownControl3__CF3 == '' ? '無' : CustomDropdownControl3__CF3}'
+        ,'${CustomDropdownControl3__CF4 == '' ? '無' : CustomDropdownControl3__CF4}'
+        ,'${CustomTextBoxControl7__CF4}'
+        ,'${CustomTextBoxControl7__CF5}'
+        ,'${CustomTextBoxControl7__CF6}'
+        ,'${CustomTextBoxControl7__CF2}'
+        ,'${CustomTextBoxControl7__CF7}'
+        ,'${CustomTextBoxControl7__CF3}'
+        ,'${CustomTextBoxControl2__CF}'
         ,'${rules[0]}' , '${rules[1]}' , '${rules[2]}' , '${rules[3]}' , '${rules[4]}' , '${rules[5]}' , '${rules[6]}' , '${rules[7]}' , '${rules[8]}' , '${rules[9]}'
         ,'${rules[10]}', '${rules[11]}', '${rules[12]}', '${rules[13]}', '${rules[14]}', '${rules[15]}', '${rules[16]}', '${rules[17]}', '${rules[18]}', '${rules[19]}'
         ,'${rules[20]}', '${rules[21]}', '${rules[22]}', '${rules[23]}', '${rules[24]}', '${rules[25]}', '${rules[26]}', '${rules[27]}', '${rules[28]}', '${rules[29]}'
         ,'${rules[30]}', '${rules[31]}', '${rules[32]}', '${rules[33]}', '${rules[34]}', '${rules[35]}', '${rules[36]}', '${rules[37]}', '${rules[38]}'
-        , ${CustomDateControl4__CF   ? CustomDateControl4__CF   : 'Null' }, ${CustomDateControl3__CF11 ? CustomDateControl3__CF11 : 'Null' }, ${CustomDateControl3__CF12 ? CustomDateControl3__CF12 : 'Null' }
-        , ${CustomDateControl3__CF1  ? CustomDateControl3__CF1  : 'Null' }, ${CustomDateControl3__CF2  ? CustomDateControl3__CF2  : 'Null' }, ${CustomDateControl3__CF6  ? CustomDateControl3__CF6  : 'Null' }
-        , ${CustomDateControl3__CF7  ? CustomDateControl3__CF7  : 'Null' }, ${CustomDateControl3__CF5  ? CustomDateControl3__CF5  : 'Null' }, ${CustomDateControl3__CF3  ? CustomDateControl3__CF3  : 'Null' }
-        , ${CustomDateControl3__CF4  ? CustomDateControl3__CF4  : 'Null' }, ${CustomDateControl3__CF8  ? CustomDateControl3__CF8  : 'Null' }, ${CustomDateControl3__CF9  ? CustomDateControl3__CF9  : 'Null' }
-        , ${CustomDateControl3__CF10 ? CustomDateControl3__CF10 : 'Null' }
+        , ${CustomDateControl4__CF ? CustomDateControl4__CF : 'Null'}, ${CustomDateControl3__CF11 ? CustomDateControl3__CF11 : 'Null'}, ${CustomDateControl3__CF12 ? CustomDateControl3__CF12 : 'Null'}
+        , ${CustomDateControl3__CF1 ? CustomDateControl3__CF1 : 'Null'}, ${CustomDateControl3__CF2 ? CustomDateControl3__CF2 : 'Null'}, ${CustomDateControl3__CF6 ? CustomDateControl3__CF6 : 'Null'}
+        , ${CustomDateControl3__CF7 ? CustomDateControl3__CF7 : 'Null'}, ${CustomDateControl3__CF5 ? CustomDateControl3__CF5 : 'Null'}, ${CustomDateControl3__CF3 ? CustomDateControl3__CF3 : 'Null'}
+        , ${CustomDateControl3__CF4 ? CustomDateControl3__CF4 : 'Null'}, ${CustomDateControl3__CF8 ? CustomDateControl3__CF8 : 'Null'}, ${CustomDateControl3__CF9 ? CustomDateControl3__CF9 : 'Null'}
+        , ${CustomDateControl3__CF10 ? CustomDateControl3__CF10 : 'Null'}
         )`;
-        
+
         console.log(insert);
 
         this.adodbConn

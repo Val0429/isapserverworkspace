@@ -44,34 +44,11 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     if (data.inputType.accesslevels) {
         for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-            let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
-            let ar = [];
-            if (level["readers"]) {
-                for (let j = 0; j < level["readers"].length; j++) {
-                    const r = level["readers"][j];
+            let levelGroup = data.inputType.accesslevels[i];
 
-                    ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: r["readerid"], RuleType: 2 });
-                }
-
-                let firstObject = await new Parse.Query(AccessLevel).descending("levelid").first();
-                let maxId = firstObject.get("levelid");
-                data.inputType.tableid = maxId + 1;
-
-                al.push({
-                    name: level["levelname"],
-                    token: "-1",
-                    accessRule: ar,
-                    timeScheduleToken: level["timeschedule"]["timeid"]
-                });
+            for (let j = 0; j < levelGroup.get("levelinSiPass").length; j++) {
+                al.push(levelGroup.get("levelinSiPass")[j]);    
             }
-
-            let d = {
-                name: level["levelname"],
-                token: "-1",
-                accessRule: ar,
-                timeScheduleToken: level["timeschedule"]["timeid"]
-            };
-            //await siPassAdapter.postAccessLevel(d);
         }
     }
     let ag = {
@@ -80,8 +57,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         accessLevels: al
     };
 
-    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
-    //await siPassAdapter.postAccessGroup(ag);
+    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
+    let r1 = await siPassAdapter.postAccessGroup(ag);
+
+    data.inputType.tableid = r1["Token"];
+    var obj = new PermissionTable(data.inputType);
+    await obj.save(null, { useMasterKey: true });
+    
+    Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
 
     for (let i = 0; i < al.length; i++) {
         const e = al[i];
@@ -91,19 +74,6 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         if (ccure == null)
             throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
     }
-    
-
-    
-    let firstObject = await new Parse.Query(PermissionTable).descending("tableid").first();
-    let maxId = firstObject ? firstObject.get("tableid") : 0;
-    data.inputType.tableid = maxId + 1;
-
-    var obj = new PermissionTable(data.inputType);
-    await obj.save(null, { useMasterKey: true });
-
-    
-
-    Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj);

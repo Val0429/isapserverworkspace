@@ -166,20 +166,20 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     await obj.save(null, { useMasterKey: true });
 
     try {
-        let config = {
-            server: Config.ccuresqlserver.server,
-            port: Config.ccuresqlserver.port,
-            user: Config.ccuresqlserver.user,
-            password: Config.ccuresqlserver.password,
-            database: Config.ccuresqlserver.database,
-            requestTimeout: 50000,
-            connectionTimeout: 50000 //ms
-        }
+        // let config = {
+        //     server: Config.ccuresqlserver.server,
+        //     port: Config.ccuresqlserver.port,
+        //     user: Config.ccuresqlserver.user,
+        //     password: Config.ccuresqlserver.password,
+        //     database: Config.ccuresqlserver.database,
+        //     requestTimeout: 50000,
+        //     connectionTimeout: 50000 //ms
+        // }
 
         this.CCure800SqlAdapter = new CCure800SqlAdapter();
-        await this.CCure800SqlAdapter.connect(config);
+        // await this.CCure800SqlAdapter.connect(config);
         await this.CCure800SqlAdapter.writeMember(ret);
-        await this.CCure800SqlAdapter.disconnect();
+        // await this.CCure800SqlAdapter.disconnect();
     }
     catch (ex) {
         console.log(`${this.constructor.name}`, ex);
@@ -281,21 +281,23 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         }
     }
 
+
     // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
-        .containedIn("tableid", update.get("AccessRules"))
         .limit(Number.MAX_SAFE_INTEGER).find();
 
     let rules=[];
     for (const rid of update.get("AccessRules")) {            
+
         let permission = permissionTables.find(x=>x.get("tableid")== rid);        
+
         if(!permission)continue;
         let newRule = {
                 ArmingRightsId: null,
                 ControlModeId: null,
                 EndDate: null,
                 ObjectName: permission.get("tablename"),
-                ObjectToken: "",
+                ObjectToken: permission.get("tableid"),
                 RuleToken: permission.get("tableid"),
                 RuleType: 4,
                 Side: 0,
@@ -305,7 +307,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         rules.push(newRule);
     }
     update.set("AccessRules", rules);
-    
+
     // CustomFields
     let inputs = update.get("CustomFields");    
     
@@ -322,10 +324,13 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         field.FieldValue = cf.FieldValue;
     }
     update.set("CustomFields", fields);
+console.log(update);
 
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
+console.log(ret);    
     let holder = await siPassAdapter.postCardHolder(ret);
+console.log(holder);
 
     try {
         let config = {
@@ -338,6 +343,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
             connectionTimeout: 50000 //ms
         }
 
+        this.CCure800SqlAdapter = new CCure800SqlAdapter();
+        
         await this.CCure800SqlAdapter.connect(config);
         await this.CCure800SqlAdapter.writeMember(ret);
         await this.CCure800SqlAdapter.disconnect();
