@@ -204,6 +204,7 @@ Section
 	# source code
 	SetOutPath $INSTDIR
 	File /r *.bat
+	File /r *.ps1
 	File /r /x .git /x .gitignore /x nsis ..\..\*.* 
 	
 	# intall mongo
