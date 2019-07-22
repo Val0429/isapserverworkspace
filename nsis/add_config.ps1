@@ -1,5 +1,5 @@
-$config_path="$Env:Programfiles/MongoDB/acs_mongo.cfg"
-$program_files="$Env:Programfiles".replace("\","/")
+$config_path="$Env:TEMP\acs_mongo.cfg"
+$program_files="$Env:ProgramW6432".replace("\","/")
 $dbpath="$program_files/MongoDB/data_acs"
 $logpath="$program_files/MongoDB/log_acs"
 $logfile="$logpath/log.txt"
@@ -7,7 +7,6 @@ IF (![System.IO.File]::Exists($config_path) ){
 	New-Item -ItemType "file" $config_path -Force
 	Set-Content $config_path 'storage:'
 	Add-Content $config_path $('    dbPath: "'+$dbpath+'"')
-	Add-Content $config_path '    directoryPerDB: true'
 	Add-Content $config_path '    journal:'
 	Add-Content $config_path '        enabled: true'
 	Add-Content $config_path 'systemLog:'
