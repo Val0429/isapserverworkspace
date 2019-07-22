@@ -116,13 +116,13 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
-        .containedIn("tableid", obj.get("AccessRules"))
+        .containedIn("tableid", obj.get("AccessRules").map(x=>parseInt(x)))
         .limit(Number.MAX_SAFE_INTEGER).find();
 
     let rules=[];
     for (const rid of obj.get("AccessRules")) {            
-        let permission = permissionTables.find(x=>x.get("tableid")== rid);
-        console.log("permission", permission);
+        let permission = permissionTables.find(x=>x.get("tableid")== +rid);
+        console.log("permission", permission, rid);
         if(!permission)continue;
         let newRule = {
             ArmingRightsId: null,
@@ -287,9 +287,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         .limit(Number.MAX_SAFE_INTEGER).find();
 
     let rules=[];
-    for (const rid of update.get("AccessRules")) {            
+    for (const rid of update.get("AccessRules").map(x=>+x)) {
 
-        let permission = permissionTables.find(x=>x.get("tableid")== rid);        
+        let permission = permissionTables.find(x=>x.get("tableid")== +rid);        
 
         if(!permission)continue;
         let newRule = {
