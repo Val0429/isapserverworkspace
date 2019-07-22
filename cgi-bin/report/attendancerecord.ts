@@ -42,14 +42,19 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if (filter.CardNumber) {
         query.matches("card_no", new RegExp(filter.CardNumber), "i");
     }
-
+    if (filter.start) {
+        let start = new Date(filter.start);        
+        query.greaterThanOrEqualTo("date_time_occurred", start);
+    }
+    if (filter.end) {
+        let end = new Date(filter.end);
+        query.lessThanOrEqualTo("date_time_occurred", end);
+    }
     let results = [];
     let records = await query.limit(pageSize).find();
     
     for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
-        if (!record.date_occurred || !record.time_occurred) continue;
-        let dateTime = record.date_occurred + record.time_occurred;
-        record.date_time_occurred = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
+        if (!record.date_occurred || !record.date_time_occurred) continue;        
         let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);                
         //start, assume in and out at the same time
         if(thisDayRecords.length<2){
@@ -65,15 +70,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         
     }
 
-    if (filter.start) {
-        let start = new Date(filter.start);        
-        results = results.filter(x => x.date_time_occurred && x.date_time_occurred >= start);            
-    }
-    if (filter.end) {
-        let end = new Date(filter.end);
-        results = results.filter(x => x.date_time_occurred && x.date_time_occurred <= end);            
-    }
-    
     /// 3) Output
     return {
         paging:{
