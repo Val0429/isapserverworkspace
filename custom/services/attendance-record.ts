@@ -85,6 +85,9 @@ export class AttendanceRecord {
                 );
 
                 records.forEach( async (r) => {
+                    let dateTime = r["date_occurred"] + r["time_occurred"];
+                    r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
+
                     let o = new AttendanceRecords(r);
                     await o.save();
                     await delay(100);
@@ -98,6 +101,7 @@ export class AttendanceRecord {
                     r["rowguid"] = r["reportId"] + "";
                     r["date_occurred"] = moment(r["updateTime"]).format("YYYYMMDD") ;
                     r["time_occurred"] = moment(r["updateTime"]).format('HHmmss');
+                    r["date_time_occurred"] = new Date(r["updateTime"]);
                     r["card_no"] = r["cardNum"] + "";
                     r["point_no"] = r["doorId"] + "";
                     r["point_name"] = r["doorName"];

@@ -311,6 +311,7 @@ export interface IAttendanceRecords {
     rowguid?: number,
     at_id?: number,
     date_occurred?: string,
+    date_time_occurred?: Date,
     time_occurred?: string,
     server_name?: string,
     unit_no?: number,
