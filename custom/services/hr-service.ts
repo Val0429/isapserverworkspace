@@ -17,7 +17,7 @@ import { vieMember } from '../../custom/models'
 import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject, Member } from 'core/cgi-package';
 import { stringify } from 'querystring';
-// import { mongoDBUrl } from 'helpers/mongodb/url-helper';
+import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 
 
 export class HRService {
@@ -75,8 +75,8 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `1.0 create mongo database connection`);
             // (async () => {
             try {
-                const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-                // const url = mongoDBUrl();
+                // const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
+                const url = mongoDBUrl();
                 this.mongoClient = await mongo.MongoClient.connect(url);
                 this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
             }
