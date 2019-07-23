@@ -67,8 +67,8 @@ export interface ISiteBindingRegion {
 export interface IAreaIndexC {
     siteId: string;
     name: string;
-    imageBase64: string;
-    mapBase64: string;
+    imageBase64?: string;
+    mapBase64?: string;
 }
 
 export interface IAreaIndexR {
