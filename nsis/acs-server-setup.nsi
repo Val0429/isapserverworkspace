@@ -115,7 +115,11 @@ Function ${UN}DoUninstall
   ;copy config first to temp folder
 	!insertmacro BackupFile "$R1\workspace\config\default" "mongodb.ts" "${TEMP_FOLDER}\server"
 	!insertmacro BackupFile "$R1\workspace\config\custom" "sipassconnect.ts" "${TEMP_FOLDER}\server"
-	!insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"
+  !insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"
+	
+  !insertmacro BackupFile "$R1\workspace\config\custom" "ccureconnect.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "ccuresqlserver.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "humanresource.ts" "${TEMP_FOLDER}\server"
 	
 	# first, delete the uninstaller
     Delete "$R1\uninstall.exe"
@@ -255,7 +259,11 @@ Section
   !insertmacro RestoreFile "${TEMP_FOLDER}\server" "mongodb.ts" "$INSTDIR\workspace\config\default"
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "sipassconnect.ts" "$INSTDIR\workspace\config\custom"
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "license.xml" "$INSTDIR\workspace\custom\license"
-
+  
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccureconnect.ts" "$INSTDIR\workspace\config\custom"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccuresqlserver.ts" "$INSTDIR\workspace\config\custom"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "humanresource.ts" "$INSTDIR\workspace\config\custom"
+	
 
 	# install service
 	ExecWait '"install.bat" /s'
