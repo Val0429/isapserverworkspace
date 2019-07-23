@@ -85,7 +85,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
     //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
     // }
-
+    let emp = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
+    if (emp){
+        throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
+    }
     if (data.inputType.Credentials[0]) {
         let cardno = data.inputType.Credentials[0].CardNumber;;
 
