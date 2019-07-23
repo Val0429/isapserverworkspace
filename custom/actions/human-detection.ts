@@ -367,7 +367,6 @@ class Action {
                                         report.setValue('date', value.date);
                                         report.setValue('imageSrc', '');
                                         report.setValue('value', locations.length);
-                                        report.setValue('results', locations);
 
                                         await report.save(null, { useMasterKey: true }).fail((e) => {
                                             throw e;
