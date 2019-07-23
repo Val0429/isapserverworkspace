@@ -40,6 +40,15 @@ export interface IHumanDetectionThreshold extends IDateRange {
 
 export interface IRepeatVisitorSummary extends ISummaryBase {}
 
+export interface ICampaignMultiCampaignSummary {
+    campaignIds: string[];
+}
+
+export interface ICampaignSingleCampaignSummary {
+    campaignId: string;
+    siteIds: string[];
+}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;

@@ -1,4 +1,4 @@
-import { IDayRange, IDaySingle } from '../db/_index';
+import { IDayRange, IDaySingle, IDateRange } from '../db/_index';
 import { IObject } from './_index';
 
 export interface ISalesRecordR {
@@ -202,6 +202,36 @@ export interface IRepeatVisitorSummaryTableData {
 export interface IRepeatVisitorSummary {
     summaryChartDatas: IRepeatVisitorSummaryChartData[];
     summaryTableDatas: IRepeatVisitorSummaryTableData[];
+}
+
+export interface ICampaignMultiCampaignSummaryData extends IDateRange {
+    campaign: IObject;
+    traffic: number;
+    budget: number;
+    budgetPercent: number;
+    trafficGainPer: number;
+}
+
+export interface ICampaignMultiCampaignSummary {
+    budgetTotal: number;
+    summaryDatas: ICampaignMultiCampaignSummaryData[];
+}
+
+export interface ICampaignSingleCampaignSummaryData {
+    type: number;
+    date: Date;
+    traffic: number;
+}
+
+export interface ICampaignSingleCampaignSummary {
+    budget: number;
+    trafficGainPer: number;
+    traffic: number;
+    beforeTraffic: number;
+    afterTraffic: number;
+    changeTrafficCampaign: number;
+    changeAfterTrafficCampaign: number;
+    summaryDatas: ICampaignSingleCampaignSummaryData[];
 }
 
 export interface ISendUser extends IObject {

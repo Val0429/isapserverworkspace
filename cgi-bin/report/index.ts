@@ -196,6 +196,9 @@ export class Report {
      *
      */
     private _initTime: number = 0;
+    protected get initTime(): number {
+        return this._initTime;
+    }
 
     /**
      * Initialization
