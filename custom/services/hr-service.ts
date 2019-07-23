@@ -17,7 +17,7 @@ import { vieMember } from '../../custom/models'
 import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject, Member } from 'core/cgi-package';
 import { stringify } from 'querystring';
-import { mongoDBUrl } from 'helpers/mongodb/url-helper';
+// import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 
 
 export class HRService {
@@ -75,8 +75,8 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `1.0 create mongo database connection`);
             // (async () => {
             try {
-                //const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-                const url = mongoDBUrl();
+                const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
+                // const url = mongoDBUrl();
                 this.mongoClient = await mongo.MongoClient.connect(url);
                 this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
             }
@@ -442,7 +442,20 @@ export class HRService {
                                     AccessRules: [],
                                     ApbWorkgroupId: a,
                                     Attributes: {},
-                                    Credentials: [],
+                                    Credentials: [
+                                        {
+                                            CardNumber: record["FaxNo"],
+                                            EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
+                                            Pin: "0000",
+                                            ProfileId: 1,
+                                            ProfileName: "基礎",
+                                            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
+                                            FacilityCode: 469,
+                                            CardTechnologyCode: 10,
+                                            PinMode: 4,
+                                            PinDigit: 6
+                                        }
+                                    ],
                                     EmployeeNumber: record["EmpNo"] ? record["EmpNo"] : "",
                                     EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
                                     FirstName: record["EngName"] ? record["EngName"] : "_",

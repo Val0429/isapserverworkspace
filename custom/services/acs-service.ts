@@ -14,12 +14,12 @@ export class ACSService {
     private cycleTime: number = 1200; // sec
 
     constructor() {
-   
+
         this.startSync();
         // 1.0 Login to Datebase
         Log.Info(`${this.constructor.name}`, `1.0 Login database connection`);
         // (async () => {
-            this.waitTimer = setTimeout(async () => {
+        this.waitTimer = setTimeout(async () => {
             this.doAccessControlSync();
         }, 1000 * this.startDelayTime);
         // })();
@@ -35,9 +35,9 @@ export class ACSService {
 
         if (this.cycleTime != 5) {
             if ((now.getHours() == 0) && (now.getMinutes() == 0)) {  // Startup @00:00
-            // if (now.getMinutes() != 70) {
+                // if (now.getMinutes() != 70) {
                 // 0.0 Initial Adapter
-                Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);                
+                Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
                 await this.startSync();
             }
         }
@@ -52,7 +52,7 @@ export class ACSService {
     }
 
     private async startSync() {
-        let me = this; 
+        let me = this;
         await new Promise(async function (resolve, reject) {
             await me.syncSipassSchedule();
             resolve();
@@ -294,98 +294,98 @@ export class ACSService {
 
     async syncSipassAcessGroup() {
         Log.Info(`${this.constructor.name}`, `SiPass 2.7 Access Group List`);
-                    
-                        let readers = await new Parse.Query(Reader).find();
 
-                        let grouplist = await siPassAdapter.getAccessGroupList();
-                        console.log("Access Group List", grouplist);
+        let readers = await new Parse.Query(Reader).find();
 
-                        if (grouplist) {
-                            for (let i = 0; i < grouplist.length; i++) {
-                                Log.Info(`${this.constructor.name}`, `Import data SiPass AccessGroups ${grouplist[i]["Name"]}-${grouplist[i]["Token"]}`);
+        let grouplist = await siPassAdapter.getAccessGroupList();
+        console.log("Access Group List", grouplist);
 
-                                let group = await siPassAdapter.getAccessGroup(grouplist[i]["Token"]);
+        if (grouplist) {
+            for (let i = 0; i < grouplist.length; i++) {
+                Log.Info(`${this.constructor.name}`, `Import data SiPass AccessGroups ${grouplist[i]["Name"]}-${grouplist[i]["Token"]}`);
 
-                                let acl = [];
-                                console.log("Access Group", group);
+                let group = await siPassAdapter.getAccessGroup(grouplist[i]["Token"]);
 
-                                if (group) {
-                                    for (let j = 0; j < group["AccessLevels"].length; j++) {
-                                        Log.Info(`${this.constructor.name}`, `Import data SiPass AccessLevels ${group["AccessLevels"][j]["Name"]}-${group["AccessLevels"][j]["Token"]}`);
+                let acl = [];
+                console.log("Access Group", group);
 
-                                        let level = await siPassAdapter.getAccessLevel(group["AccessLevels"][j]["Token"]);
+                if (group) {
+                    for (let j = 0; j < group["AccessLevels"].length; j++) {
+                        Log.Info(`${this.constructor.name}`, `Import data SiPass AccessLevels ${group["AccessLevels"][j]["Name"]}-${group["AccessLevels"][j]["Token"]}`);
 
-                                        let obj = await new Parse.Query(TimeSchedule).equalTo("timeid", +level["TimeScheduleToken"]).first();
-                                        let tsid = obj.id;
+                        let level = await siPassAdapter.getAccessLevel(group["AccessLevels"][j]["Token"]);
 
-                                        let rs = [];
-                                        for (let idx1 = 0; idx1 < level["AccessRule"].length; idx1++) {
-                                            let rule = level["AccessRule"][idx1];
-                                            for (let idx2 = 0; idx2 < readers.length; idx2++) {
-                                                const r = readers[idx2] as Reader;
+                        let obj = await new Parse.Query(TimeSchedule).equalTo("timeid", +level["TimeScheduleToken"]).first();
+                        let tsid = obj.id;
 
-                                                if (r.get("readerid") == rule["ObjectToken"]) {
-                                                    //rs.push(r["_id"]);
-                                                    rs.push(r);
-                                                    break;
-                                                }
-                                            }
-                                        };
+                        let rs = [];
+                        for (let idx1 = 0; idx1 < level["AccessRule"].length; idx1++) {
+                            let rule = level["AccessRule"][idx1];
+                            for (let idx2 = 0; idx2 < readers.length; idx2++) {
+                                const r = readers[idx2] as Reader;
 
-                                        let lev = await new Parse.Query(AccessLevel).equalTo("levelname", level["Name"]).first();
-                                        if (lev == null) {
-                                            let d = {
-                                                system: 1,
-                                                levelid: level["Token"],
-                                                levelname: level["Name"],
-                                                status: 1,
-                                                reader: rs,
-                                                timeschedule: obj
-                                            };
-                                            let o = new AccessLevel(d);
-                                            lev = await o.save();
-                                        }
-                                        else {
-                                            obj.set("system", 1);
-                                            obj.set("levelid", +level["Token"]);
-                                            obj.set("levelname", level["Name"]);
-                                            obj.set("reader", rs);
-                                            obj.set("timeschedule", obj);
-                                        }
-
-                                        // let lev = await this.mongoDb.collection("AccessLevel").findOneAndUpdate({ "levelname": level["Name"] }, { $set: d }, { upsert: true, returnOriginal: false });
-                                        // let o = new AccessLevel(d);
-                                        // let lev = await o.save();
-                                        // acl.push(lev.value.id);
-                                        acl.push(lev);
-                                        await delay(1000);
-                                    }
+                                if (r.get("readerid") == rule["ObjectToken"]) {
+                                    //rs.push(r["_id"]);
+                                    rs.push(r);
+                                    break;
                                 }
-                                let obj = await new Parse.Query(PermissionTable).equalTo("tablename", group["Name"]).first();
-                                if (obj == null) {
-                                    let d = {
-                                        system: 1,
-                                        tableid: +group["Token"],
-                                        tablename: group["Name"],
-                                        status: 1,
-                                        accesslevels: acl
-                                    };
-                                    let o = new PermissionTable(d);
-                                    await o.save();
-                                }
-                                else {
-                                    obj.set("system", 1);
-                                    obj.set("tableid", +group["Token"]);
-                                    obj.set("tablename", group["Name"]);
-                                    obj.set("accesslevels", acl);
-                                    obj.save();
-                                }
-                                // await this.mongoDb.collection("PermissionTable").findOneAndUpdate({ "tablename": group["Name"] }, { $set: d }, { upsert: true });
-                                await delay(1000);
                             }
+                        };
+
+                        let lev = await new Parse.Query(AccessLevel).equalTo("levelname", level["Name"]).first();
+                        if (lev == null) {
+                            let d = {
+                                system: 1,
+                                levelid: level["Token"],
+                                levelname: level["Name"],
+                                status: 1,
+                                reader: rs,
+                                timeschedule: obj
+                            };
+                            let o = new AccessLevel(d);
+                            lev = await o.save();
                         }
-                    
-                    await delay(1000);
+                        else {
+                            obj.set("system", 1);
+                            obj.set("levelid", +level["Token"]);
+                            obj.set("levelname", level["Name"]);
+                            obj.set("reader", rs);
+                            obj.set("timeschedule", obj);
+                        }
+
+                        // let lev = await this.mongoDb.collection("AccessLevel").findOneAndUpdate({ "levelname": level["Name"] }, { $set: d }, { upsert: true, returnOriginal: false });
+                        // let o = new AccessLevel(d);
+                        // let lev = await o.save();
+                        // acl.push(lev.value.id);
+                        acl.push(lev);
+                        await delay(1000);
+                    }
+                }
+                let obj = await new Parse.Query(PermissionTable).equalTo("tablename", group["Name"]).first();
+                if (obj == null) {
+                    let d = {
+                        system: 1,
+                        tableid: +group["Token"],
+                        tablename: group["Name"],
+                        status: 1,
+                        accesslevels: acl
+                    };
+                    let o = new PermissionTable(d);
+                    await o.save();
+                }
+                else {
+                    obj.set("system", 1);
+                    obj.set("tableid", +group["Token"]);
+                    obj.set("tablename", group["Name"]);
+                    obj.set("accesslevels", acl);
+                    obj.save();
+                }
+                // await this.mongoDb.collection("PermissionTable").findOneAndUpdate({ "tablename": group["Name"] }, { $set: d }, { upsert: true });
+                await delay(1000);
+            }
+        }
+
+        await delay(1000);
     }
 
     private async syncSipassFloor() {
