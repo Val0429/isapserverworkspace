@@ -1,30 +1,15 @@
-IF NOT EXIST "%ProgramW6432%/MongoDB/acs_mongo.cfg" (
-set "dbPath=%ProgramW6432%\MongoDB\data_acs"
-set "dbPath=%dbPath:\=/%"
-set "logpath=%ProgramW6432%\MongoDB\log_acs\log.txt"
-set "logpath=%logpath:\=/%" 
-	(
-	echo storage:
-	echo     dbPath: "%dbPath%"
-	echo     directoryPerDB: true
-	echo     journal:
-	echo         enabled: true
-	echo systemLog:
-	echo     destination: file
-	echo     path: "%logpath%"
-	echo     logAppend: true
-	echo     timeStampFormat: iso8601-utc
-	echo net:
-	echo     bindIp: 127.0.0.1
-	echo     port: 27020
-	echo     wireObjectCheck : false
-	echo replication:
-	echo     oplogSizeMB: 1024
-	echo     replSetName: "rs0"
-	) > "%ProgramW6432%/MongoDB/acs_mongo.cfg"
-)
-
+@ECHO OFF
 if not exist "%ProgramW6432%/MongoDB/log_acs" mkdir "%ProgramW6432%/MongoDB/log_acs"
 if not exist "%ProgramW6432%/MongoDB/data_acs" mkdir "%ProgramW6432%/MongoDB/data_acs"
-"%MONGODB_HOME%\mongod" --config "%ProgramW6432%\MongoDB\acs_mongo.cfg" --install  --serviceName "ACS MongoDB" --serviceDisplayName "ACS MongoDB"
-net start "ACS MongoDB"    
+
+if not exist "%ProgramW6432%\MongoDB\acs_mongo.cfg" goto installWOConfig
+echo "installWithConfig"
+"%MONGODB_HOME%\mongod" --config "%ProgramW6432%\MongoDB\acs_mongo.cfg"  --install --serviceName "ACS MongoDB" --serviceDisplayName "ACS MongoDB"
+goto commonExit
+
+:installWOConfig
+echo "installWithOutConfig"
+"%MONGODB_HOME%\mongod" --port 27020 --dbpath "%ProgramW6432%\MongoDB\data_acs" --logpath="%ProgramW6432%\MongoDB\log_acs\log.txt" --install --serviceName "ACS MongoDB" --serviceDisplayName "ACS MongoDB" --replSet rs0
+
+:commonExit
+net start "ACS MongoDB"

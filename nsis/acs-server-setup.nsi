@@ -10,6 +10,7 @@
 !define PATH_OUT "Release"
 !define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define OUTPUT_NAME "acs-server-setup"
+!define MONGO_CONFIG "acs_mongo.cfg"
 
 # define name of installer
 !system 'md "${PATH_OUT}"'	
@@ -204,10 +205,16 @@ Section
 	# source code
 	SetOutPath $INSTDIR
 	File /r *.bat
+	File /r *.ps1
 	File /r /x .git /x .gitignore /x nsis ..\..\*.* 
 	
-	# intall mongo
-	ExecWait '"install_mongo.bat" /s'
+  #create mongo config
+  ExecWait 'Powershell -NoProfile -ExecutionPolicy Bypass -file "$INSTDIR\add_config.ps1"'
+  
+  IfFileExists "$PROGRAMFILES64\MongoDB\${MONGO_CONFIG}" installMongo moveFile
+  moveFile:
+  Rename "$TEMP\${MONGO_CONFIG}" "$PROGRAMFILES64\MongoDB\${MONGO_CONFIG}" 
+  installMongo:
 	#install mongo service
 	${If} ${SectionIsSelected} ${SEC04}			
 		ExecWait '"install_mongo.bat" /s'
