@@ -69,7 +69,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     for (let i = 0; i < al.length; i++) {
         const e = al[i];
 
-        let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 2).first();
+        let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 800).first();
 
         if (ccure == null)
             throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
