@@ -132,12 +132,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             ControlModeId: null,
             EndDate: null,
             ObjectName: permission.get("tablename"),
-            ObjectToken: "",
-            RuleToken: permission.get("tableid"),
+            ObjectToken:  permission.get("tableid").toString(),
+            RuleToken: permission.get("tableid").toString(),
             RuleType: 4,
             Side: 0,
             StartDate: null,
-            TimeScheduleToken: 0
+            TimeScheduleToken: "0"
         };
         rules.push(newRule);
     }
@@ -300,12 +300,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
                 ControlModeId: null,
                 EndDate: null,
                 ObjectName: permission.get("tablename"),
-                ObjectToken: permission.get("tableid"),
-                RuleToken: permission.get("tableid"),
+                ObjectToken: permission.get("tableid").toString(),
+                RuleToken: permission.get("tableid").toString(),
                 RuleType: 4,
                 Side: 0,
                 StartDate: null,
-                TimeScheduleToken: 0
+                TimeScheduleToken: "0"
         };
         rules.push(newRule);
     }
