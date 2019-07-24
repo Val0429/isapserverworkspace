@@ -332,9 +332,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         field.FieldValue = cf.FieldValue;
     }
     update.set("CustomFields", fields);
-console.log(update);
+    
+    //prevent modification to these fields
     update.set("Token", obj.get("Token"));
     update.set("Status", obj.get("Status"));
+    update.set("GeneralInformation", obj.get("GeneralInformation"));
+    
+console.log(update);
+    
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
 console.log(ret);    
