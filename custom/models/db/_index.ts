@@ -118,6 +118,8 @@ export * from './office-hour';
 export * from './report-base';
 export * from './report-demographic-summary';
 export * from './report-demographic';
+export * from './report-heatmap-summary';
+export * from './report-heatmap';
 export * from './report-human-detection-summary';
 export * from './report-human-detection';
 export * from './report-people-counting-summary';

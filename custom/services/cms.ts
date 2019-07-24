@@ -236,6 +236,7 @@ class Service {
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.heatmap:
+                                                    Action.DeleteFile.action$.next(temp);
                                                     break;
                                                 default:
                                                     throw `${value1.id}(device) mode not found`;
