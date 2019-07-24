@@ -16,7 +16,8 @@ const fieldNames = {
     CardCustodian:"CustomTextBoxControl2__CF",
     CardType:"CustomDropdownControl1__CF",
     CardNumber:"Credentials.CardNumber",
-    RuleToken:"AccessRules.RuleToken"
+    RuleToken:"AccessRules.RuleToken",
+    CardEndDate:"Credentials.EndDate"
 }
 
 
@@ -38,7 +39,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(Member);   
     /// 2) Filter query 
     let filter = data.parameters;    
-    
+    console.log("filter", filter);
     if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
     if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
     if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
@@ -61,7 +62,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     if(filter.CardNumbers) query.containedIn(fieldNames.CardNumber, filter.CardNumbers.split(","));
     
     if(filter.PermissionTable) query.containedIn(fieldNames.RuleToken, filter.PermissionTable.split(",").map(x=>x.toString()));
-    
+    if(filter.expired && filter.expired=="true"){
+        query.lessThanOrEqualTo(fieldNames.CardEndDate, (new Date()).toISOString());
+    }
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
     let outputData = o.map( (d) => ParseObject.toOutputJSON(d));
