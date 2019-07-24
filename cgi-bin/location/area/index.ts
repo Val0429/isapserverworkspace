@@ -79,7 +79,7 @@ action.post(
                                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                             }
                             value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let imageSrc: string = `${imageExtension.type}s/${area.id}_location_area_image_${area.createdAt.getTime()}.${imageExtension.extension}`;
+                            let imageSrc: string = `${imageExtension.type}s/${area.id}_location_area_image_${(new Date()).getTime()}.${imageExtension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
                             area.setValue('imageSrc', imageSrc);
                         }
@@ -89,7 +89,7 @@ action.post(
                                 throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
                             }
                             value.mapBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.mapBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                            let mapSrc: string = `${mapExtension.type}s/${area.id}_location_area_map_${area.createdAt.getTime()}.${mapExtension.extension}`;
+                            let mapSrc: string = `${mapExtension.type}s/${area.id}_location_area_map_${(new Date()).getTime()}.${mapExtension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${mapSrc}`, value.mapBase64);
                             area.setValue('mapSrc', mapSrc);
                         }
