@@ -60,7 +60,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     if(filter.CardNumbers) query.containedIn(fieldNames.CardNumber, filter.CardNumbers.split(","));
     
-    if(filter.PermissionTable) query.containedIn(fieldNames.RuleToken, filter.PermissionTable.split(","));
+    if(filter.PermissionTable) query.containedIn(fieldNames.RuleToken, filter.PermissionTable.split(",").map(x=>x.toString()));
     
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
@@ -100,7 +100,7 @@ function createEmployee(item: any) {
         let CardCustodian = getCustomFieldValue(item, fieldNames.CardCustodian);
         let CardType = getCustomFieldValue(item, fieldNames.CardType);
         let CardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
-        let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>x.RuleToken) : [];
+        let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>parseInt(x.RuleToken)) : [];
         return {
             FirstName: item.FirstName,
             LastName: item.LastName,
