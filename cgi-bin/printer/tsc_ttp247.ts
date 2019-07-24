@@ -26,8 +26,6 @@ action.post(
             _input.date = _input.date || '';
             _input.locationName = '';
 
-            _input = FontFormat(_input);
-
             let tsc: Tsc_Ttp247 = new Tsc_Ttp247();
 
             tsc.Initialization();
@@ -57,9 +55,7 @@ action.get(
             let _input: InputR = data.inputType;
 
             _input.date = _input.date || '';
-            _input.locationName = '';
-
-            _input = FontFormat(_input);
+            _input.locationName = _input.locationName || '';
 
             let tsc: Tsc_Ttp247 = new Tsc_Ttp247();
 
@@ -75,92 +71,3 @@ action.get(
         }
     },
 );
-
-/**
- *
- */
-interface ILimit {
-    [key: string]: {
-        fraction: number;
-        regex: RegExp;
-    };
-}
-
-/**
- *
- * @param limit
- * @param str
- */
-function Str2Fractions(limit: ILimit, str: string, score: number = 1): number[] {
-    return str.split('').map((value, index, array) => {
-        if (new RegExp(limit['EN'].regex).test(value)) return limit['EN'].fraction / score;
-        else if (new RegExp(limit['en'].regex).test(value)) return limit['en'].fraction / score;
-        else if (new RegExp(limit['num'].regex).test(value)) return limit['num'].fraction / score;
-        else return limit['ch'].fraction / score;
-    });
-}
-
-/**
- *
- * @param nums
- */
-function GetTotal(nums: number[]): number {
-    return nums.reduce((prev, curr, index, array) => {
-        return prev + curr;
-    }, 0);
-}
-
-/**
- *
- * @param total
- * @param nums
- */
-function GetPruneLength(total: number, nums: number[]): number {
-    while (true) {
-        if (total >= GetTotal(nums)) break;
-
-        nums.length = nums.length - 1;
-    }
-
-    return nums.length;
-}
-
-/**
- *
- * @param input
- */
-export function FontFormat(input: IRequest.IPrinter.ITsc_ttp247R): IRequest.IPrinter.ITsc_ttp247R {
-    const total: number = 440;
-    const limit: ILimit = {
-        ch: {
-            fraction: 88,
-            regex: /[]/g,
-        },
-        EN: {
-            fraction: 55,
-            regex: /[A-Z]/g,
-        },
-        en: {
-            fraction: 40,
-            regex: /[a-z\!\*\(\)\'\"\:\;]/g,
-        },
-        num: {
-            fraction: 44,
-            regex: /[0-9\~\_\^\&\$\-\+\?\ ]/g,
-        },
-    };
-
-    let fractions: number[] = Str2Fractions(limit, input.visitorName);
-    input.visitorName = input.visitorName.substr(0, GetPruneLength(total, fractions));
-
-    fractions = Str2Fractions(limit, input.respondentName, 2);
-    input.respondentName = input.respondentName.substr(0, GetPruneLength(total, fractions));
-
-    fractions = Str2Fractions(limit, input.date);
-    input.date = input.date.substr(0, GetPruneLength(total, fractions));
-
-    fractions = Str2Fractions(limit, input.locationName);
-    input.locationName = input.locationName.substr(0, GetPruneLength(total, fractions));
-
-    return input;
-}
