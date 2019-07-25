@@ -230,13 +230,19 @@ class Service {
                                             switch (value1.getValue('mode')) {
                                                 case Enum.EDeviceMode.humanDetection:
                                                     Action.HumanDetection.action$.next({
+                                                        type: Enum.EDeviceMode.humanDetection,
                                                         device: value1,
                                                         date: new Date(x.timestamp),
                                                         image: temp,
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.heatmap:
-                                                    Action.DeleteFile.action$.next(temp);
+                                                    Action.HumanDetection.action$.next({
+                                                        type: Enum.EDeviceMode.heatmap,
+                                                        device: value1,
+                                                        date: new Date(x.timestamp),
+                                                        image: temp,
+                                                    });
                                                     break;
                                                 default:
                                                     throw `${value1.id}(device) mode not found`;

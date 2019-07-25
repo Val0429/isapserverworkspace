@@ -15,7 +15,12 @@ class Action {
     /**
      *
      */
-    private _config = Config.deviceHumanDetection;
+    private _hdConfig = Config.deviceHumanDetection;
+
+    /**
+     *
+     */
+    private _hmConfig = Config.deviceHeatmap;
 
     /**
      *
@@ -36,7 +41,12 @@ class Action {
     /**
      *
      */
-    private _save$: Rx.Subject<Action.ISave> = new Rx.Subject();
+    private _saveHD$: Rx.Subject<Action.ISaveHD> = new Rx.Subject();
+
+    /**
+     *
+     */
+    private _saveHM$: Rx.Subject<Action.ISaveHM> = new Rx.Subject();
 
     /**
      *
@@ -78,12 +88,32 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
+            this.Stop();
+
             await this.Search();
 
             this.EnableSaveStream();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
+        }
+    }
+
+    /**
+     * Stop
+     */
+    private Stop(): void {
+        try {
+            this._action$.complete();
+            this._action$ = new Rx.Subject();
+
+            this._saveHD$.complete();
+            this._saveHD$ = new Rx.Subject();
+
+            this._saveHM$.complete();
+            this._saveHM$ = new Rx.Subject();
+        } catch (e) {
+            throw e;
         }
     }
 
@@ -125,24 +155,9 @@ class Action {
      * @param report
      * @param type
      */
-    private async SaveReportSummary(report: IDB.ReportHumanDetection, type: Enum.ESummaryType): Promise<void> {
+    private async SaveHDReportSummary(report: IDB.ReportHumanDetection, type: Enum.ESummaryType): Promise<void> {
         try {
-            let date: Date = new Date(report.getValue('date'));
-            switch (type) {
-                case Enum.ESummaryType.hour:
-                    date = new Date(date.setMinutes(0, 0, 0));
-                    break;
-                case Enum.ESummaryType.day:
-                    date = new Date(date.setHours(0, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.month:
-                    date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.season:
-                    let season = Math.ceil((date.getMonth() + 1) / 3);
-                    date = new Date(new Date(new Date(date.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
-                    break;
-            }
+            let date: Date = this.GetTypeDate(report.getValue('date'), type);
 
             let reportSummary: IDB.ReportHumanDetectionSummary = await new Parse.Query(IDB.ReportHumanDetectionSummary)
                 .equalTo('device', report.getValue('device'))
@@ -190,6 +205,90 @@ class Action {
     }
 
     /**
+     * Save report summary
+     * @param report
+     * @param size
+     * @param type
+     */
+    private async SaveHMReportSummary(report: IDB.ReportHeatmap, size: Draw.ISize, type: Enum.ESummaryType): Promise<void> {
+        try {
+            let date: Date = this.GetTypeDate(report.getValue('date'), type);
+
+            let reportSummary: IDB.ReportHeatmapSummary = await new Parse.Query(IDB.ReportHeatmapSummary)
+                .equalTo('device', report.getValue('device'))
+                .equalTo('type', type)
+                .equalTo('date', date)
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+
+            if (reportSummary) {
+                let hmConfig = this._hmConfig;
+                let gridUnit: number = hmConfig.gridUnit;
+
+                let scoreSize: Draw.ISize = {
+                    width: Math.ceil(reportSummary.getValue('width') / gridUnit),
+                    height: Math.ceil(reportSummary.getValue('height') / gridUnit),
+                };
+                let scores = this.HeatmapScore(size, report.getValue('results'), reportSummary.getValue('scores'), scoreSize);
+
+                reportSummary.setValue('scores', scores);
+            } else {
+                let scores = this.HeatmapScore(size, report.getValue('results'));
+
+                reportSummary = new IDB.ReportHeatmapSummary();
+
+                reportSummary.setValue('site', report.getValue('site'));
+                reportSummary.setValue('area', report.getValue('area'));
+                reportSummary.setValue('device', report.getValue('device'));
+                reportSummary.setValue('type', type);
+                reportSummary.setValue('date', date);
+                reportSummary.setValue('imageSrc', report.getValue('imageSrc'));
+                reportSummary.setValue('width', size.width);
+                reportSummary.setValue('width', size.height);
+                reportSummary.setValue('scores', scores);
+            }
+
+            await reportSummary.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get type date
+     * @param date
+     * @param type
+     */
+    private GetTypeDate(date: Date, type: Enum.ESummaryType): Date {
+        try {
+            date = new Date(date);
+            switch (type) {
+                case Enum.ESummaryType.hour:
+                    date = new Date(date.setMinutes(0, 0, 0));
+                    break;
+                case Enum.ESummaryType.day:
+                    date = new Date(date.setHours(0, 0, 0, 0));
+                    break;
+                case Enum.ESummaryType.month:
+                    date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
+                    break;
+                case Enum.ESummaryType.season:
+                    let season = Math.ceil((date.getMonth() + 1) / 3);
+                    date = new Date(new Date(new Date(date.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
+                    break;
+            }
+
+            return date;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Location filter
      * @param rois
      * @param locations
@@ -218,14 +317,63 @@ class Action {
     }
 
     /**
+     * Heatmap score
+     * @param size
+     * @param locations
+     * @param scores
+     * @param scoreSize
+     */
+    private HeatmapScore(size: Draw.ISize, locations: HumanDetection.ILocation[]): number[][];
+    private HeatmapScore(size: Draw.ISize, locations: HumanDetection.ILocation[], scores: number[][], scoreSize: Draw.ISize): number[][];
+    private HeatmapScore(size: Draw.ISize, locations: HumanDetection.ILocation[], scores?: number[][], scoreSize?: Draw.ISize): number[][] {
+        try {
+            let width: number = size.width;
+            let height: number = size.height;
+
+            if (scoreSize && (scoreSize.width !== width || scoreSize.height !== height)) {
+                return scores;
+            }
+
+            let hmConfig = this._hmConfig;
+            let gridUnit: number = hmConfig.gridUnit;
+
+            let widthGrid: number = Math.ceil(width / gridUnit);
+            let heightGrid: number = Math.ceil(height / gridUnit);
+
+            if (!scores) {
+                scores = new Array(heightGrid).fill([]).map((value, index, array) => {
+                    return new Array(widthGrid).fill(0);
+                });
+            }
+
+            locations.forEach((value, index, array) => {
+                let x1Grid = Math.floor(value.x / gridUnit);
+                let y1Grid = Math.floor(value.y / gridUnit);
+                let x2Grid = Math.ceil((value.x + value.width) / gridUnit);
+                let y2Grid = Math.ceil((value.y + value.height) / gridUnit);
+
+                for (let i: number = y1Grid; i < y2Grid; i++) {
+                    for (let j: number = x1Grid; j < x2Grid; j++) {
+                        scores[i][j] += 1;
+                    }
+                }
+            });
+
+            return scores;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Enable save stream
      */
     private EnableSaveStream(): void {
         try {
-            let next$: Rx.Subject<{}> = new Rx.Subject();
+            let nextHD$: Rx.Subject<{}> = new Rx.Subject();
 
-            this._save$
-                .zip(next$.startWith(0))
+            this._saveHD$
+                .zip(nextHD$.startWith(0))
                 .map((x) => {
                     return x[0];
                 })
@@ -235,10 +383,7 @@ class Action {
                             let tasks: Promise<any>[] = [];
 
                             tasks.push(x.report.save(null, { useMasterKey: true }) as any);
-                            tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.hour));
-                            // tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.day));
-                            // tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.month));
-                            // tasks.push(this.SaveReportSummary(x.report, Enum.ESummaryType.season));
+                            tasks.push(this.SaveHDReportSummary(x.report, Enum.ESummaryType.hour));
 
                             await Promise.all(tasks).catch((e) => {
                                 throw e;
@@ -247,11 +392,149 @@ class Action {
                             Print.Log(e, new Error(), 'error');
                         }
 
-                        next$.next();
+                        nextHD$.next();
+                    },
+                });
+
+            let nextHM$: Rx.Subject<{}> = new Rx.Subject();
+
+            this._saveHM$
+                .zip(nextHM$.startWith(0))
+                .map((x) => {
+                    return x[0];
+                })
+                .subscribe({
+                    next: async (x) => {
+                        try {
+                            let tasks: Promise<any>[] = [];
+
+                            tasks.push(x.report.save(null, { useMasterKey: true }) as any);
+                            tasks.push(this.SaveHMReportSummary(x.report, x.size, Enum.ESummaryType.hour));
+
+                            await Promise.all(tasks).catch((e) => {
+                                throw e;
+                            });
+                        } catch (e) {
+                            Print.Log(e, new Error(), 'error');
+                        }
+
+                        nextHM$.next();
                     },
                 });
         } catch (e) {
             Print.Log(e, new Error(), 'error');
+        }
+    }
+
+    /**
+     * HumanDetection
+     * @param device
+     * @param date
+     * @param buffer
+     * @param locations
+     */
+    public async HumanDetection(device: IDB.Device, date: Date, buffer: Buffer, locations: HumanDetection.ILocation[]): Promise<void> {
+        try {
+            let site: IDB.LocationSite = device.getValue('site');
+            let area: IDB.LocationArea = device.getValue('area');
+            let groups: IDB.DeviceGroup[] = device.getValue('groups');
+
+            let hdConfig = this._hdConfig;
+
+            let rectangle = hdConfig.output.rectangle;
+            let image = hdConfig.output.image;
+            let size: Draw.ISize = {
+                width: image.width,
+                height: image.height,
+            };
+
+            if (locations.length > 0) {
+                let rects: Draw.IRect[] = locations.map((value, index, array) => {
+                    return {
+                        x: value.x,
+                        y: value.y,
+                        width: value.width,
+                        height: value.height,
+                        color: rectangle.color,
+                        lineWidth: rectangle.lineWidth,
+                        isFill: rectangle.isFill,
+                    };
+                });
+
+                buffer = await Draw.Rectangle(rects, buffer);
+            }
+
+            buffer = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
+
+            let report: IDB.ReportHumanDetection = new IDB.ReportHumanDetection();
+
+            report.setValue('site', site);
+            report.setValue('area', area);
+            report.setValue('device', device);
+            report.setValue('date', date);
+            report.setValue('imageSrc', '');
+            report.setValue('value', locations.length);
+
+            await report.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            let imageSrc: string = `images_report/human_detection/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+            File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+
+            report.setValue('imageSrc', imageSrc);
+
+            this._saveHD$.next({ report: report });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Heatmap
+     * @param device
+     * @param date
+     * @param buffer
+     * @param locations
+     */
+    public async Heatmap(device: IDB.Device, date: Date, buffer: Buffer, locations: HumanDetection.ILocation[]): Promise<void> {
+        try {
+            let site: IDB.LocationSite = device.getValue('site');
+            let area: IDB.LocationArea = device.getValue('area');
+            let groups: IDB.DeviceGroup[] = device.getValue('groups');
+
+            let hmConfig = this._hmConfig;
+
+            let image = hmConfig.output.image;
+            let size: Draw.ISize = {
+                width: image.width,
+                height: image.height,
+            };
+
+            let imageSize: Draw.ISize = await Draw.ImageSize(buffer);
+            buffer = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
+
+            let report: IDB.ReportHeatmap = new IDB.ReportHeatmap();
+
+            report.setValue('site', site);
+            report.setValue('area', area);
+            report.setValue('device', device);
+            report.setValue('date', date);
+            report.setValue('imageSrc', '');
+            report.setValue('results', locations);
+
+            await report.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            let imageSrc: string = `images_report/heatmap/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
+            File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+
+            report.setValue('imageSrc', imageSrc);
+
+            this._saveHM$.next({ report: report, size: imageSize });
+        } catch (e) {
+            throw e;
         }
     }
 
@@ -263,7 +546,7 @@ class Action {
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._action$
-                .buffer(this._action$.bufferCount(this._config.bufferCount).merge(Rx.Observable.interval(1000)))
+                .buffer(this._action$.bufferCount(this._hdConfig.bufferCount).merge(Rx.Observable.interval(1000)))
                 .zip(next$.startWith(0))
                 .map((x) => {
                     return x[0];
@@ -274,111 +557,30 @@ class Action {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let site: IDB.LocationSite = value.device.getValue('site');
-                                        let area: IDB.LocationArea = value.device.getValue('area');
-                                        let groups: IDB.DeviceGroup[] = value.device.getValue('groups');
                                         let device: IDB.Device = value.device;
                                         let rois: Draw.ILocation[] = device.getValue('rois');
 
-                                        let hdConfig = this._config;
-                                        let hd: Action.IHD = this._hds.find((value1, index1, array1) => {
+                                        let hdServer: Action.IHD = this._hds.find((value1, index1, array1) => {
                                             return value1.objectId === device.getValue('hdServer').id;
                                         });
-                                        if (!hd) {
+                                        if (!hdServer) {
                                             throw `${device.id}(device) -> human detection server not found`;
-                                        }
-
-                                        let rectangle = hdConfig.output.rectangle;
-                                        let image = hdConfig.output.image;
-                                        let size: Draw.ISize = {
-                                            width: image.width,
-                                            height: image.height,
-                                        };
-
-                                        let rects: Draw.IRect[] = [];
-
-                                        if (hdConfig.roiTest) {
-                                            rois.forEach((value, index, array) => {
-                                                rects.push({
-                                                    x: value.x,
-                                                    y: value.y,
-                                                    width: value.width,
-                                                    height: value.height,
-                                                    color: 'green',
-                                                    lineWidth: 10,
-                                                    isFill: false,
-                                                });
-                                            });
                                         }
 
                                         let buffer: Buffer = File.ReadFile(value.image);
                                         DeleteFile.action$.next(value.image);
 
-                                        let locations = await hd.hd.GetAnalysis(buffer);
-
-                                        if (hdConfig.roiTest && locations.length > 0) {
-                                            locations.forEach((value, index, array) => {
-                                                rects.push({
-                                                    x: value.x,
-                                                    y: value.y,
-                                                    width: value.width,
-                                                    height: value.height,
-                                                    color: 'black',
-                                                    lineWidth: rectangle.lineWidth,
-                                                    isFill: rectangle.isFill,
-                                                });
-                                            });
-                                        }
+                                        let locations = await hdServer.hd.GetAnalysis(buffer);
 
                                         locations = this.LocationFilter(rois, locations);
 
-                                        if (locations.length > 0) {
-                                            locations.forEach((value, index, array) => {
-                                                rects.push({
-                                                    x: value.x,
-                                                    y: value.y,
-                                                    width: value.width,
-                                                    height: value.height,
-                                                    color: rectangle.color,
-                                                    lineWidth: rectangle.lineWidth,
-                                                    isFill: rectangle.isFill,
-                                                });
-                                            });
+                                        if (value.type === Enum.EDeviceMode.humanDetection) {
+                                            await this.HumanDetection(device, value.date, buffer, locations);
+                                        } else if (value.type === Enum.EDeviceMode.heatmap) {
+                                            await this.Heatmap(device, value.date, buffer, locations);
                                         }
 
-                                        if (hdConfig.roiTest) {
-                                            let test: Buffer = await Draw.Rectangle(rects, buffer);
-                                            test = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
-
-                                            File.WriteFile(`/test/${device.id}_${new Date().getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`, test);
-
-                                            rects.splice(0, rects.length - locations.length);
-                                        }
-
-                                        buffer = await Draw.Rectangle(rects, buffer);
-
-                                        buffer = await Draw.Resize(buffer, size, image.isFill, image.isTransparent);
-
-                                        let report: IDB.ReportHumanDetection = new IDB.ReportHumanDetection();
-
-                                        report.setValue('site', site);
-                                        report.setValue('area', area);
-                                        report.setValue('device', device);
-                                        report.setValue('date', value.date);
-                                        report.setValue('imageSrc', '');
-                                        report.setValue('value', locations.length);
-
-                                        await report.save(null, { useMasterKey: true }).fail((e) => {
-                                            throw e;
-                                        });
-
-                                        let imageSrc: string = `images_report/human_detection/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
-                                        File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
                                         buffer = null;
-
-                                        report.setValue('imageSrc', imageSrc);
-
-                                        this._save$.next({ report: report });
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
                                     }
@@ -412,6 +614,7 @@ namespace Action {
      *
      */
     export interface IAction {
+        type: Enum.EDeviceMode.humanDetection | Enum.EDeviceMode.heatmap;
         device: IDB.Device;
         date: Date;
         image: string;
@@ -420,7 +623,15 @@ namespace Action {
     /**
      *
      */
-    export interface ISave {
+    export interface ISaveHD {
         report: IDB.ReportHumanDetection;
+    }
+
+    /**
+     *
+     */
+    export interface ISaveHM {
+        report: IDB.ReportHeatmap;
+        size: Draw.ISize;
     }
 }

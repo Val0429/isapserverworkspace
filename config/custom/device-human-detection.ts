@@ -19,14 +19,12 @@ export interface IOutput {
 export interface Config {
     productId: string;
     bufferCount: number;
-    roiTest: boolean;
     output: IOutput;
 }
 
 let config: Config = {
     productId: '00111',
     bufferCount: 10,
-    roiTest: false,
     output: {
         image: {
             width: 640,

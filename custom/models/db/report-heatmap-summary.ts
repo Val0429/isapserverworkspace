@@ -12,6 +12,11 @@ export interface IReportHeatmapSummary extends IReportBase {
     type: Enum.ESummaryType;
 
     /**
+     * 照片
+     */
+    imageSrc: string;
+
+    /**
      * 圖片寬度
      */
     width: number;
@@ -20,11 +25,6 @@ export interface IReportHeatmapSummary extends IReportBase {
      * 圖片高度
      */
     height: number;
-
-    /**
-     * 最大值
-     */
-    maxValue: number;
 
     /**
      * 筆數
