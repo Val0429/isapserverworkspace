@@ -8,7 +8,11 @@ export enum QueryContent {
     Reports,
     ReportsNewUpdate,
     ReportsLastUpdateTime,
+    BadgeLayout,
+    EnumFields,
     Persons,
+    PersonExtendInfo,
+    PersonExtendInfoEnumList,
     Timespec,
     TimespecDays,
     Reader,
@@ -21,6 +25,7 @@ export enum QueryContent {
     ClearDoor,
     ClearDoorGroup,
     DoorGroup,
+    FloorGroup,
     ElevatorGroup,
     GroupMember,
     Users,
@@ -35,6 +40,10 @@ export interface IQueryParam {
     selector: string;
     dsn: string;
     condition?: string;
+    inner_selector?: string;
+    left_join_on ?: string;
+    left_join_table ?: string;
+    left_join_condition ?: string;
 };
 
 export interface IQueryMap {
@@ -51,7 +60,7 @@ var queryMap : IQueryMap = {};
      */
     queryMap[QueryContent.Reports] = {
         "table": "pub.journal",
-        "selector": 'JOURNALID as reportId,' +  
+        "selector":  'JOURNALID as reportId,' +  
                      'PERSON1EUID as personId,'+
                      'PERSON1FULLNAME as personName,'+
                      'CARDNUMBER as cardNum,'+
@@ -92,6 +101,23 @@ var queryMap : IQueryMap = {};
         "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
     }
 
+    //BadgeLayout
+    queryMap[QueryContent.BadgeLayout] = {
+        "table": "pub.badge_layout",
+        "selector": 'Badge_Layout_ID as badgeLayoutId,'+
+                    'Badge_Layout_Name as badgeLayoutName',
+        "dsn": Config.CCUREdsn.CFSRV
+    }
+
+    //EnumFields
+    queryMap[QueryContent.EnumFields] = {
+        "table": "pub.field_enum_list",
+        "selector": 'Field_ID as fieldId,'+
+                    'Enum_List_Value as fieldValue,'+
+                    'Enum_List_SeqID as seqId',
+        "dsn": Config.CCUREdsn.CFSRV
+    }
+
     //Person
     queryMap[QueryContent.Persons] = {
         "table": "ccm.view_person",
@@ -103,13 +129,46 @@ var queryMap : IQueryMap = {};
                     'TEXT2 as employeeNo,'+ 
                     'CARDNUM as cardNum,'+
                     'INT1 as fullCardNumber,'+
+                    'INT3 as extensionPhoneNum,'+
+                    'INT4 as MVPN,'+
                     'PIN as pin,' +
+                    'BADGELAYOUTID as badgeLayoutId,' + 
+                    'BADGEPRINTDT as badgePrintTime,' + 
+                    'IMAGECAPTUREDT as imageCapturetime,' + 
                     'DELETED as deleted,' +
                     'LOST as lost,' + 
                     'ACTIVATIONDT as activationTime,'+
                     'EXPIRATIONDT as expirationTime,'+
                     'GLOBALLASTMODDT as updateTime,'+
                     'LASTMODPERSONID as updatedPerson',
+        "dsn": Config.CCUREdsn.CFSRV,
+    }
+
+    //PersonExtendInfo
+    queryMap[QueryContent.PersonExtendInfo] = {
+        "table": "pub.person_field_values",
+        "selector": 'Person_ID as personId,'+
+                    'Field_Id as fieldId, '+
+                    'Field_Name as fieldName, '+
+                    'Char_Value as charVal, '+
+                    'Decimal_Value as decimalVal',
+        "inner_selector": `pub.person_field_values.Person_ID, `+
+                          `pub.field_report_name.Field_Id, `+
+                          `pub.field_report_name.Field_Name, `+
+                          `Char_Value, `+
+                          `cast(Decimal_Value as int) as Decimal_Value`,
+        "left_join_table": "pub.field_report_name",
+        "left_join_on": "pub.field_report_name.Field_ID = pub.person_field_values.Field_ID",
+        "left_join_condition": "pub.field_report_name.language_idx = 1033",
+        "dsn": Config.CCUREdsn.CFSRV,
+    }
+
+    //PersonExtendInfo
+    queryMap[QueryContent.PersonExtendInfoEnumList] = {
+        "table": "pub.field_enum_list",
+        "selector": 'Field_ID as fieldId,'+
+                    'Enum_List_Value as value, '+
+                    'Deleted as deleted',
         "dsn": Config.CCUREdsn.CFSRV,
     }
 
@@ -237,6 +296,15 @@ var queryMap : IQueryMap = {};
                     'Group_Name as groupName',
         "dsn": Config.CCUREdsn.CFSRV,
         "condition": "Object_Type=8"
+    }
+
+    //DoorGroup
+    queryMap[QueryContent.FloorGroup] = {
+        "table": "pub.groups",
+        "selector": 'Group_ID as groupId,'+
+                    'Group_Name as groupName',
+        "dsn": Config.CCUREdsn.CFSRV,
+        "condition": "Object_Type=30"
     }
 
     //ElevatorGroup

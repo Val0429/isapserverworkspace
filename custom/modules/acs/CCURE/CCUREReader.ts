@@ -1,5 +1,5 @@
 import { Config } from 'core/config.gen';
-import { isNullOrUndefined } from "util";
+import { isNullOrUndefined, isNull } from "util";
 import { toArray } from "rxjs/operator/toArray";
 import { SignalObject } from "./signalObject";
 import queryMap, { IQueryParam, QueryContent, IQueryMap } from './queryMap'
@@ -107,10 +107,10 @@ export class CCUREReader {
      * { doorId: 2087, doorName: 'D001', unlockTime: 5, shuntTime: 10 }
      */
     public async queryStreamAsync(queryContent: QueryContent,
-        OnDatareceived: (rows: JSON[], queryContent: QueryContent) => void,
-        OnDone?: (result: JSON, queryContent: QueryContent) => void,
-        OnError?: (err, queryContent: QueryContent) => void,
-        condition?: String): Promise<void> {
+                                    OnDatareceived: (rows: JSON[], queryContent: QueryContent) => void,
+                                    OnDone?: (result: JSON, queryContent: QueryContent) => void,
+                                    OnError?: (err, queryContent: QueryContent) => void,
+                                    condition?: String): Promise<void> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
         if (isNullOrUndefined(OnDatareceived) === true) throw `Internal Error: <CCUREReader::queryStream> OnDatareceived cannot be null`;
@@ -251,7 +251,18 @@ export class CCUREReader {
      * @param queryParam Query parameters
      */
     protected generateQueryString(queryContent: QueryContent, queryParam: IQueryParam, condition?: String): string {
-        let queryCmd: string = `select ${queryParam.selector} from openquery(${queryParam.dsn},'select * from ${queryParam.table}`;
+        let queryCmd: string ;
+
+        if(isNullOrUndefined(queryParam.inner_selector) === true) queryParam.inner_selector = '*';
+        queryCmd = `select ${queryParam.selector} from openquery(${queryParam.dsn},'select ${queryParam.inner_selector} from ${queryParam.table}`;
+
+        if(isNullOrUndefined(queryParam.left_join_table)  === false && 
+            isNullOrUndefined(queryParam.left_join_on) === false && 
+            isNullOrUndefined(queryParam.left_join_condition) === false)
+        {
+            queryCmd += ` left join ${queryParam.left_join_table} on ${queryParam.left_join_on} where ${queryParam.left_join_condition}`
+        }
+
         if (isNullOrUndefined(queryParam.condition) === false && (queryParam.condition === "") === false) {
             queryCmd += ` where (${queryParam.condition})`;
         }
