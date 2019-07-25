@@ -86,6 +86,8 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
+            this.Stop();
+
             await this.Search();
 
             this.GetAgeRange();
@@ -93,6 +95,21 @@ class Action {
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
+        }
+    }
+
+    /**
+     * Stop
+     */
+    private Stop(): void {
+        try {
+            this._action$.complete();
+            this._action$ = new Rx.Subject();
+
+            this._save$.complete();
+            this._save$ = new Rx.Subject();
+        } catch (e) {
+            throw e;
         }
     }
 
