@@ -234,6 +234,18 @@ export interface ICampaignSingleCampaignSummary {
     summaryDatas: ICampaignSingleCampaignSummaryData[];
 }
 
+export interface IHeatmapSummaryData extends ISummaryDataBase {
+    imageSrc: string;
+    gridUnit: number;
+    width: number;
+    height: number;
+    scores: number[][];
+}
+
+export interface IHeatmapSummary {
+    summaryDatas: IHeatmapSummaryData[];
+}
+
 export interface ISendUser extends IObject {
     email: string;
 }

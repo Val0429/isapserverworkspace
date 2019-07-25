@@ -49,6 +49,11 @@ export interface ICampaignSingleCampaignSummary {
     siteIds: string[];
 }
 
+export interface IHeatmapSummary extends IDateRange {
+    type: Enum.ESummaryType;
+    siteId: string;
+}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;
