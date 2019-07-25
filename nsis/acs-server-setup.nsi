@@ -110,16 +110,7 @@ FunctionEnd
 
 Function ${UN}DoUninstall
 	#0, get old installation folder
-	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
-	
-  ;copy config first to temp folder
-	!insertmacro BackupFile "$R1\workspace\config\default" "mongodb.ts" "${TEMP_FOLDER}\server"
-	!insertmacro BackupFile "$R1\workspace\config\custom" "sipassconnect.ts" "${TEMP_FOLDER}\server"
-  !insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"
-	
-  !insertmacro BackupFile "$R1\workspace\config\custom" "ccureconnect.ts" "${TEMP_FOLDER}\server"
-	!insertmacro BackupFile "$R1\workspace\config\custom" "ccuresqlserver.ts" "${TEMP_FOLDER}\server"
-	!insertmacro BackupFile "$R1\workspace\config\custom" "humanresource.ts" "${TEMP_FOLDER}\server"
+	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" "" 
 	
 	# first, delete the uninstaller
     Delete "$R1\uninstall.exe"
@@ -157,6 +148,19 @@ Function .onInit
  
 ;Run the uninstaller
 uninst:
+  ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+  ;just in case
+  RMDir /r "${TEMP_FOLDER}\server"
+  ;copy config first to temp folder
+	!insertmacro BackupFile "$R1\workspace\config\default" "mongodb.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "sipassconnect.ts" "${TEMP_FOLDER}\server"
+  !insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"
+	
+  !insertmacro BackupFile "$R1\workspace\config\custom" "ccureconnect.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "ccuresqlserver.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "humanresource.ts" "${TEMP_FOLDER}\server"
+
+
   ClearErrors
   Call DoUninstall
  
