@@ -449,24 +449,24 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
 
         switch (mode) {
             case Enum.EDeviceMode.demographic:
+            case Enum.EDeviceMode.visitor:
+            case Enum.EDeviceMode.dwellTime:
                 let demoServer: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic).equalTo('objectId', value.demoServerId).first();
                 if (!demoServer) {
                     throw Errors.throw(Errors.CustomBadRequest, ['demographic server not found']);
                 }
                 device.setValue('demoServer', demoServer);
-            case Enum.EDeviceMode.visitor:
-                device = await FRSCamera(device, value.config);
-                break;
-            case Enum.EDeviceMode.dwellTime:
+
                 device = await FRSCamera(device, value.config);
                 break;
             case Enum.EDeviceMode.humanDetection:
+            case Enum.EDeviceMode.heatmap:
                 let hdServer: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection).equalTo('objectId', value.hdServerId).first();
                 if (!hdServer) {
                     throw Errors.throw(Errors.CustomBadRequest, ['human detection server not found']);
                 }
                 device.setValue('hdServer', hdServer);
-            case Enum.EDeviceMode.heatmap:
+
                 device = await CMSCamera(device, value.config);
                 break;
             case Enum.EDeviceMode.peopleCounting:
@@ -584,8 +584,6 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             switch (mode) {
                 case Enum.EDeviceMode.demographic:
                 case Enum.EDeviceMode.visitor:
-                    device = await FRSCamera(device, value.config);
-                    break;
                 case Enum.EDeviceMode.dwellTime:
                     device = await FRSCamera(device, value.config);
                     break;

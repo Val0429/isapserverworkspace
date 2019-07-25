@@ -43,11 +43,13 @@ export interface IDemographicC extends IC_Base {
 
 export interface IDwellTimeC extends IC_Base {
     config: ICameraFRS;
+    demoServerId: string;
     direction: Enum.EDeviceDirection;
 }
 
 export interface IHeatmapC extends IC_Base {
     config: ICameraCMS;
+    hdServerId: string;
     rois: Draw.ILocation[];
 }
 
@@ -71,6 +73,7 @@ export interface IPeopleCountingC_FRS extends IC_Base {
 
 export interface IVisitorC extends IC_Base {
     config: ICameraFRS;
+    demoServerId: string;
 }
 
 export interface IIndexR {
@@ -101,11 +104,13 @@ export interface IDemographicU extends IU_Base {
 
 export interface IDwellTimeU extends IU_Base {
     config?: ICameraFRS;
+    demoServerId?: string;
     direction?: Enum.EDeviceDirection;
 }
 
 export interface IHeatmapU extends IU_Base {
     config?: ICameraCMS;
+    hdServerId?: string;
     rois?: Draw.ILocation[];
 }
 
@@ -129,4 +134,5 @@ export interface IPeopleCountingU_FRS extends IU_Base {
 
 export interface IVisitorU extends IU_Base {
     config?: ICameraFRS;
+    demoServerId?: string;
 }
