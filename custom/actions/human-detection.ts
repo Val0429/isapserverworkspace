@@ -228,8 +228,8 @@ class Action {
                 let gridUnit: number = hmConfig.gridUnit;
 
                 let scoreSize: Draw.ISize = {
-                    width: Math.ceil(reportSummary.getValue('width') / gridUnit),
-                    height: Math.ceil(reportSummary.getValue('height') / gridUnit),
+                    width: reportSummary.getValue('width'),
+                    height: reportSummary.getValue('height'),
                 };
                 let scores = this.HeatmapScore(size, report.getValue('results'), reportSummary.getValue('scores'), scoreSize);
 
@@ -246,7 +246,7 @@ class Action {
                 reportSummary.setValue('date', date);
                 reportSummary.setValue('imageSrc', report.getValue('imageSrc'));
                 reportSummary.setValue('width', size.width);
-                reportSummary.setValue('width', size.height);
+                reportSummary.setValue('height', size.height);
                 reportSummary.setValue('scores', scores);
             }
 
