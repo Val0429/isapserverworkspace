@@ -130,10 +130,11 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         if(!permission)continue;
         let newRule = {
             ObjectName: permission.get("tablename"),
-            ObjectToken: permission.get("tableid") + "",
-            RuleToken: permission.get("tableid") + "",
+            ObjectToken:  permission.get("tableid").toString(),
+            RuleToken: permission.get("tableid").toString(),
             RuleType: 4,
             Side: 0,
+            StartDate: null,
             TimeScheduleToken: "0"
         };
         rules.push(newRule);
@@ -221,10 +222,15 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     }
 
     let filter = data.parameters;
+    // looking for duplication
+    if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
+    if (filter.eCardNumber) query.equalTo("Credentials.CardNumber", filter.eCardNumber);
+
+    //"like" query
     if (filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
     if (filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");
     if (filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");
-    if (filter.CardNumber) query.equalTo("Credentials.CardNumber", filter.CardNumber);
+    if (filter.CardNumber) query.matches("Credentials.CardNumber", new RegExp(filter.CardNumber), "i");
     if (filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue", new RegExp(filter.DepartmentName), "i");
     if (filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue", new RegExp(filter.CostCenterName), "i");
     if (filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue", new RegExp(filter.WorkAreaName), "i");
@@ -301,10 +307,11 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         if(!permission)continue;
         let newRule = {
                 ObjectName: permission.get("tablename"),
-                ObjectToken: permission.get("tableid") + "",
-                RuleToken: permission.get("tableid") + "",
+                ObjectToken: permission.get("tableid").toString(),
+                RuleToken: permission.get("tableid").toString(),
                 RuleType: 4,
                 Side: 0,
+                StartDate: null,
                 TimeScheduleToken: "0"
         };
         rules.push(newRule);
@@ -337,7 +344,14 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         field.FieldValue = cf.FieldValue;
     }
     update.set("CustomFields", fields);
-
+    
+    //prevent modification to these fields
+    update.set("Token", obj.get("Token"));
+    update.set("Status", obj.get("Status"));
+    update.set("GeneralInformation", obj.get("GeneralInformation"));
+    
+console.log(update);
+    
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
 

@@ -11,6 +11,7 @@
 !define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define OUTPUT_NAME "acs-server-setup"
 !define MONGO_CONFIG "acs_mongo.cfg"
+!define TEMP_FOLDER "$TEMP\${PRODUCT_NAME}"
 
 # define name of installer
 !system 'md "${PATH_OUT}"'	
@@ -19,6 +20,19 @@ Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 
 # define installation directory
 InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
+
+!macro BackupFile FILE_DIR FILE BACKUP_TO
+ IfFileExists "${BACKUP_TO}\*.*" +2
+  CreateDirectory "${BACKUP_TO}"
+ IfFileExists "${FILE_DIR}\${FILE}" 0 +2
+  Rename "${FILE_DIR}\${FILE}" "${BACKUP_TO}\${FILE}"
+!macroend
+
+!macro RestoreFile BUP_DIR FILE RESTORE_TO
+ IfFileExists "${BUP_DIR}\${FILE}" 0 +3
+  Delete "${RESTORE_TO}\${FILE}"
+  Rename "${BUP_DIR}\${FILE}" "${RESTORE_TO}\${FILE}"
+!macroend
 
 !macro DoUninstall UN
 Function ${UN}DeleteFoldersWithExclusion
@@ -96,7 +110,7 @@ FunctionEnd
 
 Function ${UN}DoUninstall
 	#0, get old installation folder
-	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" "" 
 	
 	# first, delete the uninstaller
     Delete "$R1\uninstall.exe"
@@ -134,6 +148,19 @@ Function .onInit
  
 ;Run the uninstaller
 uninst:
+  ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+  ;just in case
+  RMDir /r "${TEMP_FOLDER}\server"
+  ;copy config first to temp folder
+	!insertmacro BackupFile "$R1\workspace\config\default" "mongodb.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "sipassconnect.ts" "${TEMP_FOLDER}\server"
+  !insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"
+	
+  !insertmacro BackupFile "$R1\workspace\config\custom" "ccureconnect.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "ccuresqlserver.ts" "${TEMP_FOLDER}\server"
+	!insertmacro BackupFile "$R1\workspace\config\custom" "humanresource.ts" "${TEMP_FOLDER}\server"
+
+
   ClearErrors
   Call DoUninstall
  
@@ -207,7 +234,8 @@ Section
 	File /r *.bat
 	File /r *.ps1
 	File /r /x .git /x .gitignore /x nsis ..\..\*.* 
-	
+
+
   #create mongo config
   ExecWait 'Powershell -NoProfile -ExecutionPolicy Bypass -file "$INSTDIR\add_config.ps1"'
   
@@ -231,6 +259,16 @@ Section
   DetailPrint "Finished run npm"	
 	;${EndIf}
 	
+  #restore old config
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "mongodb.ts" "$INSTDIR\workspace\config\default"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "sipassconnect.ts" "$INSTDIR\workspace\config\custom"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "license.xml" "$INSTDIR\workspace\custom\license"
+  
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccureconnect.ts" "$INSTDIR\workspace\config\custom"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccuresqlserver.ts" "$INSTDIR\workspace\config\custom"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "humanresource.ts" "$INSTDIR\workspace\config\custom"
+	
+
 	# install service
 	ExecWait '"install.bat" /s'
 	

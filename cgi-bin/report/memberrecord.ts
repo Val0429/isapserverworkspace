@@ -16,7 +16,8 @@ const fieldNames = {
     CardCustodian:"CustomTextBoxControl2__CF",
     CardType:"CustomDropdownControl1__CF",
     CardNumber:"Credentials.CardNumber",
-    RuleToken:"AccessRules.RuleToken"
+    RuleToken:"AccessRules.RuleToken",
+    CardEndDate:"Credentials.EndDate"
 }
 
 
@@ -38,7 +39,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(Member);   
     /// 2) Filter query 
     let filter = data.parameters;    
-    
+    console.log("filter", filter);
     if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
     if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
     if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
@@ -60,8 +61,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     if(filter.CardNumbers) query.containedIn(fieldNames.CardNumber, filter.CardNumbers.split(","));
     
-    if(filter.PermissionTable) query.containedIn(fieldNames.RuleToken, filter.PermissionTable.split(","));
-    
+    if(filter.PermissionTable) query.containedIn(fieldNames.RuleToken, filter.PermissionTable.split(",").map(x=>x.toString()));
+    if(filter.expired && filter.expired=="true"){
+        query.lessThanOrEqualTo(fieldNames.CardEndDate, (new Date()).toISOString());
+    }
     /// 3) Output
     let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
     let outputData = o.map( (d) => ParseObject.toOutputJSON(d));
@@ -100,7 +103,7 @@ function createEmployee(item: any) {
         let CardCustodian = getCustomFieldValue(item, fieldNames.CardCustodian);
         let CardType = getCustomFieldValue(item, fieldNames.CardType);
         let CardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
-        let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>x.RuleToken) : [];
+        let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>parseInt(x.RuleToken)) : [];
         return {
             FirstName: item.FirstName,
             LastName: item.LastName,
