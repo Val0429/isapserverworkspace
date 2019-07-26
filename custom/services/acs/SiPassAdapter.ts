@@ -96,26 +96,36 @@ export class SiPassAdapter {
         //get from database first
         this.sessionToken = await new Parse.Query(SipassToken).greaterThan("expired", new Date()).first();
         if(this.sessionToken) return this.sessionToken.get("sessionId");
+
+        try{
+            let a = await this.siPassAccount.Login(this.siPassHrParam);
+            this.sessionToken = new SipassToken();
+            
+            let ret = JSON.parse(a);
+            if(!ret.Token){                
+                Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+                throw new Error("sipass connect fail");
+            } 
+            this.sessionToken.set("sessionId",ret.Token);
+            this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
+            await this.sessionToken.save();
+            //destroy token after 5 minutes
+            this.clearLoginTimer = setTimeout(async () => {
+                console.log(`clear sipass token ater ${autoLogout / 1000} seconds`) ;
+                // siemens discourage logout, we can enable it during development
+                //await this.siPassAccount.Logout(this.siPassHrParam, ret.Token);
+                await this.sessionToken.destroy();
+                this.sessionToken = undefined;
+            }, autoLogout);
+
+            let sessionId = this.sessionToken.get("sessionId");
+            console.log("sessionId", sessionId);
+            return sessionId;
+        }catch(err){
+            console.error("Error from sipass login", err);
+            throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+        }
         
-        let a = await this.siPassAccount.Login(this.siPassHrParam);
-        this.sessionToken = new SipassToken();
-        
-        let ret = JSON.parse(a);
-        if(!ret.Token){                
-            Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-            throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);                
-        } 
-        this.sessionToken.set("sessionId",ret.Token);
-        this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
-        await this.sessionToken.save();
-        //destroy token after 5 minutes
-        this.clearLoginTimer = setTimeout(async () => {
-            console.log(`clear token ater ${autoLogout / 1000} seconds`) ;
-            // siemens discourage logout, we can enable it during development
-            //await this.siPassAccount.Logout(this.siPassHrParam, this.sessionToken);
-            await this.sessionToken.destroy();
-            this.sessionToken = undefined;
-        }, autoLogout);
         
         // console.log("===================    Get Login   ========== ");
         // console.log(a);
@@ -123,9 +133,7 @@ export class SiPassAdapter {
         //     "Token":"4697C6FB68DD4592E0FC49FFF9B684B56C98E8CA2AC4F94F85F9473BEA3A7C1D:siemens"
         // }            
         //this.sessionToken = ret.Token;
-        let sessionId = this.sessionToken.get("sessionId");
-        console.log("sessionId", sessionId);
-        return sessionId;
+        
     }
 
     async getTimeSchedule() {
