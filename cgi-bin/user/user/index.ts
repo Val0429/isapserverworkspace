@@ -1,7 +1,7 @@
-import { IUser, Action, Restful, RoleList, Errors } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, Parser, Db, Permission } from '../../../custom/helpers';
+import { Print, Regex, Parser, Db, Permission, Utility, Email } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
@@ -100,6 +100,8 @@ action.post(
 
                         info = new IDB.UserInfo();
 
+                        let now: Date = new Date();
+
                         info.setValue('user', user);
                         info.setValue('account', value.username);
                         info.setValue('name', value.name);
@@ -113,9 +115,28 @@ action.post(
                         info.setValue('isNotice', true);
                         info.setValue('sites', sites);
                         info.setValue('groups', groups);
+                        info.setValue('enableVerification', Utility.RandomText(30, { symbol: false }));
+                        info.setValue('enableExpireDate', new Date(new Date(now.setDate(now.getDate() + Config.expired.userEnableVerificationHour))));
 
                         await info.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
+                        });
+
+                        let email: Email = new Email();
+                        email.config = {
+                            host: Config.email.host,
+                            port: Config.email.port,
+                            email: Config.email.email,
+                            password: Config.email.password,
+                        };
+
+                        email.Initialization();
+
+                        let title: string = 'Action required to activate membership & change password for BAR system';
+                        let content: string = info.getValue('enableVerification');
+
+                        let result = await email.Send(title, content, {
+                            tos: [info.getValue('email')],
                         });
                     } catch (e) {
                         resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);

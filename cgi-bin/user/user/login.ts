@@ -68,6 +68,10 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
 
         let _userInfo = await Db.GetUserInfo(data.request, user);
 
+        if (_userInfo.info.getValue('enableVerification')) {
+            throw Errors.throw({ statusCode: 403, message: '{0}' }, ['user need enable']);
+        }
+
         let event: EventLogin = new EventLogin({
             owner: user,
         });

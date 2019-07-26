@@ -90,6 +90,16 @@ export interface IUserInfo {
      * Forget passowrd expitre date
      */
     forgetExpireDate: Date;
+
+    /**
+     * Enable use verification
+     */
+    enableVerification: string;
+
+    /**
+     * Enable use expitre date
+     */
+    enableExpireDate: Date;
 }
 
 @registerSubclass()

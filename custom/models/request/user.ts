@@ -70,3 +70,12 @@ export interface IForgetStep2 {
 export interface IForgetStep3 extends IForgetStep2 {
     password: string;
 }
+
+export interface IEnableStep1 {
+    verification: string;
+    password: string;
+}
+
+export interface IResend {
+    objectId: string;
+}
