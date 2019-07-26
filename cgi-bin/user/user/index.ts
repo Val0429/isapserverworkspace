@@ -152,7 +152,7 @@ action.get(
             let _paging: IRequest.IPaging = _input.paging;
 
             let roleLists: RoleList[] = [RoleList.SystemAdministrator];
-            if (_userInfo.roles.indexOf(RoleList.SuperAdministrator) < 0) {
+            if (_userInfo.roleLists.indexOf(RoleList.SuperAdministrator) < 0) {
                 roleLists.push(RoleList.SuperAdministrator);
             }
             let roleExcludes: Parse.Role[] = await new Parse.Query(Parse.Role)

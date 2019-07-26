@@ -14,7 +14,7 @@ export default action;
 /**
  * Action Login
  */
-type InputC = IRequest.IUser.IBaseLogin_User | IRequest.IUser.IBaseLogin_SessionId;
+type InputC = IRequest.IUser.ILogin_User | IRequest.IUser.ILogin_SessionId;
 
 type OutputC = IResponse.IUser.IUserLogin;
 
@@ -39,7 +39,7 @@ action.post(
  * @param request
  * @param user
  */
-export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseLogin_User | IRequest.IUser.IBaseLogin_SessionId): Promise<IResponse.IUser.IUserLogin> {
+export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin_User | IRequest.IUser.ILogin_SessionId): Promise<IResponse.IUser.IUserLogin> {
     try {
         let user: Parse.User = undefined;
         let sessionId: string = '';
@@ -75,12 +75,6 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
             throw e;
         });
 
-        let roles = _userInfo.roles.map((value, index, array) => {
-            return Object.keys(RoleList).find((value1, index1, array1) => {
-                return value === RoleList[value1];
-            });
-        });
-
         let sites = (_userInfo.info.getValue('sites') || []).map((value1, index1, array1) => {
             return {
                 objectId: value1.id,
@@ -104,19 +98,21 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.IBaseL
 
         return {
             sessionId: sessionId,
-            objectId: user.id,
-            roles: roles,
-            username: user.getUsername(),
-            name: _userInfo.info.getValue('name') || '',
-            employeeId: _userInfo.info.getValue('customId') || '',
-            email: _userInfo.info.getValue('email') || '',
-            phone: _userInfo.info.getValue('phone') || '',
-            webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
-            appLastUseDate: _userInfo.info.getValue('appLastUseDate'),
-            sites: sites,
-            groups: groups,
-            isAppBinding: !!_userInfo.info.getValue('mobileType') && _userInfo.info.getValue('mobileType') !== Enum.EMobileType.none,
-            allowSites: allowSites,
+            user: {
+                objectId: user.id,
+                roles: _userInfo.roles,
+                username: user.getUsername(),
+                name: _userInfo.info.getValue('name') || '',
+                employeeId: _userInfo.info.getValue('customId') || '',
+                email: _userInfo.info.getValue('email') || '',
+                phone: _userInfo.info.getValue('phone') || '',
+                webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
+                appLastUseDate: _userInfo.info.getValue('appLastUseDate'),
+                sites: sites,
+                groups: groups,
+                isAppBinding: !!_userInfo.info.getValue('mobileType') && _userInfo.info.getValue('mobileType') !== Enum.EMobileType.none,
+                allowSites: allowSites,
+            },
         };
     } catch (e) {
         throw e;

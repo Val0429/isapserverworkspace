@@ -2,8 +2,7 @@ import { Errors } from 'core/errors.gen';
 import { RoleList } from 'core/userRoles.gen';
 import { Request } from 'express';
 import { Print } from './';
-import { IDB } from '../../models';
-import { Utility } from './utility';
+import { IDB, IResponse } from '../../models';
 
 export namespace Db {
     /**
@@ -98,7 +97,8 @@ export namespace Db {
     }
 
     interface IUserInfo {
-        roles: string[];
+        roleLists: string[];
+        roles: IResponse.IObject[];
         info: IDB.UserInfo;
         sites: IDB.LocationSite[];
         siteIds: string[];
@@ -122,8 +122,16 @@ export namespace Db {
                 throw Errors.throw(Errors.CustomBadRequest, ['user info not found']);
             }
 
-            let roles: string[] = user.get('roles').map((value, index, array) => {
-                return value.getName();
+            let roleLists: string[] = [];
+            let roles = (user.get('roles') as any[]).map<IResponse.IObject>((value, index, array) => {
+                roleLists.push(value.getName());
+
+                return {
+                    objectId: value.id,
+                    name: Object.keys(RoleList).find((value1, index1, array1) => {
+                        return value.getName() === RoleList[value1];
+                    }),
+                };
             });
 
             let from = req.headers['client-from'];
@@ -137,7 +145,14 @@ export namespace Db {
                 throw e;
             });
 
-            let sites: IDB.LocationSite[] = (info.getValue('sites') || []).concat(
+            let sites: IDB.LocationSite[] =
+                roleLists.indexOf(RoleList.Admin) > -1
+                    ? await new Parse.Query(IDB.LocationSite).find().fail((e) => {
+                          throw e;
+                      })
+                    : info.getValue('sites') || [];
+
+            sites = sites.concat(
                 ...(info.getValue('groups') || []).map((value, index, array) => {
                     return value.getValue('sites');
                 }),
@@ -154,14 +169,13 @@ export namespace Db {
                 return value.id;
             });
 
-            let userInfo: IUserInfo = {
+            return {
+                roleLists: roleLists,
                 roles: roles,
                 info: info,
                 sites: sites,
                 siteIds: siteIds,
             };
-
-            return userInfo;
         } catch (e) {
             throw e;
         }

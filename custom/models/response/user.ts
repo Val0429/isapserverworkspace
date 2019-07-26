@@ -6,12 +6,6 @@ export interface IBaseIndexR {
     roles: string[];
 }
 
-export interface IBaseLogin {
-    sessionId: string;
-    objectId: string;
-    roles: string[];
-}
-
 export interface IUserIndexC {
     objectId: string;
 }
@@ -36,7 +30,9 @@ export interface IUserAll {
     name: string;
 }
 
-export interface IUserLogin extends IBaseLogin {
+export interface IUserLoginUser {
+    objectId: string;
+    roles: IObject[];
     username: string;
     name: string;
     employeeId: string;
@@ -48,6 +44,11 @@ export interface IUserLogin extends IBaseLogin {
     groups: IObject[];
     isAppBinding: boolean;
     allowSites: IObject[];
+}
+
+export interface IUserLogin {
+    sessionId: string;
+    user: IUserLoginUser;
 }
 
 export interface IGroupIndexR {

@@ -24,7 +24,7 @@ action.get(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let roleLists: RoleList[] = [RoleList.SystemAdministrator];
-            if (_userInfo.roles.indexOf(RoleList.SuperAdministrator) < 0) {
+            if (_userInfo.roleLists.indexOf(RoleList.SuperAdministrator) < 0) {
                 roleLists.push(RoleList.SuperAdministrator);
             }
             let roleExcludes: Parse.Role[] = await new Parse.Query(Parse.Role)
