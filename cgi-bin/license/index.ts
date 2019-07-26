@@ -9,7 +9,6 @@ import licenseService from 'services/license';
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -24,6 +23,7 @@ type OutputC = Date;
 action.post(
     {
         inputType: 'InputC',
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputC> => {
         try {
@@ -98,6 +98,7 @@ action.get(
     {
         inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputR> => {
         try {

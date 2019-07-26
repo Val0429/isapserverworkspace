@@ -3,7 +3,6 @@ import { Print, Utility } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: false,
-    permission: [],
 });
 
 export default action;

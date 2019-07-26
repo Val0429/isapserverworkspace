@@ -8,7 +8,6 @@ import licenseService from 'services/license';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -26,6 +25,7 @@ action.get(
     {
         inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin, RoleList.User],
     },
     async (data): Promise<OutputR> => {
         try {
@@ -199,6 +199,7 @@ action.delete(
     {
         inputType: 'InputD',
         middlewares: [Middleware.MultiDataFromQuery],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputD> => {
         try {

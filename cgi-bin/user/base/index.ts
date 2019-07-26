@@ -7,7 +7,6 @@ import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator],
 });
 
 export default action;
@@ -23,6 +22,7 @@ action.get(
     {
         inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
+        permission: [RoleList.SystemAdministrator],
     },
     async (data): Promise<OutputR> => {
         try {

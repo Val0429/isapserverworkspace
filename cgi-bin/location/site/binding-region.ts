@@ -7,7 +7,6 @@ import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -25,6 +24,7 @@ action.put(
     {
         inputType: 'MultiData',
         middlewares: [Middleware.MultiDataFromBody],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);

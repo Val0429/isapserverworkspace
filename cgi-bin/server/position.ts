@@ -4,7 +4,6 @@ import * as path from 'path';
 
 let action = new Action({
     loginRequired: false,
-    permission: [],
 });
 
 export default action;

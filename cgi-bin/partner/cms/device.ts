@@ -6,7 +6,6 @@ import { GetDeviceTree } from './';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -21,6 +20,7 @@ type OutputC = CMSService.INvr[];
 action.post(
     {
         inputType: 'InputC',
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputC> => {
         try {

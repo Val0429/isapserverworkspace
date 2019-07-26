@@ -6,7 +6,6 @@ import { UpdateConfig } from '../../config';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -19,6 +18,9 @@ type InputR = null;
 type OutputR = IResponse.ISetting.IWeatherR;
 
 action.get(
+    {
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
+    },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
@@ -46,6 +48,7 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputU> => {
         try {

@@ -7,7 +7,6 @@ import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -25,6 +24,7 @@ action.post(
     {
         inputType: 'MultiData',
         middlewares: [Middleware.MultiDataFromBody],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
@@ -86,6 +86,7 @@ action.get(
     {
         inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin, RoleList.User],
     },
     async (data): Promise<OutputR> => {
         try {
@@ -164,6 +165,7 @@ action.put(
     {
         inputType: 'MultiData',
         middlewares: [Middleware.MultiDataFromBody],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
@@ -244,6 +246,7 @@ action.delete(
     {
         inputType: 'InputD',
         middlewares: [Middleware.MultiDataFromQuery],
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputD> => {
         try {

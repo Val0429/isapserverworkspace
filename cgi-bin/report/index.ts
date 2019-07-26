@@ -5,7 +5,6 @@ import * as Enum from '../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [],
 });
 
 export default action;

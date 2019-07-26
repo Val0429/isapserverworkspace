@@ -9,7 +9,6 @@ import { Report } from '../';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Admin, RoleList.User],
 });
 
 export default action;
@@ -24,6 +23,7 @@ type OutputC = IResponse.IReport.IRepeatVisitorSummary;
 action.post(
     {
         inputType: 'InputC',
+        permission: [RoleList.Admin, RoleList.User],
     },
     async (data): Promise<OutputC> => {
         try {

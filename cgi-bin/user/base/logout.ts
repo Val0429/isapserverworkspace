@@ -5,7 +5,6 @@ import * as Enum from '../../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [],
 });
 
 export default action;
@@ -20,6 +19,7 @@ type OutputC = Date;
 action.post(
     {
         inputType: 'InputC',
+        permission: [],
     },
     async (data): Promise<OutputC> => {
         try {
@@ -55,6 +55,7 @@ type OutputR = Date;
 action.get(
     {
         inputType: 'InputR',
+        permission: [],
     },
     async (data): Promise<OutputR> => {
         try {

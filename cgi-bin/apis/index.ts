@@ -1,156 +1,123 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
-import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print } from '../../custom/helpers';
-import * as Enum from '../../custom/enums';
+import { express, Request, Response, Router, IRole, IUser, RoleList, IConfig, Config, IConfigSetup, Action, Errors, Restful, FileHelper, ParseObject } from 'core/cgi-package';
 import * as request from 'request';
 import { actions } from 'helpers/routers/router-loader';
 let packinfo = require(`${__dirname}/../../../package.json`);
 
 var action = new Action({
     loginRequired: false,
-    permission: [],
 });
 
-export default action;
+/// CRUD start /////////////////////////////////
+/********************************
+ * R: get object
+ ********************************/
+action.get(async (data) => {
+    let final: Restful.ApisOutput = {};
 
-/**
- * Action Read
- */
-type InputC = null;
+    for (let action of actions) {
+        let uri = action.uri;
+        if (uri === '/apis') continue;
+        // !final[uri] && (final[uri] = {});
+        let obj = {};
 
-type OutputC = any;
+        for (let proto of action.list()) {
+            let loginRequired: boolean = false;
+            let hasInputType: boolean = false;
+            switch (proto) {
+                case 'All':
+                case 'Get':
+                case 'Post':
+                case 'Put':
+                case 'Delete':
+                    /// get configs
+                    /// login required?
+                    loginRequired = (action[`func${proto}Config`] || {}).loginRequired || (action.config || {}).loginRequired;
+                    hasInputType = (action[`func${proto}Config`] || {}).inputType || (action.config || {}).inputType ? true : false;
 
-action.get(
-    async (data): Promise<OutputC> => {
-        try {
-            let final: Restful.ApisOutput = {};
+                    obj[proto] = { input: null, output: null, loginRequired };
+                    break;
 
-            for (let action of actions) {
-                let uri = action.uri;
-                if (uri === '/apis' || /^\/server\/.*$/.test(uri)) {
-                    continue;
-                }
+                    // let method = (proto === 'All' ? 'Get' : proto).toUpperCase();
 
-                let obj = {};
-                for (let proto of action.list()) {
-                    let loginRequired: boolean = false;
-                    let hasInputType: boolean = false;
-                    switch (proto) {
-                        case 'All':
-                        case 'Get':
-                        case 'Post':
-                        case 'Put':
-                        case 'Delete':
-                            /// get configs
-                            /// login required?
-                            loginRequired = (action[`func${proto}Config`] || {}).loginRequired || (action.config || {}).loginRequired;
-                            hasInputType = (action[`func${proto}Config`] || {}).inputType || (action.config || {}).inputType ? true : false;
+                    // let result: string;
+                    // try {
+                    // result = await new Promise<string>( (resolve, reject) => {
+                    //     request({
+                    //         url: `http://localhost:${Config.core.port}${uri}?help&sessionId=${data.parameters.sessionId}`,
+                    //         method,
+                    //     }, (err, res, body) => {
+                    //         //if (res.statusCode === 401) return reject(401);
+                    //         if (res.statusCode !== 200) return reject(res.statusCode);
+                    //         resolve(body);
+                    //     });
+                    // });
+                    // } catch(e) {
+                    //     continue;
+                    // }
+                    // if (!hasInputType) {
+                    //     obj[proto] = { input: null, output: null, loginRequired };
+                    //     break;
+                    // }
 
-                            let method = (proto === 'All' ? 'Get' : proto).toUpperCase();
+                    // /// extract input interface
+                    // const iRegex = /Input Interface:(?:\r?\n|\r)=+(?:\r?\n|\r)*/;
+                    // let imatch = iRegex.exec(result);
+                    // /// extract output interface
+                    // const oRegex = /(?:\r?\n|\r)*Output Interface:(?:\r?\n|\r)=+(?:\r?\n|\r)*/;
+                    // let omatch = oRegex.exec(result);
 
-                            let result: string;
-                            try {
-                                result = await new Promise<string>((resolve, reject) => {
-                                    request(
-                                        {
-                                            url: `http://localhost:${Config.core.port}${uri}?help&sessionId=${data.parameters.sessionId}`,
-                                            method,
-                                        },
-                                        (err, res, body) => {
-                                            //if (res.statusCode === 401) return reject(401);
-                                            if (res.statusCode !== 200) {
-                                                return reject(res.statusCode);
-                                            }
+                    // /// matches
+                    // let input = null;
+                    // if (imatch !== null) {
+                    //     let istart = imatch.index + imatch[0].length;
+                    //     let iend = omatch ? omatch.index : result.length;
+                    //     input = result.substring(istart, iend);
+                    // }
 
-                                            resolve(body);
-                                        },
-                                    );
-                                });
-                            } catch (e) {
-                                continue;
-                            }
-                            if (!hasInputType) {
-                                obj[proto] = {
-                                    input: null,
-                                    output: null,
-                                    loginRequired,
-                                };
-                                break;
-                            }
+                    // let output = null;
+                    // if (omatch !== null) {
+                    //     let ostart = omatch.index + omatch[0].length;
+                    //     let oend = result.length;
+                    //     output = result.substring(ostart, oend).replace(/(?:\r?\n|\r)*$/, '');
+                    // }
 
-                            /// extract input interface
-                            const iRegex = /Input Interface:(?:\r?\n|\r)=+(?:\r?\n|\r)*/;
-                            let imatch = iRegex.exec(result);
-                            /// extract output interface
-                            const oRegex = /(?:\r?\n|\r)*Output Interface:(?:\r?\n|\r)=+(?:\r?\n|\r)*/;
-                            let omatch = oRegex.exec(result);
+                    // obj[proto] = { input, output, loginRequired };
 
-                            /// matches
-                            let input = null;
-                            if (imatch !== null) {
-                                let istart = imatch.index + imatch[0].length;
-                                let iend = omatch ? omatch.index : result.length;
-                                input = result.substring(istart, iend);
-                            }
-
-                            let output = null;
-                            if (omatch !== null) {
-                                let ostart = omatch.index + omatch[0].length;
-                                let oend = result.length;
-                                output = result.substring(ostart, oend).replace(/(?:\r?\n|\r)*$/, '');
-                            }
-
-                            obj[proto] = {
-                                input,
-                                output,
-                                loginRequired,
-                            };
-
-                            break;
-                        case 'Ws':
-                            /// get configs
-                            /// login required?
-                            let config = action[`func${proto}Config`] || action.config || {};
-                            let strt = { input: null, output: null, loginRequired };
-                            loginRequired = config.loginRequired;
-                            if (!loginRequired) {
-                                obj[proto] = strt;
-                                break;
-                            }
-                            if (!data.role) {
-                                break;
-                            }
-                            let roles = data.role.map((v) => v.attributes.name);
-                            let permitRoles: string[] = config.permission;
-                            let final = permitRoles
-                                ? roles.reduce((final, role) => {
-                                      if (permitRoles.indexOf(role) >= 0) {
-                                          final.push(role);
-                                      }
-                                      return final;
-                                  }, [])
-                                : roles;
-                            if (final.length > 0) {
-                                obj[proto] = strt;
-                            }
-                            break;
-                        default:
-                            break;
+                    break;
+                case 'Ws':
+                    /// get configs
+                    /// login required?
+                    let config = action[`func${proto}Config`] || action.config || {};
+                    let strt = { input: null, output: null, loginRequired };
+                    loginRequired = config.loginRequired;
+                    if (!loginRequired) {
+                        obj[proto] = strt;
+                        break;
                     }
-                }
-                if (Object.keys(obj).length !== 0 && obj.constructor === Object) {
-                    final[uri] = obj;
-                }
+                    if (!data.role) break;
+                    let roles = data.role.map((v) => v.attributes.name);
+                    let permitRoles: string[] = config.permission;
+                    let final = permitRoles
+                        ? roles.reduce((final, role) => {
+                              if (permitRoles.indexOf(role) >= 0) final.push(role);
+                              return final;
+                          }, [])
+                        : roles;
+                    if (final.length > 0) obj[proto] = strt;
+                    break;
+                default:
+                    break;
             }
-
-            return {
-                serverVersion: packinfo.version,
-                frameworkVersion: packinfo.frameworkversion,
-                APIs: final,
-            };
-        } catch (e) {
-            Print.Log(e, new Error(), 'error');
-            throw e;
         }
-    },
-);
+        if (Object.keys(obj).length !== 0 && obj.constructor === Object) final[uri] = obj;
+    }
+
+    return {
+        serverVersion: packinfo.version,
+        frameworkVersion: packinfo.frameworkversion,
+        APIs: final,
+    };
+});
+/// CRUD end ///////////////////////////////////
+
+export default action;

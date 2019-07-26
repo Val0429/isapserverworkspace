@@ -6,7 +6,6 @@ import { GetAnalysis } from './';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -22,6 +21,7 @@ action.post(
     {
         inputType: 'InputC',
         postSizeLimit: 10000000,
+        permission: [RoleList.SuperAdministrator, RoleList.Admin],
     },
     async (data): Promise<OutputC> => {
         try {

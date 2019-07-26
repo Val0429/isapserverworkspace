@@ -6,7 +6,6 @@ import * as Enum from '../../custom/enums';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator, RoleList.SuperAdministrator, RoleList.Admin],
 });
 
 export default action;
@@ -19,6 +18,9 @@ type InputR = null;
 type OutputR = Utility.INetwork[];
 
 action.get(
+    {
+        permission: [RoleList.SystemAdministrator, RoleList.SuperAdministrator, RoleList.Admin],
+    },
     async (data): Promise<OutputR> => {
         try {
             let _userInfo = await Db.GetUserInfo(data.request, data.user);

@@ -6,7 +6,6 @@ import { Login } from '../user/login';
 
 let action = new Action({
     loginRequired: false,
-    permission: [],
 });
 
 export default action;
@@ -21,6 +20,7 @@ type OutputC = IResponse.IUser.IForgetStep3;
 action.post(
     {
         inputType: 'InputC',
+        permission: [],
     },
     async (data): Promise<OutputC> => {
         try {

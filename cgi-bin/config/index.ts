@@ -8,7 +8,6 @@ import { Print, Db } from '../../custom/helpers';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SystemAdministrator],
 });
 
 export default action;
@@ -21,7 +20,10 @@ type InputR = IRequest.IConfig.IIndexR;
 type OutputR = IResponse.IConfig.IIndexR[] | IResponse.IConfig.IIndexR;
 
 action.get(
-    { inputType: 'InputR' },
+    {
+        inputType: 'InputR',
+        permission: [RoleList.SystemAdministrator],
+    },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
@@ -56,7 +58,10 @@ type InputU = IRequest.IConfig.IIndexU;
 type OutputU = Date;
 
 action.put(
-    { inputType: 'InputU' },
+    {
+        inputType: 'InputU',
+        permission: [RoleList.SystemAdministrator],
+    },
     async (data): Promise<OutputU> => {
         try {
             let _input: InputU = data.inputType;
