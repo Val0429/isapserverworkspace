@@ -1,4 +1,4 @@
-﻿import { Config } from 'core/config.gen';
+import { Config } from 'core/config.gen';
 
 import * as delay from 'delay';
 import { Log } from 'helpers/utility';
@@ -99,13 +99,12 @@ export class SiPassAdapter {
 
         try{
             let a = await this.siPassAccount.Login(this.siPassHrParam);
-            this.sessionToken = new SipassToken();
-            
             let ret = JSON.parse(a);
             if(!ret.Token){                
                 Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
                 throw new Error("sipass connect fail");
             } 
+            this.sessionToken = new SipassToken();
             this.sessionToken.set("sessionId",ret.Token);
             this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
             await this.sessionToken.save();
