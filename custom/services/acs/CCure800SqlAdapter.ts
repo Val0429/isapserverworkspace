@@ -53,7 +53,7 @@ export class CCure800SqlAdapter {
         let access = data["AccessRules"];
 
         for (let i = 0; i < access.length; i++) {
-            rules[i] = access[i]["objectName"];
+            rules[i] = access[i]["ObjectName"];
         }
 
         let CustomDateControl3__CF1 = "";

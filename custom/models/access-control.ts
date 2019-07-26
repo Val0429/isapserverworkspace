@@ -173,7 +173,7 @@ export class AccessLevelinSiPass extends ParseObject<IAccessLevelinSiPass> {}
 
 
 export interface IAccessLevel {     // CRUD  V
-    system?: number                // 0: iSap 1: SiPass 2: CCure800
+    system?: number,                // 0: iSap 1: SiPass 2: CCure800
     type?: string,
     levelid?: string,
     levelname?: string,
@@ -192,6 +192,7 @@ export class AccessLevel extends ParseObject<IAccessLevel> { }
 
 
 export interface IPermissionTable {     // CRUD  V
+    system?: number,
     tableid?: number,
     tablename?: string,
     ccureToken?: string;

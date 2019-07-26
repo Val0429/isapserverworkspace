@@ -721,7 +721,7 @@ export class SiPassAdapter {
     }
 
     async putCardHolder(cardholeder: siPassClient.ICardholderObject) {
-        Log.Info(`${this.constructor.name}`, `postCardHolder ${cardholeder}`);
+        Log.Info(`${this.constructor.name}`, `putCardHolder ${cardholeder}`);
         
         let token = await this.Login();
         let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder, token);

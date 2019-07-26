@@ -148,9 +148,7 @@ export class SiPassPermissionService {
                             return reject(error);
                         } else if (response.statusCode !== 201) {
                             //console.log(`statusCode = ${response.statusCode}`);
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
+                            return reject(body);
                         }
 
                         resolve(body);
@@ -210,9 +208,7 @@ export class SiPassPermissionService {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
                             console.log(`statusCode = ${response.statusCode}`);
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
+                            return reject(body);
                         }
 
                         resolve(body);
@@ -379,9 +375,7 @@ export class SiPassPermissionService {
                             return reject(error);
                         } else if (response.statusCode !== 201) {
                             console.log(`statusCode = ${response.statusCode}`);
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
+                            return reject(body);
                         }
 
                         resolve(body);
@@ -436,9 +430,7 @@ export class SiPassPermissionService {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
                             console.log(`statusCode = ${response.statusCode}`);
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
+                            return reject(body);
                         }
 
                         resolve(body);

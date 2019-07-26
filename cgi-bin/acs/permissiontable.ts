@@ -41,7 +41,6 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // 2.0 Modify Access Group
     
     let al = [];
-
     if (data.inputType.accesslevels) {
         for (let i = 0; i < data.inputType.accesslevels.length; i++) {
             let levelGroup = data.inputType.accesslevels[i];
@@ -51,6 +50,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             }
         }
     }
+    // if ( al.length <= 0) {
+    //     throw Errors.throw(Errors.CustomNotExists, [`Create Permission Table FAil Access Level is Empty!`]);
+    // }
+
     let ag = {
         token: "-1",
         name: data.inputType.tablename,
@@ -60,7 +63,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
-    data.inputType.tableid = r1["Token"];
+    data.inputType.tableid = +r1["Token"];
+    data.inputType.system = 0;
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
     
@@ -138,46 +142,27 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     // 2.0 Modify Access Group
     {
         let al = [];
-        if (data.inputType.accesslevels) {
-            for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-                let level = ParseObject.toOutputJSON(data.inputType.accesslevels[i]);
+    if (data.inputType.accesslevels) {
+        for (let i = 0; i < data.inputType.accesslevels.length; i++) {
+            let levelGroup = data.inputType.accesslevels[i];
 
-                let ar = [];
-                if (level["readers"]) {
-                    for (let j = 0; j < level["readers"].length; j++) {
-                        // check access level exists
-                        const r = level["readers"][j];
-
-                        ar.push({ ObjectToken: r["readerid"], ObjectName: r["readername"] + "_" + level["timeschedule"]["timename"], RuleToken: 12, RuleType: 3 });
-                    }
-
-                    al.push({
-                        name: level["levelname"],
-                        token: level["levelid"],
-                        accessRule: ar,
-                        timeScheduleToken: level["timeschedule"]["timeid"]
-                    });
-
-                    let d = {
-                        name: level["levelname"],
-                        token: level["levelid"],
-                        accessRule: ar,
-                        timeScheduleToken: level["timeschedule"]["timename"]
-                    };
-    
-                    //await siPassAdapter.postAccessLevel(d);
-                }
+            for (let j = 0; j < levelGroup.get("levelinSiPass").length; j++) {
+                al.push(levelGroup.get("levelinSiPass")[j]);    
             }
         }
+    }
+    if ( al.length <= 0) {
+        throw Errors.throw(Errors.CustomNotExists, [`Create Permission Table FAil Access Level is Empty!`]);
+    }
 
-        let ag = {
-            token: data.inputType.tableid + "",
-            name: data.inputType.tablename,
-            accessLevels: al
-        };
+	let ag = {
+        token: obj.get("tableid") + "",
+        name: data.inputType.tablename,
+        accessLevels: al
+    };
 
-        Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ag}`);
-        //await siPassAdapter.putAccessGroup(ag);
+    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
+    await siPassAdapter.putAccessGroup(ag);
 
         for (let i = 0; i < al.length; i++) {
             const e = al[i];

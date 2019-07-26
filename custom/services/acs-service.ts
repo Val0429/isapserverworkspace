@@ -79,7 +79,9 @@ export class ACSService {
         console.log("PermissionTables", records);
         if (records) {
             for (let idx = 0; idx < records.length; idx++) {
+				
                 const r = records[idx];
+                if(!r["permissionTableId"] ||!r["permissionTableName"])continue;
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
                 let obj = await new Parse.Query(PermissionTable).equalTo("tablename", r["permissionTableName"]).first();
                 if (obj == null) {
@@ -90,6 +92,7 @@ export class ACSService {
                         status: 1
                     };
                     let o = new PermissionTable(d);
+                    if(!d.tableid || isNaN(d.tableid))continue;
                     let o1 = await o.save();
                 }
                 else {

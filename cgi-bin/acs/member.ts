@@ -9,6 +9,7 @@ import { Log } from 'helpers/utility';
 import { IMember, Member, AccessLevel } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
+import { UnbindingRegion } from '../tag';
 
 const defaultFields = [
     { FiledName: "CustomDateControl4__CF" },
@@ -85,7 +86,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
     //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
     // }
-
+    let emp = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
+    if (emp){
+        throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
+    }
     if (data.inputType.Credentials[0]) {
         let cardno = data.inputType.Credentials[0].CardNumber;;
 
@@ -125,23 +129,21 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         console.log("permission", permission, rid);
         if(!permission)continue;
         let newRule = {
-            ArmingRightsId: null,
-            ControlModeId: null,
-            EndDate: null,
             ObjectName: permission.get("tablename"),
-            ObjectToken: "",
-            RuleToken: permission.get("tableid"),
+            ObjectToken: permission.get("tableid") + "",
+            RuleToken: permission.get("tableid") + "",
             RuleType: 4,
             Side: 0,
-            StartDate: null,
-            TimeScheduleToken: 0
+            TimeScheduleToken: "0"
         };
         rules.push(newRule);
     }
     obj.set("AccessRules", rules);
+    if (rules.length <= 0 ) {
+        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail. Access Level is Empty.`]);
+    }
 
     // CustomFields
-    
     let inputs = obj.get("CustomFields");
     let fields = Object.assign([], defaultFields);
     for(let field of fields){        
@@ -161,9 +163,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     
     let ret = ParseObject.toOutputJSON(obj);
     let holder = await siPassAdapter.postCardHolder(ret);
-    obj.set("Token", holder["Token"]);
 
+    if (holder["Token"] == undefined ) {
+        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail ${holder}`]);
+    }
+
+    obj.set("Token", holder["Token"]);
     await obj.save(null, { useMasterKey: true });
+
 
     try {
         // let config = {
@@ -293,20 +300,26 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
         if(!permission)continue;
         let newRule = {
-                ArmingRightsId: null,
-                ControlModeId: null,
-                EndDate: null,
                 ObjectName: permission.get("tablename"),
-                ObjectToken: permission.get("tableid"),
-                RuleToken: permission.get("tableid"),
+                ObjectToken: permission.get("tableid") + "",
+                RuleToken: permission.get("tableid") + "",
                 RuleType: 4,
                 Side: 0,
-                StartDate: null,
-                TimeScheduleToken: 0
+                TimeScheduleToken: "0"
         };
         rules.push(newRule);
     }
     update.set("AccessRules", rules);
+    if (rules.length <= 0 ) {
+        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail. Access Level is Empty.`]);
+    }
+
+
+	update.set("Vehicle1", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
+	update.set("Vehicle2", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
+	update.set("Status", obj.get("Status"));
+	update.set("Token", obj.get("Token"));
+	update.set("token", obj.get("Token"));
 
     // CustomFields
     let inputs = update.get("CustomFields");    
@@ -324,14 +337,19 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         field.FieldValue = cf.FieldValue;
     }
     update.set("CustomFields", fields);
-console.log(update);
 
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
-console.log(ret);    
-    let holder = await siPassAdapter.postCardHolder(ret);
-console.log(holder);
 
+
+    let holder = await siPassAdapter.putCardHolder(ret);
+    if (holder["Token"] == undefined ) {
+        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail ${holder}`]);
+    }
+
+	ret["Token"] = ret["Token"] + "" ;
+	delete ret["token"] ;
+	
     try {
         let config = {
             server: Config.ccuresqlserver.server,
