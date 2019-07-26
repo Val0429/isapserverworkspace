@@ -339,7 +339,7 @@ export interface IConnectionInfo {
     uniqueId: string;
     domain: string;
     port: string;
-    sessionId: string;
+    //sessionId: string;
 }
 
 export interface IQueryTimeRange {

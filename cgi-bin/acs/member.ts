@@ -134,7 +134,6 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             RuleToken: permission.get("tableid").toString(),
             RuleType: 4,
             Side: 0,
-            StartDate: null,
             TimeScheduleToken: "0"
         };
         rules.push(newRule);
@@ -311,7 +310,6 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
                 RuleToken: permission.get("tableid").toString(),
                 RuleType: 4,
                 Side: 0,
-                StartDate: null,
                 TimeScheduleToken: "0"
         };
         rules.push(newRule);
@@ -324,6 +322,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
 	update.set("Vehicle1", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
 	update.set("Vehicle2", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
+	
+	update.set("GeneralInformation", obj.get("GeneralInformation"));
 	update.set("Status", obj.get("Status"));
 	update.set("Token", obj.get("Token"));
 	update.set("token", obj.get("Token"));
@@ -344,11 +344,6 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         field.FieldValue = cf.FieldValue;
     }
     update.set("CustomFields", fields);
-    
-    //prevent modification to these fields
-    update.set("Token", obj.get("Token"));
-    update.set("Status", obj.get("Status"));
-    update.set("GeneralInformation", obj.get("GeneralInformation"));
     
 console.log(update);
     

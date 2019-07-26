@@ -5,7 +5,7 @@ import { ScheduleActionEmail } from 'core/scheduler-loader';
 
 import * as delay from 'delay';
 
-import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles } from '../../custom/models'
+import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles, PermissionTableDoor } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 
 export class ACSService {
@@ -70,6 +70,7 @@ export class ACSService {
         await this.syncCcureDoorReader();
         await this.syncCcureFloor();
         await this.syncCcurePermissionTable();
+        await this.syncCcurePermissionTableDoor() ;
  
     }
 
@@ -79,11 +80,14 @@ export class ACSService {
         console.log("PermissionTables", records);
         if (records) {
             for (let idx = 0; idx < records.length; idx++) {
-				
+
                 const r = records[idx];
-                if(!r["permissionTableId"] || !r["permissionTableName"])continue;
+                if (!r["permissionTableId"] || !r["permissionTableName"]) continue;
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
-                let obj = await new Parse.Query(PermissionTable).equalTo("tablename", r["permissionTableName"]).first();
+                let obj = await new Parse.Query(PermissionTable)
+                    .equalTo("tablename", r["permissionTableName"])
+                    .equalTo("system", 800)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 800,
@@ -92,14 +96,70 @@ export class ACSService {
                         status: 1
                     };
                     let o = new PermissionTable(d);
-                    if(!d.tableid || isNaN(d.tableid))continue;
+                    if (!d.tableid || isNaN(d.tableid)) continue;
                     let o1 = await o.save();
                 }
                 else {
                     obj.set("system", 800);
                     obj.set("tableid", +r["permissionTableId"]);
                     obj.set("tablename", r["permissionTableName"]);
-                    obj.save();
+                    await obj.save();
+                }
+                // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
+            }
+        }
+        await delay(1000);
+    }
+
+    private async syncCcurePermissionTableDoor() {
+        Log.Info(`${this.constructor.name}`, `CCure 2.6 syncCcurePermissionTableDoor`);
+        let records = await cCureAdapter.GetAllPermissionTableDoor();
+
+        /*
+        [
+            { 
+                permissionTableId: 5179, 
+                doorId: 113956, 
+                timespecId: 1682 
+            },
+            { 
+                permissionTableId: 5182, 
+                doorId: 5441, 
+                timespecId: 5209 
+            }
+        ]
+        */
+
+        if (records) {
+            for (let idx = 0; idx < records.length; idx++) {
+                const r = records[idx];
+                Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTableDoor ${r["permissionTableId"]}-${r["doorId"]}`);
+                let obj = await new Parse.Query(PermissionTableDoor)
+                    .equalTo("permissionTableId", r["permissionTableId"])
+                    .first();
+                if (obj == null) {
+                    let d = {
+                        system: 800,
+                        permissionTableId: +r["permissionTableId"],
+                        doorId: [r["doorId"]],
+                        timespecId: r["timespecId"],
+                        status: 1
+                    };
+                    let o = new PermissionTableDoor(d);
+                    let o1 = await o.save();
+                }
+                else {
+                    let d1 = obj.get("doorId") as number[] ;
+                    let d2 = +r["doorId"] ;
+
+                    if ( d1.indexOf(d2) < 0)
+                        d1.push(d2);
+
+                    obj.set("system", 800);
+                    obj.set("permissionTableId", +r["permissionTableId"]);
+                    obj.set("doorId", d1);
+                    obj.set("timespecId", r["timespecId"]);
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -115,7 +175,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
-                let obj = await new Parse.Query(Floor).equalTo("floorname", r["floorName"]).first();
+                let obj = await new Parse.Query(Floor)
+                    .equalTo("floorname", r["floorName"])
+                    .equalTo("system", 800)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 800,
@@ -130,7 +193,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("floorid", +r["floorId"]);
                     obj.set("floorname", r["floorName"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -146,7 +209,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
-                let obj = await new Parse.Query(Reader).equalTo("readername", r["deviceName"]).first();
+                let obj = await new Parse.Query(Reader)
+                    .equalTo("readername", r["deviceName"])
+                    .equalTo("system", 800)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 800,
@@ -161,7 +227,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("readerid", +r["deviceId"]);
                     obj.set("readername", r["deviceName"]);
-                    obj.save();
+                    await obj.save();
                 }
                 let door = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
                 if (door) {
@@ -186,7 +252,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);
-                let obj = await new Parse.Query(Door).equalTo("doorname", r["doorName"]).first();
+                let obj = await new Parse.Query(Door)
+                    .equalTo("doorname", r["doorName"])
+                    .equalTo("system", 800)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 800,
@@ -201,7 +270,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("doorid", +r["doorId"]);
                     obj.set("doorname", r["doorName"]);
-                    obj.save();
+                    await obj.save();
                 }
             }
             ;
@@ -217,7 +286,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
-                let obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["timespecName"]).first();
+                let obj = await new Parse.Query(TimeSchedule)
+                    .equalTo("timename", r["timespecName"])
+                    .equalTo("system", 800)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 800,
@@ -232,7 +304,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("timeid", +r["timespecId"]);
                     obj.set("timename", r["timespecName"]);
-                    obj.save();
+                    await obj.save();
                 }
             }
             ;
@@ -248,9 +320,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass CredentialProfiles ${r["Name"]}-${r["Token"]}`);
-                let obj = await new Parse.Query(CredentialProfiles).equalTo("Token", r["Token"]).first();
+                let obj = await new Parse.Query(CredentialProfiles)
+                    .equalTo("Token", r["Token"])
+                    .first();
                 if (obj == null) {
-                    r["system"] = 1;
                     let o = new CredentialProfiles(r);
                     await o.save();
                 }
@@ -268,7 +341,10 @@ export class ACSService {
             for (let idx = 0; idx < grouplist.length; idx++) {
                 Log.Info(`${this.constructor.name}`, `Import data SiPass WorkGroup ${grouplist[idx]["Name"]}-${grouplist[idx]["Token"]}`);
                 let group = await siPassAdapter.getWorkGroup(grouplist[idx]["Token"]);
-                let obj = await new Parse.Query(WorkGroup).equalTo("groupname", group["Name"]).first();
+                let obj = await new Parse.Query(WorkGroup)
+                    .equalTo("groupname", group["Name"])
+                    .equalTo("system", 1)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 1,
@@ -287,7 +363,7 @@ export class ACSService {
                     obj.set("groupname", group["Name"]);
                     obj.set("type", +group["Type"]);
                     obj.set("accesspolicyrules", group["AccessPolicyRules"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("WorkGroup").findOneAndUpdate({ "groupid": group["Token"] }, { $set: d }, { upsert: true });
             }
@@ -295,7 +371,7 @@ export class ACSService {
         await delay(1000);
     }
 
-    async syncSipassAcessGroup() {
+    private async syncSipassAcessGroup() {
         Log.Info(`${this.constructor.name}`, `SiPass 2.7 Access Group List`);
 
         let readers = await new Parse.Query(Reader).find();
@@ -335,7 +411,10 @@ export class ACSService {
                             }
                         };
 
-                        let lev = await new Parse.Query(AccessLevel).equalTo("levelname", level["Name"]).first();
+                        let lev = await new Parse.Query(AccessLevel)
+                            .equalTo("levelname", level["Name"])
+                            .equalTo("system", 1)
+                            .first();
                         if (lev == null) {
                             let d = {
                                 system: 1,
@@ -364,7 +443,10 @@ export class ACSService {
                         await delay(1000);
                     }
                 }
-                let obj = await new Parse.Query(PermissionTable).equalTo("tablename", group["Name"]).first();
+                let obj = await new Parse.Query(PermissionTable)
+                    .equalTo("tablename", group["Name"])
+                    .equalTo("system", 1)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 1,
@@ -381,7 +463,7 @@ export class ACSService {
                     obj.set("tableid", +group["Token"]);
                     obj.set("tablename", group["Name"]);
                     obj.set("accesslevels", acl);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("PermissionTable").findOneAndUpdate({ "tablename": group["Name"] }, { $set: d }, { upsert: true });
                 await delay(1000);
@@ -399,7 +481,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
-                let obj = await new Parse.Query(Floor).equalTo("floorname", r["Name"]).first();
+                let obj = await new Parse.Query(Floor)
+                    .equalTo("floorname", r["Name"])
+                    .equalTo("system", 1)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 1,
@@ -414,7 +499,7 @@ export class ACSService {
                     obj.set("system", 1);
                     obj.set("floorid", +r["Token"]);
                     obj.set("floorname", r["Name"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -430,7 +515,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
-                let obj = await new Parse.Query(Reader).equalTo("readername", r["Name"]).first();
+                let obj = await new Parse.Query(Reader)
+                    .equalTo("readername", r["Name"])
+                    .equalTo("system", 1)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 1,
@@ -445,7 +533,7 @@ export class ACSService {
                     obj.set("system", 1);
                     obj.set("readerid", +r["Token"]);
                     obj.set("readername", r["Name"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Reader").findOneAndUpdate({ "readerid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -462,7 +550,10 @@ export class ACSService {
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass TimeSchedule ${r["Name"]}-${r["Token"]}`);
-                let obj = await new Parse.Query(TimeSchedule).equalTo("timename", r["Name"]).first();
+                let obj = await new Parse.Query(TimeSchedule)
+                    .equalTo("timename", r["Name"])
+                    .equalTo("system", 1)
+                    .first();
                 if (obj == null) {
                     let d = {
                         system: 1,
@@ -477,7 +568,7 @@ export class ACSService {
                     obj.set("system", 1);
                     obj.set("timeid", +r["Token"]);
                     obj.set("timename", r["Name"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("TimeSchedule").findOneAndUpdate({ "timeid": r["Token"] }, { $set: d }, { upsert: true });
             }

@@ -43,6 +43,8 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     var query = new Parse.Query(TimeSchedule);
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
+    query.equalTo("system", 1);
+
     /// 3) Output
     return Restful.Pagination(query, data.parameters);
 });

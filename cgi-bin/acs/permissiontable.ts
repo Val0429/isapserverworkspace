@@ -5,7 +5,7 @@ import {
     Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup
 } from 'core/cgi-package';
 
-import { IPermissionTable, PermissionTable } from '../../custom/models'
+import { IPermissionTable, PermissionTable, PermissionTableDoor } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 import { Log } from 'helpers/utility';
@@ -32,10 +32,27 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // }
 
     /// 2) Create Object
-    let name = data.inputType.tablename ;
-    let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name).first();
-    if ( nameObject != null) {
+    let name = data.inputType.tablename;
+    let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name)
+        .include("door").first();
+    if (nameObject != null) {
         throw Errors.throw(Errors.CustomNotExists, [`Permssion table name is duplicate.`]);
+    }
+
+    let doors = [];
+    if (data.inputType.accesslevels) {
+        for (let i = 0; i < data.inputType.accesslevels.length; i++) {
+            let levelGroup = data.inputType.accesslevels[i];
+
+            doors.push(levelGroup.get("door")["doorid"]);
+        }
+    }
+
+    let pt = await new Parse.Query(PermissionTableDoor).containsAll("doorid", doors).first();
+    if ( pt != null) {
+        let pt1 = await new Parse.Query(PermissionTable).equalTo("tableid", pt.get("permissionTableId")).first();
+
+        throw Errors.throw(Errors.CustomNotExists, [`Permssion table is duplicate with ${pt1.get("tableid")} ${pt1.get("tablename")}`]);   
     }
 
     // 2.0 Modify Access Group

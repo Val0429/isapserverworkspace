@@ -280,6 +280,27 @@ export class CCureAdapter {
 
         return records;
     }
-}
 
+    async GetAllPermissionTableDoor() {
+        Log.Info(`${this.constructor.name}`, `GetAllPermissionTableDoor`);
+
+        await this._signal.wait(this._waitTime, x => x);
+        let records = await this._reader.queryAllAsync(QueryContent.ClearDoor, null, 30000);
+
+        // [
+        //     { 
+        //         permissionTableId: 5179, 
+        //         doorId: 113956, 
+        //         timespecId: 1682 
+        //     },
+        //     { 
+        //         permissionTableId: 5182, 
+        //         doorId: 5441, 
+        //         timespecId: 5209 
+        //     }
+        // ]
+
+        return records;
+    }
+}
 // export default new SiPassAdapter();
