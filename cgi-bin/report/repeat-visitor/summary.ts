@@ -9,7 +9,7 @@ import { Report } from '../';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.SuperAdministrator, RoleList.Admin, RoleList.User],
+    permission: [RoleList.Admin, RoleList.User],
 });
 
 export default action;
