@@ -99,7 +99,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("tableid", +r["permissionTableId"]);
                     obj.set("tablename", r["permissionTableName"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -130,7 +130,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("floorid", +r["floorId"]);
                     obj.set("floorname", r["floorName"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -161,7 +161,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("readerid", +r["deviceId"]);
                     obj.set("readername", r["deviceName"]);
-                    obj.save();
+                    await obj.save();
                 }
                 let door = await new Parse.Query(Door).equalTo("doorid", +r["doorId"]).first();
                 if (door) {
@@ -201,7 +201,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("doorid", +r["doorId"]);
                     obj.set("doorname", r["doorName"]);
-                    obj.save();
+                    await obj.save();
                 }
             }
             ;
@@ -232,7 +232,7 @@ export class ACSService {
                     obj.set("system", 800);
                     obj.set("timeid", +r["timespecId"]);
                     obj.set("timename", r["timespecName"]);
-                    obj.save();
+                    await obj.save();
                 }
             }
             ;
@@ -287,7 +287,7 @@ export class ACSService {
                     obj.set("groupname", group["Name"]);
                     obj.set("type", +group["Type"]);
                     obj.set("accesspolicyrules", group["AccessPolicyRules"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("WorkGroup").findOneAndUpdate({ "groupid": group["Token"] }, { $set: d }, { upsert: true });
             }
@@ -381,7 +381,7 @@ export class ACSService {
                     obj.set("tableid", +group["Token"]);
                     obj.set("tablename", group["Name"]);
                     obj.set("accesslevels", acl);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("PermissionTable").findOneAndUpdate({ "tablename": group["Name"] }, { $set: d }, { upsert: true });
                 await delay(1000);
@@ -414,7 +414,7 @@ export class ACSService {
                     obj.set("system", 1);
                     obj.set("floorid", +r["Token"]);
                     obj.set("floorname", r["Name"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Floor").findOneAndUpdate({ "floorid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -445,7 +445,7 @@ export class ACSService {
                     obj.set("system", 1);
                     obj.set("readerid", +r["Token"]);
                     obj.set("readername", r["Name"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("Reader").findOneAndUpdate({ "readerid": r["Token"] }, { $set: d }, { upsert: true });
             }
@@ -477,7 +477,7 @@ export class ACSService {
                     obj.set("system", 1);
                     obj.set("timeid", +r["Token"]);
                     obj.set("timename", r["Name"]);
-                    obj.save();
+                    await obj.save();
                 }
                 // await this.mongoDb.collection("TimeSchedule").findOneAndUpdate({ "timeid": r["Token"] }, { $set: d }, { upsert: true });
             }
