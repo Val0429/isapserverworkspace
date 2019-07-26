@@ -131,9 +131,9 @@ import {
     /// Create default API Tokens
     let dropItem = await new Parse.Query(DropDownList).first();
     if (!dropItem) {
-        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 1, name: "26 bit" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 3, name: "35 bit" });
-        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 4, name: "mifare32" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 3, name: "26 bit" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 1, name: "35 bit" });
+        dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 2, name: "mifare32" });
 
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 1, name: "正職" });
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 2, name: "ASR臨時卡" });

@@ -244,13 +244,11 @@ Section
   Rename "$TEMP\${MONGO_CONFIG}" "$PROGRAMFILES64\MongoDB\${MONGO_CONFIG}" 
   installMongo:
 	#install mongo service
-	${If} ${SectionIsSelected} ${SEC04}			
-		ExecWait '"install_mongo.bat" /s'
-	${Else}		
-		ExecWait '"install_mongo_wo_init.bat" /s'
+  ExecWait '"install_mongo.bat" /s'
+	${If} ${SectionIsSelected} ${SEC04}
+    #init mongo replica set
+		ExecWait '"init_mongo.bat" /s'
 	${EndIf}
-	
-	
 	
 	;${If} ${SectionIsSelected} ${SEC01}		
   #run npm start for 1.5 minute	
