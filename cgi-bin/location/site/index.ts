@@ -263,7 +263,7 @@ action.get(
                     });
                     let officeHourObject: IResponse.IObject = officeHour
                         ? {
-                              objectId: value.id,
+                              objectId: officeHour.id,
                               name: officeHour.getValue('name'),
                           }
                         : undefined;
