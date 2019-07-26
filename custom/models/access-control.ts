@@ -1,5 +1,11 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import { IDB } from './db';
+export interface ISipassToken{
+    sessionId:string;
+    expired:Date;
+}
+@registerSubclass()
+export class SipassToken extends ParseObject<ISipassToken> { }
 
 export interface IReader {      // R daily v
     system: number,             // 1: SiPass 2: CCure800

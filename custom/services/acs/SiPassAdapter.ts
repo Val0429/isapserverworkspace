@@ -5,7 +5,10 @@ import { Log } from 'helpers/utility';
 
 import * as siPassClient from '../../modules/acs/sipass';
 import { access } from 'fs';
+import { SipassToken } from 'workspace/custom/models';
+import { Errors } from 'core/cgi-package';
 // import { ConstructSignatureDeclaration } from 'ts-simple-ast';
+var moment = require("moment");
 
 export class SiPassAdapter {
     // SiPass
@@ -20,7 +23,7 @@ export class SiPassAdapter {
     private siPassDbService: siPassClient.SiPassDbService;
 
     //private checkConnectionTimer = null;
-    public sessionToken = "";
+    private sessionToken:SipassToken;
 
     // private isInitialed = false;
 
@@ -32,8 +35,8 @@ export class SiPassAdapter {
             "password": Config.sipassconnect.password,
             "uniqueId": Config.sipassconnect.uniqueId,
             "domain": Config.sipassconnect.server,
-            "port": `${Config.sipassconnect.port}`,
-            "sessionId": Config.sipassconnect.sessionId
+            "port": `${Config.sipassconnect.port}`//,
+            //"sessionId": Config.sipassconnect.sessionId
         });
 
         this.siPassAccount = new siPassClient.SiPassHrAccountService(this.siPassHrParam);
@@ -84,30 +87,45 @@ export class SiPassAdapter {
     }
 
     private clearLoginTimer = null ;
-    private async Login(autoLogout = 5000) {
+    private async Login(autoLogout = 300000) {
         Log.Info(`${this.constructor.name}`, `Login`);
 
-        clearTimeout(this.clearLoginTimer);
+        //clearTimeout(this.clearLoginTimer);
 
-        if ( this.sessionToken == "") {
-            let a = await this.siPassAccount.Login(this.siPassHrParam);
-            // console.log("===================    Get Login   ========== ");
-            // console.log(a);
-            // {
-            //     "Token":"4697C6FB68DD4592E0FC49FFF9B684B56C98E8CA2AC4F94F85F9473BEA3A7C1D:siemens"
-            // }
-            let ret = JSON.parse(a);
-            this.sessionToken = ret.Token;
-        }
-
-        //force logout after 5 seconds
+        if (this.sessionToken && this.sessionToken.get("expired")>=new Date())  return this.sessionToken.get("sessionId");
+        //get from database first
+        this.sessionToken = await new Parse.Query(SipassToken).greaterThan("expired", new Date()).first();
+        if(this.sessionToken) return this.sessionToken.get("sessionId");
+        
+        let a = await this.siPassAccount.Login(this.siPassHrParam);
+        this.sessionToken = new SipassToken();
+        
+        let ret = JSON.parse(a);
+        if(!ret.Token){                
+            Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+            throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);                
+        } 
+        this.sessionToken.set("sessionId",ret.Token);
+        this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
+        await this.sessionToken.save();
+        //destroy token after 5 minutes
         this.clearLoginTimer = setTimeout(async () => {
-            console.log("clear token") ;
-            await this.siPassAccount.Logout(this.siPassHrParam, this.sessionToken);
-            this.sessionToken = "" ;
+            console.log(`clear token ater ${autoLogout / 1000} seconds`) ;
+            // siemens discourage logout, we can enable it during development
+            //await this.siPassAccount.Logout(this.siPassHrParam, this.sessionToken);
+            await this.sessionToken.destroy();
+            this.sessionToken = undefined;
         }, autoLogout);
-
-        return this.sessionToken;
+        
+        // console.log("===================    Get Login   ========== ");
+        // console.log(a);
+        // {
+        //     "Token":"4697C6FB68DD4592E0FC49FFF9B684B56C98E8CA2AC4F94F85F9473BEA3A7C1D:siemens"
+        // }            
+        //this.sessionToken = ret.Token;
+        let sessionId = this.sessionToken.get("sessionId");
+        console.log("sessionId", sessionId);
+        return sessionId;
     }
 
     async getTimeSchedule() {
