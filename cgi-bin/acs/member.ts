@@ -327,7 +327,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 	update.set("Status", obj.get("Status"));
 	update.set("Token", obj.get("Token"));
 	update.set("token", obj.get("Token"));
-
+    update.set("GeneralInformation", obj.get("GeneralInformation"));
     // CustomFields
     let inputs = update.get("CustomFields");    
     
