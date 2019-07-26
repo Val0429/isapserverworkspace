@@ -42,12 +42,15 @@ action.post(
             };
             await report.Initialization(inputBase, _userInfo.siteIds);
 
+            let officeHours = report.summaryOfficeHours;
+
             let summaryDatas = report.GetSummaryDatas();
 
             report.Dispose();
             report = null;
 
             return {
+                officeHours: officeHours,
                 summaryDatas: summaryDatas,
             };
         } catch (e) {

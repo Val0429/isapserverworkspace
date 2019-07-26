@@ -243,6 +243,7 @@ export interface IHeatmapSummaryData extends ISummaryDataBase {
 }
 
 export interface IHeatmapSummary {
+    officeHours: ISummaryOfficeHour[];
     summaryDatas: IHeatmapSummaryData[];
 }
 
