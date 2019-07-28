@@ -87,7 +87,7 @@ export class SiPassAdapter {
     }
 
     private clearLoginTimer = null ;
-    private async Login(autoLogout = 300000) {
+    private async Login(renew = 290000) {
         Log.Info(`${this.constructor.name}`, `Login`);
 
         //clearTimeout(this.clearLoginTimer);
@@ -108,14 +108,15 @@ export class SiPassAdapter {
             this.sessionToken.set("sessionId",ret.Token);
             this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
             await this.sessionToken.save();
-            //destroy token after 5 minutes
-            this.clearLoginTimer = setTimeout(async () => {
-                console.log(`clear sipass token ater ${autoLogout / 1000} seconds`) ;
+            //renew token 
+            this.clearLoginTimer = setInterval(async () => {
+                console.log(`renew sipass token ater ${renew / 1000} seconds`) ;
                 // siemens discourage logout, we can enable it during development
                 //await this.siPassAccount.Logout(this.siPassHrParam, ret.Token);
-                await this.sessionToken.destroy();
-                this.sessionToken = undefined;
-            }, autoLogout);
+                await this.siPassAccount.GetSessionTimeout(this.siPassHrParam, this.sessionToken.get("sessionId"));
+                this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
+                await this.sessionToken.save();
+            }, renew);
 
             let sessionId = this.sessionToken.get("sessionId");
             console.log("sessionId", sessionId);
