@@ -47,10 +47,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // VenueBooking = 12
 
     if (data.inputType.reader && data.inputType.reader.length > 0) {
+        console.log("bop1");
         for (let idx = 0; idx < data.inputType.reader.length; idx++) {
             let e = data.inputType.reader[idx];
 
-            if (e.get("system") == '1') {
+            if (e.get("system") == 1) {
+                console.log("bop2");
                 let r = {
                     token: "-1",
                     name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
@@ -64,18 +66,23 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                         }
                     ]
                 }
+                let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.name).first();
+                if(!exists){
+                    let r1 = await siPassAdapter.postAccessLevel(r, 10000);
+                    console.log("bop3");
+                    if (r1["Token"] != undefined) {
+                        Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
 
-                let r1 = await siPassAdapter.postAccessLevel(r, 10000);
-                if (r1["Token"] != undefined) {
-                    Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
+                        var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
+                        await obj1.save(null, { useMasterKey: true });
 
-                    var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
-                    await obj1.save(null, { useMasterKey: true });
-
-                    levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
-                }
-                else {
-                    throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
+                        levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+                    }
+                    else {
+                        throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
+                    }
+                }else{
+                    levelinSiPass.push({ token: exists.get("token"), name: exists.get("name") });
                 }
             }
         }
@@ -85,7 +92,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         for (let idx = 0; idx < data.inputType.floor.length; idx++) {
             let e = data.inputType.floor[idx];
 
-            if (e.get("system") == '1') {
+            if (e.get("system") == 1) {
                 let r = {
                     token: "-1",
                     name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
@@ -99,31 +106,38 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                         }
                     ]
                 }
+                let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.name).first();
+                if(!exists){
+                    let r1 = await siPassAdapter.postAccessLevel(r, 10000);
+                    if (r1["Token"] != undefined) {
+                        Log.Info(`${this.constructor.name}`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
 
-                let r1 = await siPassAdapter.postAccessLevel(r, 10000);
-                if (r1["Token"] != undefined) {
-                    Log.Info(`${this.constructor.name}`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
+                        var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
+                        await obj1.save(null, { useMasterKey: true });
 
-                    var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
-                    await obj1.save(null, { useMasterKey: true });
-
-                    levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+                        levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
+                    }
+                    else {
+                        throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
+                    }
                 }
-                else {
-                    throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
+                else{
+                    levelinSiPass.push({ token: exists.get("token"), name: exists.get("name") });
                 }
+
             }
         }
     }
 
     /// 1) Create Object
-    let firstObj = await new Parse.Query(AccessLevel).descending("levelid").first();
+    let firstObj = await new Parse.Query(AccessLevel).exists("levelidNumber").descending("levelidNumber").first();
     let max = 0;
-    if (firstObj != null)
-        max = +firstObj.get("levelid") + 1;
+    if (firstObj && firstObj.get("levelidNumber") )
+        max = +firstObj.get("levelidNumber") + 1;
 
     data.inputType.levelid = max + "";
-    data.inputType.levelname = "name " + data.inputType.levelid;
+    data.inputType.levelidNumber=max;
+    data.inputType.levelname = "name " + data.inputType.levelidNumber;
     data.inputType.levelinSiPass = levelinSiPass ;
 
     var obj = new AccessLevel(data.inputType);

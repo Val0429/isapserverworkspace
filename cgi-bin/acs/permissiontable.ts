@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup
+    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup, AccessLevelinSiPass
 } from 'core/cgi-package';
 
 import { IPermissionTable, PermissionTable, PermissionTableDoor } from '../../custom/models'
@@ -24,7 +24,7 @@ var action = new Action({
 type InputC = Restful.InputC<IPermissionTable>;
 type OutputC = Restful.OutputC<IPermissionTable>;
 
-action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
     // if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
@@ -43,8 +43,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     if (data.inputType.accesslevels) {
         for (let i = 0; i < data.inputType.accesslevels.length; i++) {
             let levelGroup = data.inputType.accesslevels[i];
-
-            doors.push(levelGroup.get("door")["doorid"]);
+            let door=levelGroup.get("door");
+            if(door["doorid"])doors.push(door["doorid"]);
         }
     }
 
@@ -59,17 +59,16 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     
     let al = [];
     if (data.inputType.accesslevels) {
-        for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-            let levelGroup = data.inputType.accesslevels[i];
-
-            for (let j = 0; j < levelGroup.get("levelinSiPass").length; j++) {
-                al.push(levelGroup.get("levelinSiPass")[j]);    
-            }
+        for (let levelGroup of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
+            console.log("levelGroup", levelGroup);
+            if(levelGroup.levelinSiPass && levelGroup.levelinSiPass.length>0)
+                al.push(...levelGroup.levelinSiPass.map(x=>{return {Token:x.token, Name:x.name}}));            
         }
     }
-    // if ( al.length <= 0) {
-    //     throw Errors.throw(Errors.CustomNotExists, [`Create Permission Table FAil Access Level is Empty!`]);
-    // }
+    console.log("access levels", al);
+    if ( al.length <= 0) {
+        throw Errors.throw(Errors.CustomNotExists, [`Create Permission Table FAil Access Level is Empty!`]);
+    }
 
     let ag = {
         token: "-1",
@@ -80,24 +79,29 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
+    if(!r1["Token"]){
+        throw Errors.throw(Errors.CustomNotExists, [`Cannot get token from sipass.`]);
+    }
     data.inputType.tableid = +r1["Token"];
     data.inputType.system = 0;
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
-    
+    let errors=[];
     Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
+    for (let accesslevel of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
+        console.log("accesslevel", accesslevel)
+        if(!accesslevel.door || !accesslevel.timeschedule)continue;
+        let door = await new Parse.Query(Door).equalTo("objectId", accesslevel.door.objectId).first();
+        let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule .objectId).first();
+        let ccurename= `${door.get("doorname")}-${timeschedule.get("timename")}`;
+        let ccure = await new Parse.Query(AccessLevel).equalTo("name", ccurename).equalTo("system", 800).first();
 
-    for (let i = 0; i < al.length; i++) {
-        const e = al[i];
-
-        let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 800).first();
-
-        if (ccure == null)
-            throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
+        if (!ccure)
+            errors.push({type:"accessLevelIsNotInCCure", message:`${ccurename}`});
     }
 
     /// 2) Output
-    return ParseObject.toOutputJSON(obj);
+    return { errors };
 });
 
 /********************************
@@ -145,7 +149,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 type InputU = Restful.InputU<IPermissionTable>;
 type OutputU = Restful.OutputU<IPermissionTable>;
 
-action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(PermissionTable).get(objectId);
@@ -157,7 +161,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     await obj.save({ ...data.inputType, objectId: undefined });
 
     // 2.0 Modify Access Group
-    {
+    
         let al = [];
     if (data.inputType.accesslevels) {
         for (let i = 0; i < data.inputType.accesslevels.length; i++) {
@@ -180,19 +184,22 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     await siPassAdapter.putAccessGroup(ag);
+    let errors=[];
+    for (let accesslevel of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
+        console.log("accesslevel", accesslevel)
+        if(!accesslevel.door || !accesslevel.timeschedule)continue;
+        let door = await new Parse.Query(Door).equalTo("objectId", accesslevel.door.objectId).first();
+        let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule .objectId).first();
+        let ccurename= `${door.get("doorname")}-${timeschedule.get("timename")}`;
+        let ccure = await new Parse.Query(AccessLevel).equalTo("name", ccurename).equalTo("system", 800).first();
 
-        for (let i = 0; i < al.length; i++) {
-            const e = al[i];
-
-            let ccure = await new Parse.Query(AccessLevel).equalTo("name", e["name"]).equalTo("system", 2).first();
-
-            if (ccure == null)
-                throw Errors.throw(Errors.CustomBadRequest, [`Access level not in ccure. ${e["name"]}`]);
-        }
+        if (!ccure)
+            errors.push({type:"accessLevelIsNotInCCure", message:`${ccurename}`});
     }
+    
 
     /// 3) Output
-    return ParseObject.toOutputJSON(obj);
+    return {errors};
 });
 
 /********************************

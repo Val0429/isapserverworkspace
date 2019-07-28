@@ -182,6 +182,7 @@ export interface IAccessLevel {     // CRUD  V
     system?: number,                // 0: iSap 1: SiPass 2: CCure800
     type?: string,
     levelid?: string,
+    levelidNumber?: number,
     levelname?: string,
     status?: number,
     door?: Door,
