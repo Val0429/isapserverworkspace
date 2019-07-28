@@ -139,9 +139,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         rules.push(newRule);
     }
     obj.set("AccessRules", rules);
-    if (rules.length <= 0 ) {
-        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail. Access Level is Empty.`]);
-    }
+    // if (rules.length <= 0 ) {
+    //     throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail. Access Level is Empty.`]);
+    // }
 
     // CustomFields
     let inputs = obj.get("CustomFields");
@@ -149,7 +149,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     for(let field of fields){        
         let cf = inputs.find(x=>x.FiledName==field.FiledName);
         if(!cf)continue;
-        field.FieldValue = cf.FieldValue;
+        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue :"";
     }   
 
     // obj.set("Token", "-1");
@@ -315,9 +315,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         rules.push(newRule);
     }
     update.set("AccessRules", rules);
-    if (rules.length <= 0 ) {
-        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail. Access Level is Empty.`]);
-    }
+    // if (rules.length <= 0 ) {
+    //     throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail. Access Level is Empty.`]);
+    // }
 
 
 	update.set("Vehicle1", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
@@ -341,7 +341,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     for(let field of fields){
         let cf = inputs.find(x=>x.FiledName==field.FiledName);
         if(!cf)continue;
-        field.FieldValue = cf.FieldValue;
+        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue :"";
     }
     update.set("CustomFields", fields);
     
