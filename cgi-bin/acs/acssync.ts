@@ -80,7 +80,7 @@ async function syncCCureDoorReaders() {
         for (let idx = 0; idx < records.length; idx++) {
             const r = records[idx];
             Log.Info(`CGI acsSync`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
-            let obj = await new Parse.Query(Reader).equalTo("readername", r["deviceName"]).first();
+            let obj = await new Parse.Query(Reader).equalTo("readerid", parseInt(r["deviceId"])).first();
             if (obj == null) {
                 let d = {
                     system: 800,
@@ -117,7 +117,7 @@ async function syncSipassFloors() {
         for (let idx = 0; idx < records.length; idx++) {
             const r = records[idx];
             Log.Info(`CGI acsSync`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
-            let obj = await new Parse.Query(Floor).equalTo("floorname", r["Name"]).first();
+            let obj = await new Parse.Query(Floor).equalTo("floorid",parseInt(r["Token"])).first();
             if (obj == null) {
                 let d = {
                     system: 1,
@@ -149,7 +149,7 @@ async function syncSipassReaders() {
         for (let idx = 0; idx < records.length; idx++) {
             const r = records[idx];
             Log.Info(`CGI acsSync`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
-            let obj = await new Parse.Query(Reader).equalTo("readername", r["Name"]).first();
+            let obj = await new Parse.Query(Reader).equalTo("readerid", r["Token"]).first();
             if (obj == null) {
                 let d = {
                     system: 1,

@@ -176,7 +176,7 @@ export class ACSService {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
                 let obj = await new Parse.Query(Floor)
-                    .equalTo("floorname", r["floorName"])
+                    .equalTo("floorId", +r["floorId"])
                     .equalTo("system", 800)
                     .first();
                 if (obj == null) {
@@ -210,7 +210,7 @@ export class ACSService {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
                 let obj = await new Parse.Query(Reader)
-                    .equalTo("readername", r["deviceName"])
+                    .equalTo("deviceId", +r["deviceId"])
                     .equalTo("system", 800)
                     .first();
                 if (obj == null) {
@@ -482,7 +482,7 @@ export class ACSService {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
                 let obj = await new Parse.Query(Floor)
-                    .equalTo("floorname", r["Name"])
+                    .equalTo("floorid",+r["Token"])
                     .equalTo("system", 1)
                     .first();
                 if (obj == null) {
@@ -516,7 +516,7 @@ export class ACSService {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
                 let obj = await new Parse.Query(Reader)
-                    .equalTo("readername", r["Name"])
+                    .equalTo("readerid", +r["Token"])
                     .equalTo("system", 1)
                     .first();
                 if (obj == null) {
