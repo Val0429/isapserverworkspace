@@ -2,7 +2,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "Airbase Server"
-!define PRODUCT_VERSION "2.00.07"
+!define PRODUCT_VERSION "2.00.08"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
