@@ -1,8 +1,9 @@
+import { ISettingPushNotification, ISettingSystem } from '../db/_index';
 import { Weather } from '../../helpers';
 
-export interface IPushNotificationR {
-    enable: boolean;
-}
+export interface IPushNotificationR extends ISettingPushNotification {}
+
+export interface ISystemR extends ISettingSystem {}
 
 export interface ISgsmsR {
     enable: boolean;

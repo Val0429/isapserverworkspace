@@ -3,6 +3,7 @@ import { ScheduleActionSGSMS, ScheduleActionSMSResult } from 'core/scheduler-loa
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Regex, Db, Sgsms } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -39,10 +40,12 @@ action.post(
                     password: _input.config.password,
                 };
             } else {
+                let setting = DataCenter.textMessageSetting$.value;
+
                 sgsms.config = {
-                    url: Config.sgSms.url,
-                    account: Config.sgSms.account,
-                    password: Config.sgSms.password,
+                    url: setting.sgsms.url,
+                    account: setting.sgsms.account,
+                    password: setting.sgsms.password,
                 };
             }
 

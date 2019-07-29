@@ -3,6 +3,7 @@ import { ScheduleActionEmail, ScheduleActionEmailResult } from 'core/scheduler-l
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Regex, Email, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -40,11 +41,13 @@ action.post(
                     password: _input.config.password,
                 };
             } else {
+                let setting = DataCenter.emailSetting$.value;
+
                 email.config = {
-                    host: Config.email.host,
-                    port: Config.email.port,
-                    email: Config.email.email,
-                    password: Config.email.password,
+                    host: setting.host,
+                    port: setting.port,
+                    email: setting.email,
+                    password: setting.password,
                 };
             }
 

@@ -4,12 +4,23 @@ import { IDB } from '../models';
 import { Print, Regex, Email } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
+import { default as DataCenter } from '../services/data-center';
 
 class Action {
     /**
      *
      */
     private _config = Config.email;
+
+    /**
+     *
+     */
+    private _enable: boolean = false;
+
+    /**
+     *
+     */
+    private _email: Email = undefined;
 
     /**
      *
@@ -23,6 +34,28 @@ class Action {
      *
      */
     constructor() {
+        DataCenter.emailSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: (x) => {
+                    try {
+                        this._email = new Email();
+                        this._email.config = {
+                            host: x.host,
+                            port: x.port,
+                            email: x.email,
+                            password: x.password,
+                        };
+
+                        this._email.Initialization();
+
+                        this._enable = x.enable;
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
+                    }
+                },
+            });
+
         Main.ready$.subscribe({
             next: async () => {
                 await this.Initialization();
@@ -35,16 +68,6 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
-            let email: Email = new Email();
-            email.config = {
-                host: this._config.host,
-                port: this._config.port,
-                email: this._config.email,
-                password: this._config.password,
-            };
-
-            email.Initialization();
-
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._action$
@@ -65,13 +88,13 @@ class Action {
                 })
                 .subscribe({
                     next: async (x) => {
-                        if (x.length !== 0 && !this._config.enable) {
+                        if (x.length !== 0 && !this._enable) {
                             Print.Log(`Email was disabled`, new Error(), 'warning');
                         } else {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let result = await email.Send(value.title, value.message, {
+                                        let result = await this._email.Send(value.title, value.message, {
                                             tos: value.tos.map((x) => x.email),
                                         });
 

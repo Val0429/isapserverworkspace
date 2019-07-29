@@ -1,6 +1,8 @@
-export interface IPushNotificationU {
-    enable: boolean;
-}
+import { ISettingPushNotification, ISettingSystem } from '../db/_index';
+
+export interface IPushNotificationU extends ISettingPushNotification {}
+
+export interface ISystemU extends ISettingSystem {}
 
 export interface ISgsms_Config {
     url: string;

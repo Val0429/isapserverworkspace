@@ -3,6 +3,7 @@ import { ScheduleActionEmail, ScheduleActionEmailResult } from 'core/scheduler-l
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Weather, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -31,7 +32,9 @@ action.post(
             if (_input.config) {
                 weather.secretKey = _input.config.secretKey;
             } else {
-                weather.secretKey = Config.darksky.secretKey;
+                let setting = DataCenter.weatherSetting$.value;
+
+                weather.secretKey = setting.darksky.secretKey;
             }
 
             weather.Initialization();

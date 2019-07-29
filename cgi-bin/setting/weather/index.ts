@@ -1,8 +1,8 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Weather, File, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
-import { UpdateConfig } from '../../config';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -26,10 +26,10 @@ action.get(
             let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let config = Config.darksky;
+            let setting = DataCenter.weatherSetting$.value;
 
             return {
-                secretKey: config.secretKey,
+                secretKey: setting.darksky.secretKey,
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -62,11 +62,12 @@ action.put(
 
             let result = await weather.GetCurrent(0, 0);
 
-            await UpdateConfig('darksky', _input);
-            Config['darksky'] = { ...Config['darksky'], ..._input };
-
-            Print.Log('Write weather config', new Error(), 'warning', { now: true });
-            File.WriteFile('workspace/custom/assets/config/darksky.json', JSON.stringify(_input));
+            DataCenter.weatherSetting$.next({
+                enable: true,
+                darksky: {
+                    secretKey: _input.secretKey,
+                },
+            });
 
             return new Date();
         } catch (e) {

@@ -1,8 +1,8 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File, Db } from '../../../custom/helpers';
+import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
-import { UpdateConfig } from '../../config';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -26,11 +26,9 @@ action.get(
             let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let config = Config.pushNotification;
+            let setting = DataCenter.pushNotificationSetting$.value;
 
-            return {
-                enable: config.enable,
-            };
+            return setting;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
@@ -55,11 +53,11 @@ action.put(
             let _input: InputU = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            await UpdateConfig('pushNotification', _input);
-            Config['pushNotification'] = { ...Config['pushNotification'], ..._input };
-
-            Print.Log('Write push notification config', new Error(), 'warning', { now: true });
-            File.WriteFile('workspace/custom/assets/config/push-notification.json', JSON.stringify(_input));
+            DataCenter.pushNotificationSetting$.next({
+                enable: _input.enable,
+                fcm: _input.fcm,
+                apn: _input.apn,
+            });
 
             return new Date();
         } catch (e) {

@@ -2,6 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/c
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Utility, Email } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: false,
@@ -46,12 +47,14 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['user not found']);
             }
 
+            let setting = DataCenter.emailSetting$.value;
+
             let email: Email = new Email();
             email.config = {
-                host: Config.email.host,
-                port: Config.email.port,
-                email: Config.email.email,
-                password: Config.email.password,
+                host: setting.host,
+                port: setting.port,
+                email: setting.email,
+                password: setting.password,
             };
 
             email.Initialization();

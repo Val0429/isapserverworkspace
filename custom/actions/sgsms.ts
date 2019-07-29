@@ -4,12 +4,23 @@ import { IDB } from '../models';
 import { Print, Regex, Sgsms } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
+import { default as DataCenter } from '../services/data-center';
 
 class Action {
     /**
      *
      */
-    private _config = Config.sgSms;
+    private _config = Config.textMessage;
+
+    /**
+     *
+     */
+    private _enable: boolean = false;
+
+    /**
+     *
+     */
+    private _sgsms: Sgsms = undefined;
 
     /**
      *
@@ -23,6 +34,27 @@ class Action {
      *
      */
     constructor() {
+        DataCenter.textMessageSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: (x) => {
+                    try {
+                        this._sgsms = new Sgsms();
+                        this._sgsms.config = {
+                            url: x.sgsms.url,
+                            account: x.sgsms.account,
+                            password: x.sgsms.password,
+                        };
+
+                        this._sgsms.Initialization();
+
+                        this._enable = x.enable;
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
+                    }
+                },
+            });
+
         Main.ready$.subscribe({
             next: async () => {
                 await this.Initialization();
@@ -35,15 +67,6 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
-            let sgsms: Sgsms = new Sgsms();
-            sgsms.config = {
-                url: this._config.url,
-                account: this._config.account,
-                password: this._config.password,
-            };
-
-            sgsms.Initialization();
-
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._action$
@@ -59,13 +82,13 @@ class Action {
                 })
                 .subscribe({
                     next: async (x) => {
-                        if (x.length !== 0 && !this._config.enable) {
+                        if (x.length !== 0 && !this._enable) {
                             Print.Log(`Sgsms was disabled`, new Error(), 'warning');
                         } else {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let result: string = await sgsms.Send(value.title, value.message, value.to.phone);
+                                        let result: string = await this._sgsms.Send(value.title, value.message, value.to.phone);
 
                                         Print.Log(`Sgsms: ${value.to.name} -> success`, new Error(), 'success');
                                     } catch (e) {

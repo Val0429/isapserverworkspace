@@ -4,12 +4,28 @@ import { IDB } from '../models';
 import { Print, Apn, Fcm } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
+import { default as DataCenter } from '../services/data-center';
 
 class Action {
     /**
      *
      */
     private _config = Config.pushNotification;
+
+    /**
+     *
+     */
+    private _enable: boolean = false;
+
+    /**
+     *
+     */
+    private _fcm: Fcm = undefined;
+
+    /**
+     *
+     */
+    private _apn: Apn = undefined;
 
     /**
      *
@@ -23,6 +39,25 @@ class Action {
      *
      */
     constructor() {
+        DataCenter.pushNotificationSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: (x) => {
+                    try {
+                        this._fcm = new Fcm(x.fcm);
+
+                        this._apn = new Apn({
+                            ...x.apn,
+                            production: !process.env.NODE_ENV || process.env.NODE_ENV !== 'development',
+                        });
+
+                        this._enable = x.enable;
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
+                    }
+                },
+            });
+
         Main.ready$.subscribe({
             next: async () => {
                 await this.Initialization();
@@ -35,12 +70,6 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
-            let fcm: Fcm = new Fcm(this._config.fcm);
-            let apn: Apn = new Apn({
-                ...this._config.apn,
-                production: !process.env.NODE_ENV || process.env.NODE_ENV !== 'development',
-            });
-
             let next$: Rx.Subject<{}> = new Rx.Subject();
 
             this._action$
@@ -51,14 +80,14 @@ class Action {
                 })
                 .subscribe({
                     next: async (x) => {
-                        if (x.length !== 0 && !this._config.enable) {
+                        if (x.length !== 0 && !this._enable) {
                             Print.Log(`Push notification was disabled`, new Error(), 'warning');
                         } else {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     if (value.to.mobileType === Enum.EMobileType.android) {
                                         try {
-                                            let result: string = await fcm.Send(value.to.mobileToken, value.title, value.message);
+                                            let result: string = await this._fcm.Send(value.to.mobileToken, value.title, value.message);
 
                                             Print.Log(`Fcm: ${value.to.name} -> success`, new Error(), 'success');
                                         } catch (e) {
@@ -66,7 +95,7 @@ class Action {
                                         }
                                     } else {
                                         try {
-                                            let result = await apn.Send(value.to.mobileToken, value.title, value.message);
+                                            let result = await this._apn.Send(value.to.mobileToken, value.title, value.message);
 
                                             Print.Log(`Apn: ${value.to.name} -> success`, new Error(), 'success');
                                         } catch (e) {

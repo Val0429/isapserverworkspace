@@ -4,17 +4,45 @@ import { IDB } from '../models';
 import { Print, Weather } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
+import { default as DataCenter } from './data-center';
 
 class Service {
     /**
      *
      */
-    private _config = Config.darksky;
+    private _config = Config.weather;
+
+    /**
+     *
+     */
+    private _enable: boolean = false;
+
+    /**
+     *
+     */
+    private _darksky: Weather.Darksky = undefined;
 
     /**
      *
      */
     constructor() {
+        DataCenter.weatherSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: (x) => {
+                    try {
+                        this._darksky = new Weather.Darksky();
+                        this._darksky.secretKey = x.darksky.secretKey;
+
+                        this._darksky.Initialization();
+
+                        this._enable = x.enable;
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
+                    }
+                },
+            });
+
         Main.ready$.subscribe({
             next: async () => {
                 try {
@@ -57,11 +85,6 @@ class Service {
      */
     private EnableLiveStream(): void {
         try {
-            let darksky: Weather.Darksky = new Weather.Darksky();
-            darksky.secretKey = this._config.secretKey;
-
-            darksky.Initialization();
-
             let next$: Rx.Subject<{}> = new Rx.Subject();
             let queue$: Rx.Subject<Service.IQueue> = new Rx.Subject();
             queue$
@@ -76,7 +99,7 @@ class Service {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let daily = await darksky.GetDay(value.site.getValue('latitude'), value.site.getValue('longitude'));
+                                        let daily = await this._darksky.GetDay(value.site.getValue('latitude'), value.site.getValue('longitude'));
 
                                         let weather: IDB.Weather = await new Parse.Query(IDB.Weather)
                                             .equalTo('site', value.site)

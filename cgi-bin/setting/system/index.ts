@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, Email, File, Db } from '../../../custom/helpers';
+import { Print, Db } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { default as DataCenter } from '../../../custom/services/data-center';
 
@@ -15,7 +15,7 @@ export default action;
  */
 type InputR = null;
 
-type OutputR = IResponse.ISetting.ISmtpR;
+type OutputR = IResponse.ISetting.ISystemR;
 
 action.get(
     {
@@ -26,15 +26,9 @@ action.get(
             let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let setting = DataCenter.emailSetting$.value;
+            let setting = DataCenter.systemSetting$.value;
 
-            return {
-                enable: setting.enable,
-                host: setting.host,
-                port: setting.port,
-                email: setting.email,
-                password: setting.password,
-            };
+            return setting;
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
@@ -45,7 +39,7 @@ action.get(
 /**
  * Action update
  */
-type InputU = IRequest.ISetting.ISmtpU;
+type InputU = IRequest.ISetting.ISystemU;
 
 type OutputU = Date;
 
@@ -59,30 +53,8 @@ action.put(
             let _input: InputU = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            if (!Regex.IsEmail(_input.email)) {
-                throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
-            }
-
-            let email: Email = new Email();
-            email.config = {
-                host: _input.host,
-                port: _input.port,
-                email: _input.email,
-                password: _input.password,
-            };
-
-            try {
-                email.Initialization();
-            } catch (e) {
-                throw Errors.throw(Errors.CustomBadRequest, [e]);
-            }
-
-            DataCenter.emailSetting$.next({
-                enable: _input.enable,
-                host: _input.host,
-                port: _input.port,
-                email: _input.email,
-                password: _input.password,
+            DataCenter.systemSetting$.next({
+                hosting: _input.hosting,
             });
 
             return new Date();

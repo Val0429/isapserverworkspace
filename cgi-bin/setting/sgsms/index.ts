@@ -1,8 +1,8 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, File, Db, Sgsms } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
-import { UpdateConfig } from '../../config';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -26,13 +26,13 @@ action.get(
             let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            let config = Config.sgSms;
+            let setting = DataCenter.textMessageSetting$.value;
 
             return {
-                enable: config.enable,
-                url: config.url,
-                account: config.account,
-                password: config.password,
+                enable: setting.enable,
+                url: setting.sgsms.url,
+                account: setting.sgsms.account,
+                password: setting.sgsms.password,
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -71,11 +71,14 @@ action.put(
                 throw Errors.throw(Errors.CustomBadRequest, [e]);
             }
 
-            await UpdateConfig('sgSms', _input);
-            Config['sgSms'] = { ...Config['sgSms'], ..._input };
-
-            Print.Log('Write sgsms config', new Error(), 'warning', { now: true });
-            File.WriteFile('workspace/custom/assets/config/sg-sms.json', JSON.stringify(_input));
+            DataCenter.textMessageSetting$.next({
+                enable: _input.enable,
+                sgsms: {
+                    url: _input.url,
+                    account: _input.account,
+                    password: _input.password,
+                },
+            });
 
             return new Date();
         } catch (e) {

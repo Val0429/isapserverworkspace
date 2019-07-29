@@ -5,6 +5,7 @@ import { Print, Regex, Parser, Db, Permission, Utility, Email } from '../../../c
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
+import { default as DataCenter } from '../../../custom/services/data-center';
 
 let action = new Action({
     loginRequired: true,
@@ -122,12 +123,14 @@ action.post(
                             throw e;
                         });
 
+                        let setting = DataCenter.emailSetting$.value;
+
                         let email: Email = new Email();
                         email.config = {
-                            host: Config.email.host,
-                            port: Config.email.port,
-                            email: Config.email.email,
-                            password: Config.email.password,
+                            host: setting.host,
+                            port: setting.port,
+                            email: setting.email,
+                            password: setting.password,
                         };
 
                         email.Initialization();
