@@ -160,6 +160,7 @@ uninst:
 	!insertmacro BackupFile "$R1\workspace\config\custom" "ccuresqlserver.ts" "${TEMP_FOLDER}\server"
 	!insertmacro BackupFile "$R1\workspace\config\custom" "humanresource.ts" "${TEMP_FOLDER}\server"
   !insertmacro BackupFile "$R1\workspace\config\custom" "sipassdb.ts" "${TEMP_FOLDER}\server"
+  !insertmacro BackupFile "$R1\workspace\custom\services\acs\mdb" "ccure800.mdb" "${TEMP_FOLDER}\server"
 
   ClearErrors
   Call DoUninstall
@@ -266,6 +267,8 @@ Section
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccuresqlserver.ts" "$INSTDIR\workspace\config\custom"
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "humanresource.ts" "$INSTDIR\workspace\config\custom"
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "sipassdb.ts" "$INSTDIR\workspace\config\custom"
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccure800.mdb" "$INSTDIR\workspace\custom\services\acs\mdb"
+  
 
 	# install service
 	ExecWait '"install.bat" /s'
