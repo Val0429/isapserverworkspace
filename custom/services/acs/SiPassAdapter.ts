@@ -47,14 +47,7 @@ export class SiPassAdapter {
         this.siPassDbService = new siPassClient.SiPassDbService();
 
 
-        this.siPassDbConnectInfo = new siPassClient.SiPassDbConnectInfo({
-            "server": "sipasssrv",
-            "port": 1433,
-            "user": "manager",
-            "password": "manager",
-            "database": "asco4",
-            "connectionTimeout": 15000
-        });
+        this.siPassDbConnectInfo = new siPassClient.SiPassDbConnectInfo(Config.sipassdb);
 
         // (async () => {
         //      this.sessionToken = await this.Login();
