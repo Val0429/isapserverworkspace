@@ -193,7 +193,7 @@ action.get(
  */
 type InputD = IRequest.IDelete;
 
-type OutputD = IResponse.IMultiData[];
+type OutputD = IResponse.IMultiData;
 
 action.delete(
     {
@@ -206,7 +206,7 @@ action.delete(
             let _input: InputD = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _objectIds: string[] = data.parameters.objectIds;
-            let resMessages: OutputD = data.parameters.resMessages;
+            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
@@ -232,7 +232,9 @@ action.delete(
                 }),
             );
 
-            return resMessages;
+            return {
+                datas: resMessages,
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;

@@ -24,10 +24,14 @@ export interface IDataList<T> {
     results: T[];
 }
 
-export interface IMultiData {
+export interface IResponseMessage {
     statusCode: number;
     objectId: string;
     message: string;
+}
+
+export interface IMultiData {
+    datas: IResponseMessage[];
 }
 
 export interface IObject {

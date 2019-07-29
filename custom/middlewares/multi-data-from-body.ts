@@ -3,7 +3,7 @@ import { IResponse } from '../models';
 
 export function MultiDataFromBody(req: Request, res: Response, next: NextFunction) {
     try {
-        let resMessages: IResponse.IMultiData[] = req.parameters.datas.map((value, index, array) => {
+        let resMessages = (req.parameters.datas as any[]).map<IResponse.IResponseMessage>((value, index, array) => {
             return {
                 statusCode: 200,
                 objectId: value.objectId || '',

@@ -9,7 +9,7 @@ export function MultiDataFromQuery(req: Request, res: Response, next: NextFuncti
             return array.indexOf(value) === index;
         });
 
-        let resMessages: IResponse.IMultiData[] = _objectIds.map((value, index, array) => {
+        let resMessages = _objectIds.map<IResponse.IResponseMessage>((value, index, array) => {
             return {
                 statusCode: 200,
                 objectId: value,

@@ -19,7 +19,7 @@ type MultiData = IRequest.IMultiData;
  */
 type InputC = IRequest.IDevice.IHumanDetectionC[];
 
-type OutputC = IResponse.IMultiData[];
+type OutputC = IResponse.IMultiData;
 
 action.post(
     {
@@ -32,7 +32,7 @@ action.post(
 
         try {
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
-            let resMessages: OutputC = data.parameters.resMessages;
+            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
@@ -48,7 +48,9 @@ action.post(
                 }),
             );
 
-            return resMessages;
+            return {
+                datas: resMessages,
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
@@ -61,7 +63,7 @@ action.post(
  */
 type InputU = IRequest.IDevice.IHumanDetectionU[];
 
-type OutputU = IResponse.IMultiData[];
+type OutputU = IResponse.IMultiData;
 
 action.put(
     {
@@ -74,7 +76,7 @@ action.put(
 
         try {
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
-            let resMessages: OutputU = data.parameters.resMessages;
+            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
@@ -88,7 +90,9 @@ action.put(
                 }),
             );
 
-            return resMessages;
+            return {
+                datas: resMessages,
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;

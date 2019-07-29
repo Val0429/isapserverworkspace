@@ -28,7 +28,7 @@ export namespace Parser {
      * @param e
      * @param resMessage
      */
-    export function E2ResMessage(e: any, resMessage: IResponse.IMultiData): IResponse.IMultiData {
+    export function E2ResMessage(e: any, resMessage: IResponse.IResponseMessage): IResponse.IResponseMessage {
         try {
             resMessage.statusCode = e.detail ? e.detail.statusCode : 500;
             resMessage.message = e.message ? e.message : e.args ? e.args.join('; ') : e;

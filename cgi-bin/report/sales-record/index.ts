@@ -18,7 +18,7 @@ type MultiData = IRequest.IMultiData;
  */
 type InputC = IRequest.IReport.ISalesRecordC[];
 
-type OutputC = IResponse.IMultiData[];
+type OutputC = IResponse.IMultiData;
 
 action.post(
     {
@@ -31,7 +31,7 @@ action.post(
 
         try {
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
-            let resMessages: OutputC = data.parameters.resMessages;
+            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
@@ -78,7 +78,9 @@ action.post(
                 }),
             );
 
-            return resMessages;
+            return {
+                datas: resMessages,
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
@@ -168,7 +170,7 @@ action.get(
  */
 type InputU = IRequest.IReport.ISalesRecordU[];
 
-type OutputU = IResponse.IMultiData[];
+type OutputU = IResponse.IMultiData;
 
 action.put(
     {
@@ -181,7 +183,7 @@ action.put(
 
         try {
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
-            let resMessages: OutputU = data.parameters.resMessages;
+            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
             await Promise.all(
                 _input.map(async (value, index, array) => {
@@ -214,7 +216,9 @@ action.put(
                 }),
             );
 
-            return resMessages;
+            return {
+                datas: resMessages,
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
@@ -227,7 +231,7 @@ action.put(
  */
 type InputD = IRequest.IDelete;
 
-type OutputD = IResponse.IMultiData[];
+type OutputD = IResponse.IMultiData;
 
 action.delete(
     {
@@ -240,7 +244,7 @@ action.delete(
             let _input: InputD = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _objectIds: string[] = data.parameters.objectIds;
-            let resMessages: OutputD = data.parameters.resMessages;
+            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
             await Promise.all(
                 _objectIds.map(async (value, index, array) => {
@@ -266,7 +270,9 @@ action.delete(
                 }),
             );
 
-            return resMessages;
+            return {
+                datas: resMessages,
+            };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
             throw e;
