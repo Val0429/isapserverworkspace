@@ -104,10 +104,9 @@ export class CCure800SqlAdapter {
         let CustomTextBoxControl7__CF10 = "";
         let CustomTextBoxControl7__CF11 = "";
         let CustomTextBoxControl7__CF12 = "";
-
-        for (let i = 0; i < data["CustomFields"]; i++) {
-            const field = data["CustomFields"][i];
-
+        
+        for (let field of data["CustomFields"]) {
+            
             switch (field["FiledName"]) {
                 case "CustomDateControl3__CF": CustomDateControl3__CF1 = field["FieldValue"]; break;
                 case "CustomDateControl3__CF_CF": CustomDateControl3__CF2 = field["FieldValue"]; break;
@@ -159,7 +158,7 @@ export class CCure800SqlAdapter {
                 case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF12 = field["FieldValue"]; break;
             }
         }
-
+        let credential = data["Credentials"] && data["Credentials"][0]? data["Credentials"][0]:undefined;
         let insert = `INSERT INTO Member(
         EmployeeNumber, PD_DateOfBirth, PD_CD_MobileNumber, CustomTextBoxControl6__CF, CustomTextBoxControl5__CF4
         ,CustomTextBoxControl5__CF3, PD_CD_Email,LastName ,PrimaryWorkgroupName ,CustomDropdownControl1__CF
@@ -199,11 +198,11 @@ export class CCure800SqlAdapter {
         ,'${CustomDropdownControl2__CF2 == '' ? '無' : CustomDropdownControl2__CF2}'
         ,'${ moment(data["EndDate"]).format("YYYY-MM-DD")}'
         ,'${ moment(data["EndDate"]).format("YYYY-MM-DD")}'
-        ,'${data["Credentials"]["CardNumber"] == undefined ? '' : data["Credentials"]["CardNumber"]}'
+        ,'${credential? credential.CardNumber  : ""}'
         ,'${rules[39] == undefined ? '' : rules[39]}'
         ,'${ moment(data["StartDate"]).format("YYYY-MM-DD")}'
-        ,'${CustomTextBoxControl1__CF}'
-        ,'${data["Credentials"]["Pin"] == undefined ? '' : data["Credentials"]["Pin"]}'
+        ,'${CustomTextBoxControl1__CF ||""}'
+        ,'${credential ? credential.Pin:""}'
         ,'${CustomTextBoxControl3__CF}'
         ,'${CustomDropdownControl3__CF5 == '' ? '無' : CustomDropdownControl3__CF5}'
         ,'${CustomDropdownControl3__CF6 == '' ? '無' : CustomDropdownControl3__CF6}'
@@ -277,7 +276,7 @@ export class CCure800SqlAdapter {
         , ${CustomDateControl3__CF10 ? CustomDateControl3__CF10 : 'Null'}
         )`;
 
-        console.log(insert);
+        //console.log(insert);
 
         this.adodbConn
             .execute(insert)
