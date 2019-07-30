@@ -125,6 +125,7 @@ action.get(
             let devices: IDB.LocationDevice[] = await query
                 .skip((_page - 1) * _count)
                 .limit(_count)
+                .include('camera')
                 .find()
                 .fail((e) => {
                     throw e;
@@ -140,7 +141,7 @@ action.get(
                         deviceId: value.id,
                         type: value.getValue('type'),
                         cameraId: value.getValue('camera').id,
-                        name: value.getValue('name'),
+                        name: value.getValue('camera').getValue('name'),
                         iconSrc: value.getValue('iconSrc'),
                         iconWidth: value.getValue('iconWidth'),
                         iconHeight: value.getValue('iconHeight'),
