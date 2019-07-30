@@ -331,6 +331,7 @@ class Service {
 
                                 switch (value1.getValue('mode')) {
                                     case Enum.EDeviceMode.dwellTime:
+                                        Action.DeleteFile.action$.next(temp);
                                         break;
                                     case Enum.EDeviceMode.demographic:
                                         Action.Demographic.action$.next({
@@ -341,6 +342,7 @@ class Service {
                                         });
                                         break;
                                     default:
+                                        Action.DeleteFile.action$.next(temp);
                                         throw `${value1.id}(device) mode not found`;
                                 }
                             });

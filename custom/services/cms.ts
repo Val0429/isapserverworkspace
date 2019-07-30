@@ -245,6 +245,7 @@ class Service {
                                                     });
                                                     break;
                                                 default:
+                                                    Action.DeleteFile.action$.next(temp);
                                                     throw `${value1.id}(device) mode not found`;
                                             }
                                         });

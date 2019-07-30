@@ -208,6 +208,7 @@ class Service {
 
                                             switch (value1.getValue('mode')) {
                                                 case Enum.EDeviceMode.peopleCounting:
+                                                    Action.DeleteFile.action$.next(temp);
                                                     Action.PeopleCountingSeparation.action$.next({
                                                         device: value1,
                                                         date: x.date,
@@ -223,6 +224,7 @@ class Service {
                                                     });
                                                     break;
                                                 default:
+                                                    Action.DeleteFile.action$.next(temp);
                                                     throw `${value1.id}(device) mode not found`;
                                             }
                                         });
