@@ -68,8 +68,21 @@ action.post(
 
             email.Initialization();
 
+            let ips: Utility.INetwork[] = Utility.GetNetwork();
+            let url: string = DataCenter.systemSetting$.value.hosting ? DataCenter.systemSetting$.value.hosting : `http${Config.core.httpsEnabled ? 's' : ''}://${ips[0].address}:${Config.core.httpsEnabled ? Config.core.httpsPort : Config.core.port}`;
+
             let title: string = 'Action required to activate membership & change password for BAR system';
-            let content: string = info.getValue('enableVerification');
+            let content: string = `
+                <div style='font-family:Microsoft JhengHei UI; color: #444;'>
+                    <h3>Dear ${info.getValue('name')},</h3>
+                    <h4>BAR System sends this message to remind you to activate account by visiting below url.</h4>
+                    <h4><a href="${url}/verify?t=${info.getValue('enableVerification')}">${url}</a></h4>
+                    <h4>Your username is ${info.getValue('account')}</h4>
+                    <h4>Your activation ID is <span style='color:red;'>${info.getValue('enableVerification')}</span></h4>
+                    <h4>If you are still having problems, please contact BAR system administrator.</h4>
+                    <h4>All the best,</h4>
+                    <h4>BAR system</h4>
+                </div>`;
 
             let result = await email.Send(title, content, {
                 tos: [info.getValue('email')],
