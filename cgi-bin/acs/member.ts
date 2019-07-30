@@ -149,7 +149,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     for(let field of fields){        
         let cf = inputs.find(x=>x.FiledName==field.FiledName);
         if(!cf)continue;
-        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue :"";
+        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue :null;
     }   
 
     // obj.set("Token", "-1");
@@ -162,8 +162,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // });
     
     let ret = ParseObject.toOutputJSON(obj);
-    let holder = await siPassAdapter.postCardHolder(ret);
+    ret.CustomFields = Object.assign([], fields);
 
+    let holder = await siPassAdapter.postCardHolder(ret);
     if (holder["Token"] == undefined ) {
         throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail ${holder}`]);
     }
@@ -341,7 +342,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     for(let field of fields){
         let cf = inputs.find(x=>x.FiledName==field.FiledName);
         if(!cf)continue;
-        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue :"";
+        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue : null;
     }
     update.set("CustomFields", fields);
     
@@ -349,7 +350,7 @@ console.log(update);
     
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
-
+    ret.CustomFields = Object.assign([], fields);
 
     let holder = await siPassAdapter.putCardHolder(ret);
     if (holder["Token"] == undefined ) {
@@ -381,7 +382,8 @@ console.log(update);
     }
     
     /// 5) to Monogo
-    await obj.save({ ...ret, objectId: undefined });
+    //await obj.save({ ...ret, objectId: undefined });
+    await update.save();
     Log.Info(`${this.constructor.name}`, `putMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`);
 
     /// 3) Output
