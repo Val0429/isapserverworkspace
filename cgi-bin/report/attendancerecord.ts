@@ -34,6 +34,8 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 2) With Extra Filters
 
     query = Restful.Filter(query, data.inputType)
+        .exists("card_no")
+        .notEqualTo("card_no", "")
         .addAscending("card_no")
         .addAscending("date_occurred")
         .addAscending("time_occurred");
