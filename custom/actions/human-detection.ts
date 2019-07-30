@@ -556,6 +556,8 @@ class Action {
                         try {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
+                                    let buffer: Buffer = null;
+
                                     try {
                                         let device: IDB.Device = value.device;
                                         let rois: Draw.ILocation[] = device.getValue('rois');
@@ -567,8 +569,7 @@ class Action {
                                             throw `${device.id}(device) -> human detection server not found`;
                                         }
 
-                                        let buffer: Buffer = File.ReadFile(value.image);
-                                        DeleteFile.action$.next(value.image);
+                                        buffer = File.ReadFile(value.image);
 
                                         let locations = await hdServer.hd.GetAnalysis(buffer);
 
@@ -579,10 +580,11 @@ class Action {
                                         } else if (value.type === Enum.EDeviceMode.heatmap) {
                                             await this.Heatmap(device, value.date, buffer, locations);
                                         }
-
-                                        buffer = null;
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
+                                    } finally {
+                                        DeleteFile.action$.next(value.image);
+                                        buffer = null;
                                     }
                                 }),
                             );

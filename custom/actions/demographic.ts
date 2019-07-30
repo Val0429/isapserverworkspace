@@ -345,6 +345,8 @@ class Action {
                         try {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
+                                    let buffer: Buffer = null;
+
                                     try {
                                         let site: IDB.LocationSite = value.device.getValue('site');
                                         let area: IDB.LocationArea = value.device.getValue('area');
@@ -365,8 +367,7 @@ class Action {
                                             height: image.height,
                                         };
 
-                                        let buffer: Buffer = File.ReadFile(value.image);
-                                        DeleteFile.action$.next(value.image);
+                                        buffer = File.ReadFile(value.image);
 
                                         let feature = await demo.demo.GetAnalysis(buffer);
                                         if (!feature) {
@@ -393,7 +394,6 @@ class Action {
 
                                             let imageSrc: string = `images_report/repeat_visitor/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
                                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
-                                            buffer = null;
 
                                             report.setValue('imageSrc', imageSrc);
 
@@ -418,7 +418,6 @@ class Action {
 
                                             let imageSrc: string = `images_report/demographic/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${image.isTransparent ? 'png' : 'jpeg'}`;
                                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
-                                            buffer = null;
 
                                             report.setValue('imageSrc', imageSrc);
 
@@ -426,6 +425,9 @@ class Action {
                                         }
                                     } catch (e) {
                                         Print.Log(e, new Error(), 'error');
+                                    } finally {
+                                        DeleteFile.action$.next(value.image);
+                                        buffer = null;
                                     }
                                 }),
                             );
