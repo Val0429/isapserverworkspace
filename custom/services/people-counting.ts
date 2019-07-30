@@ -162,8 +162,16 @@ class Service {
                             // Print.Log(new Error(`${index}. region: ${region.id}, site: ${site.id}, group: ${group.id}, device: ${device.id}, camera: ${camera.id}`), 'info');
 
                             if (camera.getValue('type') === Enum.ECameraType.hanwha) {
+                                let lines: number[] = camera.getValue('config').lines || [];
+
                                 let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                                hanwha.config = camera.getValue('config');
+                                hanwha.config = {
+                                    protocol: camera.getValue('config').protocol,
+                                    ip: camera.getValue('config').ip,
+                                    port: camera.getValue('config').port,
+                                    account: camera.getValue('config').account,
+                                    password: camera.getValue('config').password,
+                                };
 
                                 hanwha.Initialization();
 
@@ -172,7 +180,13 @@ class Service {
                                 hanwha.liveStream$.subscribe({
                                     next: (counts) => {
                                         try {
-                                            let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
+                                            let count = { in: 0, out: 0 };
+                                            lines.forEach((value, index, array) => {
+                                                if (!!counts[index]) {
+                                                    count.in += counts[index].in;
+                                                    count.out += counts[index].out;
+                                                }
+                                            });
 
                                             streamGroup.liveStreamGroup$.next({
                                                 regionId: region.id,

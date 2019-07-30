@@ -82,13 +82,28 @@ action.ws(async (data) => {
             let counts: IPushCount[] = [].concat(
                 ...(await Promise.all(
                     PeopleCountingService.devices.map(async (value, index, array) => {
+                        let camera: IDB.Camera = value.getValue('camera');
+                        let lines: number[] = camera.getValue('config').lines || [];
+
                         let hanwha: PeopleCounting.Hanwha = new PeopleCounting.Hanwha();
-                        hanwha.config = value.getValue('camera').getValue('config');
+                        hanwha.config = {
+                            protocol: camera.getValue('config').protocol,
+                            ip: camera.getValue('config').ip,
+                            port: camera.getValue('config').port,
+                            account: camera.getValue('config').account,
+                            password: camera.getValue('config').password,
+                        };
 
                         hanwha.Initialization();
 
                         let counts = await hanwha.GetDoStatus();
-                        let count = counts.length > 0 ? counts[0] : { in: 0, out: 0 };
+                        let count = { in: 0, out: 0 };
+                        lines.forEach((value1, index1, array1) => {
+                            if (!!counts[index1]) {
+                                count.in += counts[index1].in;
+                                count.out += counts[index1].out;
+                            }
+                        });
 
                         return {
                             regionId: value.getValue('site').getValue('region').id,
