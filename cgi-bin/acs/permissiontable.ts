@@ -75,7 +75,11 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
         name: data.inputType.tablename,
         accessLevels: al
     };
-
+    let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
+    let errors=[];
+    await checkCCureDoors(errors, accessLevels);
+    if(errors.length>0)return {errors};
+    
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
@@ -87,41 +91,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     var obj = new PermissionTable(data.inputType);
     await obj.save(null, { useMasterKey: true });
     Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
-    let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
-    let errors=[];
-    let ccureDoors = await cCureAdapter.getDoors();
-    let permissionTables = await cCureAdapter.getPermissionTables();
-    let permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
-    let timeSchedules = await cCureAdapter.getTimeSchedule();
     
-    for (let accesslevel of accessLevels) {
-        console.log("accesslevel", accesslevel)
-        if(accesslevel.type=="door"){
-            if(!accesslevel.door || !accesslevel.timeschedule)continue;
-            //compare content with ccure door name and timename
-            let door = accesslevel.door;
-            let timeschedule = accesslevel.timeschedule;
-
-            checkErrors(ccureDoors, door, timeSchedules, timeschedule, errors, accesslevel, permissionTableDoors, permissionTables);
-        }
-
-        if(accesslevel.type=="doorGroup"){
-            if(!accesslevel.doorgroup || !accesslevel.timeschedule)continue;
-            let timeschedule = accesslevel.timeschedule;
-            for(let door of accesslevel.doorgroup.doors){
-                let readers = [];
-                if(door.readerin && door.readerin.length>0)readers.push(...door.readerin);
-                if(door.readerout && door.readerout.length>0)readers.push(...door.readerout);
-                let doorIsInCCure = readers.find(x=>x.readername && x.readername.length>2 && x.readername.substr(0,2).toLowerCase()!="d_");
-                console.log("doorIsInCcure", doorIsInCCure);
-                if(!doorIsInCCure) continue;
-                //compare content with ccure door name and timename    
-                checkErrors(ccureDoors, door, timeSchedules, timeschedule, errors, accesslevel, permissionTableDoors, permissionTables);
-            }
-            
-        }
-        
-    }
 
     /// 2) Output
     return { errors };
@@ -204,23 +174,14 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
         name: data.inputType.tablename,
         accessLevels: al
     };
+    let errors=[];
+    let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
+    await checkCCureDoors(errors, accessLevels);
+    if(errors.length>0) return {errors};
 
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     await siPassAdapter.putAccessGroup(ag);
-    let errors=[];
-    for (let accesslevel of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
-        console.log("accesslevel", accesslevel)
-        if(!accesslevel.door || !accesslevel.timeschedule)continue;
-        let door = await new Parse.Query(Door).equalTo("objectId", accesslevel.door.objectId).first();
-        let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule .objectId).first();
-        let ccurename= `${door.get("doorname")}-${timeschedule.get("timename")}`;
-        let ccure = await new Parse.Query(AccessLevel).equalTo("name", ccurename).equalTo("system", 800).first();
-
-        if (!ccure)
-            errors.push({type:"accessLevelIsNotInCCure", message:`${ccurename}`});
-    }
     
-
     /// 3) Output
     return {errors};
 });
@@ -247,25 +208,63 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
-function checkErrors(ccureDoors: any[], door: any, timeSchedules: any[], timeschedule: any, errors: any[], accesslevel: any, permissionTableDoors: any[], permissionTables: any[]) {
+function checkErrors(ccureDoors: any[], door: any, timeSchedules: any[], timeschedule: any, errors: any[], permissionTableDoors: any[], permissionTables: any[]) {
+    
     let ccureDoor = ccureDoors.find(x => x.doorName == door.doorname);
     let ccureTimeSchedule = timeSchedules.find(x => x.timespecName == timeschedule.timename);
-    if (!ccureDoor) {
-        errors.push({ type: "accessLevelIsNotInCCure", message: `door ${accesslevel.door.doorname}` });
+    if (!ccureDoor || !ccureTimeSchedule) {        
+        errors.push({ type: "accessLevelIsNotInCCure", doorname: door.doorname, timename: timeschedule.timename});
     }
-    if (!ccureTimeSchedule) {
-        errors.push({ type: "accessLevelIsNotInCCure", message: `timeschedule ${timeschedule.timename}` });
-    }
+    
     if (ccureTimeSchedule && ccureDoor) {
         let permissionTableDoor = permissionTableDoors.find(x => x.timespecId == ccureTimeSchedule.timespecId && x.doorId == ccureDoor.doorId);
         if (!permissionTableDoor) {
             errors.push({ type: "accessLevelIsNotInCCure", message: `permissionTableDoor ${door.doorname + "-" + timeschedule.timename}` });
+            errors.push({ type: "accessLevelIsNotInCCure", doorname: door.doorname, timename: timeschedule.timename });
         }
         else {
             let permissionTable = permissionTables.find(x => x.permissionTableId == permissionTableDoor.permissionTableId);
-            if (!permissionTable)
+            if (!permissionTable){
                 errors.push({ type: "accessLevelIsNotInCCure", message: `permissionTableId ${permissionTableDoor.permissionTableId}` });
+                errors.push({ type: "accessLevelIsNotInCCure", doorname: door.doorname, timename: timeschedule.timename });
+            }
+                
         }
     }
 }
 
+async function checkCCureDoors(errors:any[], accessLevels:any[]){
+    let ccureDoors = await cCureAdapter.getDoors();
+    let permissionTables = await cCureAdapter.getPermissionTables();
+    let permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
+    let timeSchedules = await cCureAdapter.getTimeSchedule();
+    
+    for (let accesslevel of accessLevels) {
+        let tsObject = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule.objectId).first();
+        let timeschedule = ParseObject.toOutputJSON(tsObject);
+        if(accesslevel.type=="door"){
+            if(!accesslevel.door || !accesslevel.timeschedule)continue;
+            //compare content with ccure door name and timename
+            let doorObject = await new Parse.Query(Door).equalTo("objectId", accesslevel.door.objectId).first();
+            let door = ParseObject.toOutputJSON(doorObject);
+            checkErrors(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
+        }
+
+        if(accesslevel.type=="doorGroup"){
+            if(!accesslevel.doorgroup || !accesslevel.timeschedule)continue;
+            for(let doorid of accesslevel.doorgroup.doors){
+                let doorObject = await new Parse.Query(Door).equalTo("objectId", doorid.objectId).first();
+                let door = ParseObject.toOutputJSON(doorObject);
+                let readers = [];
+                if(door.readerin && door.readerin.length>0)readers.push(...door.readerin);
+                if(door.readerout && door.readerout.length>0)readers.push(...door.readerout);
+                let doorIsInCCure = readers.find(x=>x.readername && x.readername.length>2 && x.readername.substr(0,2).toLowerCase()!="d_");
+                if(!doorIsInCCure) continue;
+                //compare content with ccure door name and timename    
+                checkErrors(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
+            }
+            
+        }
+        
+    }
+}
