@@ -234,6 +234,10 @@ export class CMSService {
             throw Base.Message.NotInitialization;
         }
 
+        this._liveStream$ = new Rx.Subject();
+        this._liveStreamCatch$ = new Rx.Subject();
+        this._liveStreamStop$ = new Rx.Subject();
+
         this._liveStreamStop$.subscribe({
             next: () => {
                 this._liveStream$.complete();

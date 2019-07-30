@@ -300,6 +300,10 @@ export class Hanwha {
             throw Base.Message.NotInitialization;
         }
 
+        this._liveStream$ = new Rx.Subject();
+        this._liveStreamCatch$ = new Rx.Subject();
+        this._liveStreamStop$ = new Rx.Subject();
+
         this._liveStreamStop$.subscribe({
             next: () => {
                 this._liveStream$.complete();
@@ -307,8 +311,6 @@ export class Hanwha {
                 this._liveStreamStop$.complete();
             },
         });
-
-        this._liveStream$ = new Rx.Subject();
 
         let next$: Rx.Subject<{}> = new Rx.Subject();
         Rx.Observable.interval(intervalSecond)

@@ -301,10 +301,16 @@ export class FRSService {
         let ws = new Ws();
         ws.url = `ws://${this._config.ip}:${this._config.port}/frs/ws/fcsnonreconizedresult?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
 
+        this._liveStream$ = new Rx.Subject();
+        this._liveStreamCatch$ = new Rx.Subject();
+        this._liveStreamClose$ = new Rx.Subject();
+        this._liveStreamStop$ = new Rx.Subject();
+
         this._liveStreamStop$.subscribe({
             next: () => {
                 this._liveStream$.complete();
                 this._liveStreamCatch$.complete();
+                this._liveStreamClose$.complete();
                 this._liveStreamStop$.complete();
 
                 ws.message$.complete();
