@@ -33,7 +33,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
 
     /// 2) Create Object
     let name = data.inputType.tablename;
-    let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name)
+    let nameObject = await new Parse.Query(PermissionTable).equalTo("tablename", name).equalTo("system", 0)
         .include("door").first();
     if (nameObject != null) {
         throw Errors.throw(Errors.CustomNotExists, [`Permssion table name is duplicate.`]);
