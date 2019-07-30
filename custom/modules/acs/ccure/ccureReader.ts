@@ -172,7 +172,7 @@ export class CCUREReader {
      *      { clearId: 2205, clearName: 'qqq7' } 
      * ]
      */
-    public async queryAllAsync(queryContent: QueryContent, condition?: String, timeout: number = 3000): Promise<Array<JSON>> {
+    public async queryAllAsync(queryContent: QueryContent, condition?: String, timeout: number = 3000): Promise<Array<any>> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
 
@@ -181,7 +181,7 @@ export class CCUREReader {
         //Use to wait ( read/write after connected)
         let signal: SignalObject<StateCode> = new SignalObject<StateCode>(StateCode.Wait);
 
-        let rowList: Array<JSON> = [];
+        let rowList: Array<any> = [];
         let errorStr: string;
 
         let request = new this._sql.Request(this._conn);
