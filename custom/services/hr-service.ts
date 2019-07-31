@@ -559,7 +559,7 @@ export class HRService {
                                 }
 
                                 console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-                                await this.CCure800SqlAdapter.writeMember(d, "NH-Employee");
+                                await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields, "NH-Employee");
 
                                 console.log(`======================= ${sessionId}`);
                                 if (sessionId != "") {
@@ -740,7 +740,7 @@ export class HRService {
                                 }
 
                                 console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                                await this.CCure800SqlAdapter.writeMember(d, "NH-Employee");
+                                await this.CCure800SqlAdapter.writeMember(d,  d.AccessRules, d.CustomFields, "NH-Employee");
 
                                 console.log(`======================= ${sessionId}`);
                                 if (sessionId != "") {
