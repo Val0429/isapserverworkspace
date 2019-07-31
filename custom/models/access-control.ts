@@ -196,7 +196,10 @@ export interface IAccessLevel {     // CRUD  V
 }
 @registerSubclass()
 export class AccessLevel extends ParseObject<IAccessLevel> { }
-
+export interface CCurePermissionTable{
+    permissionTableId:number;
+    permissionTableName:string;
+}
 
 export interface IPermissionTable {     // CRUD  V
     system?: number,
@@ -205,7 +208,8 @@ export interface IPermissionTable {     // CRUD  V
     ccureToken?: string;
     sipassToken?: string;
     status?: number,
-    accesslevels?: AccessLevel[]
+    accesslevels?: AccessLevel[],
+    ccurePermissionTable?:CCurePermissionTable
 }
 @registerSubclass()
 export class PermissionTable extends ParseObject<IPermissionTable> { }
