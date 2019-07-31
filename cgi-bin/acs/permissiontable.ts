@@ -79,12 +79,14 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     
     let {permTableNames, devices, errors} = await checkCCureDevices(accessLevels);
     if(errors.length>0)return {errors};
-    data.inputType.ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length);
+    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length);
 
-    if(!data.inputType.ccurePermissionTable){
+    if(!ccurePermissionTable){
         errors.push({type:"clearanceIsNotInCCure"});
         return {permTableNames, errors};
     }
+    delete(ccurePermissionTable.devices);
+    data.inputType.ccurePermissionTable=ccurePermissionTable;
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
@@ -156,8 +158,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     
     Log.Info(`${this.constructor.name}`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`);
 
-    /// 2) Modify
-    await obj.save({ ...data.inputType, objectId: undefined });
+    
 
     // 2.0 Modify Access Group
     
@@ -182,12 +183,20 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     };
     
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
-    let {permTableNames, errors} = await checkCCureDevices(accessLevels);
-    if(errors.length>0) return {errors};
+    let {permTableNames, devices, errors} = await checkCCureDevices(accessLevels);
+    if(errors.length>0)return {errors};
+    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length);
 
+    if(!ccurePermissionTable){
+        errors.push({type:"clearanceIsNotInCCure"});
+        return {permTableNames, errors};
+    }
+    delete(ccurePermissionTable.devices);
+    data.inputType.ccurePermissionTable = ccurePermissionTable;
     Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
     await siPassAdapter.putAccessGroup(ag);
-    
+    /// 2) Modify
+    await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
     return {permTableNames, errors};
 });
