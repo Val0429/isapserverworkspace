@@ -1,4 +1,4 @@
-﻿import { Config } from 'core/config.gen';
+import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
 // import * as msSQL from 'mssql';
@@ -15,8 +15,9 @@ export class CCure800SqlAdapter {
 
     constructor() {
         var me = this;
-
-        this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${p.dirname(__filename)}\\mdb\\ccure800.mdb;`);
+        let dbPath=Config.ccureconnect.mdbpath || (p.dirname(__filename)+"/mdb/ccure800.mdb");
+        console.log("mdbpath", dbPath);
+        this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${dbPath};`);
 
         // this.waitTimer = setTimeout(() => {
         //     me.doHumanResourcesSync();
