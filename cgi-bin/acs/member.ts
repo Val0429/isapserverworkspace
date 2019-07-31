@@ -166,7 +166,6 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // });
     
     let ret = ParseObject.toOutputJSON(obj);
-    ret.CustomFields = Object.assign([], fields);
 
     let holder = await siPassAdapter.postCardHolder(ret);
     if (holder["Token"] == undefined ) {
@@ -358,7 +357,6 @@ console.log(update);
     
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
-    ret.CustomFields = Object.assign([], fields);
 
     let holder = await siPassAdapter.putCardHolder(ret);
     if (holder["Token"] == undefined ) {
