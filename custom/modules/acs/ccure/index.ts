@@ -1,4 +1,4 @@
-import { CCUREReader } from './ccureReader'
+import { CCUREReader } from './CCUREReader'
 import { QueryContent } from './queryMap'
 import { SignalObject } from "./signalObject";
 import { isNullOrUndefined } from 'util';
@@ -14,6 +14,8 @@ interface IdNameMap {
  */
 export class CCUREService {
 
+/* Private variables */
+
     //Wait for connected time (ms)
     protected _waitTime: number = 5000;
 
@@ -26,6 +28,8 @@ export class CCUREService {
     //Save id<--->name   :   key--value
     protected _idNameMap: IdNameMap = {};
 
+/* Login / Out */
+
     //Connect to SQL server
     public async Login() {
         await this._reader.connectAsync();
@@ -37,6 +41,8 @@ export class CCUREService {
         this._signal.set(false);
         this._reader.disconnectAsync();
     }
+
+/* Get New Report Related */
 
     /**
      * Get last update report time
@@ -52,6 +58,8 @@ export class CCUREService {
     public SetLastUpdateReportTime(dt: Date): void {
         this._reader.setLastReportQueryTime(dt);
     }
+
+/* Help Functions */
 
     /**
      * Get Name from id index, including person, door, clearance,...
@@ -71,6 +79,8 @@ export class CCUREService {
         }
         return this._idNameMap[id];
     }
+
+/* Get All Function */
 
     /*
     [
@@ -183,6 +193,33 @@ export class CCUREService {
             return null;
         }
         return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, 5000);
+    }
+
+    /*
+    [
+        { 
+            fieldId: 1000000017, 
+            fieldValue: '顧問', 
+            seqId: 3 
+        },
+        { 
+            fieldId: 1000000017, 
+            fieldValue: '臨時', 
+            seqId: 4 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllEnumFieldValue(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.EnumFields, null, 5000);
     }
 
     /*
@@ -781,7 +818,7 @@ export class CCUREService {
     }
 
 
-
+/* Get and Query with condition functions */
 
 
 
@@ -824,6 +861,33 @@ export class CCUREService {
         return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, 30000);
     }
     
+    /*
+    [
+        { 
+            fieldId: 1000000017, 
+            fieldValue: '顧問', 
+            seqId: 3 
+        },
+        { 
+            fieldId: 1000000017, 
+            fieldValue: '臨時', 
+            seqId: 4 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetEnumFieldValue(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.EnumFields, condition);
+    }
+
     /**
      *   personId: 30853,
          firstName: '',
@@ -1074,8 +1138,6 @@ export class CCUREService {
         }
         return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, condition);
     }
-
-    
 
     /**
      *   groupId: 10513, 

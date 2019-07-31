@@ -9,6 +9,7 @@ export enum QueryContent {
     ReportsNewUpdate,
     ReportsLastUpdateTime,
     BadgeLayout,
+    EnumFields,
     Persons,
     PersonExtendInfo,
     PersonExtendInfoEnumList,
@@ -70,7 +71,7 @@ var queryMap : IQueryMap = {};
                      'MESSAGECODEIDX as messageCode,'+
                      'MESSAGETEXT as message,'+
                      'PANELLOCALTZDT as updateTime',
-        "dsn": Config.ccureconnect.dsn.Jurnal,
+        "dsn": Config.CCUREdsn.Jurnal,
         "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
     }
 
@@ -88,7 +89,7 @@ var queryMap : IQueryMap = {};
                      'MESSAGECODEIDX as messageCode,'+
                      'MESSAGETEXT as message,'+
                      'PANELLOCALTZDT as updateTime',
-        "dsn": Config.ccureconnect.dsn.Jurnal,
+        "dsn": Config.CCUREdsn.Jurnal,
         "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
     }
 
@@ -96,7 +97,7 @@ var queryMap : IQueryMap = {};
     queryMap[QueryContent.ReportsLastUpdateTime] = {
         "table": "pub.journal",
         "selector": "MAX(PANELLOCALTZDT) as updateTime",
-        "dsn": Config.ccureconnect.dsn.Jurnal,
+        "dsn": Config.CCUREdsn.Jurnal,
         "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
     }
 
@@ -105,7 +106,16 @@ var queryMap : IQueryMap = {};
         "table": "pub.badge_layout",
         "selector": 'Badge_Layout_ID as badgeLayoutId,'+
                     'Badge_Layout_Name as badgeLayoutName',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
+    }
+
+    //EnumFields
+    queryMap[QueryContent.EnumFields] = {
+        "table": "pub.field_enum_list",
+        "selector": 'Field_ID as fieldId,'+
+                    'Enum_List_Value as fieldValue,'+
+                    'Enum_List_SeqID as seqId',
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Person
@@ -131,7 +141,7 @@ var queryMap : IQueryMap = {};
                     'EXPIRATIONDT as expirationTime,'+
                     'GLOBALLASTMODDT as updateTime,'+
                     'LASTMODPERSONID as updatedPerson',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV,
     }
 
     //PersonExtendInfo
@@ -150,7 +160,7 @@ var queryMap : IQueryMap = {};
         "left_join_table": "pub.field_report_name",
         "left_join_on": "pub.field_report_name.Field_ID = pub.person_field_values.Field_ID",
         "left_join_condition": "pub.field_report_name.language_idx = 1033",
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV,
     }
 
     //PersonExtendInfo
@@ -159,7 +169,7 @@ var queryMap : IQueryMap = {};
         "selector": 'Field_ID as fieldId,'+
                     'Enum_List_Value as value, '+
                     'Deleted as deleted',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV,
     }
 
     //Timespec
@@ -167,7 +177,7 @@ var queryMap : IQueryMap = {};
         "table": "ccm.view_timespec",
         "selector": 'TIMESPECID as timespecId,'+
                     'TIMESPECNAME as timespecName',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //dayCode == 1 ~ 7 : 一二三四五六日
@@ -181,7 +191,7 @@ var queryMap : IQueryMap = {};
                     'Day_of_Week as dayCode,'+
                     'Start_Time as startTime,'+
                     'End_Time as endTime',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Reader
@@ -192,7 +202,7 @@ var queryMap : IQueryMap = {};
                     'Related_Object_ID as doorId,' +
                     'Online as online,'+
                     'Description as description',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV,
     }
 
     //Door
@@ -209,7 +219,7 @@ var queryMap : IQueryMap = {};
                     'Unlock_Time as unlockTime,' +
                     'Shunt_Time as shuntTime,'+
                     'Description as description',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Floor
@@ -219,7 +229,7 @@ var queryMap : IQueryMap = {};
                     'Floor_Name as floorName,' +
                     'Online as online,' +
                     'Description as description',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Elevator
@@ -230,7 +240,7 @@ var queryMap : IQueryMap = {};
                     'Reader_ID as deviceId,' +
                     'Online as online,' +
                     'Description as description',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Elevator Floor
@@ -240,7 +250,7 @@ var queryMap : IQueryMap = {};
                     'Elevator_ID as elevatorId,'+
                     'Floor_ID as floorId,'+
                     'Deleted as deleted',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Clearance
@@ -248,7 +258,7 @@ var queryMap : IQueryMap = {};
         "table": "ccm.view_clearance",
         "selector": 'CLEARANCEID as permissionTableId,'+
                     'CLEARANCENAME as permissionTableName',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Clearance - Person
@@ -256,7 +266,7 @@ var queryMap : IQueryMap = {};
         "table": "ccm.view_clearperson",
         "selector": 'CLEARANCEID as permissionTableId,'+
                     'PERSONID as personId',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Clearance - Door
@@ -265,7 +275,7 @@ var queryMap : IQueryMap = {};
         "selector": 'CLEARID as permissionTableId,'+
                     'CLEARTHRUOBJ as doorId,'+
                     'TIMESPECID as timespecId',
-        "dsn": Config.ccureconnect.dsn.CFSRV,
+        "dsn": Config.CCUREdsn.CFSRV,
         "condition":"OBJECTTYPE=7"
     }
 
@@ -275,7 +285,7 @@ var queryMap : IQueryMap = {};
         "selector": 'CLEARID as permissionTableId,'+
                     'CLEARTHRUOBJ as groupId,'+
                     'TIMESPECID as timespecId',
-        "dsn": Config.ccureconnect.dsn.CFSRV,
+        "dsn": Config.CCUREdsn.CFSRV,
         "condition":"OBJECTTYPE=8"
     }
 
@@ -284,7 +294,7 @@ var queryMap : IQueryMap = {};
         "table": "pub.groups",
         "selector": 'Group_ID as groupId,'+
                     'Group_Name as groupName',
-        "dsn": Config.ccureconnect.dsn.CFSRV,
+        "dsn": Config.CCUREdsn.CFSRV,
         "condition": "Object_Type=8"
     }
 
@@ -293,7 +303,7 @@ var queryMap : IQueryMap = {};
         "table": "pub.groups",
         "selector": 'Group_ID as groupId,'+
                     'Group_Name as groupName',
-        "dsn": Config.ccureconnect.dsn.CFSRV,
+        "dsn": Config.CCUREdsn.CFSRV,
         "condition": "Object_Type=30"
     }
 
@@ -302,7 +312,7 @@ var queryMap : IQueryMap = {};
         "table": "pub.groups",
         "selector": 'Group_ID as groupId,'+
                     'Group_Name as groupName',
-        "dsn": Config.ccureconnect.dsn.CFSRV,
+        "dsn": Config.CCUREdsn.CFSRV,
         "condition": "Object_Type=28"
     }
 
@@ -311,7 +321,7 @@ var queryMap : IQueryMap = {};
         "table": "pub.Group_Member",
         "selector": 'Group_ID as groupId,'+
                     'Object_Id as objectId',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //User
@@ -322,13 +332,13 @@ var queryMap : IQueryMap = {};
                     'PASSWORD as password,'+
                     'ENABLED  as enabled,'+
                     'ODBCENABLED as ODBCEnabled',
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
     //Object List
     queryMap[QueryContent.ObjectList] = {
         "table": "ccm.view_objarchive",
         "selector": "OBJECTID as objId, NAME as objName, DELETED as isDeleted, OBJECTTYPE as objType",
-        "dsn": Config.ccureconnect.dsn.CFSRV
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     let keys = Object.keys(QueryContent).filter(key => !isNaN(Number(QueryContent[key])));

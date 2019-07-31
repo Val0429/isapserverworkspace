@@ -1,5 +1,5 @@
 import { Config } from 'core/config.gen';
-import { isNullOrUndefined } from "util";
+import { isNullOrUndefined, isNull } from "util";
 import { toArray } from "rxjs/operator/toArray";
 import { SignalObject } from "./signalObject";
 import queryMap, { IQueryParam, QueryContent, IQueryMap } from './queryMap'
@@ -62,12 +62,12 @@ export class CCUREReader {
      */
     public async connectAsync(): Promise<void> {
         if (this._isConnected) throw `Internal Error: <CCUREReader::connectAsync> Still connecting, do not change config.`;
-        if (isNullOrUndefined(Config.ccureconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
-        if (Config.ccureconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
-        this.verifyIP(Config.ccureconnect.server);
-        this.verifyPort(Config.ccureconnect.port);
+        if (isNullOrUndefined(Config.CCUREconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
+        if (Config.CCUREconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
+        this.verifyIP(Config.CCUREconnect.server);
+        this.verifyPort(Config.CCUREconnect.port);
 
-        this._conn = new this._sql.ConnectionPool(Config.ccureconnect);
+        this._conn = new this._sql.ConnectionPool(Config.CCUREconnect);
 
         try {
             return await this._conn.connect().then(() => {
@@ -107,10 +107,10 @@ export class CCUREReader {
      * { doorId: 2087, doorName: 'D001', unlockTime: 5, shuntTime: 10 }
      */
     public async queryStreamAsync(queryContent: QueryContent,
-        OnDatareceived: (rows: JSON[], queryContent: QueryContent) => void,
-        OnDone?: (result: JSON, queryContent: QueryContent) => void,
-        OnError?: (err, queryContent: QueryContent) => void,
-        condition?: String): Promise<void> {
+                                    OnDatareceived: (rows: JSON[], queryContent: QueryContent) => void,
+                                    OnDone?: (result: JSON, queryContent: QueryContent) => void,
+                                    OnError?: (err, queryContent: QueryContent) => void,
+                                    condition?: String): Promise<void> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
         if (isNullOrUndefined(OnDatareceived) === true) throw `Internal Error: <CCUREReader::queryStream> OnDatareceived cannot be null`;
@@ -172,7 +172,7 @@ export class CCUREReader {
      *      { clearId: 2205, clearName: 'qqq7' } 
      * ]
      */
-    public async queryAllAsync(queryContent: QueryContent, condition?: String, timeout: number = 3000): Promise<Array<any>> {
+    public async queryAllAsync(queryContent: QueryContent, condition?: String, timeout: number = 3000): Promise<Array<JSON>> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
 
@@ -181,7 +181,7 @@ export class CCUREReader {
         //Use to wait ( read/write after connected)
         let signal: SignalObject<StateCode> = new SignalObject<StateCode>(StateCode.Wait);
 
-        let rowList: Array<any> = [];
+        let rowList: Array<JSON> = [];
         let errorStr: string;
 
         let request = new this._sql.Request(this._conn);
