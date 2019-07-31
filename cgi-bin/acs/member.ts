@@ -124,10 +124,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         .limit(Number.MAX_SAFE_INTEGER).find();
 
     let rules=[];
+    let ccureAccessRules:string[] = [];
     for (const rid of obj.get("AccessRules")) {            
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);
         console.log("permission", permission, rid);
         if(!permission)continue;
+        if(permission.get("ccurePermissionTable")){
+            ccureAccessRules.push(permission.get("ccurePermissionTable")["permissionTableName"]);
+        }
         let newRule = {
             ObjectName: permission.get("tablename"),
             ObjectToken:  permission.get("tableid").toString(),
@@ -183,10 +187,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         //     requestTimeout: 50000,
         //     connectionTimeout: 50000 //ms
         // }
-
-        this.CCure800SqlAdapter = new CCure800SqlAdapter();
+        
+        let cCure800SqlAdapter = new CCure800SqlAdapter();
         // await this.CCure800SqlAdapter.connect(config);
-        await this.CCure800SqlAdapter.writeMember(ret);
+        await cCure800SqlAdapter.writeMember(ret,"",ccureAccessRules);
         // await this.CCure800SqlAdapter.disconnect();
     }
     catch (ex) {
@@ -296,15 +300,19 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 
 
     // AccessRules
-    let permissionTables = await new Parse.Query(PermissionTable)
-        .limit(Number.MAX_SAFE_INTEGER).find();
-
+        let permissionTables = await new Parse.Query(PermissionTable)
+            .limit(Number.MAX_SAFE_INTEGER).find();
+    let ccureAccessRules:string[] = [];
+        
     let rules=[];
     for (const rid of update.get("AccessRules").map(x=>+x)) {
 
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);        
 
         if(!permission)continue;
+        if(permission.get("ccurePermissionTable")){
+            ccureAccessRules.push(permission.get("ccurePermissionTable")["permissionTableName"]);
+        }
         let newRule = {
                 ObjectName: permission.get("tablename"),
                 ObjectToken: permission.get("tableid").toString(),
@@ -371,11 +379,11 @@ console.log(update);
             connectionTimeout: 50000 //ms
         }
 
-        this.CCure800SqlAdapter = new CCure800SqlAdapter();
+        let cCure800SqlAdapter = new CCure800SqlAdapter();
         
-        await this.CCure800SqlAdapter.connect(config);
-        await this.CCure800SqlAdapter.writeMember(ret);
-        await this.CCure800SqlAdapter.disconnect();
+        await cCure800SqlAdapter.connect(config);
+        await cCure800SqlAdapter.writeMember(ret,"",ccureAccessRules);
+        await cCure800SqlAdapter.disconnect();
     }
     catch (ex) {
         console.log(`${this.constructor.name}`, ex);

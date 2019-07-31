@@ -1,4 +1,4 @@
-import { Config } from 'core/config.gen';
+﻿import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
 // import * as msSQL from 'mssql';
@@ -47,14 +47,13 @@ export class CCure800SqlAdapter {
         // }
     }
 
-    async writeMember(data, permission = "") {
+    async writeMember(data, permission = "", ccureAccessRules:string[]=[]) {
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
 
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
-        let access = data["AccessRules"];
-
-        for (let i = 0; i < access.length; i++) {
-            rules[i] = access[i]["ObjectName"];
+        
+        for (let i = 0; i < ccureAccessRules.length; i++) {
+            rules[i] = ccureAccessRules[i];
         }
 
         let CustomDateControl3__CF1 = "";
