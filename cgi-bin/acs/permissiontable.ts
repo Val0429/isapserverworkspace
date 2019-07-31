@@ -115,7 +115,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(PermissionTable)
         .include("accesslevels.door")
-        .include("accesslevels.doorgroup")
+        .include("accesslevels.doorgroup.doors")
         .include("accesslevels.timeschedule")
         .include("accesslevels.reader");
 
