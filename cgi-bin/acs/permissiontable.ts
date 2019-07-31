@@ -223,24 +223,24 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
-function getPermTables(ccureDoors: any[], door: any, timeSchedules: any[], timeschedule: any, errors: any[], cCurePermissionTableDoors: any[], ccurePermissionTables: any[]) {
+function getPermTableDoors(ccureDoors: any[], door: any, timeSchedules: any[], timeschedule: any, errors: any[], cCurePermissionTableDoors: any[], ccurePermissionTables: any[]) {
     
     let ccureDoor = ccureDoors.find(x => x.doorName == door.doorname);
     let ccureTimeSchedule = timeSchedules.find(x => x.timespecName == timeschedule.timename);
     if (!ccureDoor || !ccureTimeSchedule) {        
-        errors.push({ type: "accessLevelIsNotInCCure", doorname: door.doorname, timename: timeschedule.timename});
+        errors.push({ type: "accessLevelIsNotInCCure", devicename: door.doorname, timename: timeschedule.timename});
     }
     
     if (ccureTimeSchedule && ccureDoor) {
         let permissionTableDoors = cCurePermissionTableDoors.filter(x => x.timespecId == ccureTimeSchedule.timespecId && x.doorId == ccureDoor.doorId)
             .map(x=>x.permissionTableId).filter((value, index, self)=> self.indexOf(value)==index);
         if (permissionTableDoors.length==0) {            
-            errors.push({ type: "accessLevelIsNotInCCure", doorname: door.doorname, timename: timeschedule.timename });
+            errors.push({ type: "accessLevelIsNotInCCure", devicename: door.doorname, timename: timeschedule.timename });
         }
         else {
             let permissionTables = ccurePermissionTables.filter(x => permissionTableDoors.indexOf(x.permissionTableId)>=0);
             if (permissionTables.length==0){
-                errors.push({ type: "accessLevelIsNotInCCure", doorname: door.doorname, timename: timeschedule.timename });
+                errors.push({ type: "accessLevelIsNotInCCure", devicename: door.doorname, timename: timeschedule.timename });
             }else{
                 return permissionTables;
             }                
@@ -270,8 +270,8 @@ async function checkCCureDevices( accessLevels:any[]){
             let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
             if(!doorIsInCCure) continue;
             devices.push(door);
-            let perms = getPermTables(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
-            checkPermTables(permTableNames,perms, door, timeschedule);
+            let perms = getPermTableDoors(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
+            checkPermTables(permTableNames, perms, door.doorname, timeschedule.timename);
         }
 
         if(accesslevel.type=="doorGroup"){
@@ -282,8 +282,8 @@ async function checkCCureDevices( accessLevels:any[]){
                 if(!doorIsInCCure) continue;
                 devices.push(door);
                 //compare content with ccure door name and timename    
-                let perms = getPermTables(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
-                checkPermTables(permTableNames,perms, door, timeschedule);
+                let perms = getPermTableDoors(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
+                checkPermTables(permTableNames, perms, door.doorname, timeschedule.timename);
             }            
         }
 
@@ -293,16 +293,16 @@ async function checkCCureDevices( accessLevels:any[]){
 
     
 }
-function checkPermTables(permTableNames: any[],perms: any[],device:any, timeschedule:any) {
+function checkPermTables(permTableNames: any[],perms: any[],devicename:string, timename:string) {
     if(!perms)return;
-    let name = device.doorname;
+    
     for (let perm of perms) {
         let exists = permTableNames.find(x => x.permissionTableName == perm.permissionTableName);
         if (exists) {
-            perm.devices.puhs({device:{name}, timeschedule});
+            perm.devices.push({devicename, timename});
         }
         else {
-            perm.devices = [{device:{name}, timeschedule}];
+            perm.devices = [{devicename, timename}];
             permTableNames.push(perm);            
         }
         
