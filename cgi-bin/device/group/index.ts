@@ -4,6 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Parser, Db } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
+import * as Area from '../../location/area';
 
 let action = new Action({
     loginRequired: true,
@@ -64,6 +65,7 @@ action.post(
                         group.setValue('area', area);
                         group.setValue('mode', value.mode);
                         group.setValue('name', value.name);
+                        group.setValue('threshold', Area.SortThreshold(value.threshold));
 
                         await group.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -202,6 +204,7 @@ action.get(
                         mode: Enum.EDeviceMode[value.getValue('mode')],
                         name: value.getValue('name'),
                         devices: devices,
+                        threshold: value.getValue('threshold'),
                     };
                 }),
             };
@@ -243,6 +246,10 @@ action.put(
                             });
                         if (!group) {
                             throw Errors.throw(Errors.CustomBadRequest, ['group not found']);
+                        }
+
+                        if (value.threshold) {
+                            group.setValue('threshold', Area.SortThreshold(value.threshold));
                         }
 
                         await group.save(null, { useMasterKey: true }).fail((e) => {

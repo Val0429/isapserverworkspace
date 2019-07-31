@@ -1,15 +1,17 @@
 import { Draw } from '../../helpers';
 import * as Enum from '../../enums';
-import { ICameraHanwha } from '../db/_index';
+import { ICameraHanwha, IThreshold } from '../db/_index';
 
 export interface IGroupIndexC {
     areaId: string;
     mode: Enum.EDeviceMode;
     name: string;
+    threshold: IThreshold;
 }
 
 export interface IGroupIndexU {
     objectId: string;
+    threshold?: IThreshold;
 }
 
 export interface IGroupAll {

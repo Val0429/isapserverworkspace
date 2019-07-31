@@ -1,6 +1,6 @@
 import { IObject } from './_index';
 import { Draw } from '../../helpers';
-import { ICameraHanwha } from '../db/_index';
+import { ICameraHanwha, IThreshold } from '../db/_index';
 
 export interface IGroupIndexR_Device {
     mode: string;
@@ -14,6 +14,7 @@ export interface IGroupIndexR {
     mode: string;
     name: string;
     devices: IGroupIndexR_Device[];
+    threshold: IThreshold;
 }
 
 export interface IGroupAll {

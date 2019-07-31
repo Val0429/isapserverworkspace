@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationSite, LocationArea } from './_index';
+import { ParseObjectNotice, LocationSite, LocationArea, IThreshold } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -25,6 +25,11 @@ export interface IDeviceGroup {
      * 名稱
      */
     name: string;
+
+    /**
+     *
+     */
+    threshold: IThreshold;
 }
 
 @registerSubclass()
