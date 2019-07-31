@@ -4,7 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import Demographic from '../../../custom/actions/demographic';
+import { AnalysisDemographic } from '../../../custom/actions';
 import { Report } from '../';
 
 let action = new Action({
@@ -177,13 +177,13 @@ export class ReportDemographic extends Report {
                             summary = {
                                 ...base,
                                 maleTotal: 0,
-                                maleRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                maleRanges: new Array(AnalysisDemographic.ageRanges.length).fill(0),
                                 femaleTotal: 0,
-                                femaleRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                femaleRanges: new Array(AnalysisDemographic.ageRanges.length).fill(0),
                                 maleEmployeeTotal: 0,
-                                maleEmployeeRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                maleEmployeeRanges: new Array(AnalysisDemographic.ageRanges.length).fill(0),
                                 femaleEmployeeTotal: 0,
-                                femaleEmployeeRanges: new Array(Demographic.ageRanges.length).fill(0),
+                                femaleEmployeeRanges: new Array(AnalysisDemographic.ageRanges.length).fill(0),
                             };
                         }
 
@@ -224,14 +224,14 @@ export class ReportDemographic extends Report {
                 });
 
                 let prevMaleTotal: number = prevSummary ? prevSummary.maleTotal : NaN;
-                let prevMaleRanges: number[] = prevSummary ? prevSummary.maleRanges : new Array(Demographic.ageRanges.length).fill(NaN);
+                let prevMaleRanges: number[] = prevSummary ? prevSummary.maleRanges : new Array(AnalysisDemographic.ageRanges.length).fill(NaN);
                 let prevFemaleTotal: number = prevSummary ? prevSummary.femaleTotal : NaN;
-                let prevFemaleRanges: number[] = prevSummary ? prevSummary.femaleRanges : new Array(Demographic.ageRanges.length).fill(NaN);
+                let prevFemaleRanges: number[] = prevSummary ? prevSummary.femaleRanges : new Array(AnalysisDemographic.ageRanges.length).fill(NaN);
 
                 let prevMaleEmployeeTotal: number = prevSummary ? prevSummary.maleEmployeeTotal : NaN;
-                let prevMaleEmployeeRanges: number[] = prevSummary ? prevSummary.maleEmployeeRanges : new Array(Demographic.ageRanges.length).fill(NaN);
+                let prevMaleEmployeeRanges: number[] = prevSummary ? prevSummary.maleEmployeeRanges : new Array(AnalysisDemographic.ageRanges.length).fill(NaN);
                 let prevFemaleEmployeeTotal: number = prevSummary ? prevSummary.femaleEmployeeTotal : NaN;
-                let prevFemaleEmployeeRanges: number[] = prevSummary ? prevSummary.femaleEmployeeRanges : new Array(Demographic.ageRanges.length).fill(NaN);
+                let prevFemaleEmployeeRanges: number[] = prevSummary ? prevSummary.femaleEmployeeRanges : new Array(AnalysisDemographic.ageRanges.length).fill(NaN);
 
                 return {
                     site: value.site,
@@ -275,8 +275,8 @@ export class ReportDemographic extends Report {
      */
     private MerageArray(array1: number[], array2: number[]): number[] {
         try {
-            array1 = array1 && array1.length === Demographic.ageRanges.length ? array1 : new Array(Demographic.ageRanges.length).fill(0);
-            array2 = array2 && array2.length === Demographic.ageRanges.length ? array2 : new Array(Demographic.ageRanges.length).fill(0);
+            array1 = array1 && array1.length === AnalysisDemographic.ageRanges.length ? array1 : new Array(AnalysisDemographic.ageRanges.length).fill(0);
+            array2 = array2 && array2.length === AnalysisDemographic.ageRanges.length ? array2 : new Array(AnalysisDemographic.ageRanges.length).fill(0);
 
             let array: number[] = array1.map((value, index, array) => {
                 return (value || 0) + (array2[index] || 0);

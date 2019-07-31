@@ -150,7 +150,7 @@ class Service {
 
                             switch (value.getValue('mode')) {
                                 case Enum.EDeviceMode.peopleCounting:
-                                    Action.PeopleCountingMerge.action$.next({
+                                    Action.AnalysisPeopleCountingMerge.action$.next({
                                         device: value,
                                         date: new Date(),
                                         in: count.in,

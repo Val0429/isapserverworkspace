@@ -233,7 +233,7 @@ class Service {
 
                                             switch (value1.getValue('mode')) {
                                                 case Enum.EDeviceMode.humanDetection:
-                                                    Action.HumanDetection.action$.next({
+                                                    Action.AnalysisHumanDetection.action$.next({
                                                         type: Enum.EDeviceMode.humanDetection,
                                                         device: value1,
                                                         date: new Date(x.timestamp),
@@ -241,7 +241,7 @@ class Service {
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.heatmap:
-                                                    Action.HumanDetection.action$.next({
+                                                    Action.AnalysisHumanDetection.action$.next({
                                                         type: Enum.EDeviceMode.heatmap,
                                                         device: value1,
                                                         date: new Date(x.timestamp),

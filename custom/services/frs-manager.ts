@@ -334,7 +334,7 @@ class Service {
                                         Action.DeleteFile.action$.next(temp);
                                         break;
                                     case Enum.EDeviceMode.demographic:
-                                        Action.Demographic.action$.next({
+                                        Action.AnalysisDemographic.action$.next({
                                             device: value1,
                                             date: new Date(result.timestamp),
                                             image: temp,

@@ -215,14 +215,14 @@ class Service {
                                             switch (value1.getValue('mode')) {
                                                 case Enum.EDeviceMode.peopleCounting:
                                                     Action.DeleteFile.action$.next(temp);
-                                                    Action.PeopleCountingSeparation.action$.next({
+                                                    Action.AnalysisPeopleCountingSeparation.action$.next({
                                                         device: value1,
                                                         date: x.date,
                                                         groups: groups,
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.demographic:
-                                                    Action.Demographic.action$.next({
+                                                    Action.AnalysisDemographic.action$.next({
                                                         device: value1,
                                                         date: x.date,
                                                         image: temp,

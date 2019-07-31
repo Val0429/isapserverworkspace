@@ -4,7 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import Demographic from '../../../custom/actions/demographic';
+import { AnalysisDemographic } from '../../../custom/actions';
 import { Report } from '../';
 
 let action = new Action({
@@ -61,7 +61,7 @@ export class ReportRepeatVisitor extends Report {
     /**
      *
      */
-    private _ageRanges = Demographic.ageRanges;
+    private _ageRanges = AnalysisDemographic.ageRanges;
 
     /**
      *

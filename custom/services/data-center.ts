@@ -3,7 +3,6 @@ import * as Rx from 'rxjs';
 import { IDB } from '../models';
 import { Print } from '../helpers';
 import * as Enum from '../enums';
-import * as Action from '../actions';
 import * as Main from '../../main';
 
 class Service {
