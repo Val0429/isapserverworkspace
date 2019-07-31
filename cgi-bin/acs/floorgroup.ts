@@ -25,7 +25,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new FloorGroup(data.inputType);
 
-    Log.Info(`${this.constructor.name}`, `postFloorGroup ${data.inputType.groupid} ${data.inputType.groupname}`);
+    Log.Info(`${this.constructor.name}`, `postFloorGroup ${data.inputType.groupname}`);
 
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
@@ -40,7 +40,13 @@ type OutputR = Restful.OutputR<IFloorGroup>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(FloorGroup);
+    var query = new Parse.Query(FloorGroup)
+    .include("area.site")
+    .include("floors");
+    let filter = data.parameters as any;
+    if(filter.name){
+        query.matches("groupname", new RegExp(filter.name), "i");
+    }
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -59,7 +65,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(FloorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`FloorGroup <${objectId}> not exists.`]);
     
-    Log.Info(`${this.constructor.name}`, `putFloorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+    Log.Info(`${this.constructor.name}`, `putFloorGroup ${obj.get("groupname")}`);
 
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });

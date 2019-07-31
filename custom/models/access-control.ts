@@ -38,12 +38,12 @@ export interface IFloor {   // R daily V
 export class Floor extends ParseObject<IFloor> { }
 
 export interface IFloorGroup {  // CRUD V
-    system: number,             // 0: iSap
-    groupid: number,
+    system?: number,             // 0: iSap
+    groupid?: number,
     groupname: string,
     area?: IDB.LocationArea,
-    floors: Floor[],
-    status: number
+    floors?: Floor[],
+    status?: number
 }
 @registerSubclass()
 export class FloorGroup extends ParseObject<IFloorGroup> { }
@@ -54,6 +54,7 @@ export interface IElevator {    // CRUD V
     elevatorname: string,
     area?: IDB.LocationArea,
     reader?: Floor[],
+    readergroup?: FloorGroup[],
     status?: number
 }
 @registerSubclass()
