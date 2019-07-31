@@ -130,11 +130,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }
 
     /// 1) Create Object
-    let firstObj = await new Parse.Query(AccessLevel).exists("levelidNumber").descending("levelidNumber").first();
+    let firstObj = await new Parse.Query(AccessLevel).descending("levelidNumber").first();
     let max = 0;
-    if (firstObj && firstObj.get("levelidNumber") )
-        max = +firstObj.get("levelidNumber") + 1;
-
+    if (firstObj && firstObj.get("levelidNumber") >=0){
+        console.log("pass", firstObj.get("levelidNumber"));
+        max = firstObj.get("levelidNumber") + 1;
+    }
+        
+    console.log("max", max);
     data.inputType.levelid = max + "";
     data.inputType.levelidNumber=max;
     data.inputType.levelname = "name " + data.inputType.levelidNumber;
