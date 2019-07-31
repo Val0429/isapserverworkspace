@@ -4,7 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Parser, FRSService } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import FRS from '../../../custom/services/frs';
+import SourceFRS from '../../../custom/services/source-frs';
 
 let action = new Action({
     loginRequired: true,
@@ -319,7 +319,7 @@ action.delete(
  */
 export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSService.IDevice[]> {
     try {
-        let frs: FRSService = FRS.frss.find((value, index, array) => {
+        let frs: FRSService = SourceFRS.frss.find((value, index, array) => {
             return value.config.ip === config.ip && value.config.port === config.port;
         });
         if (!frs) {
@@ -345,7 +345,7 @@ export async function GetDeviceList(config: FRSService.IConfig): Promise<FRSServ
  */
 export async function GetUserGroup(config: FRSService.IConfig): Promise<FRSService.IObject[]> {
     try {
-        let frs: FRSService = FRS.frss.find((value, index, array) => {
+        let frs: FRSService = SourceFRS.frss.find((value, index, array) => {
             return value.config.ip === config.ip && value.config.port === config.port;
         });
         if (!frs) {

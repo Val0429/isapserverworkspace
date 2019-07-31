@@ -5,7 +5,7 @@ import { Print, Db, Parser, FRSService } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import * as Device from '../../device';
-import FRS from '../../../custom/services/frs';
+import SourceFRS from '../../../custom/services/source-frs';
 
 let action = new Action({
     loginRequired: true,

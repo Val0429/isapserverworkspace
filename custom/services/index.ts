@@ -1,7 +1,9 @@
-import './cms';
 import './data-center';
+
+import './source-cms';
+import './source-frs-manager';
+import './source-frs';
+import './source-hanwha';
+
 import './expired-image';
-import './frs-manager';
-import './frs';
-import './hanwha';
 import './weather';
