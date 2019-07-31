@@ -105,6 +105,7 @@ function createEmployee(item: any) {
         let CardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
         let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>parseInt(x.RuleToken)) : [];
         return {
+            objectId:item.objectId,
             FirstName: item.FirstName,
             LastName: item.LastName,
             EmployeeNumber: item.EmployeeNumber,
