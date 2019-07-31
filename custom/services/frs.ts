@@ -162,9 +162,13 @@ class Service {
             Object.keys(this._frss).forEach(async (value, index, array) => {
                 let frs = this._frss[value];
 
-                frs.initialization$.subscribe({
+                let next$: Rx.Subject<{}> = new Rx.Subject();
+
+                frs.initialization$.zip(next$.startWith(0)).subscribe({
                     next: async (x) => {
                         try {
+                            frs.frs.liveStreamStop$.next();
+
                             await frs.frs.Login();
 
                             await frs.frs.EnableLiveSubject();
@@ -176,6 +180,8 @@ class Service {
                             frs.frs.liveStreamClose$.subscribe({
                                 next: async (x) => {
                                     Print.Log(`${value}(server) -> close`, new Error(), 'error');
+
+                                    await Utility.Delay(60000);
                                     frs.initialization$.next();
                                 },
                             });
@@ -242,8 +248,12 @@ class Service {
                                 },
                             });
                         } catch (e) {
-                            Print.Log(e, new Error(), 'error');
+                            Print.Log(`${value}(server) -> ${e}`, new Error(), 'error');
+
+                            await Utility.Delay(60000);
                             frs.initialization$.next();
+                        } finally {
+                            next$.next();
                         }
                     },
                     error: (e) => {

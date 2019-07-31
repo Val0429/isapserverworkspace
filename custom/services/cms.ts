@@ -181,9 +181,13 @@ class Service {
             Object.keys(this._cmss).forEach(async (value, index, array) => {
                 let cms = this._cmss[value];
 
-                cms.initialization$.subscribe({
+                let next$: Rx.Subject<{}> = new Rx.Subject();
+
+                cms.initialization$.zip(next$.startWith(0)).subscribe({
                     next: async (x) => {
                         try {
+                            cms.cms.liveStreamStop$.next();
+
                             let delay: number = this.GetDelayTime();
 
                             let sources: CMSService.ISource[] = this._devices
@@ -263,7 +267,12 @@ class Service {
                                 },
                             });
                         } catch (e) {
-                            Print.Log(e, new Error(), 'error');
+                            Print.Log(`${value}(server) -> ${e}`, new Error(), 'error');
+
+                            await Utility.Delay(60000);
+                            cms.initialization$.next();
+                        } finally {
+                            next$.next();
                         }
                     },
                     error: (e) => {
