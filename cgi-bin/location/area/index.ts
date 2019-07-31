@@ -79,6 +79,7 @@ action.post(
                         area.setValue('name', value.name);
                         area.setValue('imageSrc', '');
                         area.setValue('mapSrc', '');
+                        area.setValue('threshold', SortThreshold(value.threshold));
 
                         await area.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -198,6 +199,7 @@ action.get(
                         imageSrc: value.getValue('imageSrc'),
                         mapSrc: value.getValue('mapSrc'),
                         deviceGroupCount: deviceGroupCount,
+                        threshold: value.getValue('threshold'),
                     };
                 }),
             };
@@ -267,6 +269,9 @@ action.put(
                             File.WriteBase64File(`${File.assetsPath}/${mapSrc}`, value.mapBase64);
 
                             area.setValue('mapSrc', mapSrc);
+                        }
+                        if (value.threshold) {
+                            area.setValue('threshold', SortThreshold(value.threshold));
                         }
 
                         await area.save(null, { useMasterKey: true }).fail((e) => {
@@ -359,6 +364,31 @@ export async function Delete(area: IDB.LocationArea): Promise<void> {
         try {
             File.DeleteFile(`${File.assetsPath}/${area.getValue('mapSrc')}`);
         } catch (e) {}
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ * Sort threshold
+ * @param threshold
+ */
+export function SortThreshold(threshold: IDB.IThreshold): IDB.IThreshold {
+    try {
+        let thresholds: number[] = [];
+        Object.keys(threshold).forEach((value1, index1, array1) => {
+            thresholds.push(threshold[value1]);
+        });
+
+        thresholds.sort((a, b) => {
+            return a - b;
+        });
+
+        threshold.low = thresholds[0];
+        threshold.medium = thresholds[1];
+        threshold.high = thresholds[2];
+
+        return threshold;
     } catch (e) {
         throw e;
     }

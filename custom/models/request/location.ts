@@ -1,4 +1,4 @@
-import { IDayRange } from '../db/_index';
+import { IThreshold } from '../db/_index';
 
 interface IGPS {
     longitude?: number;
@@ -72,6 +72,7 @@ export interface IAreaIndexC {
     name: string;
     imageBase64: string;
     mapBase64: string;
+    threshold: IThreshold;
 }
 
 export interface IAreaIndexR {
@@ -82,6 +83,7 @@ export interface IAreaIndexU {
     objectId: string;
     imageBase64?: string;
     mapBase64?: string;
+    threshold?: IThreshold;
 }
 
 export interface IAreaAll extends IAreaIndexR {}

@@ -1,4 +1,4 @@
-import { IDayRange } from '../db/_index';
+import { IThreshold } from '../db/_index';
 import { IObject } from './_index';
 
 interface IGPS {
@@ -62,6 +62,7 @@ export interface IAreaIndexR extends IAreaIndexR_Base {
     objectId: string;
     site: IObject;
     deviceGroupCount: number;
+    threshold: IThreshold;
 }
 
 export interface IAreaAll {

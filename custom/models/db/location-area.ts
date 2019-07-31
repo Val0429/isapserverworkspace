@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationSite } from './_index';
+import { ParseObjectNotice, LocationSite, IThreshold } from './_index';
 
 /**
  * 地區
@@ -24,6 +24,11 @@ export interface ILocationArea {
      * 地圖
      */
     mapSrc: string;
+
+    /**
+     *
+     */
+    threshold: IThreshold;
 }
 
 @registerSubclass()
