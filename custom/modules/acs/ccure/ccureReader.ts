@@ -62,12 +62,12 @@ export class CCUREReader {
      */
     public async connectAsync(): Promise<void> {
         if (this._isConnected) throw `Internal Error: <CCUREReader::connectAsync> Still connecting, do not change config.`;
-        if (isNullOrUndefined(Config.CCUREconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
-        if (Config.CCUREconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
-        this.verifyIP(Config.CCUREconnect.server);
-        this.verifyPort(Config.CCUREconnect.port);
+        if (isNullOrUndefined(Config.ccureconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
+        if (Config.ccureconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
+        this.verifyIP(Config.ccureconnect.server);
+        this.verifyPort(Config.ccureconnect.port);
 
-        this._conn = new this._sql.ConnectionPool(Config.CCUREconnect);
+        this._conn = new this._sql.ConnectionPool(Config.ccureconnect);
 
         try {
             return await this._conn.connect().then(() => {
