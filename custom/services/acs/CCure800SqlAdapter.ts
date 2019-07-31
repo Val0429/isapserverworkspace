@@ -47,7 +47,7 @@ export class CCure800SqlAdapter {
         // }
     }
 
-    async writeMember(data, permission = "", ccureAccessRules:string[]=[]) {
+    async writeMember(data, ccureAccessRules:string[], customFields:any[], permission = "") {
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
 
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
@@ -105,7 +105,7 @@ export class CCure800SqlAdapter {
         let CustomTextBoxControl7__CF11 = "";
         let CustomTextBoxControl7__CF12 = "";
         
-        for (let field of data["CustomFields"]) {
+        for (let field of customFields) {
             
             switch (field["FiledName"]) {
                 case "CustomDateControl3__CF": CustomDateControl3__CF1 = field["FieldValue"]; break;
