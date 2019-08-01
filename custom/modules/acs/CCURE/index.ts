@@ -660,6 +660,35 @@ export class CCUREService {
     /*
     [
         { 
+            permissionTableId: 42312,
+            elevatorOrGroupId: 64313,
+            floorOrGroupId: 64313,
+            timespecId: 1682 
+        },
+        { 
+            permissionTableId: 42312,
+            elevatorOrGroupId: 64314,
+            floorOrGroupId: 64314,
+            timespecId: 1682 
+        }
+    ]
+    */
+    /**
+     * 
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllPermissionTableElevatorFloor(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, null);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor);
+    }
+
+    /*
+    [
+        { 
             groupId: 10444, 
             groupName: 'DG_N2_PCMSC_IV-控制室-A7' 
         },
@@ -1127,6 +1156,23 @@ export class CCUREService {
      *   permissionTableId: 5071, 
          groupId: 48632, 
          timespecId: 1682 
+     * @param condition Query string, e.g. groupId=48632
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetPermissionTableElevatorFloor(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, null, null, condition);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, condition);
+    }
+
+    /**
+     *  permissionTableId: 42312,
+        elevatorOrGroupId: 64313,
+        floorOrGroupId: 64313,
+        timespecId: 1682 
      * @param condition Query string, e.g. groupId=48632
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */

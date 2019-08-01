@@ -24,6 +24,7 @@ export enum QueryContent {
     ClearPerson,
     ClearDoor,
     ClearDoorGroup,
+    ClearElevatorFloor,
     DoorGroup,
     FloorGroup,
     ElevatorGroup,
@@ -287,6 +288,16 @@ var queryMap : IQueryMap = {};
                     'TIMESPECID as timespecId',
         "dsn": Config.CCUREdsn.CFSRV,
         "condition":"OBJECTTYPE=8"
+    }
+
+    //Clearance - DoorGroup
+    queryMap[QueryContent.ClearElevatorFloor] = {
+        "table": "ccm.view_cleartriplet",
+        "selector": 'CLEARID as permissionTableId,'+
+                    'ELEVATORORGRPID as elevatorOrGroupId,'+
+                    'ELEVATORORGRPID as floorOrGroupId,'+
+                    'TIMESPECID as timespecId',
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //DoorGroup
