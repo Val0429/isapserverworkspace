@@ -280,7 +280,29 @@ export class CCureAdapter {
 
         return records;
     }
+    async GetAllPermissionTableFloor() {
+        Log.Info(`${this.constructor.name}`, `GetAllPermissionTableFloor`);
 
+        await this._signal.wait(this._waitTime, x => x);
+        let records = await this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, null, 30000);
+
+        // [
+        //     { 
+        //         permissionTableId: 42312,
+        //         elevatorOrGroupId: 64313,
+        //         floorOrGroupId: 64313,
+        //         timespecId: 1682 
+        //     },
+        //     { 
+        //         permissionTableId: 42312,
+        //         elevatorOrGroupId: 64314,
+        //         floorOrGroupId: 64314,
+        //         timespecId: 1682 
+        //     }
+        // ]
+
+        return records;
+    }
     async GetAllPermissionTableDoor() {
         Log.Info(`${this.constructor.name}`, `GetAllPermissionTableDoor`);
 

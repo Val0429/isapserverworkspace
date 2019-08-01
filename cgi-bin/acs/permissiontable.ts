@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup, AccessLevelinSiPass
+    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup, AccessLevelinSiPass, Floor
 } from 'core/cgi-package';
 
 import { IPermissionTable, PermissionTable, PermissionTableDoor } from '../../custom/models'
@@ -224,40 +224,50 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 
 export default action;
 function getPermTableDoors(ccureDoors: any[], door: any, timeSchedules: any[], timeschedule: any, errors: any[], cCurePermissionTableDoors: any[], ccurePermissionTables: any[]) {
-    
+    let type="accessLevelIsNotInCCure";
+    let err={ type, devicename: door.doorname, timename: timeschedule.timename };
     let ccureDoor = ccureDoors.find(x => x.doorName == door.doorname);
     let ccureTimeSchedule = timeSchedules.find(x => x.timespecName == timeschedule.timename);
     if (!ccureDoor || !ccureTimeSchedule) {        
-        errors.push({ type: "accessLevelIsNotInCCure", devicename: door.doorname, timename: timeschedule.timename});
+        errors.push(err);
+        return;
+    }    
+    
+    let permissionTableDoors = cCurePermissionTableDoors.filter(x => x.timespecId == ccureTimeSchedule.timespecId && x.doorId == ccureDoor.doorId)
+        .map(x=>x.permissionTableId).filter((value, index, self)=> self.indexOf(value)==index);
+    if (permissionTableDoors.length==0) {            
+        errors.push(err);
+    }
+    else {
+        let permissionTables = ccurePermissionTables.filter(x => permissionTableDoors.indexOf(x.permissionTableId)>=0);
+        if (permissionTables.length==0){
+            errors.push(err);
+        }else{
+            return permissionTables;
+        }                
     }
     
-    if (ccureTimeSchedule && ccureDoor) {
-        let permissionTableDoors = cCurePermissionTableDoors.filter(x => x.timespecId == ccureTimeSchedule.timespecId && x.doorId == ccureDoor.doorId)
-            .map(x=>x.permissionTableId).filter((value, index, self)=> self.indexOf(value)==index);
-        if (permissionTableDoors.length==0) {            
-            errors.push({ type: "accessLevelIsNotInCCure", devicename: door.doorname, timename: timeschedule.timename });
-        }
-        else {
-            let permissionTables = ccurePermissionTables.filter(x => permissionTableDoors.indexOf(x.permissionTableId)>=0);
-            if (permissionTables.length==0){
-                errors.push({ type: "accessLevelIsNotInCCure", devicename: door.doorname, timename: timeschedule.timename });
-            }else{
-                return permissionTables;
-            }                
-        }
-    }
 }
 
 async function checkCCureDevices( accessLevels:any[]){
     let errors:any[]=[];
     let devices=[];
-    let ccureDoors = await cCureAdapter.getDoors();
-    let permissionTables = await cCureAdapter.getPermissionTables();
-    let permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
-    let timeSchedules = await cCureAdapter.getTimeSchedule();
+    let permissionTables:any[] = await cCureAdapter.getPermissionTables();
+    let timeSchedules:any[] = await cCureAdapter.getTimeSchedule();
+
+    let ccureDoors:any[];    
+    let permissionTableDoors:any[];    
+    let permissionTableFloors:any[];
+    let ccureFloors:any[];
+    let ccureElevators:any[];
     let permTableNames:any[]=[];
+
     for (let accesslevelInput of accessLevels) {
-        let accesslevelObject = await new Parse.Query(AccessLevel).equalTo("objectId", accesslevelInput.objectId).include("doorgroup.doors").first();
+        let accesslevelObject = await new Parse.Query(AccessLevel).equalTo("objectId", accesslevelInput.objectId)
+            .include("doorgroup.doors")
+            .include("elevator")
+            .include("floorgroup.floors")
+            .first();
         let accesslevel = ParseObject.toOutputJSON(accesslevelObject);
         console.log("accesslevel", accesslevel)
         let tsObject = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule.objectId).first();
@@ -266,6 +276,8 @@ async function checkCCureDevices( accessLevels:any[]){
         
         if(accesslevel.type=="door"){
             if(!accesslevel.door || !accesslevel.timeschedule)continue;
+            if(!ccureDoors) ccureDoors = await cCureAdapter.getDoors();
+            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
             //compare content with ccure door name and timename            
             let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
             if(!doorIsInCCure) continue;
@@ -276,8 +288,10 @@ async function checkCCureDevices( accessLevels:any[]){
 
         if(accesslevel.type=="doorGroup"){
             if(!accesslevel.doorgroup || !accesslevel.timeschedule)continue;
-            for(let doorid of accesslevel.doorgroup.doors){
-               
+            if(!ccureDoors) ccureDoors = await cCureAdapter.getDoors();
+            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
+
+            for(let doorid of accesslevel.doorgroup.doors){               
                 let { doorIsInCCure, door } = await getCCureDoor(doorid.objectId);
                 if(!doorIsInCCure) continue;
                 devices.push(door);
@@ -287,7 +301,33 @@ async function checkCCureDevices( accessLevels:any[]){
             }            
         }
 
-        
+        if(accesslevel.type=="elevator"){
+            if(!accesslevel.elevator || !(accesslevel.floor && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
+            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.GetAllPermissionTableFloor();
+            if(!ccureFloors)ccureFloors = await cCureAdapter.getFloors();
+            if(!ccureElevators) ccureElevators = await cCureAdapter.getElevators();
+            //compare content with ccure floor name and timename            
+            let { floorIsInCCure, floor } = await getCCureFloor(accesslevel.floor[0].objectId);            
+            if(!floorIsInCCure) continue;
+            devices.push(floor);
+            let perms = getPermTableFloors(ccureElevators, accesslevel.elevator, ccureFloors, floor, timeSchedules, timeschedule, errors, permissionTableFloors, permissionTables);
+            checkPermTables(permTableNames, perms, accesslevel.elevator.elevatorname+"-"+floor.floorname, timeschedule.timename);
+        }
+        if(accesslevel.type=="floorGroup"){
+            if(!accesslevel.elevator || !(accesslevel.floorgroup && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
+            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.GetAllPermissionTableFloor();
+            if(!ccureFloors)ccureFloors = await cCureAdapter.getFloors();
+            if(!ccureElevators) ccureElevators = await cCureAdapter.getElevators();
+            //compare content with ccure floor name and timename 
+            for(let alFloor of accesslevel.floor){
+                let { floorIsInCCure, floor } = await getCCureFloor(alFloor.objectId);            
+                if(!floorIsInCCure) continue;
+                devices.push(floor);
+                let perms = getPermTableFloors(ccureElevators, accesslevel.elevator, ccureFloors, floor, timeSchedules, timeschedule, errors, permissionTableFloors, permissionTables);
+                checkPermTables(permTableNames, perms, accesslevel.elevator.elevatorname+"-"+floor.floorname, timeschedule.timename);
+            }    
+            
+        }
     }
     return {permTableNames, devices, errors};
 
@@ -322,4 +362,44 @@ async function getCCureDoor(doorObjectId: any) {
     let doorIsInCCure = readers.find(x => x.readername && x.readername.length > 2 && x.readername.substr(0, 2).toLowerCase() != "d_");
     console.log("doorIsInCcure", doorIsInCCure, "readers", readers);
     return { doorIsInCCure, door };
+}
+
+async function getCCureFloor(floorObjectId: any) {
+    let floorObject = await new Parse.Query(Floor)
+        .equalTo("objectId", floorObjectId)
+        .first();
+    let floor = ParseObject.toOutputJSON(floorObject);
+    let floorIsInCCure = floor.floorname && floor.floorname.length > 2 && floor.floorname.substr(0, 2).toLowerCase() != "d_";
+    console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
+    return { floorIsInCCure, floor };
+}
+function getPermTableFloors(ccureElevators:any[], elevator:any, ccureFloors: any[], floor: any, timeSchedules: any[], timeschedule: any, errors: any[], cCurePermissionTableFloors: any[], ccurePermissionTables: any[]) {
+    let type="accessLevelIsNotInCCure";
+    let err ={ type, devicename: `${elevator.elevatorname}-${floor.floorname}`, timename: timeschedule.timename};
+    let ccureElevator = ccureElevators.find(x => x.elevatorName == elevator.elevatorname);
+    let ccureFloor = ccureFloors.find(x => x.floorName == elevator.floorname);
+    let ccureTimeSchedule = timeSchedules.find(x => x.timespecName == timeschedule.timename);
+    if (!ccureElevator || !ccureTimeSchedule || !ccureFloor) {        
+        errors.push(err);
+        return;
+    }
+
+    let permissionTableFloors = cCurePermissionTableFloors.filter(x => 
+                    x.timespecId == ccureTimeSchedule.timespecId && 
+                    x.elevatorId == ccureElevator.elevatorId && 
+                    x.floorId == ccureElevator.floorId)
+                .map(x=>x.permissionTableId)
+                .filter((value, index, self)=> self.indexOf(value)==index);
+    if (permissionTableFloors.length==0) {            
+        errors.push(err);
+    }
+    else {
+        let permissionTables = ccurePermissionTables.filter(x => permissionTableFloors.indexOf(x.permissionTableId)>=0);
+        if (permissionTables.length==0){
+            errors.push(err);
+        }else{
+            return permissionTables;
+        }                
+    }
+    
 }
