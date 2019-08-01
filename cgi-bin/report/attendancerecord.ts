@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, Door
 } from 'core/cgi-package';
 
 import { IAttendanceRecords, AttendanceRecords, Member } from 'workspace/custom/models/index';
@@ -57,7 +57,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
         if (!record.date_occurred || !record.date_time_occurred) continue;        
-        let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);                
+        let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);
+        let at_id = await new Parse.Query(Door).equalTo("doorid", record.at_id).first();
+        if(at_id)  record.at_id = at_id.get('doorname');
         //start, assume in and out at the same time
         if(thisDayRecords.length<2){
             results.push(Object.assign({},record));
