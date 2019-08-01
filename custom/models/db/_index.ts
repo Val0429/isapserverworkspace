@@ -106,10 +106,6 @@ export * from './camera-cms';
 export * from './camera-frs';
 export * from './camera-hanwha';
 
-export * from './date-range';
-export * from './day-range';
-export * from './day-single';
-
 export * from './device-group';
 export * from './device';
 

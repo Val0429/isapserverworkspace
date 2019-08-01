@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
-import { IRequest, IResponse, IDB } from '../../../custom/models';
+import { IRequest, IResponse, IDB, IBase } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
@@ -103,7 +103,7 @@ export class Campaign extends Report {
     /**
      *
      */
-    private _reportsDateRange: IDB.IDateRange = undefined;
+    private _reportsDateRange: IBase.IDate.IRange = undefined;
 
     /**
      *
@@ -121,7 +121,7 @@ export class Campaign extends Report {
     /**
      *
      */
-    private _beforeReportsDateRange: IDB.IDateRange = undefined;
+    private _beforeReportsDateRange: IBase.IDate.IRange = undefined;
 
     /**
      *
@@ -139,7 +139,7 @@ export class Campaign extends Report {
     /**
      *
      */
-    private _afterReportsDateRange: IDB.IDateRange = undefined;
+    private _afterReportsDateRange: IBase.IDate.IRange = undefined;
 
     /**
      *
@@ -256,7 +256,7 @@ export class Campaign extends Report {
      * @param reports
      * @param type
      */
-    public SummaryDatas(reports: IDB.ReportPeopleCountingSummary[], type: number, dateRange: IDB.IDateRange): IResponse.IReport.ICampaignSingleCampaignSummaryData[] {
+    public SummaryDatas(reports: IDB.ReportPeopleCountingSummary[], type: number, dateRange: IBase.IDate.IRange): IResponse.IReport.ICampaignSingleCampaignSummaryData[] {
         try {
             let reportsDateDictionary = {};
             reports.forEach((value, index, array) => {

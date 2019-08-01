@@ -1,11 +1,11 @@
-import { IDayRange } from '../db/_index';
+import { IDay } from '../base/_index';
 
 export interface IIndexC {
     name: string;
-    dayRanges: IDayRange[];
+    dayRanges: IDay.IRange[];
 }
 
 export interface IIndexU {
     objectId: string;
-    dayRanges: IDayRange[];
+    dayRanges: IDay.IRange[];
 }

@@ -1,6 +1,6 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
-import { IDB } from '../models';
+import { IDB, IBase } from '../models';
 import { Print, Utility, File, CMSService } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
@@ -296,9 +296,7 @@ namespace Service {
     /**
      *
      */
-    export interface IObjectCMS {
-        [key: string]: ICMS;
-    }
+    export interface IObjectCMS extends IBase.IObject.IKeyValue<ICMS> {}
 
     /**
      *

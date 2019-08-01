@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
-import { IRequest, IResponse, IDB } from '../../../custom/models';
+import { IRequest, IResponse, IDB, IBase } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
@@ -75,8 +75,8 @@ export class Campaign extends Report {
     /**
      *
      */
-    private _campaignsIdDictionary: Report.IPublicData<Report.IKeyValue<IDB.EventCampaign>> = undefined;
-    public get campaignsIdDictionary(): Report.IKeyValue<IDB.EventCampaign> {
+    private _campaignsIdDictionary: Report.IPublicData<IBase.IObject.IKeyValue<IDB.EventCampaign>> = undefined;
+    public get campaignsIdDictionary(): IBase.IObject.IKeyValue<IDB.EventCampaign> {
         if (!this._campaignsIdDictionary || this._campaignsIdDictionary.initTime < this.initTime) {
             let data = {};
             this._campaigns.forEach((value, index, array) => {
@@ -97,17 +97,17 @@ export class Campaign extends Report {
     /**
      *
      */
-    private _reportsCampaignIdDictionary: Report.IKeyValue<IDB.ReportPeopleCountingSummary[]> = {};
+    private _reportsCampaignIdDictionary: IBase.IObject.IKeyValue<IDB.ReportPeopleCountingSummary[]> = {};
 
     /**
      *
      */
-    private _beforeReportsCampaignIdDictionary: Report.IKeyValue<IDB.ReportPeopleCountingSummary[]> = {};
+    private _beforeReportsCampaignIdDictionary: IBase.IObject.IKeyValue<IDB.ReportPeopleCountingSummary[]> = {};
 
     /**
      *
      */
-    private _afterReportsCampaignIdDictionary: Report.IKeyValue<IDB.ReportPeopleCountingSummary[]> = {};
+    private _afterReportsCampaignIdDictionary: IBase.IObject.IKeyValue<IDB.ReportPeopleCountingSummary[]> = {};
 
     /**
      * Initialization

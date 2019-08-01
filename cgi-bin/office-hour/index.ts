@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
-import { IRequest, IResponse, IDB } from '../../custom/models';
+import { IRequest, IResponse, IDB, IBase } from '../../custom/models';
 import { Print, Parser, Db } from '../../custom/helpers';
 import * as Middleware from '../../custom/middlewares';
 import * as Enum from '../../custom/enums';
@@ -46,7 +46,7 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
                         }
 
-                        let dayRanges: IDB.IDayRange[] = value.dayRanges.map((value, index, array) => {
+                        let dayRanges: IBase.IDay.IRange[] = value.dayRanges.map((value, index, array) => {
                             return {
                                 startDay: value.startDay,
                                 endDay: value.endDay,
@@ -192,7 +192,7 @@ action.put(
                         }
 
                         if (value.dayRanges) {
-                            let dayRanges: IDB.IDayRange[] = value.dayRanges.map((value, index, array) => {
+                            let dayRanges: IBase.IDay.IRange[] = value.dayRanges.map((value, index, array) => {
                                 return {
                                     startDay: value.startDay,
                                     endDay: value.endDay,

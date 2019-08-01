@@ -1,5 +1,6 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, IDayRange, LocationSite } from './_index';
+import { ParseObjectNotice, LocationSite } from './_index';
+import { IDay } from '../base/_index';
 
 /**
  * 營業時間
@@ -13,7 +14,7 @@ export interface IOfficeHour {
     /**
      * 時段
      */
-    dayRanges: IDayRange[];
+    dayRanges: IDay.IRange[];
 
     /**
      * Site

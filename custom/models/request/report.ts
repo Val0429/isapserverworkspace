@@ -1,4 +1,4 @@
-import { IDateRange, IDaySingle } from '../db/_index';
+import { IDate, IDay } from '../base/_index';
 import * as Enum from '../../enums';
 
 export interface ISalesRecordC {
@@ -19,7 +19,7 @@ export interface ISalesRecordU {
     transaction?: number;
 }
 
-export interface ISummaryBase extends IDateRange {
+export interface ISummaryBase extends IDate.IRange {
     type: Enum.ESummaryType;
     siteIds: string[];
     tagIds: string[];
@@ -33,7 +33,7 @@ export interface IDemographicSummary extends ISummaryBase {}
 
 export interface IHumanDetectionSummary extends ISummaryBase {}
 
-export interface IHumanDetectionThreshold extends IDateRange {
+export interface IHumanDetectionThreshold extends IDate.IRange {
     areaId: string;
     type: 'medium' | 'high';
 }
@@ -49,7 +49,7 @@ export interface ICampaignSingleCampaignSummary {
     siteIds: string[];
 }
 
-export interface IHeatmapSummary extends IDateRange {
+export interface IHeatmapSummary extends IDate.IRange {
     type: Enum.ESummaryType;
     siteId: string;
 }
@@ -59,7 +59,7 @@ export interface ITemplateC_Base {
     mode: Enum.EDeviceMode;
     siteIds: string[];
     tagIds: string[];
-    sendDates: IDaySingle[];
+    sendDates: IDay.ISingle[];
     sendUserIds: string[];
 }
 
@@ -67,7 +67,7 @@ export interface ITemplateC_Type extends ITemplateC_Base {
     type: Enum.EDatePeriodType;
 }
 
-export interface ITemplateC_Date extends ITemplateC_Base, IDateRange {}
+export interface ITemplateC_Date extends ITemplateC_Base, IDate.IRange {}
 
 export interface ITemplateU {
     objectId: string;
@@ -78,6 +78,6 @@ export interface ITemplateU {
     tagIds?: string[];
     startDate?: Date;
     endDate?: Date;
-    sendDates?: IDaySingle[];
+    sendDates?: IDay.ISingle[];
     sendUserIds?: string[];
 }

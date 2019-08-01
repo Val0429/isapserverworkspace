@@ -1,4 +1,4 @@
-import { IDayRange, IDaySingle, IDateRange } from '../db/_index';
+import { IDate, IDay } from '../base/_index';
 import { IObject } from './_index';
 
 export interface ISalesRecordR {
@@ -64,7 +64,7 @@ export interface ISummaryWeather {
 export interface ISummaryOfficeHour {
     objectId: string;
     name: string;
-    dayRanges: IDayRange[];
+    dayRanges: IDay.IRange[];
     sites: IObject[];
 }
 
@@ -204,7 +204,7 @@ export interface IRepeatVisitorSummary {
     summaryTableDatas: IRepeatVisitorSummaryTableData[];
 }
 
-export interface ICampaignMultiCampaignSummaryData extends IDateRange {
+export interface ICampaignMultiCampaignSummaryData extends IDate.IRange {
     campaign: IObject;
     traffic: number;
     budget: number;
@@ -260,7 +260,7 @@ export interface ITemplateR {
     tags: IObject[];
     startDate: Date;
     endDate: Date;
-    sendDates: IDaySingle[];
+    sendDates: IDay.ISingle[];
     sendUsers: IObject[];
 }
 

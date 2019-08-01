@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, IBase } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
 import { Print, Utility } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
@@ -37,8 +37,8 @@ export class Report {
     /**
      *
      */
-    private _sitesIdDictionary: Report.IPublicData<Report.IKeyValueObject> = undefined;
-    public get sitesIdDictionary(): Report.IKeyValueObject {
+    private _sitesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValueObject> = undefined;
+    public get sitesIdDictionary(): IBase.IObject.IKeyValueObject {
         if (!this._sitesIdDictionary || this._sitesIdDictionary.initTime < this._initTime) {
             let data = {};
             this._sites.forEach((value, index, array) => {
@@ -70,11 +70,11 @@ export class Report {
     /**
      *
      */
-    private _currDateRange: IDB.IDateRange = {
+    private _currDateRange: IBase.IDate.IRange = {
         startDate: new Date(),
         endDate: new Date(),
     };
-    public get currDateRange(): IDB.IDateRange {
+    public get currDateRange(): IBase.IDate.IRange {
         return {
             startDate: new Date(this._currDateRange.startDate),
             endDate: new Date(this._currDateRange.endDate),
@@ -84,11 +84,11 @@ export class Report {
     /**
      *
      */
-    private _prevDateRange: IDB.IDateRange = {
+    private _prevDateRange: IBase.IDate.IRange = {
         startDate: new Date(),
         endDate: new Date(),
     };
-    public get prevDateRange(): IDB.IDateRange {
+    public get prevDateRange(): IBase.IDate.IRange {
         return {
             startDate: new Date(this._prevDateRange.startDate),
             endDate: new Date(this._prevDateRange.endDate),
@@ -176,8 +176,8 @@ export class Report {
     /**
      *
      */
-    private _devicesIdDictionary: Report.IKeyValue<IDB.Device> = undefined;
-    public get devicesIdDictionary(): Report.IKeyValue<IDB.Device> {
+    private _devicesIdDictionary: IBase.IObject.IKeyValue<IDB.Device> = undefined;
+    public get devicesIdDictionary(): IBase.IObject.IKeyValue<IDB.Device> {
         if (!this._devicesIdDictionary) {
             this._devicesIdDictionary = {};
 
@@ -695,20 +695,6 @@ export namespace Report {
     export interface IPublicData<T> {
         initTime: number;
         data: T;
-    }
-
-    /**
-     *
-     */
-    export interface IKeyValue<T> {
-        [key: string]: T;
-    }
-
-    /**
-     *
-     */
-    export interface IKeyValueObject {
-        [key: string]: IResponse.IObject;
     }
 
     /**

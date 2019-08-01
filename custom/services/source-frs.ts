@@ -1,6 +1,6 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
-import { IDB } from '../models';
+import { IDB, IBase } from '../models';
 import { Print, Utility, File, FRSService } from '../helpers';
 import * as Enum from '../enums';
 import * as Action from '../actions';
@@ -277,9 +277,7 @@ namespace Service {
     /**
      *
      */
-    export interface IObjectFRS {
-        [key: string]: IFRS;
-    }
+    export interface IObjectFRS extends IBase.IObject.IKeyValue<IFRS> {}
 
     /**
      *

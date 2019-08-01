@@ -1,10 +1,11 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, IDateRange, LocationSite } from './_index';
+import { ParseObjectNotice, LocationSite } from './_index';
+import { IDate } from '../base/_index';
 
 /**
  * 事件活動
  */
-export interface IEventCampaign extends IDateRange {
+export interface IEventCampaign extends IDate.IRange {
     /**
      * 名稱
      */

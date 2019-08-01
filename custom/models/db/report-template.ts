@@ -1,11 +1,12 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, IDateRange, IDaySingle, LocationSite, Tag } from './_index';
+import { ParseObjectNotice, LocationSite, Tag } from './_index';
 import * as Enum from '../../enums';
+import { IDate, IDay } from '../base/_index';
 
 /**
  * 報表模板
  */
-export interface IReportTemplate extends IDateRange {
+export interface IReportTemplate extends IDate.IRange {
     /**
      * User
      */
@@ -39,7 +40,7 @@ export interface IReportTemplate extends IDateRange {
     /**
      * 寄信時間
      */
-    sendDates: IDaySingle[];
+    sendDates: IDay.ISingle[];
 
     /**
      * 寄信對象
