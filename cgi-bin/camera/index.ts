@@ -99,12 +99,15 @@ action.get(
                 page: _page,
                 count: _count,
                 content: cameras.map((value, index, array) => {
+                    let config = value.getValue('config');
+                    config.lines = config.lines || [];
+
                     return {
                         cameraId: value.id,
                         name: value.getValue('name'),
                         mode: value.getValue('mode'),
                         type: value.getValue('type'),
-                        config: value.getValue('config'),
+                        config: config,
                     };
                 }),
             };
