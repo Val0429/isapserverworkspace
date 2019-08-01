@@ -189,7 +189,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         
         let cCure800SqlAdapter = new CCure800SqlAdapter();
         // await this.CCure800SqlAdapter.connect(config);
-        await cCure800SqlAdapter.writeMember(ret, ccureAccessRules, inputs);
+        await cCure800SqlAdapter.writeMember(ret, ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index), inputs);
         // await this.CCure800SqlAdapter.disconnect();
     }
     catch (ex) {
@@ -380,7 +380,7 @@ console.log(update);
         let cCure800SqlAdapter = new CCure800SqlAdapter();
         
         await cCure800SqlAdapter.connect(config);
-        await cCure800SqlAdapter.writeMember(ret,ccureAccessRules,inputs);
+        await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
         await cCure800SqlAdapter.disconnect();
     }
     catch (ex) {
