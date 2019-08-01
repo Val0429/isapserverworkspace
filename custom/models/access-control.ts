@@ -191,7 +191,7 @@ export interface IAccessLevel {     // CRUD  V
     elevator?: Elevator,
     elevatorgroup?: ElevatorGroup,
     floor?: Floor[],
-    floorgroup:FloorGroup,
+    floorgroup?:FloorGroup,
     reader?: Reader[],
     levelinSiPass?: AccessLevelinSiPass[],
     timeschedule?: TimeSchedule
