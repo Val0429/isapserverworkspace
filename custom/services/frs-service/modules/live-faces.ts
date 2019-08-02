@@ -156,8 +156,8 @@ class LiveFacesAdapter {
         await (this.frs as any).waitForLogin();
         if (this.sjStarted.getValue() === false) return;
 
-        const url: string = `ws://${ip}:${port}/fcsreconizedresult`;
-        const urlnon: string = `ws://${ip}:${port}/fcsnonreconizedresult`;
+        const url: string = `ws://${ip}:${port}/fcsrecognizedresult`;
+        const urlnon: string = `ws://${ip}:${port}/fcsnonrecognizedresult`;
         makeConnection.call(this, url, (data: RecognizedUser) => {
             // console.log('recognized result', data);
             this.frs.sjRecognizedUser.next({type: UserType.Recognized, ...data});

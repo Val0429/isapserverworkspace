@@ -1,32 +1,29 @@
 import { Response } from '~express/lib/response';
-import { FRSService } from './../index';
+import { FRSService } from '../index';
 import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
 import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/services/frs-service/libs/core';
 
-interface IVerifyFace {
-    image: Buffer;
-    targetScore?: number;
-    sourceId?: string;
+interface ICompareFace {
+    image1: string;
+    image2: string;
 }
 
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
-        verifyFace(face: IVerifyFace, times?: number): Promise<string>;
+        compareFace(face: ICompareFace, times?: number): Promise<string>;
     }
 }
 
-FRSService.prototype.verifyFace = async function(face: IVerifyFace, times: number = 0): Promise<string> {
+FRSService.prototype.compareFace = async function(face: ICompareFace, times: number = 0): Promise<string> {
     return retry<string>( async (resolve, reject) => {
         await this.waitForLogin();
-        let { image, targetScore, sourceId } = face;
-        targetScore = targetScore || 0.9;
-        sourceId = sourceId || "valtest";
-        const url: string = this.makeUrl(`frs/cgi/verifyface`);
+        let { image1, image2 } = face;
+        const url: string = this.makeUrl(`frs/cgi/compareface`);
         request({
             url, method: 'POST', json: true,
             headers: { "Content-Type": "application/json" },
-            body: { session_id: this.sessionId, target_score: targetScore, request_client: sourceId, action_enable: 1, source_id: sourceId, location: sourceId, image: image.toString("base64") }
+            body: { session_id: this.sessionId, image_1: image1, image_2: image2 }
         }, async (err, res, body) => {
             if (err || res.statusCode !== 200) {
                 reject(err || body.toString());
@@ -38,6 +35,5 @@ FRSService.prototype.verifyFace = async function(face: IVerifyFace, times: numbe
             }
             return resolve(body);
         });
-    }, times, "FRSService.verifyFace");
+    }, times, "FRSService.compareFace");
 }
-

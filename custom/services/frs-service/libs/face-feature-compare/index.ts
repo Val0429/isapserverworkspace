@@ -1,13 +1,19 @@
-let version = +process.version.match(/^v([0-9]+)/)[1];
+const isWindows = process.platform === "win32";
+const version = +process.version.match(/^v([0-9]+)/)[1];
 
-var ffc = version >= 8 ?
-    require('./face-feature-compare-v8/featureCompareWin/build/Release/faceFeatureCompare') :
-    require('./face-feature-compare-v6/featureCompareWin/build/Release/faceFeatureCompare')()
-    ;
+const ffc = isWindows ?
+    (
+        version >= 8 ? require('./face-feature-compare-v8/featureCompareWin/build/Release/faceFeatureCompare')
+                     : require('./face-feature-compare-v6/featureCompareWin/build/Release/faceFeatureCompare')()
+    ) :
+    (
+        version >= 8 ? require('./face-feature-compare-v8/featureCompareLinux-Val/build/Release/faceFeatureCompare')
+                     : require('./face-feature-compare-v6/featureCompareLinux/build/Release/faceFeatureCompare')()
+    );
 
     export namespace FaceFeatureCompare {
     function getScore(result): number {
-        return +JSON.parse(result).score;
+        return typeof result === 'number' ? result : +JSON.parse(result).score;
     }
 
     export function sync(buffer1, buffer2) {
