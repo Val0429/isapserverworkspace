@@ -63,6 +63,7 @@ import {
         token = new APITokens(); await token.save({ identifier: "5-4_door_elevator_CRUD" });
         token = new APITokens(); await token.save({ identifier: "5-5_door_reader_CRUD" });
         token = new APITokens(); await token.save({ identifier: "5-6_door_elevatorgroup_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "5-7_door_floorgroup_CRUD" });
 
         token = new APITokens(); await token.save({ identifier: "6-1_notification_sync_CRUD" });
 

@@ -11,7 +11,7 @@ import { IFloorGroup, FloorGroup } from '../../custom/models'
 
 var action = new Action({
     loginRequired: true,
-    // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
+    apiToken:"5-7_door_floorgroup_CRUD"
 });
 
 /// CRUD start /////////////////////////////////
