@@ -26,7 +26,7 @@ type InputR = Restful.InputR<IAttendanceRecords>;
 type OutputR = Restful.OutputR<IAttendanceRecords>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
-    let pageSize = Number.MAX_SAFE_INTEGER;
+    let pageSize = 10000;
 
     /// 1) Make Query
     let query = new Parse.Query(AttendanceRecords);

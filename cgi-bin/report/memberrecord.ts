@@ -66,13 +66,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         query.lessThanOrEqualTo(fieldNames.CardEndDate, (new Date()).toISOString());
     }
     /// 3) Output
-    let o = await query.limit(Number.MAX_SAFE_INTEGER).find();
+    let pageSize=10000;
+    let o = await query.limit(pageSize).find();
     let outputData = o.map( (d) => ParseObject.toOutputJSON(d));
     
     let results = constructData(outputData, filter);
     let paging :any = {
         page: 1,
-        pageSize: Number.MAX_SAFE_INTEGER,
+        pageSize,
         total: results.length,
         totalPages: 1
     };

@@ -1,5 +1,5 @@
 import {
-    Action, Restful, Door, IPermissionTable, PermissionTable, TimeSchedule, AccessLevel, DoorGroup
+    Action, Restful, Door, IPermissionTable, PermissionTable, TimeSchedule, AccessLevel, DoorGroup, ParseObject
 } from 'core/cgi-package';
 
 
@@ -19,8 +19,11 @@ type OutputR = Restful.OutputR<IPermissionTable>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(PermissionTable)
+        .equalTo("system", 0)
         .include("accesslevels.door")
         .include("accesslevels.doorgroup.doors")
+        .include("accesslevels.floor")
+        .include("accesslevels.floorgroup.floors")
         .include("accesslevels.timeschedule")
         .include("accesslevels.reader");
 
@@ -44,9 +47,20 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         query.matchesQuery("accesslevels", alQuery);
     }
     /// 2) With Extra Filters
+    let pageSize=10000;
     query = Restful.Filter(query, data.inputType);
+    let o = await query.limit(pageSize).find();
+    let results = o.map(x=> ParseObject.toOutputJSON(x));
     /// 3) Output
-    return Restful.Pagination(query, data.parameters);
+    return {
+        paging:{
+            page:1,
+            pageSize,
+            total:results.length,
+            totalPages:Math.ceil(results.length / pageSize)
+        },
+        results
+    };
 });
 
 
