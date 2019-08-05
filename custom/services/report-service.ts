@@ -61,7 +61,7 @@ export class ReportService{
         .addAscending("card_no")
         .addAscending("date_occurred")
         .addAscending("time_occurred");
-
+        console.log("filter attendance", filter);
         if (filter.CardNumber) {
             query.matches("card_no", new RegExp(filter.CardNumber), "i");
         }
@@ -99,7 +99,7 @@ export class ReportService{
     async getMemberRecord(filter:any, limit:number=10000){
         /// 1) Make Query
         var query = new Parse.Query(Member);      
-        console.log("filter", filter);
+        console.log("filter member", filter);
         if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
         if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
         if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  

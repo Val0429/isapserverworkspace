@@ -1,14 +1,11 @@
 import { Action, Restful} from 'core/cgi-package';
 
-import { IAttendanceRecords } from 'workspace/custom/models/index';
 import { ReportService } from 'workspace/custom/services/report-service';
 
 
 var action = new Action({
-    loginRequired: false,
-    postSizeLimit: 1024 * 1024 * 10,
-    // permission: [RoleList.Admin, RoleList.User],
-    apiToken: "2-7_report_attendance_R"
+    loginRequired: true,
+    apiToken: "2-4_report_card_R"
 });
 
 
@@ -16,14 +13,16 @@ var action = new Action({
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<IAttendanceRecords>;
-type OutputR = Restful.OutputR<IAttendanceRecords>;
+type InputR = Restful.InputR<any>;
+type OutputR = Restful.OutputR<any>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let pageSize = 10000;
 
     let reportService = new ReportService();
-    let results = await reportService.getAttendanceRecord(data.parameters as any);
+   
+    let filter = data.parameters as any;
+    let results = await reportService.getMemberRecord(filter, pageSize);
 
     /// 3) Output
     return {
