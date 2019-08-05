@@ -37,39 +37,35 @@ import {
     /// Create default API Tokens
     let token = await new Parse.Query(APITokens).first();
     if (!token) {
-        token = new APITokens(); await token.save({ identifier: "1-1_user_Permission_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "1-2_user_Management_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "user_Permission_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "user_Management_CRUD" });
 
-        token = new APITokens(); await token.save({ identifier: "2-1_report_member_R" });
-        token = new APITokens(); await token.save({ identifier: "2-2_report_door_R" });
-        token = new APITokens(); await token.save({ identifier: "2-3_report_doorgroup_R" });
-        token = new APITokens(); await token.save({ identifier: "2-4_report_card_R" });
-        token = new APITokens(); await token.save({ identifier: "2-5_report_contractor_R" });
-        token = new APITokens(); await token.save({ identifier: "2-6_report_demographic_R" });
-        token = new APITokens(); await token.save({ identifier: "2-7_report_attendance_R" });
-        token = new APITokens(); await token.save({ identifier: "2-8_report_visitor_R" });
+        token = new APITokens(); await token.save({ identifier: "report_member_R" });
+        token = new APITokens(); await token.save({ identifier: "report_door_R" });
+        token = new APITokens(); await token.save({ identifier: "report_doorgroup_R" });
+        token = new APITokens(); await token.save({ identifier: "report_card_R" });
+        token = new APITokens(); await token.save({ identifier: "report_contractor_R" });
+        token = new APITokens(); await token.save({ identifier: "report_demographic_R" });
+        token = new APITokens(); await token.save({ identifier: "report_attendance_R" });
+        token = new APITokens(); await token.save({ identifier: "report_visitor_R" });
 
-        token = new APITokens(); await token.save({ identifier: "3-1_door_accesslevel_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "3-2_door_member_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "3-3_door_permissiontable_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_accesslevel_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_member_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_permissiontable_CRUD" });
 
-        token = new APITokens(); await token.save({ identifier: "4-1_location_area_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "4-2_location_site_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "4-3_location_region_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_door_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_doorgroup_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_floor_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_elevator_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_reader_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_elevatorgroup_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "door_floorgroup_CRUD" });
 
-        token = new APITokens(); await token.save({ identifier: "5-1_door_door_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "5-2_door_doorgroup_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "5-3_door_floor_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "5-4_door_elevator_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "5-5_door_reader_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "5-6_door_elevatorgroup_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "5-7_door_floorgroup_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "notification_sync_CRUD" });
 
-        token = new APITokens(); await token.save({ identifier: "6-1_notification_sync_CRUD" });
-
-        token = new APITokens(); await token.save({ identifier: "7-1_system_hurmanresource_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "7-2_system_license_CRUD" });
-        token = new APITokens(); await token.save({ identifier: "7-3_system_operationlog_R" });
+        token = new APITokens(); await token.save({ identifier: "system_hurmanresource_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "system_license_CRUD" });
+        token = new APITokens(); await token.save({ identifier: "system_operationlog_R" });
     }
 
     let apiRole = await new Parse.Query(APIRoles).first();

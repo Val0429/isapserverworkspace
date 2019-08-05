@@ -9,7 +9,7 @@ import {
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.SystemAdministrator, RoleList.Admin],
-    apiToken : "1-2_user_Management_CRUD"
+    apiToken : "user_Management_CRUD"
 
 });
 

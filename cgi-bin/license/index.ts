@@ -12,7 +12,7 @@ var getMac = require('getmac').getMac;
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.SystemAdministrator, RoleList.Admin],
-    apiToken: "7-2_system_license_CRUD"
+    apiToken: "system_license_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

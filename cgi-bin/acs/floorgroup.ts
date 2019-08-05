@@ -11,7 +11,7 @@ import { IFloorGroup, FloorGroup } from '../../custom/models'
 
 var action = new Action({
     loginRequired: true,
-    apiToken:"5-7_door_floorgroup_CRUD"
+    apiToken:"door_floorgroup_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

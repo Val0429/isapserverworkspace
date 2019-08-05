@@ -70,7 +70,7 @@ var action = new Action({
     loginRequired: false,
     postSizeLimit: 1024 * 1024 * 10,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
-    apiToken: "3-2_door_member_CRUD"
+    apiToken: "door_member_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

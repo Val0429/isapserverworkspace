@@ -13,7 +13,7 @@ import { LocationArea, LocationSite } from 'workspace/custom/models/db/_index';
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
-    apiToken: "5-5_door_reader_CRUD"
+    apiToken: "door_reader_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

@@ -13,7 +13,7 @@ import { LocationSite, LocationArea } from 'workspace/custom/models/db/_index';
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
-    apiToken: "5-4_door_elevator_CRUD"
+    apiToken: "door_elevator_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

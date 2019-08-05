@@ -5,7 +5,7 @@ import { ReportService } from 'workspace/custom/services/report-service';
 
 var action = new Action({
     loginRequired: true,
-    apiToken: "2-1_report_member_R"
+    apiToken: "report_member_R"
 });
 
 

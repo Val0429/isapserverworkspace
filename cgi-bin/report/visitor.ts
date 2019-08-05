@@ -6,7 +6,7 @@ import moment = require('moment');
 
 var action = new Action({
     loginRequired: true,
-    apiToken: "2-8_report_visitor_R"
+    apiToken: "report_visitor_R"
 });
 
 

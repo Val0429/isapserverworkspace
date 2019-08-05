@@ -11,7 +11,7 @@ import { ISyncNotification, SyncNotification } from '../../custom/models'
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
-    apiToken: "6-1_notification_sync_CRUD"
+    apiToken: "notification_sync_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

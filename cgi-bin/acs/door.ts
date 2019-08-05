@@ -15,7 +15,7 @@ import { LocationArea } from 'workspace/custom/models/db/location-area';
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
-    apiToken: "5-1_door_door_CRUD"
+    apiToken: "door_door_CRUD"
 });
 
 /// CRUD start /////////////////////////////////

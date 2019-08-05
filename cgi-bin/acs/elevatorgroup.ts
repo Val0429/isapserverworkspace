@@ -12,7 +12,7 @@ import { IElevatorGroup, ElevatorGroup } from '../../custom/models'
 var action = new Action({
     loginRequired: true,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
-    apiToken: "5-6_door_elevatorgroup_CRUD"
+    apiToken: "door_elevatorgroup_CRUD"
 });
 
 /// CRUD start /////////////////////////////////
