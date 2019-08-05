@@ -1,6 +1,6 @@
 import {
-    Action, Restful, Door, IPermissionTable, PermissionTable, TimeSchedule, AccessLevel, DoorGroup, ParseObject
-} from 'core/cgi-package';
+    Action, Restful, IPermissionTable} from 'core/cgi-package';
+import { ReportService } from 'workspace/custom/services/report-service';
 
 
 
@@ -17,40 +17,11 @@ type InputR = Restful.InputR<IPermissionTable>;
 type OutputR = Restful.OutputR<IPermissionTable>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
-    /// 1) Make Query
-    var query = new Parse.Query(PermissionTable)
-        .equalTo("system", 0)
-        .include("accesslevels.door")
-        .include("accesslevels.doorgroup.doors")
-        .include("accesslevels.floor")
-        .include("accesslevels.floorgroup.floors")
-        .include("accesslevels.timeschedule")
-        .include("accesslevels.reader");
-
-    let filter = data.parameters as any;
-    if(filter.name){
-        query.matches("tablename", new RegExp(filter.name), "i");
-    }
-    if(filter.timename){
-        let tsQuery = new Parse.Query(TimeSchedule).matches("timename", new RegExp(filter.timename), "i");    
-        let alQuery = new Parse.Query(AccessLevel).matchesQuery("timeschedule", tsQuery);    
-        query.matchesQuery("accesslevels", alQuery);
-    }
-    if(filter.doorname){
-        let doorQuery = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname), "i");    
-        let alQuery = new Parse.Query(AccessLevel).matchesQuery("door", doorQuery);
-        query.matchesQuery("accesslevels", alQuery);
-    }
-    if(filter.doorgroupname){
-        let dgQuery = new Parse.Query(DoorGroup).matches("groupname", new RegExp(filter.doorgroupname), "i");    
-        let alQuery = new Parse.Query(AccessLevel).matchesQuery("doorgroup", dgQuery);
-        query.matchesQuery("accesslevels", alQuery);
-    }
-    /// 2) With Extra Filters
+    
     let pageSize=10000;
-    query = Restful.Filter(query, data.inputType);
-    let o = await query.limit(pageSize).find();
-    let results = o.map(x=> ParseObject.toOutputJSON(x));
+    let reportService = new ReportService();
+    let results = await reportService.getPermissionRecord(data.parameters as any);
+
     /// 3) Output
     return {
         paging:{
