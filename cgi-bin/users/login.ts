@@ -44,12 +44,15 @@ export default new Action<Input, Output>({
             let apiRoles=user.get("apiRoles");
             if(apiRoles){
                 let apiRole = new APIRoles();
-                apiRole.id=apiRoles[0].id;
-                permissions = await new Parse.Query(APIPermissions)
-                    .include("a")
-                    .include("of")
-                    .equalTo("a", apiRole)
-                    .find();
+                for(let api of apiRoles){
+                    apiRole.id=api.id;
+                    let perms = await new Parse.Query(APIPermissions)
+                        .include("a")
+                        .include("of")
+                        .equalTo("a", apiRole)
+                        .find();
+                    permissions.push(...perms);
+                }
             }
             /// Success
             sessionId = user.getSessionToken();
@@ -74,12 +77,17 @@ export default new Action<Input, Output>({
         let apiRoles=user.get("apiRoles");
         if(apiRoles){
             let apiRole = new APIRoles();
-            apiRole.id=apiRoles[0].id;
-            permissions = await new Parse.Query(APIPermissions)
-                .include("a")
-                .include("of")
-                .equalTo("a", apiRole)
-                .find();
+            
+            for(let api of apiRoles){
+                apiRole.id=api.id;
+                let perms = await new Parse.Query(APIPermissions)
+                    .include("a")
+                    .include("of")
+                    .equalTo("a", apiRole)
+                    .find();
+                permissions.push(...perms);
+            }
+            
         }
     }
 
