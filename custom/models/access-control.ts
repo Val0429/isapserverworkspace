@@ -20,7 +20,6 @@ export interface IDoor {    // CRUD daily V
     system?: number,         // 0: iSap 1: SiPass 2: CCure800
     doorid?: number,
     doorname: string,
-    area?: IDB.LocationArea,
     readerin?: Reader[],
     readerout?: Reader[],
     status?: number
@@ -41,7 +40,6 @@ export interface IFloorGroup {  // CRUD V
     system?: number,             // 0: iSap
     groupid?: number,
     groupname: string,
-    area?: IDB.LocationArea,
     floors?: Floor[],
     status?: number
 }
@@ -52,7 +50,6 @@ export interface IElevator {    // CRUD V
     system: number,             // 0: iSap 1: SiPass 2: CCure800
     elevatorid?: number,
     elevatorname: string,
-    area?: IDB.LocationArea,
     reader?: Floor[],
     readergroup?: FloorGroup[],
     status?: number
@@ -64,7 +61,6 @@ export interface IDoorGroup {   // CRUD V
     system?: number,             // 0: iSap
     groupid?: number,
     groupname?: string,
-    area?: IDB.LocationArea,
     doors?: Door[],
     status?: number
 }
@@ -75,7 +71,6 @@ export interface IElevatorGroup {   // CRUD V
     system?: number,                 // 0: iSap 
     groupid?: number,
     groupname?: string,
-    area?: IDB.LocationArea,
     elevators?: Elevator[],
     status?: number
 }
