@@ -129,6 +129,12 @@ export * from './report-repeat-visitor';
 export * from './report-sales-record';
 export * from './report-template';
 
+export * from './rule-base';
+export * from './rule-human-detection';
+export * from './rule-people-counting';
+export * from './rule-repeat-visitor';
+export * from './rule-visitor';
+
 export * from './server-cms';
 export * from './server-demographic';
 export * from './server-frs-manager';

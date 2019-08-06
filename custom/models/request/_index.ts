@@ -6,11 +6,12 @@ import * as ILocation from './location';
 import * as IOfficeHour from './office-hour';
 import * as IPartner from './partner';
 import * as IReport from './report';
+import * as IRule from './rule';
 import * as ISetting from './setting';
 import * as ITag from './tag';
 import * as IUser from './user';
 
-export { IConfig, IDevice, IEvent, ILicense, ILocation, IOfficeHour, IPartner, IReport, ISetting, ITag, IUser };
+export { IConfig, IDevice, IEvent, ILicense, ILocation, IOfficeHour, IPartner, IReport, IRule, ISetting, ITag, IUser };
 
 export interface IPaging {
     page?: number;
