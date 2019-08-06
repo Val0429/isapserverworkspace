@@ -7,6 +7,53 @@ import { RoleList } from 'core/userRoles.gen';
 import { O } from 'helpers/utility';
 
 
+/// handle license renew //////////////////////
+import licenseService from 'services/license';
+import { ScheduleHelperV2 } from 'helpers/schedules/schedule-helper-v2';
+import { EScheduleUnitRepeatType, EScheduleUnitRepeatEndType } from 'models/nodes';
+export const kioskLicense = '00261';
+
+async function checkLicense() {
+    let kioskRole = await new Parse.Query(Parse.Role)
+        .equalTo("name", RoleList.Kiosk)
+        .first();
+
+    let kioskCounts = await new Parse.Query(Parse.User)
+        .equalTo("roles", kioskRole)
+        .count();
+
+    let license = await licenseService.getLicense();
+
+    let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
+
+    let kiosks = await new Parse.Query(Parse.User)
+        .equalTo("roles", kioskRole)
+        .find();
+
+    for (let i=0; i<kiosks.length; ++i) {
+        let kiosk = kiosks[i];
+        let activated = i < totalCounts ? true : false;
+        if (kiosk.attributes.data.activated === activated) continue;
+        kiosk.attributes.data.activated = activated;
+        kiosk.save({
+            data: kiosk.attributes.data
+        }, { useMasterKey: true });
+    }
+}
+/// update license for every one hour
+ScheduleHelperV2.observe({
+    beginDate: new Date(1970, 0, 1, 0, 0, 0),
+    endDate: new Date(1970, 0, 1, 0, 0, 10),
+    fullDay: false,
+    repeat: {
+        type: EScheduleUnitRepeatType.Hour,
+        value: 1,
+        endType: EScheduleUnitRepeatEndType.NoStop
+    }
+}, "License Checker")
+.subscribe(checkLicense);
+///////////////////////////////////////////////
+
 
 // import frs from './../../services/frs-service';
 // import licenseService from 'services/license';
