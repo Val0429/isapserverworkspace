@@ -26,6 +26,14 @@ export class FRSService {
     }
 
     /**
+     * Base ws url
+     */
+    private _baseWsUrl: string = '';
+    public get baseWsUrl(): string {
+        return this._baseWsUrl;
+    }
+
+    /**
      * Session id
      */
     private _sessionId: string = '';
@@ -93,6 +101,7 @@ export class FRSService {
         }
 
         this._baseUrl = `${this._config.protocol}://${this._config.ip}:${this._config.port}`;
+        this._baseWsUrl = `ws://${this._config.ip}:${this._config.wsport}`;
         this._isInitialization = true;
     }
 
@@ -299,7 +308,7 @@ export class FRSService {
         }
 
         let ws = new Ws();
-        ws.url = `ws://${this._config.ip}:${this._config.port}/frs/ws/fcsnonreconizedresult?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
+        ws.url = `${this._baseWsUrl}/frs/ws/fcsnonreconizedresult?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
 
         this._liveStream$ = new Rx.Subject();
         this._liveStreamCatch$ = new Rx.Subject();
