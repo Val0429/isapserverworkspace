@@ -10,7 +10,7 @@ export interface ICMSSnapshot {
     snapshotBase64: string;
 }
 
-export interface IFRSUserGroup {
+export interface IServerFRSUserGroup {
     type: string;
     objectId: string;
     name: string;
@@ -20,7 +20,7 @@ export interface IFRSR extends IRequest.IPartner.IFRSBase {
     objectId: string;
     customId: string;
     name: string;
-    userGroups: IFRSUserGroup[];
+    userGroups: IServerFRSUserGroup[];
 }
 
 export interface IHumanDetectionR extends IRequest.IPartner.IHumanDetectionC {

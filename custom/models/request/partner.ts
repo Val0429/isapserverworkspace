@@ -1,4 +1,4 @@
-import { IFRSUserGroup } from '../db/_index';
+import { IServerFRSUserGroup } from '../db/_index';
 
 export interface ICMSBase {
     protocol: 'http' | 'https';
@@ -51,13 +51,13 @@ export interface IFRSBase {
 export interface IFRSC extends IFRSBase {
     customId: string;
     name: string;
-    userGroups: IFRSUserGroup[];
+    userGroups: IServerFRSUserGroup[];
 }
 
 export interface IFRSU extends IFRSBase {
     objectId: string;
     name?: string;
-    userGroups?: IFRSUserGroup[];
+    userGroups?: IServerFRSUserGroup[];
 }
 
 export interface IFRSDevice_ObjectId {

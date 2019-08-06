@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice } from './_index';
+import { ParseObjectNotice, IServerFRSUserGroup } from './_index';
 
 /**
  * FRS 設定
@@ -39,6 +39,11 @@ export interface IServerFRSManager {
      *
      */
     password: string;
+
+    /**
+     * User group in FRS
+     */
+    userGroups: IServerFRSUserGroup[];
 }
 
 @registerSubclass()

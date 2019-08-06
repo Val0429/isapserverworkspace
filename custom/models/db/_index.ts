@@ -137,6 +137,7 @@ export * from './rule-visitor';
 
 export * from './server-cms';
 export * from './server-demographic';
+export * from './server-frs-group';
 export * from './server-frs-manager';
 export * from './server-frs';
 export * from './server-human-detection';
