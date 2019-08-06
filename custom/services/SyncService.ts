@@ -16,7 +16,7 @@ export class SyncService{
                 if (!r["permissionTableId"] || !r["permissionTableName"]) continue;
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
                 let obj = await new Parse.Query(PermissionTable)
-                    .equalTo("tablename", r["permissionTableName"])
+                    .equalTo("tableid", parseInt(r["permissionTableId"]))
                     .equalTo("system", 800)
                     .first();
                 if (obj == null) {
@@ -66,7 +66,7 @@ export class SyncService{
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTableDoor ${r["permissionTableId"]}-${r["doorId"]}`);
                 let obj = await new Parse.Query(PermissionTableDoor)
-                    .equalTo("permissionTableId", r["permissionTableId"])
+                    .equalTo("permissionTableId", parseInt(r["permissionTableId"]))
                     .first();
                 if (obj == null) {
                     let d = {
@@ -141,13 +141,13 @@ export class SyncService{
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
                 let obj = await new Parse.Query(Reader)
-                    .equalTo("deviceId", +r["deviceId"])
+                    .equalTo("readerid", r["deviceId"])
                     .equalTo("system", 800)
                     .first();
                 if (obj == null) {
                     let d = {
                         system: 800,
-                        readerid: +r["deviceId"],
+                        readerid: r["deviceId"],
                         readername: r["deviceName"],
                         status: 1
                     };
@@ -156,7 +156,7 @@ export class SyncService{
                 }
                 else {
                     obj.set("system", 800);
-                    obj.set("readerid", +r["deviceId"]);
+                    obj.set("readerid", r["deviceId"]);
                     obj.set("readername", r["deviceName"]);
                     await obj.save();
                 }
@@ -184,7 +184,7 @@ export class SyncService{
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);
                 let obj = await new Parse.Query(Door)
-                    .equalTo("doorname", r["doorName"])
+                    .equalTo("doorid", r["doorId"])
                     .equalTo("system", 800)
                     .first();
                 if (obj == null) {
@@ -218,7 +218,7 @@ export class SyncService{
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
                 let obj = await new Parse.Query(TimeSchedule)
-                    .equalTo("timename", r["timespecName"])
+                    .equalTo("timeid", r["timespecId"])
                     .equalTo("system", 800)
                     .first();
                 if (obj == null) {
@@ -251,7 +251,9 @@ export class SyncService{
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`CGI acsSync`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
-                let obj = await new Parse.Query(Reader).equalTo("readerid", r["Token"]).first();
+                let obj = await new Parse.Query(Reader)
+                            .equalTo("readerid", parseInt(r["Token"]))
+                            .first();
                 if (obj == null) {
                     let d = {
                         system: 1,
@@ -305,7 +307,7 @@ export class SyncService{
                 Log.Info(`${this.constructor.name}`, `Import data SiPass WorkGroup ${grouplist[idx]["Name"]}-${grouplist[idx]["Token"]}`);
                 let group = await siPassAdapter.getWorkGroup(grouplist[idx]["Token"]);
                 let obj = await new Parse.Query(WorkGroup)
-                    .equalTo("groupname", group["Name"])
+                    .equalTo("groupid", group["Token"])
                     .equalTo("system", 1)
                     .first();
                 if (obj == null) {
@@ -357,7 +359,9 @@ export class SyncService{
 
                         let level = await siPassAdapter.getAccessLevel(group["AccessLevels"][j]["Token"]);
 
-                        let obj = await new Parse.Query(TimeSchedule).equalTo("timeid", +level["TimeScheduleToken"]).first();
+                        let obj = await new Parse.Query(TimeSchedule)
+                                    .equalTo("timeid", +level["TimeScheduleToken"])
+                                    .first();
                         let tsid = obj.id;
 
                         let rs = [];
