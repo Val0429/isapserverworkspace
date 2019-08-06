@@ -79,7 +79,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     
     let {permTableNames, devices, errors} = await checkCCureDevices(accessLevels);
     if(errors.length>0)return {errors};
-    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length);
+    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length && x.permissionTableName==data.inputType.tablename);
 
     if(!ccurePermissionTable){
         errors.push({type:"clearanceIsNotInCCure"});
@@ -168,7 +168,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
     let {permTableNames, devices, errors} = await checkCCureDevices(accessLevels);
     if(errors.length>0)return {errors};
-    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length);
+    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length && x.permissionTableName==data.inputType.tablename);;
 
     if(!ccurePermissionTable){
         errors.push({type:"clearanceIsNotInCCure"});
