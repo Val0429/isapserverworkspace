@@ -16,20 +16,16 @@ var action = new Action({
 
 action.get<any, any>({}, async () => {
     
-    this.waitTimer = setTimeout(() => {
-        syncData();
-    }, 1000);
+   
+    let syncService = new SyncService();
+    await syncService.syncCcureDoor();
+    await syncService.syncSipassReader();
 
-    async function syncData() {
-            let syncService = new SyncService();
-            await syncService.syncCcureDoor();
-            await syncService.syncSipassReader();
+    await syncService.syncSipassFloor();
 
-            await syncService.syncSipassFloor();
-
-            await syncService.syncCcureDoorReader();
-            await syncService.syncCcureFloor();
-        }
+    await syncService.syncCcureDoorReader();
+    await syncService.syncCcureFloor();
+      
     
 
     return { success: true };
