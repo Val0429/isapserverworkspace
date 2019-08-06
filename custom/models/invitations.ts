@@ -30,3 +30,20 @@ export interface IInvitations {
     walkIn?: boolean;
 }
 @registerSubclass() export class Invitations extends ParseObject<IInvitations> {}
+
+// export interface IInvitations {
+//     /**
+//      * Who invites
+//      */
+//     parent: Parse.User;
+//     /**
+//      * All visitors being invited
+//      */
+//     visitors: Visitors[];
+//     dates: IInvitationDateAndPin[];
+//     purpose: Purposes;
+//     notify: IInvitationNotify;
+//     cancelled?: boolean;
+//     walkIn?: boolean;
+// }
+// @registerSubclass() export class Invitations extends ParseObject<IInvitations> {}

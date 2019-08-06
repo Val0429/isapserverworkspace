@@ -6,6 +6,7 @@ import {
     UserHelper, getEnumKey, ParseObject, EnumConverter, sharedMongoDB
 } from 'core/cgi-package';
 
+const bcrypt = require('bcryptjs');
 
 export interface Input {
     oldPassword: string;
@@ -23,25 +24,24 @@ export default new Action<Input, Output>({
     inputType: "Input",
 })
 .all( async (data) => {
-    /// 1) test login with old password
-    let obj;
-    try {
-        obj = await UserHelper.login({
-            username: data.user.get("username"),
-            password: data.inputType.oldPassword
-        });
-    } catch(e) {
-        /// 1.1) if failed, throw Errors
-        throw Errors.throw(Errors.CustomBadRequest, ["Old password not correct."]);
-    }
+    let { oldPassword, newPassword } = data.inputType;
+    /// check old password
+    let db = await sharedMongoDB();
+    let col = db.collection("_User");
+    let user = await col.findOne({
+        username: data.user.get("username")
+    });
+    let same = await bcrypt.compare(oldPassword, user._hashed_password);
+
+    /// 1.1) if failed, throw Errors
+    if (!same) throw Errors.throw(Errors.CustomBadRequest, ["Old password not correct."]);
 
     /// 1.2) if success, change password
-    data.user.setPassword(data.inputType.newPassword);
+    data.user.setPassword(newPassword);
     await data.user.save(null, {useMasterKey: true});
 
     /// 2) output user
     return ParseObject.toOutputJSON({
-        sessionId: obj.sessionId,
         serverTime: new Date(),
         user: data.user
     });
