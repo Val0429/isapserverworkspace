@@ -621,16 +621,24 @@ export class Report {
                 let date: Date = value.get('date');
                 let day: number = date.getDay();
                 let hour: number = new Date(date).setFullYear(2000, 0, 1);
+                let site: IDB.LocationSite = value.get('site');
 
                 return !!this._officeHours.find((value1, index1, array1) => {
-                    return !!value1.getValue('dayRanges').find((value2, index2, array2) => {
-                        let startDay: number = parseInt(value2.startDay);
-                        let endDay: number = value2.endDay === '0' ? 7 : parseInt(value2.endDay);
-                        let startDate: number = value2.startDate.getTime();
-                        let endDate: number = value2.endDate.getTime();
-
-                        return startDay <= day && day <= endDay && startDate <= hour && hour < endDate;
+                    let siteIds: string[] = value1.getValue('sites').map((value2, index2, array2) => {
+                        return value2.id;
                     });
+
+                    return (
+                        siteIds.indexOf(site.id) > -1 &&
+                        !!value1.getValue('dayRanges').find((value2, index2, array2) => {
+                            let startDay: number = parseInt(value2.startDay);
+                            let endDay: number = value2.endDay === '0' ? 7 : parseInt(value2.endDay);
+                            let startDate: number = value2.startDate.getTime();
+                            let endDate: number = value2.endDate.getTime();
+
+                            return startDay <= day && day <= endDay && startDate <= hour && hour < endDate;
+                        })
+                    );
                 });
             });
 
