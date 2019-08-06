@@ -25,8 +25,8 @@ function WriteJsonFile(path,json){
     });
 }
 
-//GetMigrationDataPermissionTable().then(r => WriteJsonFile("E://result.txt",r));
-GetMigrationDataPerson().then(r => WriteJsonFile("E://result2.txt",r));
+GetMigrationDataPermissionTable().then(r => WriteJsonFile("E://result.txt",r));
+GetMigrationDataPerson("E:/person.csv").then(result=>console.log(result[0]));
 
 
 

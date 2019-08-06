@@ -247,38 +247,16 @@ export async function GetMigrationDataPermissionTable(){
     return result;
 }
 
-export async function GetMigrationDataPerson()
+export async function GetMigrationDataPerson(csvPath:string)
 {
-    let _service : CCUREService = new CCUREService();
-    _service.Login();
-
-    await delay(3000);
-
-    let fieldList = await _service.GetPersonPropList(`inner:Field_Id>1000000007`);
-
-    console.log("(Finish get person props)");
-
-    let persons = await _service.GetAllPersons();
-
-    console.log("(Finish get person data)");
-
-    let result = {};
-    for(var idx = 0 ; idx < persons.length ; idx++){
-        let personJson = persons[idx];
-        let personId = personJson["personId"];
-        result[personId] = personJson;
-    }
-
-    for(var idx = 0 ; idx < fieldList.length ; idx++){
-        let extInfos = await _service.GetPersonExtendInfo(`inner:pub.person_field_values.Field_Id=${fieldList[idx]["fieldId"]}`);
-        console.log(`(Finish get extend information : id: ${idx}) `);
-        for(var i = 0 ; i < extInfos.length ; i++){
-            let personId = extInfos[i]["personId"];
-            if(isNullOrUndefined(result[personId])===true) continue;
-            if(extInfos[i]["charVal"] == null && extInfos[i]["decimalVal"] == null) continue;
-            result[personId][extInfos[i]["fieldName"]] = (extInfos[i]["charVal"] == null ?  extInfos[i]["decimalVal"] : extInfos[i]["charVal"]);
-        }
-    }
+    let signal = new SignalObject(false);
+    const csv=require('csvtojson');
+    let result;
+    csv().fromFile(csvPath).then((jsonObj)=>{
+        result = jsonObj;
+        signal.set(true);
+    });
+    await signal.wait();
     return result;
 }
 
