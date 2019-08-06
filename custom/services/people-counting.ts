@@ -182,9 +182,10 @@ class Service {
                                         try {
                                             let count = { in: 0, out: 0 };
                                             lines.forEach((value, index, array) => {
-                                                if (!!counts[index]) {
-                                                    count.in += counts[index].in;
-                                                    count.out += counts[index].out;
+                                                let i: number = value - 1;
+                                                if (!!counts[i]) {
+                                                    count.in += counts[i].in;
+                                                    count.out += counts[i].out;
                                                 }
                                             });
 

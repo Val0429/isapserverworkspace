@@ -99,9 +99,10 @@ action.ws(async (data) => {
                         let counts = await hanwha.GetDoStatus();
                         let count = { in: 0, out: 0 };
                         lines.forEach((value1, index1, array1) => {
-                            if (!!counts[index1]) {
-                                count.in += counts[index1].in;
-                                count.out += counts[index1].out;
+                            let i: number = value1 - 1;
+                            if (!!counts[i]) {
+                                count.in += counts[i].in;
+                                count.out += counts[i].out;
                             }
                         });
 
