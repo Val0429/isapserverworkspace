@@ -1,0 +1,6 @@
+.vscode/
+custom/files/
+custom/web/
+custom/license/license.xml
+product_version\.txt
+node_modules/
