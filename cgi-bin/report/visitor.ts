@@ -28,16 +28,16 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let item = attendances[i];
         let item2 = attendances[i+1];
         i+=2;
-        if(!item2)continue;            
-        let newItem = Object.assign(item, {CardNumber:item.card_no});
+        if(!item2 || !item.card_no)continue;
+        let newItem = Object.assign(item, {cardNumber:item.card_no});
         newItem.date_time_occurred_end = item2.date_time_occurred;
         newItem.at_id_end = item2.at_id;
         let timeStart = moment(newItem.date_time_occurred);
         let timeEnd = moment(newItem.date_time_occurred_end);
-        newItem.StartTime = timeStart.format("HH:mm");
-        newItem.DateOccurred = timeStart.format("YYYY-MM-DD");
-        newItem.EndTime = timeEnd.format("HH:mm");
-        newItem.WorkTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m]");
+        newItem.startTime = timeStart.format("HH:mm");
+        newItem.dateOccurred = timeStart.format("YYYY-MM-DD");
+        newItem.endTime = timeEnd.format("HH:mm");
+        newItem.workTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m]");
         results.push(newItem);
     }
 

@@ -17,6 +17,145 @@ const fieldNames = {
     RuleToken:"AccessRules.RuleToken",
     CardEndDate:"Credentials.EndDate"
 }
+const CustomFields = [
+    { fieldName:"CustomTextBoxControl6__CF", name:"companyName", date:false},
+    { fieldName:"CustomTextBoxControl2__CF",name:"cardCustodian", date:false},
+    { fieldName:"CustomTextBoxControl3__CF", name:"lastEditPerson", date:false},
+    { fieldName:"CustomDateControl2__CF", name:"lastEditTime", date:false},
+    { fieldName:"CustomDropdownControl1__CF", name:"cardType", date:false},    
+    { fieldName:"CustomTextBoxControl5__CF_CF", name:"MVPN", date:false},
+    { fieldName:"CustomDropdownControl2__CF_CF", name:"gender", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF", name:"department", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF", name:"costCenter", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF", name:"area", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF", name:"workArea", date:false},
+    { fieldName:"CustomDateControl1__CF_CF_CF", name:"registrationDate", date:true},
+    { fieldName:"CustomDateControl1__CF", name:"resignationDate", date:true},
+    { fieldName:"CustomDropdownControl2__CF", name:"carLicenseCategory", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF", name:"cardLicense", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"carLicense", date:false},
+    { fieldName:"CustomTextBoxControl5__CF", name:"carLicense1", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"carLicense2", date:false},
+    { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"carLicense3", date:false},    
+    { fieldName:"CustomTextBoxControl7__CF_CF", name:"resignationNote", date:false},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF", name:"resignationRecordCardRecord", date:false},
+    { fieldName:"CustomDropdownControl3__CF_CF", name:"reasonForCard1", date:false},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF", name:"historyForCard1", date:false},
+    { fieldName:"CustomDateControl3__CF_CF", name:"dateForCard1", date:true},
+    { fieldName:"CustomDropdownControl3__CF_CF_CF", name:"reasonForCard2", date:false},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF", name:"historyForCard2", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF", name:"dateForCard2", date:true},
+    { fieldName:"CustomDropdownControl3__CF_CF_CF_CF", name:"reasonForCard3", date:false},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF", name:"historyForCard3", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF", name:"dateForCard3", date:true},
+    { fieldName:"CustomDropdownControl3__CF_CF_CF_CF_CF", name:"reasonForApplication1", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF", name:"dateForApplication1", date:true},
+    { fieldName:"CustomDropdownControl3__CF_CF_CF_CF_CF_CF", name:"reasonForApplication2", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF", name:"dateForApplication2", date:true},
+    { fieldName:"CustomDropdownControl3__CF", name:"reasonForApplication3", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF", name:"dateForApplication3", date:true},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF", name:"resignationRecordCarLicense", date:false},    
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"censusRecord1", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"censusDate1", date:true},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"censusRecord2", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"censusDate2", date:true},
+    { fieldName:"CustomTextBoxControl7__CF", name:"censusRecord3", date:false},
+    { fieldName:"CustomDateControl3__CF", name:"censusDate3", date:true},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF", name:"infoOfViolation1", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF", name:"dateOfViolation1", date:true},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"infoOfViolation2", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"dateOfViolation2", date:true},
+    { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"infoOfViolation3", date:false},
+    { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"dateOfViolation3", date:true}
+];
+const defaultMemberData:any = {
+    // Master
+    objectId: undefined,
+    personType: "1",
+    cardType: "",
+    employeeNumber: "",
+    chineseName: "",
+    englishName: "",
+    cardNumber: "",
+    cardAllNumber: "",
+    startDate: null,
+    endDate: null,
+    personPhoto: "",
+    imageSrc: "",
+    companyName: "",
+    cardCustodian: "",
+    lastEditPerson: "",
+    lastEditTime: "",
+    cardCertificate: "2",
+    profileName:"基礎",
+    technologyCode:10,
+    pinMode:1,
+    pinDigit:0,    
+    deviceNumber: 469,
+    pin: "",
+
+    // tab1
+    extensionNumber: "",
+    phone: "",
+    email: "",
+    birthday: null,
+    MVPN: "",
+    gender: "",
+    department: "",
+    costCenter: "",
+    area: "",
+    workArea: "",
+    registrationDate: null,
+    resignationDate: null,
+
+    // tab2
+    carLicenseCategory: "",
+    cardLicense: "",
+    carLicense: "",
+    carLicense1: "",
+    carLicense2: "",
+    carLicense3: "",
+    account: "",
+    password: "",
+
+    // tab3
+    resignationNote: "",
+    resignationRecordCardRecord: "",
+    reasonForCard1: "",
+    historyForCard1: "",
+    dateForCard1: null,
+    reasonForCard2: "",
+    historyForCard2: "",
+    dateForCard2: null,
+    reasonForCard3: "",
+    historyForCard3: "",
+    dateForCard3: null,
+    reasonForApplication1: "",
+    dateForApplication1: null,
+    reasonForApplication2: "",
+    dateForApplication2: null,
+    reasonForApplication3: "",
+    dateForApplication3: null,
+    resignationRecordCarLicense: "",
+
+    // tab4
+    cardTemplate: "",
+    imageSrcCard: "",
+
+    // tab 5
+    censusRecord1: "",
+    censusDate1: null,
+    censusRecord2: "",
+    censusDate2: null,
+    censusRecord3: "",
+    censusDate3: null,
+    infoOfViolation1: "",
+    dateOfViolation1: null,
+    infoOfViolation2: "",
+    dateOfViolation2: null,
+    infoOfViolation3: "",
+    dateOfViolation3: null
+  };
 
 export class ReportService{
     async getPermissionRecord(filter:any, limit:number=10000){
@@ -130,45 +269,71 @@ export class ReportService{
         let results = this.constructData(members);
         return results;
     }
-    private getCustomFieldValue(item:IMember, fieldName:string){
-        let field = item.CustomFields && item.CustomFields.length > 0 ? item.CustomFields.find(x => x.FiledName == fieldName) : undefined;
-        return field && field.FieldValue ? field.FieldValue : '';
+    
+    private constructData(dataMember: IMember[]) {
+        let records:any=[];
+        for (let item of dataMember) {
+            records.push(this.normalizeMember(item));
+        }   
+        
+        return records;
     }
-    private createEmployee(item: any) {
+    private getFieldValue(fieldName:string, customFields:any[]){      
+        let exists = customFields.find(x=>x.FiledName == fieldName);
+        return exists ? exists.FieldValue : null;    
+    }
+    private normalizeMember(member:any) { 
+         let newMember:any = Object.assign({}, defaultMemberData);
+          
+          newMember.objectId = member.objectId;      
     
-        let DepartmentName = this.getCustomFieldValue(item, fieldNames.DepartmentName);        
-        let CostCenterName = this.getCustomFieldValue(item, fieldNames.CostCenterName);                
-        let WorkAreaName = this.getCustomFieldValue(item, fieldNames.WorkAreaName);                
-        let CompanyName = this.getCustomFieldValue(item, fieldNames.CompanyName);        
-        let ResignationDate = this.getCustomFieldValue(item, fieldNames.ResignationDate);
-        let CardCustodian = this.getCustomFieldValue(item, fieldNames.CardCustodian);
-        let CardType = this.getCustomFieldValue(item, fieldNames.CardType);
-        let CardNumber = item.Credentials&&item.Credentials.length>0? item.Credentials.map(x => x.CardNumber)[0]:"";
-        let PermissionTable = item.AccessRules && item.AccessRules.length>0 ? item.AccessRules.filter(x=>x.RuleType && x.RuleType == 4).map(x=>parseInt(x.RuleToken)) : [];
-        return {
-            objectId:item.objectId,
-            FirstName: item.FirstName,
-            LastName: item.LastName,
-            EmployeeNumber: item.EmployeeNumber,
-            CardNumber,
-            DepartmentName,
-            CostCenterName,
-            WorkAreaName,
-            ResignationDate:ResignationDate.split("T")[0],
-            CompanyName,
-            PermissionTable,
-            CardCustodian,
-            CardType,
-            StartDate:moment(item.StartDate).format("YYYY-MM-DD"),
-            EndDate:moment(item.EndDate).format("YYYY-MM-DD")
-        }
-  }
-  private constructData(dataMember: IMember[]) {
-    let records:any=[];
-    for (let item of dataMember) {
-        records.push(this.createEmployee(item));
-    }   
+          newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
+                                        member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
+                                        .map(x=>parseInt(x.RuleToken)) : [];
+            
+          newMember.personType = member.PrimaryWorkgroupId;
+          newMember.employeeNumber = member.EmployeeNumber;      
+          newMember.chineseName = member.LastName;
+          newMember.englishName = member.FirstName;
+        
+          if (member.Credentials && member.Credentials.length>0){          
+            newMember.cardNumber = member.Credentials[0].CardNumber;
+            newMember.cardAllNumber = member.Credentials[0].CardNumber;
+            newMember.cardCertificate = (member.Credentials[0].ProfileId || 0).toString();
+            newMember.deviceNumber = member.Credentials[0].FacilityCode;
+            newMember.pinDigit = member.Credentials[0].PinDigit;
+            newMember.profileName = member.Credentials[0].ProfileName;
+            newMember.technologyCode = member.Credentials[0].CardTechnologyCode;    
+            newMember.pinMode = member.Credentials[0].PinMode;
+            newMember.startDate = member.Credentials[0].StartDate;
+            newMember.endDate = member.Credentials[0].StartDate;
+            newMember.pin = member.Credentials[0].Pin || "0";
+          }
     
-    return records;
-}
+            newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
+            newMember.endDate = moment(member.EndDate).format("YYYY-MM-DD");
+            
+    
+          // tab2
+          if (member.PersonalDetails) {
+            if(member.PersonalDetails.UserDetails){
+              newMember.account = member.PersonalDetails.UserDetails.UserName;
+              newMember.password = member.PersonalDetails.UserDetails.Password;
+            }
+            if(member.PersonalDetails.ContactDetails){
+              newMember.email = member.PersonalDetails.ContactDetails.Email;
+              newMember.phone = member.PersonalDetails.ContactDetails.PhoneNumber;
+              newMember.extensionNumber = member.PersonalDetails.ContactDetails.MobileNumber;
+            }
+            if (member.PersonalDetails.DateOfBirth) {          
+                newMember.birthday = member.PersonalDetails.DateOfBirth;          
+            }
+          }
+          //custom fields      
+          for(let field of CustomFields){
+            newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields);
+          }
+          return newMember;
+      }
+    
 }

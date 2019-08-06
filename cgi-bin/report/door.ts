@@ -24,7 +24,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let permissions = await reportService.getPermissionRecord(filter, pageSize);
     let members = await reportService.getMemberRecord(filter, pageSize);
     for(let member of members){
-        for(let tableid of member.PermissionTable){            
+        for(let tableid of member.permissionTable){            
             let permission = permissions.find(x=>x.tableid==tableid);
             if(!permission || !permission.accesslevels)continue;
             for(let access of permission.accesslevels){                
@@ -32,11 +32,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                     for(let door of access.doorgroup.doors){
                         let newMember = Object.assign({},member);
                         newMember.accessObjectId = access.objectId;
-                        newMember.PermissionName = permission.tablename;
-                        newMember.TimeSchedule = access.timeschedule.timename;
-                        newMember.DoorGroupName = access.doorgroup.groupname;
+                        newMember.permissionName = permission.tablename;
+                        newMember.timeSchedule = access.timeschedule.timename;
+                        newMember.doorGroupName = access.doorgroup.groupname;
                         newMember.doorGroupObjectId = access.doorgroup.objectId;
-                        newMember.DoorName = door.doorname;
+                        newMember.doorName = door.doorname;
                         //no need to display multiple row for the same access level
                         let exists = results.find(x=> x.objectId == newMember.objectId && 
                                                         x.accessObjectId == newMember.accessObjectId &&                                                     
@@ -47,9 +47,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                 if(access.door){
                     let newMember = Object.assign({},member);
                         newMember.accessObjectId = access.objectId;
-                        newMember.PermissionName = permission.tablename;
-                        newMember.TimeSchedule = access.timeschedule.timename;
-                        newMember.DoorName = access.door.doorname;
+                        newMember.permissionName = permission.tablename;
+                        newMember.timeSchedule = access.timeschedule.timename;
+                        newMember.doorName = access.door.doorname;
                         newMember.doorObjectId = access.door.objectId;
                         //no need to display multiple row for the same access level
                         let exists = results.find(x=> x.objectId == newMember.objectId && 

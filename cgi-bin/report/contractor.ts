@@ -23,13 +23,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let reportService = new ReportService();
     let results = await reportService.getMemberRecord(filter, pageSize);
     for(let member of results){
-        if(!member.Month1)member.Month1=0;
-        if(!member.Month2)member.Month2=0;
-        if(!member.Month3)member.Month3=0;
-    }
-      
-   
-    
+        if(!member.month1)member.month1=0;
+        if(!member.month2)member.month2=0;
+        if(!member.month3)member.month3=0;
+    }      
     
     let attendances = await reportService.getAttendanceRecord(filter, pageSize);
     let i=0;
@@ -37,18 +34,15 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let item = attendances[i];
         let item2 = attendances[i+1];
         i+=2;
-        let member = results.find(x=>x.CardNumber == item.card_no);
-        if(!member || !item2)continue;
-        if(!member.Month1)member.Month1=0;
-        if(!member.Month2)member.Month2=0;
-        if(!member.Month3)member.Month3=0;
+        let member = results.find(x=>x.cardNumber == item.card_no);
+        if(!member || !item2)continue;        
         let monthDifferent =  moment.utc(moment(filter.End).diff(moment(item.date_time_occurred))).month();
         console.log("monthDifferent",monthDifferent);
-        if(member.LastDateOccured === item.date_occurred)continue;
-        member.LastDateOccured = item.date_occurred;
-        if(monthDifferent==0)member.Month1 +=1;
-        if(monthDifferent==1)member.Month2 +=1;
-        if(monthDifferent==2)member.Month3 +=1;                
+        if(member.lastDateOccured === item.date_occurred)continue;
+        member.lastDateOccured = item.date_occurred;
+        if(monthDifferent==0)member.month1 +=1;
+        if(monthDifferent==1)member.month2 +=1;
+        if(monthDifferent==2)member.month3 +=1;                
         
     }
     /// 3) Output

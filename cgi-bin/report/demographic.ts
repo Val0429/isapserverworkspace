@@ -22,7 +22,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let reportService = new ReportService();
     let results = await reportService.getMemberRecord(filter, pageSize);
     for(let member of results){
-        member.InOutDailyCount=0;
+        member.inOutDailyCount=0;
     }
     
     let attendances = await reportService.getAttendanceRecord(filter, pageSize);
@@ -31,12 +31,12 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let item = attendances[i];
         let item2 = attendances[i+1];
         i+=2;
-        let member = results.find(x=>x.CardNumber == item.card_no);
+        let member = results.find(x=>x.cardNumber == item.card_no);
         if(!member|| !item2)continue;
-        if(!member.InOutDailyCount)member.InOutDailyCount=0;
-        if(member.LastDateOccured !== item.date_occurred){
-            member.LastDateOccured = item.date_occurred;
-            member.InOutDailyCount +=1;            
+        if(!member.inOutDailyCount)member.inOutDailyCount=0;
+        if(member.lastDateOccured !== item.date_occurred){
+            member.lastDateOccured = item.date_occurred;
+            member.inOutDailyCount +=1;            
         }
     }
     /// 3) Output
