@@ -61,7 +61,7 @@ export class CCUREReader {
      * Connect
      */
     public async connectAsync(): Promise<void> {
-        if (this._isConnected) throw `Internal Error: <CCUREReader::connectAsync> Still connecting, do not change config.`;
+        if (this._isConnected) return;
         if (isNullOrUndefined(Config.CCUREconnect) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
         if (Config.CCUREconnect.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
         this.verifyIP(Config.CCUREconnect.server);
@@ -85,15 +85,19 @@ export class CCUREReader {
      * Disconnect
      */
     public async disconnectAsync(): Promise<void> {
-        if (this._isConnected === false) throw `Internal Error: <CCUREReader::disconnectAsync> already disconnected.`;
+        if (this._isConnected === false) return;
         else {
-            await this._conn.close().then(() => {
-                this._isConnected = false;
-                console.log(`=>Disonnect  successful`);
-                return Promise.resolve();
-            }).catch(err => {
-                return Promise.reject();
-            });
+            try{
+                await this._conn.close().then(() => {
+                    this._isConnected = false;
+                    console.log(`=>Disonnect  successful`);
+                });
+            }
+            catch(ex){
+                throw ex;
+            }
+            
+            return Promise.resolve();
         }
     }
 
@@ -253,18 +257,28 @@ export class CCUREReader {
     protected generateQueryString(queryContent: QueryContent, queryParam: IQueryParam, condition?: String): string {
         let queryCmd: string ;
 
+        let innerSelect = false;
+        let alreadyWhere = false;
         if(isNullOrUndefined(queryParam.inner_selector) === true) queryParam.inner_selector = '*';
         queryCmd = `select ${queryParam.selector} from openquery(${queryParam.dsn},'select ${queryParam.inner_selector} from ${queryParam.table}`;
 
         if(isNullOrUndefined(queryParam.left_join_table)  === false && 
-            isNullOrUndefined(queryParam.left_join_on) === false && 
-            isNullOrUndefined(queryParam.left_join_condition) === false)
+            isNullOrUndefined(queryParam.left_join_on) === false)
         {
-            queryCmd += ` left join ${queryParam.left_join_table} on ${queryParam.left_join_on} where ${queryParam.left_join_condition}`
+            queryCmd += ` left join ${queryParam.left_join_table} on ${queryParam.left_join_on}`;
         }
 
-        if (isNullOrUndefined(queryParam.condition) === false && (queryParam.condition === "") === false) {
+        if (isNullOrUndefined(queryParam.condition) === false && (queryParam.condition === "") === false && innerSelect === false) {
             queryCmd += ` where (${queryParam.condition})`;
+            alreadyWhere = true;
+        }
+
+        if (isNullOrUndefined(condition) === false && (condition === "") === false) {
+            if(condition.substr(0,6) == "inner:"){
+                if(alreadyWhere === true) queryCmd += ` and (${condition.substring(6)})`;
+                else queryCmd += ` where (${condition.substring(6)})`;
+                innerSelect = true;
+            }
         }
 
         if (queryContent === QueryContent.ReportsNewUpdate) {
@@ -273,7 +287,7 @@ export class CCUREReader {
 
         queryCmd += `')`;
 
-        if (isNullOrUndefined(condition) === false && (condition === "") === false) {
+        if (isNullOrUndefined(condition) === false && (condition === "") === false && innerSelect === false) {
             queryCmd = `select * from (${queryCmd}) temp where ${condition}`;
         }
 
@@ -285,7 +299,7 @@ export class CCUREReader {
      * @param err error message
      */
     protected defaultErrCalback(err, queryContent: QueryContent) {
-        throw (`Error happened\n Message: ${err}`);
+        throw (`defaultErrCalback : happened\n Message: ${err}`);
     }
 
     /**

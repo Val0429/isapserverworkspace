@@ -11,14 +11,24 @@ import { ModBusService, ModbusDescriptions } from './custom/services/modbus-serv
 import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
 
 import {CCUREService} from './custom/modules/acs/CCURE'
+import { GetMigrationDataPermissionTable, GetMigrationDataPerson } from './custom/modules/acs/CCURE/Migration';
 
 let _service : CCUREService = new CCUREService();
 
-_service.Login();
+function WriteJsonFile(path,json){
+    const fs = require('fs');
+    fs.writeFile(path, JSON.stringify(json), function (err) {
+        if (err) {
+            return console.log(err);
+        }
+        console.log("Save finish");
+    });
+}
 
-_service.GetAllPermissionTableDoor( result => {
-    console.log(result);
-} );
+//GetMigrationDataPermissionTable().then(r => WriteJsonFile("E://result.txt",r));
+GetMigrationDataPerson().then(r => WriteJsonFile("E://result2.txt",r));
+
+
 
 
 

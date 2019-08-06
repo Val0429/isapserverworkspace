@@ -1,24 +1,16 @@
 import {CCUREService} from "./../CCURE"
 import { delay } from "bluebird";
+import { isNullOrUndefined } from "util";
+import { SignalObject } from "./signalObject";
 
-
-export async function GetMigrationData(){
-    let _service : CCUREService = new CCUREService();
-    _service.Login();
-    let permTables = await _service.GetAllPermissionTables();
-    let permTableDoor = await _service.GetAllPermissionTableDoor();
-    let permTableDoorGroup = await _service.GetAllPermissionTableDoorGroup();
-    let timeSchedules = await _service.GetAllTimeSchedules();
-    let groupMember = await _service.GetAllGroupMember();
-    let devices = await _service.GetAllDevices();
-
-
-    let permTablesKeyMap = GetKeyMap(permTables,"permissionTableId", "permissionTableName");
-    let timeSchedulesKeyMap = GetKeyMap(timeSchedules,"timespecId", "timespecName");
-    let devicesKeyMap = GetKeyMap(devices,"deviceId", "deviceName");
-
-    console.log(timeSchedulesKeyMap[1620]);
-    
+function NormalizeJSON(obj){
+    Object.keys(obj).forEach(function(k){
+        if(isNullOrUndefined(obj[k].length) == true){
+            let arr = []
+            arr.push(obj[k]);
+            obj[k] = arr;
+        }
+    });
 }
 
 function GetKeyMap(jsons: JSON[], keyIDName : string, valueName : string) : Map<number,string>{
@@ -28,3 +20,265 @@ function GetKeyMap(jsons: JSON[], keyIDName : string, valueName : string) : Map<
     }
     return result;
 }
+
+function WriteJsonFile(path,json){
+    const fs = require('fs');
+    fs.writeFile(path, JSON.stringify(json), function (err) {
+        if (err) {
+            return console.log(err);
+        }
+        console.log("Save finish");
+    });
+}
+
+export async function GetMigrationDataPermissionTable(){
+
+    let _service : CCUREService = new CCUREService();
+
+    _service.Login();
+
+    await delay(3000);
+
+    let permTables = await _service.GetAllPermissionTables();
+    let doors = await _service.GetAllDoors();
+    let doorGroups = await _service.GetAllDoorGroup();
+    let permTableDoor = await _service.GetAllPermissionTableDoor();
+    let permTableDoorGroup = await _service.GetAllPermissionTableDoorGroup();
+    let timeSchedules = await _service.GetAllTimeSchedules();
+    let groupMember = await _service.GetAllGroupMember();
+    let elevatorGroups = await _service.GetAllElevatorGroup();
+    let floorGroups = await _service.GetAllFloorGroup();
+
+    let elevators = await _service.GetAllElevators();
+    let floors = await _service.GetAllFloors();
+    let devices = await _service.GetAllDevices();
+    let permTableEvevatorFloor = await _service.GetAllPermissionTableElevatorFloor();
+
+    
+    let permTablesKeyMap = GetKeyMap(permTables,"permissionTableId", "permissionTableName");
+    let timeSchedulesKeyMap = GetKeyMap(timeSchedules,"timespecId", "timespecName");
+    let doorKeyMap = GetKeyMap(doors,"doorId", "doorName");
+    let doorGroupKeyMap = GetKeyMap(doorGroups,"groupId", "groupName");
+    let floorsKeyMap = GetKeyMap(floors,"floorId", "floorName");
+    let devicesKeyMap = GetKeyMap(devices,"deviceId", "deviceName");
+    let elevatorGroupsKeyMap = GetKeyMap(elevatorGroups,"groupId", "groupName");
+    let floorGroupsKeyMap = GetKeyMap(floorGroups,"groupId", "groupName");
+
+
+    var jsonata = require("jsonata");
+    let permtableDoorGroupby : JSON = await jsonata("{$string(`permissionTableId`): $ }").evaluate(permTableDoor);
+    let permtableDoorGroupGroupby : JSON  = await jsonata("{$string(`permissionTableId`): $ }").evaluate(permTableDoorGroup);
+    let permTableEvevatorFloorGroupby : JSON = await jsonata("{$string(`permissionTableId`): $ }").evaluate(permTableEvevatorFloor);
+    let groupMemberGroupby : JSON = await jsonata("{$string(`groupId`): $ }").evaluate(groupMember);
+    let devicesGroupby : JSON = await jsonata("{$string(`doorId`): $ }").evaluate(devices);
+    let elevatorsGroupby : JSON = await jsonata("{$string(`elevatorId`): $ }").evaluate(elevators);
+    let floorsGroupby : JSON = await jsonata("{$string(`floorId`): $ }").evaluate(floors);
+
+    NormalizeJSON(permtableDoorGroupby);
+    NormalizeJSON(permtableDoorGroupGroupby);
+    NormalizeJSON(permTableEvevatorFloorGroupby);
+    NormalizeJSON(devicesGroupby);
+    NormalizeJSON(groupMemberGroupby);
+    NormalizeJSON(elevatorsGroupby);
+    NormalizeJSON(floorsGroupby);
+
+    let result = {};
+
+    //1. Initial Permission Table
+    Object.keys(permTablesKeyMap).forEach(function(k){
+        result[permTablesKeyMap[k]] = [];
+    });
+
+    //2. Add door 
+    function pushDoor(json, perId,timespecId, doorId, deviceNames){
+        json[permTablesKeyMap[perId]].push(
+            {
+                "type":"door",
+                "name":doorKeyMap[doorId],
+                "devices":deviceNames,
+                "timespec":timeSchedulesKeyMap[timespecId],
+            });
+    }
+
+    Object.keys(permtableDoorGroupby).forEach(function(permissionTableId){
+        let permIdjsonArr = permtableDoorGroupby[permissionTableId];
+        for(var i = 0 ; i < permIdjsonArr.length ; i++){
+            let doorId = permIdjsonArr[i]["doorId"];
+            if(!devicesGroupby[doorId]) continue;//////
+            let deviceNames = []; 
+            for(var j = 0 ; j < devicesGroupby[doorId].length ; j++) {
+                deviceNames.push(devicesGroupby[doorId][j]["deviceName"]);
+            }
+            pushDoor(result,permissionTableId,permIdjsonArr[i]["timespecId"],doorId,deviceNames);
+        }
+    });
+
+    //3. Add door group
+    function pushGroup(json, perId, timespecId, doorGroupId, doorDevices){
+        json[permTablesKeyMap[perId]].push(
+            {
+                "type":"doorGroup",
+                "name":doorGroupKeyMap[doorGroupId],
+                "doors":doorDevices,
+                "timespec":timeSchedulesKeyMap[timespecId],
+            });
+    }
+    Object.keys(permtableDoorGroupGroupby).forEach(function(permissionTableId){
+        let permIdjsonArr = permtableDoorGroupGroupby[permissionTableId];
+        for(var i = 0 ; i < permIdjsonArr.length ; i++){
+            let groupId : string = permIdjsonArr[i]["groupId"];
+            if(!groupMemberGroupby[groupId]) continue;
+            let doorDevices = [];
+            for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                let doorId = groupMemberGroupby[groupId][j]["objectId"];
+                if(!devicesGroupby[doorId]) continue;
+                let devicesJson = [];
+                for(var n = 0 ; n < devicesGroupby[doorId].length ; n++){
+                    devicesJson.push(devicesGroupby[doorId][n]["deviceName"]);
+                }
+                doorDevices.push(
+                    {
+                        "type":"door",
+                        "name":doorKeyMap[doorId],
+                        "devices":devicesJson
+                    }
+                );
+            }
+            pushGroup(result , permissionTableId, permIdjsonArr[i]["timespecId"], groupId, doorDevices)
+        }
+    });
+
+    //4. Add floor 
+    function pushElevatorFloor(json, perId, timespecId, elevatorJson, floorJson){
+        json[permTablesKeyMap[perId]].push
+        (
+            {
+                "type":"elevatorFloor",               
+                "elevator":elevatorJson,
+                "floor":floorJson,
+                "timespec":timeSchedulesKeyMap[timespecId]
+            }
+        );
+    }
+    Object.keys(permTableEvevatorFloorGroupby).forEach(function(permissionTableId){
+        let permIdjsonArr = permTableEvevatorFloorGroupby[permissionTableId];
+        for(var i = 0 ; i < permIdjsonArr.length ; i++){
+            // 4.1 Check Elevator or Elevator Group
+            let elevatorOrGroupId = permIdjsonArr[i]["elevatorOrGroupId"];
+            let elevatorJson;
+
+                // 4.1.1 Check Elevator
+            if(isNullOrUndefined(elevatorsGroupby[elevatorOrGroupId]) == false){
+                let elevatorId = elevatorOrGroupId;
+                let deviceId = elevatorsGroupby[elevatorId][0]["deviceId"];
+                elevatorJson =
+                {
+                    "type":"elevator",
+                    "name":elevatorsGroupby[elevatorId][0]["elevatorName"],
+                    "device":[devicesKeyMap[deviceId]]
+                }
+            }
+                // 4.1.2 Check Group
+            else{
+                let groupId = elevatorOrGroupId;
+                if(!groupMemberGroupby[groupId]) continue;
+                let tempJson = [];
+                for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                    let elevatorId = groupMemberGroupby[groupId][j]["objectId"];
+                    let deviceId = elevatorsGroupby[elevatorId]["deviceId"];
+                    tempJson.push
+                    (
+                        {
+                            "type":"elevator",
+                            "name":elevatorsGroupby[elevatorId]["elevatorName"],
+                            "device":devicesKeyMap[deviceId]
+                        }
+                    );
+                }
+                elevatorJson = 
+                {
+                    "type":"elevatorGroup",
+                    "name":elevatorGroupsKeyMap[groupId],
+                    "elevators":tempJson
+                };
+            }
+
+            // 4.2 Check Floor or Floor Group
+            let floorOrGroupId = permIdjsonArr[i]["floorOrGroupId"];
+            let floorJson;
+
+                // 4.2.1 Check Floor
+            if(isNullOrUndefined(floorsGroupby[floorOrGroupId]) == false){
+                let floorId = floorOrGroupId;
+                floorJson =
+                {
+                    "type":"floor",
+                    "name":floorsGroupby[floorId][0]["floorName"]
+                }
+            }
+                // 4.2.2 Check Group
+            else{
+                let groupId = floorOrGroupId;
+                if(!groupMemberGroupby[groupId]) continue;
+                let tempJson = [];
+                for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                    let floorId = groupMemberGroupby[groupId][j]["objectId"];
+                    tempJson.push
+                    (
+                        {
+                            "type":"floor",
+                            "name":floorsKeyMap[floorId],
+                        }
+                    );
+                }
+                floorJson = 
+                {
+                    "type":"floorGroup",
+                    "name":floorGroupsKeyMap[groupId],
+                    "floors":tempJson
+                };
+            }
+
+            //4.3 Push
+            pushElevatorFloor(result, permissionTableId, permIdjsonArr[i]["timespecId"],elevatorJson,floorJson);
+        }
+    });
+
+    return result;
+}
+
+export async function GetMigrationDataPerson()
+{
+    let _service : CCUREService = new CCUREService();
+    _service.Login();
+
+    await delay(3000);
+
+    let fieldList = await _service.GetPersonPropList(`inner:Field_Id>1000000007`);
+
+    console.log("(Finish get person props)");
+
+    let persons = await _service.GetAllPersons();
+
+    console.log("(Finish get person data)");
+
+    let result = {};
+    for(var idx = 0 ; idx < persons.length ; idx++){
+        let personJson = persons[idx];
+        let personId = personJson["personId"];
+        result[personId] = personJson;
+    }
+
+    for(var idx = 0 ; idx < fieldList.length ; idx++){
+        let extInfos = await _service.GetPersonExtendInfo(`inner:pub.person_field_values.Field_Id=${fieldList[idx]["fieldId"]}`);
+        console.log(`(Finish get extend information : id: ${idx}) `);
+        for(var i = 0 ; i < extInfos.length ; i++){
+            let personId = extInfos[i]["personId"];
+            if(isNullOrUndefined(result[personId])===true) continue;
+            if(extInfos[i]["charVal"] == null && extInfos[i]["decimalVal"] == null) continue;
+            result[personId][extInfos[i]["fieldName"]] = (extInfos[i]["charVal"] == null ?  extInfos[i]["decimalVal"] : extInfos[i]["charVal"]);
+        }
+    }
+    return result;
+}
+

@@ -13,6 +13,7 @@ export enum QueryContent {
     Persons,
     PersonExtendInfo,
     PersonExtendInfoEnumList,
+    PersonPropList,
     Timespec,
     TimespecDays,
     Reader,
@@ -44,7 +45,6 @@ export interface IQueryParam {
     inner_selector?: string;
     left_join_on ?: string;
     left_join_table ?: string;
-    left_join_condition ?: string;
 };
 
 export interface IQueryMap {
@@ -160,7 +160,7 @@ var queryMap : IQueryMap = {};
                           `cast(Decimal_Value as int) as Decimal_Value`,
         "left_join_table": "pub.field_report_name",
         "left_join_on": "pub.field_report_name.Field_ID = pub.person_field_values.Field_ID",
-        "left_join_condition": "pub.field_report_name.language_idx = 1033",
+        "condition":"pub.field_report_name.language_idx = 1033",
         "dsn": Config.CCUREdsn.CFSRV,
     }
 
@@ -171,6 +171,15 @@ var queryMap : IQueryMap = {};
                     'Enum_List_Value as value, '+
                     'Deleted as deleted',
         "dsn": Config.CCUREdsn.CFSRV,
+    }
+
+    //PersonExtendInfo
+    queryMap[QueryContent.PersonPropList] = {
+        "table": "pub.field_report_name",
+        "selector": 'Field_ID as fieldId,'+
+                    'Field_Name as fieldName',
+        "dsn": Config.CCUREdsn.CFSRV,
+        "condition":"Language_idx=1033"
     }
 
     //Timespec
@@ -295,7 +304,7 @@ var queryMap : IQueryMap = {};
         "table": "ccm.view_cleartriplet",
         "selector": 'CLEARID as permissionTableId,'+
                     'ELEVATORORGRPID as elevatorOrGroupId,'+
-                    'ELEVATORORGRPID as floorOrGroupId,'+
+                    'FLOORORGRPID as floorOrGroupId,'+
                     'TIMESPECID as timespecId',
         "dsn": Config.CCUREdsn.CFSRV
     }
