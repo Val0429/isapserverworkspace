@@ -5,7 +5,7 @@ import {
     Restful, FileHelper, ParseObject, TimeSchedule, Door
 } from 'core/cgi-package';
 
-import { Log } from 'helpers/utility';
+import { Log } from 'workspace/custom/services/log';
 import { ICredentialProfiles, CredentialProfiles } from '../../custom/models'
 
 

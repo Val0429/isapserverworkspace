@@ -1,10 +1,11 @@
-import { Action, Errors, Restful, ParseObject, Config, PermissionTable} from 'core/cgi-package';
+import { Action, Errors, Restful, ParseObject, Config} from 'core/cgi-package';
 
-import { Log } from 'helpers/utility';
-import { IMember, Member } from '../../custom/models'
+
+import { IMember, Member, PermissionTable } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
 import { ReportService } from 'workspace/custom/services/report-service';
+import { Log } from 'workspace/custom/services/log';
 
 
 var action = new Action({

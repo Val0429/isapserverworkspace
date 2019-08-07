@@ -5,7 +5,7 @@ import {
     Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevelinSiPass
 } from 'core/cgi-package';
 
-import { Log } from 'helpers/utility';
+import { Log } from 'workspace/custom/services/log';
 import { IAccessLevel, AccessLevel } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 

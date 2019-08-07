@@ -5,7 +5,7 @@ import {
     Restful, FileHelper, ParseObject, ElevatorGroup
 } from 'core/cgi-package';
 
-import { Log } from 'helpers/utility';
+import { Log } from 'workspace/custom/services/log';
 import { IElevator, Elevator } from '../../custom/models'
 import licenseService from 'services/license';
 import { LocationSite, LocationArea } from 'workspace/custom/models/db/_index';

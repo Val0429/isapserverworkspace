@@ -2,7 +2,7 @@ import { Config } from 'core/config.gen';
 import * as fs from 'fs';
 
 import * as delay from 'delay';
-import { Log } from 'helpers/utility';
+import { Log } from './log';
 
 import { ScheduleActionEmail } from 'core/scheduler-loader';
 

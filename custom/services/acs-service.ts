@@ -1,5 +1,6 @@
-import { Log } from 'helpers/utility';
+
 import {SyncService} from './SyncService';
+import { Log } from './log';
 
 export class ACSService {
     private waitTimer = null;

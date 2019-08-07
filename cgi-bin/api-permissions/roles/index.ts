@@ -44,8 +44,8 @@ type OutputR = Restful.OutputR<IAPIRoles>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    let page = data.parameters.paging.page || 1;
-    let pageSize = data.parameters.paging.pageSize || 10;
+    let page = data.parameters.paging ? (data.parameters.paging.page || 1) :1;
+    let pageSize = data.parameters.paging ? (data.parameters.paging.pageSize || 10) : 10;
     var query = new Parse.Query(APIRoles).limit(Number.MAX_SAFE_INTEGER);
     let output = await query.find();
     let filter = data.parameters as any;

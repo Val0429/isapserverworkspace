@@ -5,7 +5,7 @@ import {
     Restful, FileHelper, ParseObject
 } from 'core/cgi-package';
 
-import { Log } from 'helpers/utility';
+import { Log } from 'workspace/custom/services/log';
 import { IDoorGroup, DoorGroup } from '../../custom/models'
 
 

@@ -1,11 +1,9 @@
 import {
-    express, Request, Response, Router,
-    IRole, IUser, RoleList,
     Action, Errors,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+    Restful, ParseObject,
 } from 'core/cgi-package';
 
-import { APIPermissions, APIRoles, APITokens, IAPIPermissions, IAPIRoles, IAPITokens } from 'models/customRoles';
+import { APIPermissions, APIRoles, APITokens, IAPIPermissions } from 'models/customRoles';
 
 
 interface ICAPIPermissions {
@@ -81,7 +79,6 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
  * D: delete object
  ********************************/
 type InputD = Restful.InputD<IAPIPermissions>;
-type OutputD = Restful.OutputD<IAPIPermissions>;
 
 action.delete<InputD, any>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object

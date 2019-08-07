@@ -1,6 +1,6 @@
 import { Config } from 'core/config.gen';
 
-import { Log } from 'helpers/utility';
+import { Log } from './log';
 
 import { ScheduleActionEmail } from 'core/scheduler-loader';
 import { IAttendanceRecords, AttendanceRecords } from 'workspace/custom/models/index';

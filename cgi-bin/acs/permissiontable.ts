@@ -1,15 +1,11 @@
 import {
-    express, Request, Response, Router,
-    IRole, IUser, RoleList,
-    Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevel, DoorGroup, AccessLevelinSiPass, Floor
+    Action, Errors, Restful, ParseObject, TimeSchedule, Door, AccessLevel, Floor
 } from 'core/cgi-package';
 
 import { IPermissionTable, PermissionTable, PermissionTableDoor } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from '../../custom/services/acsAdapter-Manager';
 
-import { Log } from 'helpers/utility';
-import * as delay from 'delay';
+import { Log } from 'workspace/custom/services/log';
 
 var action = new Action({
     loginRequired: true,
@@ -22,7 +18,6 @@ var action = new Action({
  * C: create object
  ********************************/
 type InputC = Restful.InputC<IPermissionTable>;
-type OutputC = Restful.OutputC<IPermissionTable>;
 
 action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
@@ -131,7 +126,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
  * U: update object
  ********************************/
 type InputU = Restful.InputU<IPermissionTable>;
-type OutputU = Restful.OutputU<IPermissionTable>;
 
 action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object

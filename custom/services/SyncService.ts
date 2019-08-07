@@ -1,4 +1,4 @@
-import { Log } from 'helpers/utility';
+import { Log } from './log';
 import * as delay from 'delay';
 
 import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles, PermissionTableDoor } from '../../custom/models'
