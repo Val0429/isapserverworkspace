@@ -22,7 +22,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new ElevatorGroup(data.inputType);
 
-    Log.Info(`${this.constructor.name}`, `postElevatorGroup ${data.inputType.groupid} ${data.inputType.groupname}`);
+    Log.Info(`${this.constructor.name}`, `postElevatorGroup ${data.inputType.groupname}`, data.user);
 
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
@@ -62,7 +62,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(ElevatorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`ElevatorGroup <${objectId}> not exists.`]);
 
-    Log.Info(`${this.constructor.name}`, `putElevatorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+    Log.Info(`${this.constructor.name}`, `putElevatorGroup ${obj.get("groupname")}`, data.user);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -81,7 +81,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(ElevatorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`ElevatorGroup <${objectId}> not exists.`]);
 
-    Log.Info(`${this.constructor.name}`, `deleteElevatorGroup ${obj.get("groupid")} ${obj.get("groupname")}`);
+    Log.Info(`${this.constructor.name}`, `deleteElevatorGroup ${obj.get("groupname")}`, data.user);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

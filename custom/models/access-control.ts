@@ -1,5 +1,14 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { IDB } from './db';
+import { User } from 'parse';
+
+export interface ISystemLog{
+    title:string;
+    message:string;
+    user?:User
+}
+@registerSubclass()
+export class SystemLog extends ParseObject<ISystemLog> { }
+
 export interface ISipassToken{
     sessionId:string;
     expired:Date;

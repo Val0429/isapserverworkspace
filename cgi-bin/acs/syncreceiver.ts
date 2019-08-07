@@ -3,6 +3,7 @@ import {
 } from 'core/cgi-package';
 
 import { ISyncNotification, SyncNotification } from '../../custom/models'
+import { Log } from 'workspace/custom/services/log';
 
 
 var action = new Action({
@@ -23,6 +24,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var obj = new SyncNotification(data.inputType);
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
+    let message = ParseObject.toOutputJSON(obj);
+    Log.Info(`${this.constructor.name}`, `postSyncReceiver ${message.receivers.map(x=>x.receivename).join(", ")}`, data.user);
     return ParseObject.toOutputJSON(obj);
 });
 
@@ -62,6 +65,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`SyncNotification <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    let message = ParseObject.toOutputJSON(obj);
+    Log.Info(`${this.constructor.name}`, `putSyncReceiver ${message.receivers.map(x=>x.receivename).join(", ")}`, data.user);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -79,6 +84,8 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`SyncNotification <${objectId}> not exists.`]);
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
+    let message = ParseObject.toOutputJSON(obj);
+    Log.Info(`${this.constructor.name}`, `deleteSyncReceiver ${message.receivers.map(x=>x.receivename).join(", ")}`, data.user);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

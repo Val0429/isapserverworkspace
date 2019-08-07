@@ -57,7 +57,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 var obj = new Elevator(data.inputType);
                 await obj.save(null, { useMasterKey: true });
 
-                Log.Info(`${this.constructor.name}`, `postElevator ${data.inputType.elevatorid} ${data.inputType.elevatorname}`);
+                Log.Info(`${this.constructor.name}`, `postElevator ${data.inputType.elevatorname}`, data.user);
 
                 /// 2) Output
                 return ParseObject.toOutputJSON(obj);
@@ -139,7 +139,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
 
-    Log.Info(`${this.constructor.name}`, `putElevator ${obj.get("elevatorid")} ${obj.get("elevatorname")}`);
+    Log.Info(`${this.constructor.name}`, `putElevator ${obj.get("elevatorname")}`, data.user);
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
@@ -157,7 +157,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(Elevator).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Elevator <${objectId}> not exists.`]);
     /// 2) Delete
-    Log.Info(`${this.constructor.name}`, `deleteElevator ${obj.get("elevatorid")} ${obj.get("elevatorname")}`);
+    Log.Info(`${this.constructor.name}`, `deleteElevator ${obj.get("elevatorname")}`, data.user);
 
     obj.destroy({ useMasterKey: true });
     /// 3) Output

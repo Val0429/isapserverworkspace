@@ -82,7 +82,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     }
     delete(ccurePermissionTable.devices);
     data.inputType.ccurePermissionTable=ccurePermissionTable;
-    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
+    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
     if(!r1["Token"]){
@@ -93,7 +93,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     var obj = new PermissionTable(data.inputType);
     //let ccurePermissionTable = 
     await obj.save(null, { useMasterKey: true });
-    Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`);
+    Log.Info(`${this.constructor.name}`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`, data.user);
     
 
     /// 2) Output
@@ -133,7 +133,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
-    Log.Info(`${this.constructor.name}`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`);
+    Log.Info(`${this.constructor.name}`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user);
 
     
 
@@ -170,7 +170,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     }
     delete(ccurePermissionTable.devices);
     data.inputType.ccurePermissionTable = ccurePermissionTable;
-    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`);
+    Log.Info(`${this.constructor.name}`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     await siPassAdapter.putAccessGroup(ag);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
@@ -190,7 +190,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
-    Log.Info(`${this.constructor.name}`, `deletePermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`);
+    Log.Info(`${this.constructor.name}`, `deletePermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

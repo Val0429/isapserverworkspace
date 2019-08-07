@@ -1,10 +1,12 @@
 /*
  * Created on Tue Aug 07 2019
- * Author: Daus
+ * Author: Val,Daus
  * Copyright (c) 2019, iSAP Solution
  */
 
 import 'colors';
+import { SystemLog } from '../models';
+import { User } from 'parse';
 let moment = require("moment");
 let caller = require('caller');
 
@@ -41,23 +43,26 @@ export namespace Log {
     let getInfoMessage = (title: string, message: string, withTimestamp: boolean = true) => `${withTimestamp?timestamp():''}${"<".magenta}${title.yellow}${">".magenta} ${message}`;
     let getErrorMessage = (title: string, message: string, withTimestamp: boolean = true) => `${withTimestamp?timestamp():''}${"<".red}${title.white.bgRed}${">".red} ${message}`;
 
-    export function Trace(title: string, message: string) {
+    export async function Trace(title: string, message: string) {
         if (!TestPass(Level.Trace)) return;
         let msg = getTraceMessage(title, message);
+        await (new SystemLog({title, message})).save();
         console.log(msg);
         return msg;
     }
 
-    export function Info(title: string, message: string) {
+    export async function Info(title: string, message: string, user:User) {
         if (!TestPass(Level.Info)) return;
         let msg = getInfoMessage(title, message);
+        await (new SystemLog({title, message, user})).save();
         console.log(msg);
         return msg;
     }
 
-    export function Error(title: string, message: string) {
+    export async function Error(title: string, message: string, user:User) {
         if (!TestPass(Level.Error)) return;
         let msg = getErrorMessage(title, message);
+        await (new SystemLog({title, message, user})).save();
         console.log(msg);
         return msg;
     }
