@@ -41,6 +41,9 @@ export interface IDemographicTest {
     imageBase64: string;
 }
 
-export interface IFRSManagerR extends IRequest.IPartner.IFRSManagerC {
+export interface IFRSManagerR extends IRequest.IPartner.IFRSManagerBase {
     objectId: string;
+    customId: string;
+    name: string;
+    userGroups: IServerFRSUserGroup[];
 }

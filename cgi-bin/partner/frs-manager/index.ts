@@ -1,11 +1,10 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db, Parser, FRSService } from '../../../custom/helpers';
+import { Print, Db, Parser, FRSManagerService } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import * as Device from '../../device';
-import SourceFRS from '../../../custom/services/source-frs';
+import SourceFRSManager from '../../../custom/services/source-frs-manager';
 
 let action = new Action({
     loginRequired: true,
@@ -38,6 +37,8 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
+                        let devices = await GetDeviceList(value);
+
                         let server: IDB.ServerFRSManager = await new Parse.Query(IDB.ServerFRSManager)
                             .equalTo('customId', value.customId)
                             .first()
@@ -68,6 +69,7 @@ action.post(
                         server.setValue('port', value.port);
                         server.setValue('account', value.account);
                         server.setValue('password', value.password);
+                        server.setValue('userGroups', value.userGroups);
 
                         await server.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -145,6 +147,14 @@ action.get(
                     pageSize: _paging.pageSize,
                 },
                 results: servers.map((value, index, array) => {
+                    let userGroups = value.getValue('userGroups').map((value1, index1, array1) => {
+                        return {
+                            type: Enum.EPeopleType[value1.type],
+                            objectId: value1.objectId,
+                            name: value1.name,
+                        };
+                    });
+
                     return {
                         objectId: value.id,
                         customId: value.getValue('customId'),
@@ -154,6 +164,7 @@ action.get(
                         port: value.getValue('port'),
                         account: value.getValue('account'),
                         password: value.getValue('password'),
+                        userGroups: userGroups,
                     };
                 }),
             };
@@ -187,6 +198,8 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
+                        let devices = await GetDeviceList(value);
+
                         let server: IDB.ServerFRSManager = await new Parse.Query(IDB.ServerFRSManager)
                             .equalTo('objectId', value.objectId)
                             .first()
@@ -212,6 +225,9 @@ action.put(
 
                         if (value.name || value.name === '') {
                             server.setValue('name', value.name);
+                        }
+                        if (value.userGroups) {
+                            server.setValue('userGroups', value.userGroups);
                         }
                         server.setValue('protocol', value.protocol);
                         server.setValue('ip', value.ip);
@@ -293,3 +309,55 @@ action.delete(
         }
     },
 );
+
+/**
+ * Get device list
+ * @param config
+ */
+export async function GetDeviceList(config: FRSManagerService.IConfig): Promise<FRSManagerService.IFRSDevice[]> {
+    try {
+        let frsManager: FRSManagerService = SourceFRSManager.frsManagers.find((value, index, array) => {
+            return value.config.ip === config.ip && value.config.port === config.port;
+        });
+        if (!frsManager) {
+            frsManager = new FRSManagerService();
+            frsManager.config = config;
+
+            frsManager.Initialization();
+
+            await frsManager.Login();
+        }
+
+        let devices = await frsManager.GetDeviceList();
+
+        return devices;
+    } catch (e) {
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
+    }
+}
+
+/**
+ * Get user group
+ * @param config
+ */
+export async function GetUserGroup(config: FRSManagerService.IConfig): Promise<FRSManagerService.IObject[]> {
+    try {
+        let frsManager: FRSManagerService = SourceFRSManager.frsManagers.find((value, index, array) => {
+            return value.config.ip === config.ip && value.config.port === config.port;
+        });
+        if (!frsManager) {
+            frsManager = new FRSManagerService();
+            frsManager.config = config;
+
+            frsManager.Initialization();
+
+            await frsManager.Login();
+        }
+
+        let groups = await frsManager.GetUserGroups();
+
+        return groups;
+    } catch (e) {
+        throw Errors.throw(Errors.CustomBadRequest, [e]);
+    }
+}

@@ -145,9 +145,27 @@ export interface IFRSManagerBase {
 export interface IFRSManagerC extends IFRSManagerBase {
     customId: string;
     name: string;
+    userGroups: IServerFRSUserGroup[];
 }
 
 export interface IFRSManagerU extends IFRSManagerBase {
     objectId: string;
     name?: string;
+    userGroups?: IServerFRSUserGroup[];
+}
+
+export interface IFRSManagerDevice_ObjectId {
+    objectId: string;
+}
+
+export interface IFRSManagerDevice_Config {
+    config: IFRSManagerBase;
+}
+
+export interface IFRSManagerUserGroup_ObjectId {
+    objectId: string;
+}
+
+export interface IFRSManagerUserGroup_Config {
+    config: IFRSManagerBase;
 }
