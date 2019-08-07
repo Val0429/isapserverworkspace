@@ -1,71 +1,12 @@
-import {
-    express, Request, Response, Router,
-    IRole, IUser, RoleList,
-    Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, Config, PermissionTable
-} from 'core/cgi-package';
+import { Action, Errors, Restful, ParseObject, Config, PermissionTable} from 'core/cgi-package';
 
 import { Log } from 'helpers/utility';
-import { IMember, Member, AccessLevel } from '../../custom/models'
+import { IMember, Member } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
-import { UnbindingRegion } from '../tag';
+import { ReportService } from 'workspace/custom/services/report-service';
 
-const defaultFields = [
-    { FiledName: "CustomDateControl4__CF" },
-    { FiledName: "CustomDropdownControl1__CF" },
-    { FiledName: "CustomTextBoxControl1__CF" },
-    { FiledName: "CustomTextBoxControl2__CF" },
-    { FiledName: "CustomTextBoxControl3__CF" },
-    { FiledName: "CustomTextBoxControl6__CF" },
-    { FiledName: "CustomDateControl2__CF" },
-    { FiledName: "CustomDropdownControl2__CF_CF" },
-    { FiledName: "CustomDropdownControl2__CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl5__CF" },
-    { FiledName: "CustomDateControl1__CF_CF" },
-    { FiledName: "CustomDateControl1__CF_CF_CF" },
-    { FiledName: "CustomDateControl1__CF" },
-    { FiledName: "CustomDropdownControl3__CF_CF" },
-    { FiledName: "CustomDropdownControl3__CF_CF_CF" },
-    { FiledName: "CustomDropdownControl3__CF_CF_CF_CF" },
-    { FiledName: "CustomDropdownControl3__CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDropdownControl3__CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDropdownControl3__CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomTextBoxControl7__CF" },
-    { FiledName: "CustomDateControl3__CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF" },
-    { FiledName: "CustomDateControl3__CF" }
-];
+
 var action = new Action({
     loginRequired: false,
     postSizeLimit: 1024 * 1024 * 10,
@@ -82,10 +23,7 @@ type OutputC = Restful.OutputC<IMember>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    // if ( (siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "") ) {
-    //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-    //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-    // }
+    
     let emp = await new Parse.Query(Member).equalTo("EmployeeNumber", data.inputType.EmployeeNumber).first();
     if (emp){
         throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
@@ -149,22 +87,13 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     // CustomFields
     let inputs = obj.get("CustomFields");
-    let fields = Object.assign([], defaultFields);
-    for(let field of fields){        
-        let cf = inputs.find(x=>x.FiledName==field.FiledName);
-        if(!cf)continue;
-        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue :null;
+    let fields = Object.assign([], inputs);
+    for(let field of fields){ 
+        field.FieldValue = field.FieldValue || null;
     }   
 
     // obj.set("Token", "-1");
     obj.set("CustomFields", fields);
-    // obj.set("Vehicle1", {});
-    // obj.set("Vehicle2", {});
-    // obj.set("VisitorDetails", {
-    //     "VisitorCardStatus": 0,
-    //     "VisitorCustomValues": {}
-    // });
-    
     let ret = ParseObject.toOutputJSON(obj);
 
     let holder = await siPassAdapter.postCardHolder(ret);
@@ -208,49 +137,36 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 type InputR = Restful.InputR<any>;
 type OutputR = Restful.OutputR<IMember>;
 
-const fieldNames = {
-    DepartmentName: "CustomTextBoxControl5__CF_CF_CF",
-    CostCenterName: "CustomTextBoxControl5__CF_CF_CF_CF",
-    WorkAreaName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-    CardType: "CustomDropdownControl1__CF"
-}
-
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Member);
-    var { objectId } = data.inputType;
+    let page = 1;
+    let pageSize = 10;
+    let paging = data.inputType.paging
+    if(paging){
+        page = paging.page || 1;
+        pageSize = pageSize || 10;
 
-    if (objectId) {
-        query.matches("id", new RegExp(objectId), "i");
+        if(paging.all && paging.all=="true"){
+            page=1;
+            pageSize=Number.MAX_SAFE_INTEGER;
+        }
     }
-
+    
+    // 2) Filter data
     let filter = data.parameters;
-    // looking for duplication
-    if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
-    if (filter.eCardNumber) query.equalTo("Credentials.CardNumber", filter.eCardNumber);
-
-    //"like" query
-    if (filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
-    if (filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");
-    if (filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");
-    if (filter.CardNumber) query.matches("Credentials.CardNumber", new RegExp(filter.CardNumber), "i");
-    if (filter.DepartmentName) query.equalTo("CustomFields.FiledName", fieldNames.DepartmentName).matches("CustomFields.FieldValue", new RegExp(filter.DepartmentName), "i");
-    if (filter.CostCenterName) query.equalTo("CustomFields.FiledName", fieldNames.CostCenterName).matches("CustomFields.FieldValue", new RegExp(filter.CostCenterName), "i");
-    if (filter.WorkAreaName) query.equalTo("CustomFields.FiledName", fieldNames.WorkAreaName).matches("CustomFields.FieldValue", new RegExp(filter.WorkAreaName), "i");
-
-    if (filter.CardType) query.equalTo("CustomFields.FiledName", fieldNames.CardType).matches("CustomFields.FieldValue", new RegExp(filter.CardType), "i");
-
-    if (filter.start2 && filter.end2) {
-        query.lessThanOrEqualTo("EndDate", filter.end2).greaterThanOrEqualTo("EndDate", filter.start2);
-    }
-    if (filter.start1 && filter.end1) {
-        query.lessThanOrEqualTo("StartDate", filter.end1).greaterThanOrEqualTo("StartDate", filter.start1);
-    }
-    /// 2) With Extra Filters
-    query = Restful.Filter(query, data.inputType);
+    filter.ShowEmptyCardNumber="true";
     /// 3) Output
-
-    return Restful.Pagination(query, data.parameters);
+    let reportService = new ReportService();
+    let {results, total} = await reportService.getMemberRecord(filter, pageSize, (page-1)*pageSize);
+    return {
+        paging:{
+            page,
+            pageSize,
+            total,
+            totalPages:Math.ceil(total / pageSize)
+        },
+        results
+    };
 });
 
 /********************************
@@ -337,20 +253,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 	update.set("token", obj.get("Token"));
     update.set("GeneralInformation", obj.get("GeneralInformation"));
     // CustomFields
-    let inputs = update.get("CustomFields");    
-    
-    //only update existing fields
-    // let fields = obj.get("CustomFields");
-    // if (!fields) fields = Object.assign([], defaultFields);    
-
+    let inputs = update.get("CustomFields");   
     //update the whole custom fields
-    let fields = Object.assign([], defaultFields); 
-
-    for(let field of fields){
-        let cf = inputs.find(x=>x.FiledName==field.FiledName);
-        if(!cf)continue;
-        field.FieldValue = cf.FieldValue && cf.FieldValue !="" ?cf.FieldValue : null;
-    }
+    let fields = Object.assign([], inputs);
+    for(let field of fields){ 
+        field.FieldValue = field.FieldValue || null;
+    }  
     update.set("CustomFields", fields);
     
 console.log(update);

@@ -17,7 +17,7 @@ const fieldNames = {
     RuleToken:"AccessRules.RuleToken",
     CardEndDate:"Credentials.EndDate"
 }
-const CustomFields = [
+export const CustomFields = [
     { fieldName:"CustomTextBoxControl6__CF", name:"companyName", date:false},
     { fieldName:"CustomTextBoxControl2__CF",name:"cardCustodian", date:false},
     { fieldName:"CustomTextBoxControl3__CF", name:"lastEditPerson", date:false},
@@ -68,97 +68,10 @@ const CustomFields = [
     { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"infoOfViolation3", date:false},
     { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"dateOfViolation3", date:true}
 ];
-const defaultMemberData:any = {
-    // Master
-    objectId: undefined,
-    personType: "1",
-    cardType: "",
-    employeeNumber: "",
-    chineseName: "",
-    englishName: "",
-    cardNumber: "",
-    cardAllNumber: "",
-    startDate: null,
-    endDate: null,
-    personPhoto: "",
-    imageSrc: "",
-    companyName: "",
-    cardCustodian: "",
-    lastEditPerson: "",
-    lastEditTime: "",
-    cardCertificate: "2",
-    profileName:"基礎",
-    technologyCode:10,
-    pinMode:1,
-    pinDigit:0,    
-    deviceNumber: 469,
-    pin: "",
 
-    // tab1
-    extensionNumber: "",
-    phone: "",
-    email: "",
-    birthday: null,
-    MVPN: "",
-    gender: "",
-    department: "",
-    costCenter: "",
-    area: "",
-    workArea: "",
-    registrationDate: null,
-    resignationDate: null,
-
-    // tab2
-    carLicenseCategory: "",
-    cardLicense: "",
-    carLicense: "",
-    carLicense1: "",
-    carLicense2: "",
-    carLicense3: "",
-    account: "",
-    password: "",
-
-    // tab3
-    resignationNote: "",
-    resignationRecordCardRecord: "",
-    reasonForCard1: "",
-    historyForCard1: "",
-    dateForCard1: null,
-    reasonForCard2: "",
-    historyForCard2: "",
-    dateForCard2: null,
-    reasonForCard3: "",
-    historyForCard3: "",
-    dateForCard3: null,
-    reasonForApplication1: "",
-    dateForApplication1: null,
-    reasonForApplication2: "",
-    dateForApplication2: null,
-    reasonForApplication3: "",
-    dateForApplication3: null,
-    resignationRecordCarLicense: "",
-
-    // tab4
-    cardTemplate: "",
-    imageSrcCard: "",
-
-    // tab 5
-    censusRecord1: "",
-    censusDate1: null,
-    censusRecord2: "",
-    censusDate2: null,
-    censusRecord3: "",
-    censusDate3: null,
-    infoOfViolation1: "",
-    dateOfViolation1: null,
-    infoOfViolation2: "",
-    dateOfViolation2: null,
-    infoOfViolation3: "",
-    dateOfViolation3: null
-  };
 
 export class ReportService{
-    async getPermissionRecord(filter:any, limit:number=10000){
+    async getPermissionRecord(filter:any, limit:number=10000, skip:number=0){
         /// 1) Make Query
         var query = new Parse.Query(PermissionTable)
             .equalTo("system", 0)
@@ -189,11 +102,12 @@ export class ReportService{
         }
         
         
-        let o = await query.limit(limit).find();
+        let o = await query.skip(skip).limit(limit).find();
         let results = o.map(x=> ParseObject.toOutputJSON(x));
-        return results;
+        let total = await query.count();
+        return {results, total};
     }
-    async getAttendanceRecord(filter:any, limit:number=10000){
+    async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
         .exists("card_no")
         .notEqualTo("card_no", "")
@@ -213,8 +127,8 @@ export class ReportService{
             query.lessThanOrEqualTo("date_time_occurred", end);
         }
         let results = [];
-        let records = await query.limit(limit).find();
-        
+        let records = await query.skip(skip).limit(limit).find();
+        let total = await query.count();
         for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
             if (!record.date_occurred || !record.date_time_occurred) continue;        
             let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);
@@ -233,12 +147,21 @@ export class ReportService{
             } 
             
         }
-        return results;
+        return {results, total};
     }
-    async getMemberRecord(filter:any, limit:number=10000){
+    async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
         /// 1) Make Query
         var query = new Parse.Query(Member);      
         console.log("filter member", filter);
+        // looking for duplication
+        if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
+        if (filter.eCardNumber) query.equalTo("Credentials.CardNumber", filter.eCardNumber);
+        if (filter.start2 && filter.end2) {
+            query.lessThanOrEqualTo("EndDate", filter.end2).greaterThanOrEqualTo("EndDate", filter.start2);
+        }
+        if (filter.start1 && filter.end1) {
+            query.lessThanOrEqualTo("StartDate", filter.end1).greaterThanOrEqualTo("StartDate", filter.start1);
+        }
         if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
         if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
         if(filter.EmployeeNumber) query.matches("EmployeeNumber", new RegExp(filter.EmployeeNumber), "i");  
@@ -264,10 +187,11 @@ export class ReportService{
         if(filter.expired && filter.expired=="true"){
             query.lessThanOrEqualTo(fieldNames.CardEndDate, (new Date()).toISOString());
         }
-        let o = await query.limit(limit).find();
+        let o = await query.skip(skip).limit(limit).find();
+        let total = await query.count();
         let members = o.map(x=>ParseObject.toOutputJSON(x));
         let results = this.constructData(members);
-        return results;
+        return {results, total};
     }
     
     private constructData(dataMember: IMember[]) {
@@ -278,12 +202,18 @@ export class ReportService{
         
         return records;
     }
-    private getFieldValue(fieldName:string, customFields:any[]){      
+    private getFieldValue(fieldName:string, customFields:any[], isDate:boolean){      
         let exists = customFields.find(x=>x.FiledName == fieldName);
-        return exists ? exists.FieldValue : null;    
+        let value = exists ? (exists.FieldValue || "") : "";
+        try{        
+            return isDate && value ?  moment(value).format("YYYY-MM-DD"): value;
+          }catch(err){
+            console.error(err);
+            return "";
+          }    
     }
     private normalizeMember(member:any) { 
-         let newMember:any = Object.assign({}, defaultMemberData);
+         let newMember:any = {};
           
           newMember.objectId = member.objectId;      
     
@@ -295,7 +225,7 @@ export class ReportService{
           newMember.employeeNumber = member.EmployeeNumber;      
           newMember.chineseName = member.LastName;
           newMember.englishName = member.FirstName;
-        
+          newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
           if (member.Credentials && member.Credentials.length>0){          
             newMember.cardNumber = member.Credentials[0].CardNumber;
             newMember.cardAllNumber = member.Credentials[0].CardNumber;
@@ -311,7 +241,7 @@ export class ReportService{
           }
     
             newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
-            newMember.endDate = moment(member.EndDate).format("YYYY-MM-DD");
+            newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
             
     
           // tab2
@@ -331,7 +261,7 @@ export class ReportService{
           }
           //custom fields      
           for(let field of CustomFields){
-            newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields);
+            newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields, field.date);
           }
           return newMember;
       }

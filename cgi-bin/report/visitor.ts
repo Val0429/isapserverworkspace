@@ -24,9 +24,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let attendances = await reportService.getAttendanceRecord(data.parameters as any, pageSize);
     let results=[];
     let i=0;
-    while(i<attendances.length){            
-        let item = attendances[i];
-        let item2 = attendances[i+1];
+    while(i<attendances.results.length){            
+        let item = attendances.results[i];
+        let item2 = attendances.results[i+1];
         i+=2;
         if(!item2 || !item.card_no)continue;
         let newItem = Object.assign(item, {cardNumber:item.card_no});

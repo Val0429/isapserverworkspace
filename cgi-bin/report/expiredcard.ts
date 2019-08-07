@@ -22,15 +22,15 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let reportService = new ReportService();
    
     let filter = data.parameters as any;
-    let results = await reportService.getMemberRecord(filter, pageSize);
+    let {results, total} = await reportService.getMemberRecord(filter, pageSize);
 
     /// 3) Output
     return {
         paging:{
             page:1,
             pageSize,
-            total:results.length,
-            totalPages:Math.ceil(results.length / pageSize)
+            total,
+            totalPages:Math.ceil(total / pageSize)
         },
         results
     };

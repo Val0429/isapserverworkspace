@@ -23,10 +23,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let reportService = new ReportService();
     let permissions = await reportService.getPermissionRecord(filter, pageSize);
     let members = await reportService.getMemberRecord(filter, pageSize);
-    for(let member of members){
+    for(let member of members.results){
         for(let tableid of member.permissionTable){            
             let newMember = Object.assign({},member);
-            let permission = permissions.find(x=>x.tableid==tableid);
+            let permission = permissions.results.find(x=>x.tableid==tableid);
             if(!permission || !permission.accesslevels)continue;
             for(let access of permission.accesslevels){
                 newMember.permissionName = permission.tablename;
