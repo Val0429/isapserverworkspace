@@ -15,7 +15,7 @@ class Service {
     /**
      *
      */
-    private _frss: Service.IObjectFRS = {};
+    private _frss: IBase.IObject.IKeyValue<Service.IFRS> = {};
     public get frss(): FRSService[] {
         return Object.keys(this._frss).map((value, index, array) => {
             return this._frss[value].frs;
@@ -274,11 +274,6 @@ class Service {
 export default new Service();
 
 namespace Service {
-    /**
-     *
-     */
-    export interface IObjectFRS extends IBase.IObject.IKeyValue<IFRS> {}
-
     /**
      *
      */
