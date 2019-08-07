@@ -93,7 +93,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     var obj = new PermissionTable(data.inputType);
     //let ccurePermissionTable = 
     await obj.save(null, { useMasterKey: true });
-    Log.Info(`info`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`, data.user);
+    Log.Info(`info`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`, data.user, false);
     
 
     /// 2) Output
@@ -133,7 +133,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user);
+    Log.Info(`info`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false);
 
     
 
@@ -190,7 +190,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `deletePermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user);
+    Log.Info(`info`, `deletePermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

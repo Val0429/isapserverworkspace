@@ -126,7 +126,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         console.log(`${this.constructor.name}`, ex);
     }
 
-    Log.Info(`info`, `postMember ${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user);
+    Log.Info(`info`, `postMember ${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false);
 
     /// 2) Output
     return ret;
@@ -299,7 +299,7 @@ console.log(update);
     /// 5) to Monogo
     //await obj.save({ ...ret, objectId: undefined });
     await update.save();
-    Log.Info(`info`, `putMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user);
+    Log.Info(`info`, `putMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false);
 
     /// 3) Output
     return ret;
@@ -317,7 +317,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(Member).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `deleteMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user);
+    Log.Info(`info`, `deleteMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

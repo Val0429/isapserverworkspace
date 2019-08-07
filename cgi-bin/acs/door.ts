@@ -87,7 +87,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 var obj = new Door(data.inputType);
                 await obj.save(null, { useMasterKey: true });
 
-                Log.Info(`info`, `postDoor ${data.inputType.doorname}`, data.user);
+                Log.Info(`info`, `postDoor ${data.inputType.doorname}`, data.user, false);
 
                 /// 2) Output
                 return ParseObject.toOutputJSON(obj);
@@ -171,7 +171,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
 
-    Log.Info(`info`, `putDoor ${obj.get("doorname")}`, data.user);
+    Log.Info(`info`, `putDoor ${obj.get("doorname")}`, data.user, false);
 
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
@@ -190,7 +190,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Door <${objectId}> not exists.`]);
     /// 2) Delete
 
-    Log.Info(`info`, `deleteDoor ${obj.get("doorname")}`, data.user);
+    Log.Info(`info`, `deleteDoor ${obj.get("doorname")}`, data.user, false);
 
     obj.destroy({ useMasterKey: true });
     /// 3) Output

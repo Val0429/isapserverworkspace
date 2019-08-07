@@ -22,7 +22,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new WorkGroup(data.inputType);
 
-    Log.Info(`info`, `postWorkGroup ${data.inputType.groupid} ${data.inputType.groupname}`, data.user);
+    Log.Info(`info`, `postWorkGroup ${data.inputType.groupid} ${data.inputType.groupname}`, data.user, false);
     
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
@@ -56,7 +56,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(WorkGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`WorkGroup <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `putWorkGroup ${obj.get("groupid")} ${obj.get("groupname")}`, data.user);
+    Log.Info(`info`, `putWorkGroup ${obj.get("groupid")} ${obj.get("groupname")}`, data.user, false);
 
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
@@ -76,7 +76,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(WorkGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`WorkGroup <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `deleteWorkGroup ${obj.get("groupid")} ${obj.get("groupname")}`, data.user);
+    Log.Info(`info`, `deleteWorkGroup ${obj.get("groupid")} ${obj.get("groupname")}`, data.user, false);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
