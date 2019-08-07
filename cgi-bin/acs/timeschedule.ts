@@ -22,7 +22,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new TimeSchedule(data.inputType);
 
-    Log.Info(`${this.constructor.name}`, `postTimeSchedule ${data.inputType.timeid} ${data.inputType.timename}`, data.user);
+    Log.Info(`info`, `postTimeSchedule ${data.inputType.timeid} ${data.inputType.timename}`, data.user);
 
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
@@ -58,7 +58,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(TimeSchedule).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`TimeSchedule <${objectId}> not exists.`]);
 
-    Log.Info(`${this.constructor.name}`, `putTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`, data.user);
+    Log.Info(`info`, `putTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`, data.user);
 
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
@@ -78,7 +78,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(TimeSchedule).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`TimeSchedule <${objectId}> not exists.`]);
 
-    Log.Info(`${this.constructor.name}`, `deleteTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`, data.user);
+    Log.Info(`info`, `deleteTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`, data.user);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

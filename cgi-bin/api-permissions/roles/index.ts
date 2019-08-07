@@ -33,7 +33,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     await obj.save(null, { useMasterKey: true });
     
     await savePermissions(data.parameters, obj);
-    Log.Info(`${this.constructor.name}`, `postApiRoles ${obj.get("identifier")}`, data.user);
+    Log.Info(`info`, `postApiRoles ${obj.get("identifier")}`, data.user);
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -85,7 +85,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     await obj.save({ ...data.inputType, objectId: undefined });
     await deletePermissions(obj);
     await savePermissions(data.parameters, obj);
-    Log.Info(`${this.constructor.name}`, `putApiRoles ${obj.get("identifier")}`, data.user);
+    Log.Info(`info`, `putApiRoles ${obj.get("identifier")}`, data.user);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -105,7 +105,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     obj.destroy({ useMasterKey: true });
     //destroy child permissions
     await deletePermissions(obj);
-    Log.Info(`${this.constructor.name}`, `deleteApiRoles ${obj.get("identifier")}`, data.user);
+    Log.Info(`info`, `deleteApiRoles ${obj.get("identifier")}`, data.user);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

@@ -25,7 +25,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Floor(data.inputType);
 
-    Log.Info(`${this.constructor.name}`, `postFloor ${data.inputType.floorname}`, data.user);
+    Log.Info(`info`, `postFloor ${data.inputType.floorname}`, data.user);
 
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
@@ -113,7 +113,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(Floor).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floor <${objectId}> not exists.`]);
     
-    Log.Info(`${this.constructor.name}`, `putFloor ${obj.get("floorname")}`, data.user);
+    Log.Info(`info`, `putFloor ${obj.get("floorname")}`, data.user);
 
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });

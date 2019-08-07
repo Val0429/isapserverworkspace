@@ -71,7 +71,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                     let r1 = await siPassAdapter.postAccessLevel(r, 10000);
                     console.log("bop3");
                     if (r1["Token"] != undefined) {
-                        Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`, data.user);
+                        Log.Info(`info`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`, data.user);
 
                         var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
                         await obj1.save(null, { useMasterKey: true });
@@ -110,7 +110,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 if(!exists){
                     let r1 = await siPassAdapter.postAccessLevel(r, 10000);
                     if (r1["Token"] != undefined) {
-                        Log.Info(`${this.constructor.name}`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`, data.user);
+                        Log.Info(`info`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`, data.user);
 
                         var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
                         await obj1.save(null, { useMasterKey: true });
@@ -145,7 +145,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     var obj = new AccessLevel(data.inputType);
     await obj.save(null, { useMasterKey: true });
-    Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${data.inputType.levelidNumber} ${data.inputType.levelname }`, data.user);
+    Log.Info(`info`, `postAccessLevel reader ${data.inputType.levelidNumber} ${data.inputType.levelname }`, data.user);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -209,7 +209,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 
 //             let r1 = await siPassAdapter.postAccessLevel(r, 10000);
 //             if (r1["Token"] != undefined) {
-//                 Log.Info(`${this.constructor.name}`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
+//                 Log.Info(`info`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
 
 //                 var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
 //                 await obj1.save(null, { useMasterKey: true });
@@ -240,7 +240,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 
 //                 let r1 = await siPassAdapter.postAccessLevel(r, 10000);
 //                 if (r1["Token"] != undefined) {
-//                     Log.Info(`${this.constructor.name}`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
+//                     Log.Info(`info`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
 
 //                     var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
 //                     await obj1.save(null, { useMasterKey: true });
@@ -256,7 +256,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 //     /// 3) Modify
 //     await obj.save({ ...data.inputType, objectId: undefined });
 
-//     Log.Info(`${this.constructor.name}`, `putAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
+//     Log.Info(`info`, `putAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
 
         
 //     /// 4) Output
@@ -276,7 +276,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`AccessLevel <${objectId}> not exists.`]);
     /// 2) Delete
 
-    Log.Info(`${this.constructor.name}`, `deleteAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`, data.user);
+    Log.Info(`info`, `deleteAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`, data.user);
 
     obj.destroy({ useMasterKey: true });
     /// 3) Output
