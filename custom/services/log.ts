@@ -51,7 +51,7 @@ export namespace Log {
         return msg;
     }
 
-    export async function Info(title: string, message: string, user:User) {
+    export async function Info(title: string, message: string, user?:User) {
         if (!TestPass(Level.Info)) return;
         let msg = getInfoMessage(title, message);
         await (new SystemLog({title, message, user})).save();
@@ -59,7 +59,7 @@ export namespace Log {
         return msg;
     }
 
-    export async function Error(title: string, message: string, user:User) {
+    export async function Error(title: string, message: string, user?:User) {
         if (!TestPass(Level.Error)) return;
         let msg = getErrorMessage(title, message);
         await (new SystemLog({title, message, user})).save();
