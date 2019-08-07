@@ -8,7 +8,7 @@ import { ReportService } from 'workspace/custom/services/report-service';
 
 
 var action = new Action({
-    loginRequired: false,
+    loginRequired: true,
     postSizeLimit: 1024 * 1024 * 10,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator],
     apiToken: "door_member_CRUD"

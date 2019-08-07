@@ -8,7 +8,7 @@ import {
 import { IDropDownList, DropDownList } from '../../custom/models'
 
 var action = new Action({
-    loginRequired: false,
+    loginRequired: true,
     // permission: [RoleList.Admin, RoleList.User]
 });
 

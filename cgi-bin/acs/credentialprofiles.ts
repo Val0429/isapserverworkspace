@@ -10,7 +10,7 @@ import { ICredentialProfiles, CredentialProfiles } from '../../custom/models'
 
 
 var action = new Action({
-    loginRequired: false,
+    loginRequired: true,
     permission: [RoleList.Admin]
 });
 

@@ -10,7 +10,7 @@ import { IWorkGroup, WorkGroup } from '../../custom/models'
 
 
 var action = new Action({
-    loginRequired: false,
+    loginRequired: true,
     // permission: [RoleList.Admin, RoleList.SuperAdministrator, RoleList.SystemAdministrator]
 });
 
