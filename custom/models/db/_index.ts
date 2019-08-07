@@ -103,6 +103,7 @@ export abstract class TreeNotice<T> extends Tree<T> {
 }
 
 export * from './camera-cms';
+export * from './camera-frs-manager';
 export * from './camera-frs';
 export * from './camera-hanwha';
 

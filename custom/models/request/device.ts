@@ -27,6 +27,12 @@ export interface IC_Base {
     name: string;
 }
 
+export interface ICameraFRSManager {
+    serverId: string;
+    frsId: string;
+    sourceId: string;
+}
+
 export interface ICameraFRS {
     serverId: string;
     sourceid: string;
@@ -38,27 +44,26 @@ export interface ICameraCMS {
     channelId: number;
 }
 
-export interface IDemographicC extends IC_Base {
+export interface IDemographicC_FRS extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frs;
     config: ICameraFRS;
     demoServerId: string;
 }
 
-export interface IDwellTimeC extends IC_Base {
-    config: ICameraFRS;
+export interface IDemographicC_FRSManager extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config: ICameraFRSManager;
+    demoServerId: string;
+}
+
+export interface IDwellTimeC_FRSManager extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config: ICameraFRSManager;
     demoServerId: string;
     direction: Enum.EDeviceDirection;
-}
-
-export interface IHeatmapC extends IC_Base {
-    config: ICameraCMS;
-    hdServerId: string;
-    rois: Draw.ILocation[];
-}
-
-export interface IHumanDetectionC extends IC_Base {
-    config: ICameraCMS;
-    hdServerId: string;
-    rois: Draw.ILocation[];
 }
 
 export interface IPeopleCountingC_Hanwha extends IC_Base {
@@ -69,13 +74,39 @@ export interface IPeopleCountingC_Hanwha extends IC_Base {
 
 export interface IPeopleCountingC_FRS extends IC_Base {
     brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frs;
     config: ICameraFRS;
     direction: Enum.EDeviceDirection;
 }
 
-export interface IVisitorC extends IC_Base {
-    config: ICameraFRS;
+export interface IPeopleCountingC_FRSManager extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config: ICameraFRSManager;
+    direction: Enum.EDeviceDirection;
+}
+
+export interface IVisitorC_FRSManager extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config: ICameraFRSManager;
     demoServerId: string;
+}
+
+export interface IHeatmapC_CMS extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.cms;
+    config: ICameraCMS;
+    hdServerId: string;
+    rois: Draw.ILocation[];
+}
+
+export interface IHumanDetectionC_CMS extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.cms;
+    config: ICameraCMS;
+    hdServerId: string;
+    rois: Draw.ILocation[];
 }
 
 export interface IIndexR {
@@ -99,42 +130,67 @@ export interface IU_Base {
     dataWindowY?: number;
 }
 
-export interface IDemographicU extends IU_Base {
+export interface IDemographicU_FRS extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frs;
     config?: ICameraFRS;
     demoServerId?: string;
 }
 
-export interface IDwellTimeU extends IU_Base {
-    config?: ICameraFRS;
+export interface IDemographicU_FRSManager extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config?: ICameraFRSManager;
+    demoServerId?: string;
+}
+
+export interface IDwellTimeU_FRSManager extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config?: ICameraFRSManager;
     demoServerId?: string;
     direction?: Enum.EDeviceDirection;
 }
 
-export interface IHeatmapU extends IU_Base {
-    config?: ICameraCMS;
-    hdServerId?: string;
-    rois?: Draw.ILocation[];
-}
-
-export interface IHumanDetectionU extends IU_Base {
-    config?: ICameraCMS;
-    hdServerId?: string;
-    rois?: Draw.ILocation[];
-}
-
 export interface IPeopleCountingU_Hanwha extends IU_Base {
-    brand?: Enum.EDeviceBrand.hanwha;
+    brand: Enum.EDeviceBrand.hanwha;
     model: Enum.EDeviceModelHanwha;
-    config: ICameraHanwha;
+    config?: ICameraHanwha;
 }
 
 export interface IPeopleCountingU_FRS extends IU_Base {
-    brand?: Enum.EDeviceBrand.isap;
-    config: ICameraFRS;
-    direction: Enum.EDeviceDirection;
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frs;
+    config?: ICameraFRS;
+    direction?: Enum.EDeviceDirection;
 }
 
-export interface IVisitorU extends IU_Base {
-    config?: ICameraFRS;
+export interface IPeopleCountingU_FRSManager extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config?: ICameraFRSManager;
+    direction?: Enum.EDeviceDirection;
+}
+
+export interface IVisitorU_FRSManager extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frsManager;
+    config?: ICameraFRSManager;
     demoServerId?: string;
+}
+
+export interface IHeatmapU_CMS extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.cms;
+    config?: ICameraCMS;
+    hdServerId?: string;
+    rois?: Draw.ILocation[];
+}
+
+export interface IHumanDetectionU_CMS extends IU_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.cms;
+    config?: ICameraCMS;
+    hdServerId?: string;
+    rois?: Draw.ILocation[];
 }

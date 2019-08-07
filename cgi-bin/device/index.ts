@@ -121,7 +121,7 @@ action.get(
                         };
                     });
 
-                    let config: IResponse.IDevice.ICameraCMS | IResponse.IDevice.ICameraFRS | IDB.ICameraHanwha = undefined;
+                    let config: IResponse.IDevice.ICameraCMS | IResponse.IDevice.ICameraFRSManager | IResponse.IDevice.ICameraFRS | IDB.ICameraHanwha = undefined;
                     let model: string = undefined;
                     switch (value.getValue('brand')) {
                         case Enum.EDeviceBrand.isap:
@@ -146,6 +146,17 @@ action.get(
                                             name: frsConfig.server.getValue('name'),
                                         },
                                         sourceid: frsConfig.sourceid,
+                                    };
+                                    break;
+                                case Enum.EDeviceModelIsap.frs:
+                                    let frsManagerConfig: IDB.ICameraFRSManager = value.getValue('config') as IDB.ICameraFRSManager;
+                                    config = {
+                                        server: {
+                                            objectId: frsManagerConfig.server.id,
+                                            name: frsManagerConfig.server.getValue('name'),
+                                        },
+                                        frsId: frsManagerConfig.frsId,
+                                        sourceId: frsManagerConfig.sourceId,
                                     };
                                     break;
                             }
@@ -346,6 +357,56 @@ async function GetHanwhaVersion(config: IDB.ICameraHanwha): Promise<string> {
 /**
  *
  * @param device
+ * @param config
+ */
+async function HanwhaCamera(device: IDB.Device, config: IDB.ICameraHanwha): Promise<IDB.Device> {
+    try {
+        let version = await GetHanwhaVersion(config);
+
+        device.setValue('config', config);
+
+        return device;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ *
+ * @param device
+ * @param camera
+ */
+async function FRSManagerCamera(device: IDB.Device, camera: IRequest.IDevice.ICameraFRSManager): Promise<IDB.Device> {
+    try {
+        let server: IDB.ServerFRSManager = await new Parse.Query(IDB.ServerFRSManager)
+            .equalTo('objectId', camera.serverId)
+            .first()
+            .fail((e) => {
+                throw e;
+            });
+        if (!server) {
+            throw Errors.throw(Errors.CustomBadRequest, ['server not found']);
+        }
+
+        let config: IDB.ICameraFRSManager = {
+            server: server,
+            frsId: camera.frsId,
+            sourceId: camera.sourceId,
+        };
+
+        device.setValue('brand', Enum.EDeviceBrand.isap);
+        device.setValue('model', Enum.EDeviceModelIsap.frsManager);
+        device.setValue('config', config);
+
+        return device;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ *
+ * @param device
  * @param camera
  */
 async function FRSCamera(device: IDB.Device, camera: IRequest.IDevice.ICameraFRS): Promise<IDB.Device> {
@@ -409,6 +470,44 @@ async function CMSCamera(device: IDB.Device, camera: IRequest.IDevice.ICameraCMS
 }
 
 /**
+ *
+ * @param device
+ * @param demoServerId
+ */
+async function DemoServer(device: IDB.Device, demoServerId: string): Promise<IDB.Device> {
+    try {
+        let demoServer: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic).equalTo('objectId', demoServerId).first();
+        if (!demoServer) {
+            throw Errors.throw(Errors.CustomBadRequest, ['demographic server not found']);
+        }
+        device.setValue('demoServer', demoServer);
+
+        return device;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
+ *
+ * @param device
+ * @param hdServerId
+ */
+async function HdServer(device: IDB.Device, hdServerId: string): Promise<IDB.Device> {
+    try {
+        let hdServer: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection).equalTo('objectId', hdServerId).first();
+        if (!hdServer) {
+            throw Errors.throw(Errors.CustomBadRequest, ['human detection server not found']);
+        }
+        device.setValue('hdServer', hdServer);
+
+        return device;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
  * Create device
  * @param mode
  * @param value
@@ -450,36 +549,44 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
         device.setValue('dataWindowX', 0);
         device.setValue('dataWindowY', 0);
 
-        switch (mode) {
-            case Enum.EDeviceMode.demographic:
-            case Enum.EDeviceMode.visitor:
-            case Enum.EDeviceMode.dwellTime:
-                let demoServer: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic).equalTo('objectId', value.demoServerId).first();
-                if (!demoServer) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['demographic server not found']);
+        if (value.brand === Enum.EDeviceBrand.hanwha) {
+            switch (mode) {
+                case Enum.EDeviceMode.peopleCounting:
+                    device = await HanwhaCamera(device, value.config);
+                    break;
+            }
+        } else if (value.brand === Enum.EDeviceBrand.isap) {
+            if (value.model === Enum.EDeviceModelIsap.cms) {
+                switch (mode) {
+                    case Enum.EDeviceMode.humanDetection:
+                    case Enum.EDeviceMode.heatmap:
+                        device = await HdServer(device, value.hdServerId);
+                        device = await CMSCamera(device, value.config);
+                        break;
                 }
-                device.setValue('demoServer', demoServer);
-
-                device = await FRSCamera(device, value.config);
-                break;
-            case Enum.EDeviceMode.humanDetection:
-            case Enum.EDeviceMode.heatmap:
-                let hdServer: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection).equalTo('objectId', value.hdServerId).first();
-                if (!hdServer) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['human detection server not found']);
+            } else if (value.model === Enum.EDeviceModelIsap.frs) {
+                switch (mode) {
+                    case Enum.EDeviceMode.demographic:
+                        device = await DemoServer(device, value.demoServerId);
+                        device = await FRSCamera(device, value.config);
+                        break;
+                    case Enum.EDeviceMode.peopleCounting:
+                        device = await FRSCamera(device, value.config);
+                        break;
                 }
-                device.setValue('hdServer', hdServer);
-
-                device = await CMSCamera(device, value.config);
-                break;
-            case Enum.EDeviceMode.peopleCounting:
-                if (value.brand === Enum.EDeviceBrand.hanwha) {
-                    let version = await GetHanwhaVersion(value.config);
-                    device.setValue('config', value.config);
-                } else if (value.brand === Enum.EDeviceBrand.isap) {
-                    device = await FRSCamera(device, value.config);
+            } else if (value.model === Enum.EDeviceModelIsap.frsManager) {
+                switch (mode) {
+                    case Enum.EDeviceMode.demographic:
+                    case Enum.EDeviceMode.dwellTime:
+                    case Enum.EDeviceMode.visitor:
+                        device = await DemoServer(device, value.demoServerId);
+                        device = await FRSCamera(device, value.config);
+                        break;
+                    case Enum.EDeviceMode.peopleCounting:
+                        device = await FRSCamera(device, value.config);
+                        break;
                 }
-                break;
+            }
         }
 
         await device.save(null, { useMasterKey: true }).fail((e) => {
@@ -511,6 +618,9 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             });
         if (!device) {
             throw Errors.throw(Errors.CustomBadRequest, ['device not found']);
+        }
+        if (device.getValue('brand') !== value.brand || device.getValue('model') !== value.model) {
+            throw Errors.throw(Errors.CustomBadRequest, ['can not change device brand or model']);
         }
 
         if (value.areaId === '') {
@@ -557,43 +667,43 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
         if (value.dataWindowY || value.dataWindowY === 0) {
             device.setValue('dataWindowY', value.dataWindowY);
         }
-        if (value.brand) {
-            device.setValue('brand', value.brand);
-
-            if (value.brand === Enum.EDeviceBrand.hanwha) {
-                let version = await GetHanwhaVersion(value.config);
-                device.unset('direction');
-                device.setValue('model', value.model);
-                device.setValue('config', value.config);
-            } else if (value.brand === Enum.EDeviceBrand.isap) {
-                device = await FRSCamera(device, value.config);
-            }
-        }
-        if (value.demoServerId) {
-            let demoServer: IDB.ServerDemographic = await new Parse.Query(IDB.ServerDemographic).equalTo('objectId', value.demoServerId).first();
-            if (!demoServer) {
-                throw Errors.throw(Errors.CustomBadRequest, ['demographic server not found']);
-            }
-            device.setValue('demoServer', demoServer);
-        }
-        if (value.hdServerId) {
-            let hdServer: IDB.ServerHumanDetection = await new Parse.Query(IDB.ServerHumanDetection).equalTo('objectId', value.hdServerId).first();
-            if (!hdServer) {
-                throw Errors.throw(Errors.CustomBadRequest, ['human detection server not found']);
-            }
-            device.setValue('hdServer', hdServer);
-        }
-        if (value.config) {
+        if (value.brand === Enum.EDeviceBrand.hanwha) {
             switch (mode) {
-                case Enum.EDeviceMode.demographic:
-                case Enum.EDeviceMode.visitor:
-                case Enum.EDeviceMode.dwellTime:
-                    device = await FRSCamera(device, value.config);
+                case Enum.EDeviceMode.peopleCounting:
+                    if (value.config) device = await HanwhaCamera(device, value.config);
                     break;
-                case Enum.EDeviceMode.heatmap:
-                case Enum.EDeviceMode.humanDetection:
-                    device = await CMSCamera(device, value.config);
-                    break;
+            }
+        } else if (value.brand === Enum.EDeviceBrand.isap) {
+            if (value.model === Enum.EDeviceModelIsap.cms) {
+                switch (mode) {
+                    case Enum.EDeviceMode.humanDetection:
+                    case Enum.EDeviceMode.heatmap:
+                        if (value.hdServerId) device = await HdServer(device, value.hdServerId);
+                        if (value.config) device = await CMSCamera(device, value.config);
+                        break;
+                }
+            } else if (value.model === Enum.EDeviceModelIsap.frs) {
+                switch (mode) {
+                    case Enum.EDeviceMode.demographic:
+                        if (value.demoServerId) device = await DemoServer(device, value.demoServerId);
+                        if (value.config) device = await FRSCamera(device, value.config);
+                        break;
+                    case Enum.EDeviceMode.peopleCounting:
+                        if (value.config) device = await FRSCamera(device, value.config);
+                        break;
+                }
+            } else if (value.model === Enum.EDeviceModelIsap.frsManager) {
+                switch (mode) {
+                    case Enum.EDeviceMode.demographic:
+                    case Enum.EDeviceMode.dwellTime:
+                    case Enum.EDeviceMode.visitor:
+                        if (value.demoServerId) device = await DemoServer(device, value.demoServerId);
+                        if (value.config) device = await FRSCamera(device, value.config);
+                        break;
+                    case Enum.EDeviceMode.peopleCounting:
+                        if (value.config) device = await FRSCamera(device, value.config);
+                        break;
+                }
             }
         }
         if (value.direction) {

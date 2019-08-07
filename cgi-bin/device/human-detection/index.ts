@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = IRequest.IDevice.IHumanDetectionC[];
+type InputC = IRequest.IDevice.IHumanDetectionC_CMS[];
 
 type OutputC = IResponse.IMultiData;
 
@@ -61,7 +61,7 @@ action.post(
 /**
  * Action update
  */
-type InputU = IRequest.IDevice.IHumanDetectionU[];
+type InputU = IRequest.IDevice.IHumanDetectionU_CMS[];
 
 type OutputU = IResponse.IMultiData;
 

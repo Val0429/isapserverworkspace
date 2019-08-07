@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationSite, LocationArea, DeviceGroup, ICameraCMS, ICameraFRS, ICameraHanwha, ServerDemographic, ServerHumanDetection } from './_index';
+import { ParseObjectNotice, LocationSite, LocationArea, DeviceGroup, ICameraCMS, ICameraFRSManager, ICameraFRS, ICameraHanwha, ServerDemographic, ServerHumanDetection } from './_index';
 import * as Enum from '../../enums';
 import { Draw } from '../../helpers';
 
@@ -50,7 +50,7 @@ export interface IDevice {
     /**
      * 設定
      */
-    config: ICameraCMS | ICameraFRS | ICameraHanwha;
+    config: ICameraCMS | ICameraFRSManager | ICameraFRS | ICameraHanwha;
 
     /**
      * Demographic server

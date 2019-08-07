@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = IRequest.IDevice.IDwellTimeC[];
+type InputC = IRequest.IDevice.IDwellTimeC_FRSManager[];
 
 type OutputC = IResponse.IMultiData;
 
@@ -61,7 +61,7 @@ action.post(
 /**
  * Action update
  */
-type InputU = IRequest.IDevice.IDwellTimeU[];
+type InputU = IRequest.IDevice.IDwellTimeU_FRSManager[];
 
 type OutputU = IResponse.IMultiData;
 

@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = IRequest.IDevice.IHeatmapC[];
+type InputC = IRequest.IDevice.IHeatmapC_CMS[];
 
 type OutputC = IResponse.IMultiData;
 
@@ -61,7 +61,7 @@ action.post(
 /**
  * Action update
  */
-type InputU = IRequest.IDevice.IHeatmapU[];
+type InputU = IRequest.IDevice.IHeatmapU_CMS[];
 
 type OutputU = IResponse.IMultiData;
 

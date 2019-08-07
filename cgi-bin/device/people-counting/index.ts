@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = (IRequest.IDevice.IPeopleCountingC_FRS | IRequest.IDevice.IPeopleCountingC_Hanwha)[];
+type InputC = (IRequest.IDevice.IPeopleCountingC_FRS | IRequest.IDevice.IPeopleCountingC_FRSManager | IRequest.IDevice.IPeopleCountingC_Hanwha)[];
 
 type OutputC = IResponse.IMultiData;
 
@@ -61,7 +61,7 @@ action.post(
 /**
  * Action update
  */
-type InputU = (IRequest.IDevice.IPeopleCountingU_FRS | IRequest.IDevice.IPeopleCountingU_Hanwha)[];
+type InputU = (IRequest.IDevice.IPeopleCountingU_FRS | IRequest.IDevice.IPeopleCountingU_FRSManager | IRequest.IDevice.IPeopleCountingU_Hanwha)[];
 
 type OutputU = IResponse.IMultiData;
 

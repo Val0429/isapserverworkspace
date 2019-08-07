@@ -23,6 +23,12 @@ export interface IGroupAll {
     name: string;
 }
 
+export interface ICameraFRSManager {
+    server: IObject;
+    frsId: string;
+    sourceId: string;
+}
+
 export interface ICameraFRS {
     server: IObject;
     sourceid: string;
@@ -44,7 +50,7 @@ export interface IIndexR {
     brand: string;
     model: string;
     mode: string;
-    config: ICameraCMS | ICameraFRS | ICameraHanwha;
+    config: ICameraCMS | ICameraFRSManager | ICameraFRS | ICameraHanwha;
     demoServer: IObject;
     hdServer: IObject;
     direction: string;

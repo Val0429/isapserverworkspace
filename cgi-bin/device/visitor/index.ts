@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = IRequest.IDevice.IVisitorC[];
+type InputC = IRequest.IDevice.IVisitorC_FRSManager[];
 
 type OutputC = IResponse.IMultiData;
 
@@ -61,7 +61,7 @@ action.post(
 /**
  * Action update
  */
-type InputU = IRequest.IDevice.IVisitorU[];
+type InputU = IRequest.IDevice.IVisitorU_FRSManager[];
 
 type OutputU = IResponse.IMultiData;
 
