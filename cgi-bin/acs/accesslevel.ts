@@ -71,7 +71,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                     let r1 = await siPassAdapter.postAccessLevel(r, 10000);
                     console.log("bop3");
                     if (r1["Token"] != undefined) {
-                        Log.Info(`info`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`, data.user);
+                        Log.Info(`info`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`, data.user, true);
 
                         var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
                         await obj1.save(null, { useMasterKey: true });
@@ -110,7 +110,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 if(!exists){
                     let r1 = await siPassAdapter.postAccessLevel(r, 10000);
                     if (r1["Token"] != undefined) {
-                        Log.Info(`info`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`, data.user);
+                        Log.Info(`info`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`, data.user, true);
 
                         var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
                         await obj1.save(null, { useMasterKey: true });
@@ -145,7 +145,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     var obj = new AccessLevel(data.inputType);
     await obj.save(null, { useMasterKey: true });
-    Log.Info(`info`, `postAccessLevel reader ${data.inputType.levelidNumber} ${data.inputType.levelname }`, data.user);
+    Log.Info(`info`, `postAccessLevel reader ${data.inputType.levelidNumber} ${data.inputType.levelname }`, data.user, true);
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -276,7 +276,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`AccessLevel <${objectId}> not exists.`]);
     /// 2) Delete
 
-    Log.Info(`info`, `deleteAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`, data.user);
+    Log.Info(`info`, `deleteAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`, data.user, true);
 
     obj.destroy({ useMasterKey: true });
     /// 3) Output

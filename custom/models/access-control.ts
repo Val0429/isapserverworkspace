@@ -4,7 +4,8 @@ import { User } from 'parse';
 export interface ISystemLog{
     title:string;
     message:string;
-    user?:User
+    user?:User;
+    hidden?:boolean;
 }
 @registerSubclass()
 export class SystemLog extends ParseObject<ISystemLog> { }

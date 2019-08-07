@@ -51,10 +51,10 @@ export namespace Log {
         return msg;
     }
 
-    export async function Info(title: string, message: string, user?:User) {
+    export async function Info(title: string, message: string, user?:User, hidden:boolean=false) {
         if (!TestPass(Level.Info)) return;
         let msg = getInfoMessage(title, message);
-        await (new SystemLog({title, message, user})).save();
+        await (new SystemLog({title, message, user, hidden})).save();
         console.log(msg);
         return msg;
     }

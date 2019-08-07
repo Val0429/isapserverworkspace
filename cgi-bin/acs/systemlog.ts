@@ -18,7 +18,9 @@ type OutputR = Restful.OutputR<SystemLog>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         /// 1) Make Query
-        var query = new Parse.Query(SystemLog).include("user");
+        var query = new Parse.Query(SystemLog)
+                    .notEqualTo("hidden", true)
+                    .include("user");
 
         let filter = data.parameters as any;
         if(filter.name){
