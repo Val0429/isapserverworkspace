@@ -1,34 +1,40 @@
 import { Config as IConfig } from './../../../models/events/events.define';
-import { Config } from 'core/config.gen';
 
-const flow = Config.vms.flow;
-
-let events: IConfig[];
+let events: IConfig[] = [];
 
 /// 0000 for <Shared>
 /// 1000 for Administrator
 /// 2000 for Tenant
 /// 3000 for Visitor
 /// 4000 for Kiosk
-if (flow === "Flow1") {
-    events = [
+
+let flow;
+
+{
+    let eventtmp: IConfig[] = [
         /// 100~ for system ////////////////////////
-        ["101", `${flow}ConfigChanged`, `
+        ["101", `ConfigChanged`, `
             key: string;
             value: any;
         `],
         ////////////////////////////////////////////
-    
+    ];
+    events.splice(events.length, 0, ...eventtmp);
+}
+
+flow = "Flow1";
+{
+    let eventtmp: IConfig[] = [
         /// 3000 for Visitor ///////////////////////
     
-        ["3400", `${flow}InvitationComplete`, `
+        ["3100", `${flow}InvitationComplete`, `
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
             visitor: ${flow}Visitors;
         `, [`${flow}Companies`, `${flow}Invitations`, `${flow}Visitors`]],
     
-        /// 3500 - Strict Rule Register
-        ["3501", `${flow}PreRegistrationComplete`, `
+        /// Strict Rule Register
+        ["3101", `${flow}PreRegistrationComplete`, `
             /**
              * Invitation visitor that completes register.
              */
@@ -40,7 +46,7 @@ if (flow === "Flow1") {
             visitor: ${flow}Visitors;
         `, [`${flow}Companies`, `${flow}Invitations`, `${flow}Visitors`]],
     
-        ["3510", `${flow}StrictTryCheckIn`, `
+        ["3110", `${flow}StrictTryCheckIn`, `
             pin: string;        
             /**
              * Invitation visitor that completes register.
@@ -54,7 +60,7 @@ if (flow === "Flow1") {
             kiosk: Parse.User;
         `],
     
-        ["3511", `${flow}StrictConfirmPhoneNumber`, `
+        ["3111", `${flow}StrictConfirmPhoneNumber`, `
             pin: string;
             phone: string;
             /**
@@ -73,7 +79,7 @@ if (flow === "Flow1") {
             kiosk: Parse.User;
         `],
     
-        ["3512", `${flow}StrictScanIDCard`, `
+        ["3112", `${flow}StrictScanIDCard`, `
             pin: string;
             name: string;
             birthdate: string;
@@ -85,7 +91,7 @@ if (flow === "Flow1") {
             kiosk: Parse.User;
         `],
     
-        ["3513", `${flow}StrictCompareFace`, `
+        ["3113", `${flow}StrictCompareFace`, `
             pin: string;
             image: Parse.File;
             invitation: ${flow}Invitations;
@@ -99,7 +105,7 @@ if (flow === "Flow1") {
             result: boolean;
         `],
     
-        ["3514", `${flow}StrictCompleteCheckIn`, `
+        ["3114", `${flow}StrictCompleteCheckIn`, `
             pin: string;
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
@@ -107,35 +113,35 @@ if (flow === "Flow1") {
             kiosk: Parse.User;
         `],
     
-        /// 3600 - Register
-        ["3601", `${flow}TryRegister`],
-        ["3602", `${flow}PickFloor`, `
-            /**
-             * Floors object pick by Person.
-             */
-            floor: ${flow}Floors;
-        `, [`${flow}Floors`]],
-        ["3603", `${flow}ScanIDCard`, `
-            /**
-             * Extracted info from ID Card.
-             */
-            name: string;
-            birthdate: string;
-            idnumber: string;
-            image: Parse.File[];
-        `],
-        ["3688", `${flow}RegistrationComplete`],
+        /// Register
+        // ["3115", `${flow}TryRegister`],
+        // ["3116", `${flow}PickFloor`, `
+        //     /**
+        //      * Floors object pick by Person.
+        //      */
+        //     floor: ${flow}Floors;
+        // `, [`${flow}Floors`]],
+        // ["3", `${flow}ScanIDCard`, `
+        //     /**
+        //      * Extracted info from ID Card.
+        //      */
+        //     name: string;
+        //     birthdate: string;
+        //     idnumber: string;
+        //     image: Parse.File[];
+        // `],
+        ["3115", `${flow}RegistrationComplete`],
     
-        /// 3700 - Check In
-        ["3701", `${flow}TryCheckIn`],
-        ["3702", `${flow}FaceVerifyResult`, `
+        /// Check In
+        ["3116", `${flow}TryCheckIn`],
+        ["3117", `${flow}FaceVerifyResult`, `
             /**
              * Verified face image and final result.
              */
             image: Parse.File;
             result: boolean;
         `],
-        ["3788", `${flow}DoneCheckIn`, `
+        ["3118", `${flow}DoneCheckIn`, `
             /**
              * Check-in final result.
              */
@@ -143,6 +149,7 @@ if (flow === "Flow1") {
         `],
         ////////////////////////////////////////////
     ];
+    events.splice(events.length, 0, ...eventtmp);
 }
 
 export default events;
