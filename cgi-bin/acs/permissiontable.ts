@@ -76,7 +76,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     if(errors.length>0)return {errors};
     let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length && x.permissionTableName==data.inputType.tablename);
 
-    if(!ccurePermissionTable){
+    if(!ccurePermissionTable && devices.length>0){
         errors.push({type:"clearanceIsNotInCCure"});
         return {permTableNames, errors};
     }
@@ -163,7 +163,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     if(errors.length>0)return {errors};
     let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length && x.permissionTableName==data.inputType.tablename);;
 
-    if(!ccurePermissionTable){
+    if(!ccurePermissionTable && devices.length>0){
         errors.push({type:"clearanceIsNotInCCure"});
         return {permTableNames, errors};
     }
