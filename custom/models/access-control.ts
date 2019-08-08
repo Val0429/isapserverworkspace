@@ -147,8 +147,8 @@ export interface IMember {      // CRUD
         }
     },
     CustomFields?: {
-        FiledName: string,
-        FieldValue: any
+        FiledName?: string,
+        FieldValue?: any
     }[],
     FingerPrints?: any[],
     CardholderPortrait?: string
