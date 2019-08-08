@@ -88,10 +88,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     // CustomFields
     let inputs = obj.get("CustomFields");
-    let fields = Object.assign([], inputs);
-    for(let field of fields){ 
-        field.FieldValue = field.FieldValue || null;
-    }   
+    let fields = [];
+    for(let input of inputs){
+        fields.push({FiledName:input.FiledName, FieldValue:input.FieldValue || null})
+    } 
 
     // obj.set("Token", "-1");
     obj.set("CustomFields", fields);
@@ -256,12 +256,13 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 	update.set("token", obj.get("Token"));
     update.set("GeneralInformation", obj.get("GeneralInformation"));
     // CustomFields
-    let inputs = update.get("CustomFields");   
+    let inputs = update.get("CustomFields"); 
+    console.log("customFields", inputs);  
     //update the whole custom fields
-    let fields = Object.assign([], inputs);
-    for(let field of fields){ 
-        field.FieldValue = field.FieldValue || null;
-    }  
+    let fields = [];
+    for(let input of inputs){
+        fields.push({FiledName:input.FiledName, FieldValue:input.FieldValue || null})
+    }
     update.set("CustomFields", fields);
     
 console.log(update);
