@@ -3,6 +3,7 @@ import * as delay from 'delay';
 
 import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles, PermissionTableDoor } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
+import { ParseObject } from 'core/cgi-package';
 
 export class SyncService{
      async syncCcurePermissionTable() {
@@ -15,7 +16,7 @@ export class SyncService{
                     .containedIn("tableid", records.map(r=>parseInt(r["permissionTableId"])))
                     .equalTo("system", 800)
                     .find();
-        let promises=[];
+        let parseObjects=[];
         for (const r of records) {
             if (!r["permissionTableId"] || !r["permissionTableName"]) continue;
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTables ${r["permissionTableName"]}-${r["permissionTableId"]}`);
@@ -29,17 +30,17 @@ export class SyncService{
                 };
                 let o = new PermissionTable(d);
                 if (!d.tableid || isNaN(d.tableid)) continue;
-                promises.push(o.save());
+                parseObjects.push(o);
             }
             else {
                 obj.set("system", 800);
                 obj.set("tableid", +r["permissionTableId"]);
                 obj.set("tablename", r["permissionTableName"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
             
         }
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncCcurePermissionTableDoor() {
@@ -66,7 +67,7 @@ export class SyncService{
                 .limit(Number.MAX_SAFE_INTEGER)
                 .containedIn("permissionTableId", records.map(r=>parseInt(r["permissionTableId"])))
                 .find();
-       let promises = [];
+       let parseObjects = [];
         for (const r of records) {
             
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTableDoor ${r["permissionTableId"]}-${r["doorId"]}`);
@@ -80,7 +81,7 @@ export class SyncService{
                     status: 1
                 };
                 let o = new PermissionTableDoor(d);
-                promises.push(o.save());
+                parseObjects.push(o);
             }
             else {
                 let d1 = obj.get("doorId") as number[] ;
@@ -93,11 +94,11 @@ export class SyncService{
                 obj.set("permissionTableId", +r["permissionTableId"]);
                 obj.set("doorId", d1);
                 obj.set("timespecId", r["timespecId"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
             
         }
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
         
     }
 
@@ -111,7 +112,7 @@ export class SyncService{
                         .equalTo("system", 800)
                         .find();
         //console.log("Floors", records);
-        let promises=[];
+        let parseObjects=[];
             for ( const r of records) {
                 Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
                 let obj = objects.find(x=>x.get("floorid")== r.floorId);
@@ -123,16 +124,16 @@ export class SyncService{
                         status: 1
                     };
                     let o = new Floor(d);
-                    promises.push(o.save());
+                    parseObjects.push(o);
                 }
                 else {
                     obj.set("system", 800);
                     obj.set("floorid", +r["floorId"]);
                     obj.set("floorname", r["floorName"]);
-                    promises.push(obj.save());
+                    parseObjects.push(obj);
                 }
             }
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncCcureDoorReader() {
@@ -150,7 +151,7 @@ export class SyncService{
                     .include("readerin")
                     .containedIn("doorid", records.map(x=>x.doorId))
                     .find();
-        let promises =[];
+        let parseObjects =[];
         for (const r of records) {
             
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
@@ -163,13 +164,13 @@ export class SyncService{
                     status: 1
                 };
                 obj = new Reader(d);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
             else {
                 obj.set("system", 800);
                 obj.set("readerid", r["deviceId"]);
                 obj.set("readername", r["deviceName"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
             let door = doors.find(x=>x.get("doorid") == r.doorId);
             if (door) {
@@ -177,17 +178,17 @@ export class SyncService{
                 if (!readers){
                     readers = [obj];
                     door.set("readerin", readers);
-                    promises.push(door.save());
+                    parseObjects.push(door);
                 }                     
                 else if(!readers.find(x=>x.get("readerid")==r.deviceId)){
                     readers.push(obj);                    
                     door.set("readerin", readers);
-                    promises.push(door.save());
+                    parseObjects.push(door);
                 }
                     
             }
         }
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncCcureDoor() {
@@ -200,7 +201,7 @@ export class SyncService{
                 .containedIn("doorid", records.map(x=>x.doorId))
                 .equalTo("system", 800)
                 .find();
-        let promises = [];
+        let parseObjects = [];
         for (const r of records) {            
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);            
             let obj = objects.find(x=>x.get("doorid") == r.doorId)
@@ -212,16 +213,16 @@ export class SyncService{
                     status: 1
                 };
                 let o = new Door(d);
-                promises.push(o.save());
+                parseObjects.push(o);
             }
             else {
                 obj.set("system", 800);
                 obj.set("doorid", +r["doorId"]);
                 obj.set("doorname", r["doorName"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
         }
-        await Promise.all(promises);      
+        await ParseObject.saveAll(parseObjects);      
     }
 
      async syncCcureTimeSchedule() {
@@ -234,7 +235,7 @@ export class SyncService{
                     .containedIn("timeid", records.map(r=>r["timespecId"]))
                     .equalTo("system", 800)
                     .find();
-        let promises = [];
+        let parseObjects = [];
         for (let idx = 0; idx < records.length; idx++) {
             const r = records[idx];
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
@@ -247,16 +248,16 @@ export class SyncService{
                     status: 1
                 };
                 let o = new TimeSchedule(d);
-                promises.push(o.save());
+                parseObjects.push(o);
             }
             else {
                 obj.set("system", 800);
                 obj.set("timeid", +r["timespecId"]);
                 obj.set("timename", r["timespecName"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
         }
-        await Promise.all(promises); 
+        await ParseObject.saveAll(parseObjects); 
     }
     async syncSipassReader() {
         Log.Info(`CGI acsSync`, `SiPass 2.3 Door Readers`);
@@ -267,7 +268,7 @@ export class SyncService{
                     .limit(Number.MAX_SAFE_INTEGER)
                     .containedIn("readerid", records.map(x=>parseInt(x.Token)))
                     .find();
-        let promises=[];
+        let parseObjects=[];
         for (const r of records) {
             
             Log.Info(`CGI acsSync`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
@@ -280,17 +281,17 @@ export class SyncService{
                     status: 1
                 };
                 let o = new Reader(d);
-                promises.push(o.save());
+                parseObjects.push(o);
             }
             else {
                 obj.set("system", 1);
                 obj.set("readerid", parseInt(r["Token"]));
                 obj.set("readername", r["Name"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
         }
         
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
      async syncSipassCredentialProfile() {
         Log.Info(`${this.constructor.name}`, `SiPass 2.9 Get All Credential Profiles`);
@@ -301,18 +302,18 @@ export class SyncService{
                         .containedIn("Token", records.map(r=>r["Token"]))
                         .find();
         //console.log("Readers", records);
-        let promises=[];
+        let parseObjects=[];
         for (const r of records) {
             
             Log.Info(`${this.constructor.name}`, `Import data SiPass CredentialProfiles ${r["Name"]}-${r["Token"]}`);
             let obj = objects.find(x=>x.get("Token") == r["Token"]);
             if (!obj) {
                 let o = new CredentialProfiles(r);
-                promises.push(o.save());
+                parseObjects.push(o);
             }
         }
             
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncSipassWorkgroup() {
@@ -320,7 +321,7 @@ export class SyncService{
         let records = await siPassAdapter.getWorkGroupList();
         //console.log("Work Group List", records);
         if(!records || records.length<=0)return;
-        
+        let parseObjects=[];
         for (const r of records) {
             Log.Info(`${this.constructor.name}`, `Import data SiPass WorkGroup ${r["Name"]}-${r["Token"]}`);
             let group = await siPassAdapter.getWorkGroup(r["Token"]);
@@ -338,7 +339,7 @@ export class SyncService{
                     status: 1
                 };
                 let o = new WorkGroup(d);
-                await o.save();
+                 parseObjects.push(o);
             }
             else {
                 obj.set("system", 1);
@@ -346,10 +347,10 @@ export class SyncService{
                 obj.set("groupname", group["Name"]);
                 obj.set("type", +group["Type"]);
                 obj.set("accesspolicyrules", group["AccessPolicyRules"]);
-                await obj.save();
+                parseObjects.push(obj);
             }
         }
-        
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncSipassAcessGroup() {
@@ -361,6 +362,7 @@ export class SyncService{
         //console.log("Access Group List", records);
 
         if(!records || records.length<=0)return;
+        let parseObjects =[];
             for (let i = 0; i < records.length; i++) {
                 Log.Info(`${this.constructor.name}`, `Import data SiPass AccessGroups ${records[i]["Name"]}-${records[i]["Token"]}`);
 
@@ -408,7 +410,7 @@ export class SyncService{
                                 timeschedule: obj
                             };
                             let o = new AccessLevel(d);
-                            lev = await o.save();
+                            parseObjects.push(o);
                         }
                         else {
                             obj.set("system", 1);
@@ -416,14 +418,15 @@ export class SyncService{
                             obj.set("levelname", level["Name"]);
                             obj.set("reader", rs);
                             obj.set("timeschedule", obj);
+                            parseObjects.push(obj);
                         }
 
                         // let lev = await this.mongoDb.collection("AccessLevel").findOneAndUpdate({ "levelname": level["Name"] }, { $set: d }, { upsert: true, returnOriginal: false });
                         // let o = new AccessLevel(d);
-                        // let lev = await o.save();
+                        // let lev = await o;
                         // acl.push(lev.value.id);
                         acl.push(lev);
-                        await delay(1000);
+                        
                     }
                 }
                 let obj = await new Parse.Query(PermissionTable)
@@ -439,21 +442,20 @@ export class SyncService{
                         accesslevels: acl
                     };
                     let o = new PermissionTable(d);
-                    await o.save();
+                    parseObjects.push( o);
                 }
                 else {
                     obj.set("system", 1);
                     obj.set("tableid", +group["Token"]);
                     obj.set("tablename", group["Name"]);
                     obj.set("accesslevels", acl);
-                    await obj.save();
+                    parseObjects.push(obj);
                 }
-                // await this.mongoDb.collection("PermissionTable").findOneAndUpdate({ "tablename": group["Name"] }, { $set: d }, { upsert: true });
-                await delay(1000);
+                
+                
             }
         
-
-        await delay(1000);
+            await ParseObject.saveAll(parseObjects);
     }
 
      async syncSipassFloor() {
@@ -466,7 +468,7 @@ export class SyncService{
                     .equalTo("system", 1)
                     .find();
        // console.log("Floors", records);
-        let promises=[];
+        let parseObjects=[];
             for (let idx = 0; idx < records.length; idx++) {
                 const r = records[idx];
                 Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
@@ -479,17 +481,17 @@ export class SyncService{
                         status: 1
                     };
                     let o = new Floor(d);
-                    promises.push(o.save());
+                    parseObjects.push(o);
                 }
                 else {
                     obj.set("system", 1);
                     obj.set("floorid", +r["Token"]);
                     obj.set("floorname", r["Name"]);
-                    promises.push(obj.save());
+                    parseObjects.push(obj);
                 }
             
         }
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncSipassDoorReader() {
@@ -502,7 +504,7 @@ export class SyncService{
                     .containedIn("readerid", records.map(r=>parseInt(r.Token)))
                     .equalTo("system", 1)
                     .find();
-        let promises=[];
+        let parseObjects=[];
         for (const r of records) {
                 Log.Info(`${this.constructor.name}`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
                 let obj = objects.find(x=>x.get("readerid") == parseInt(r.Token));
@@ -514,17 +516,17 @@ export class SyncService{
                         status: 1
                     };
                     let o = new Reader(d);
-                    promises.push(o.save());
+                    parseObjects.push(o);
                 }
                 else {
                     obj.set("system", 1);
                     obj.set("readerid", +r["Token"]);
                     obj.set("readername", r["Name"]);
-                    promises.push(obj.save());
+                    parseObjects.push(obj);
                 }
             }
             
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 
      async syncSipassSchedule() {
@@ -536,7 +538,7 @@ export class SyncService{
                     .equalTo("system", 1)
                     .find();
         //console.log("Time Schedule", records);
-        let promises=[];
+        let parseObjects=[];
         for (const r of records) {
             
             Log.Info(`${this.constructor.name}`, `Import data SiPass TimeSchedule ${r["Name"]}-${r["Token"]}`);
@@ -549,17 +551,17 @@ export class SyncService{
                     status: 1
                 };
                 let o = new TimeSchedule(d);
-                promises.push(o.save());
+                parseObjects.push(o);
             }
             else {
                 obj.set("system", 1);
                 obj.set("timeid", +r["Token"]);
                 obj.set("timename", r["Name"]);
-                promises.push(obj.save());
+                parseObjects.push(obj);
             }
         }
             
-        await Promise.all(promises);
+        await ParseObject.saveAll(parseObjects);
     }
 }
 
