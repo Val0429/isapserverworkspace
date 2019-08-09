@@ -85,7 +85,6 @@ flow = "Flow1";
             images: Parse.File[];
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
-            visitor: ${flow}Visitors;
             kiosk: Parse.User;
         `],
     
@@ -94,7 +93,6 @@ flow = "Flow1";
             image: Parse.File;
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
-            visitor: ${flow}Visitors;
             kiosk: Parse.User;
             score: number;
             /**
@@ -107,7 +105,6 @@ flow = "Flow1";
             pin: string;
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
-            visitor: ${flow}Visitors;
             kiosk: Parse.User;
         `],
     
