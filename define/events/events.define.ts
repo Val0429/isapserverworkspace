@@ -105,6 +105,7 @@ flow = "Flow1";
             pin: string;
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
+            visitorName: string;
             kiosk: Parse.User;
         `],
     

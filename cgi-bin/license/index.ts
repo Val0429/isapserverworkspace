@@ -1,12 +1,19 @@
+/*
+ * Created on Tue Jul 30 2019
+ * Author: Val Liu
+ * Copyright (c) 2019, iSAP Solution
+ */
+
 import {
     express, Request, Response, Router,
-    IRole, IUser, RoleList, IUserKioskData,
+    IRole, IUser, RoleList,
     Action, Errors,
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 import * as request from 'request';
 import licenseService from 'services/license';
 import { promisify } from 'bluebird';
+var getMac = require('getmac').getMac;
 
 var action = new Action({
     loginRequired: true,
@@ -19,29 +26,31 @@ var action = new Action({
  ********************************/
 interface InputC {
     keyOrData: string;
-    mac?: string;
 }
 
 action.post<InputC>({ inputType: "InputC" }, async (data) => {
-    let { keyOrData: key, mac } = data.inputType;
+    let { keyOrData: key } = data.inputType;
     if (key.length === 29) {
-        if (!mac) throw Errors.throw(Errors.ParametersRequired, ["mac"]);
+        let mac: string = await promisify(getMac)() as string;
         /// 1) online license 29 digits
         /// 1.1) VerifyLicenseKey
         let res1: number = await licenseService.verifyLicenseKey({key});
         if (res1 <= 0) throw Errors.throw(Errors.CustomBadRequest, ["License invalid."]);
         /// 1.2) send online url
         let url = `http://www.isapsolution.com/register.aspx?L=${key}&M=${mac}`;
-        let xml = await new Promise( (resolve, reject) => {
+        let res2: string = await new Promise( (resolve, reject) => {
             request({
-                url, method: 'POST'
+                url,
+                method: 'POST'
             }, (err, res, body) => {
                 if (err) throw err;
-                if (/^ERROR/.test(body)) reject( Errors.throw(Errors.CustomBadRequest, [`License Invalid: ${body}`]) );
                 resolve(body);
             });
-        }) as any as string;
-        await licenseService.addLicense({ xml });
+        }) as string;
+        /// 1.2.1) If there are 'ERROR' inside body, throw
+        if (/^ERROR/.test(res2)) throw Errors.throw(Errors.CustomBadRequest, [`License Invalid: ${res2}`]);
+        /// 1.3) AddLicense
+        await licenseService.addLicense({ xml: res2 });
 
     } else {
         /// 2) offline register
@@ -60,7 +69,10 @@ action.post<InputC>({ inputType: "InputC" }, async (data) => {
  ********************************/
 action.get( async (data) => {
     let xml = await licenseService.getLicense();
-    return ParseObject.toOutputJSON(xml);
+    return {
+        results: xml.licenses,
+        summary: xml.summary
+    }
 });
 /// CRUD end ///////////////////////////////////
 
