@@ -1,4 +1,2 @@
-export * from './actions/index';
-export * from './controllers/index';
-export * from './templates/index';
+export * from './Flow1';
 

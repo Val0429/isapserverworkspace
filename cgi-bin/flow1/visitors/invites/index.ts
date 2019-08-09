@@ -3,26 +3,95 @@ import {
     IRole, IUser, RoleList, UserType,
     Action, Errors, Config,
     Events, Flow1Invitations, IFlow1Invitations,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, ActionParam,
+    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, ActionParam, Flow1Visitors, Flow1Companies, Flow1VisitorStatus, EventFlow1InvitationComplete, Flow1Purposes,
 } from 'core/cgi-package';
 
 import PinCode from 'services/pin-code';
+import { Flow1ScheduleControllerEmail_CompleteInvitation } from 'workspace/custom/schedulers';
+import QRCode from 'services/qr-code';
 
+let Visitors = Flow1Visitors;
+type Visitors = Flow1Visitors;
+type Companies = Flow1Companies;
+type Purposes = Flow1Purposes;
+
+type IInvitations = IFlow1Invitations;
+let Invitations = Flow1Invitations;
+type Invitations = Flow1Invitations;
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.TenantUser]
+    permission: [RoleList.Administrator]
 });
 
-/// CRUD start /////////////////////////////////
-/********************************
- * C: create object
- ********************************/
-interface ICInvitations extends IFlow1Invitations {
+interface ICInvitations extends IInvitations {
     parent: never;
+    pin: never;
 }
 type InputC = Restful.InputC<ICInvitations>;
 type OutputC = Restful.OutputC<ICInvitations>;
+
+const inviteFilter = { parent: false, visitors: { company: false, status: (status) => getEnumKey(Flow1VisitorStatus, status) } };
+
+async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Promise<Visitors[]> {
+    let resolvedVisitors: Visitors[] = [];
+
+    /// 1) Fetch or Create Visitors
+    main: for (let visitor of visitors) {
+        let idcard = visitor.get("idcard");
+        let email = visitor.get("email");
+        let phone = visitor.get("phone");
+
+        /// 2) apply visitor rule
+        let savedVisitors = await new Parse.Query(Visitors)
+            .include("privacy")
+            .equalTo("company", company)
+            .find();
+        if (idcard && idcard.idnumber && idcard.name) {
+            /// 2.1) rule 1: id card + name
+            for (let svisitor of savedVisitors) {
+                let sidcard = svisitor.get("idcard");
+                if (
+                    sidcard && sidcard.idnumber && sidcard.name &&
+                    idcard.idnumber == sidcard.idnumber && idcard.name == sidcard.name
+                ) {
+                    resolvedVisitors.push(svisitor);
+                    continue main;
+                }
+            }
+
+        } else if (email) {
+            /// 2.2) rule 2: email
+            for (let svisitor of savedVisitors) {
+                let semail = svisitor.get("email");
+                if (
+                    semail && email == semail
+                ) {
+                    resolvedVisitors.push(svisitor);
+                    continue main;
+                }
+            }
+
+        } else if (phone) {
+            /// 2.3) rule 3: phone
+            for (let svisitor of savedVisitors) {
+                let sphone = svisitor.get("phone");
+                if (
+                    sphone && phone == sphone
+                ) {
+                    resolvedVisitors.push(svisitor);
+                    continue main;
+                }
+            }
+        }
+        /// 2.X) no matches, add new
+        visitor.set("company", company);
+        visitor.set("status", Flow1VisitorStatus.Pending);
+        resolvedVisitors.push(visitor);
+    }
+
+    return resolvedVisitors;
+}
 
 
 export async function doInvitation(data: ActionParam<ICInvitations>) {
@@ -35,67 +104,121 @@ export async function doInvitation(data: ActionParam<ICInvitations>) {
 
     /// V1.1) Make Pin
     let pin = await PinCode.next();
-    data.inputType.pin = pin;
 
     /// V1.2) Fetch or Create Visitors
-    let userattr = parent.attributes as UserType<RoleList.TenantUser>;
-    let company = userattr.data.company;
-    let visitors = data.inputType.visitors;
-    for (let visitor of visitors) {
-        let { phone, email } = visitor.attributes;
-    }
-
-    // const { phone, email } = data.inputType.visitor.attributes;
-    // let userattr = parent.attributes as UserType<RoleList.TenantUser>;
-    // let company = userattr.data.company;
-    // let visitor = await new Parse.Query(Visitors)
-    //     .equalTo("company", company)
-    //     .equalTo("phone", phone)
-    //     .equalTo("email", email)
-    //     .first();
-
-    // if (!visitor) {
-    //     visitor = data.inputType.visitor;
-    //     visitor.setValue("company", company);
-    //     visitor.setValue("status", VisitorStatus.Pending);
-    // }
+    let company = data.inputType.company;
+    let visitors = await ruleCombineVisitors(company, data.inputType.visitors);
+    await Parse.Object.saveAll(visitors);
 
     /// modify touch date
-    let touchDate = data.inputType.dates.reduce( (final, date) => {
-        return final.valueOf() > date.end.valueOf() ? final : date.end;
-    }, new Date());
-    visitor.setValue("touchDate", touchDate);
+    // let touchDate = data.inputType.dates.reduce( (final, date) => {
+    //     return final.valueOf() > date.end.valueOf() ? final : date.end;
+    // }, new Date());
+    // visitor.setValue("touchDate", touchDate);
 
     /// V2.0) Save
-    await obj.save({ parent, cancelled, visitor }, { useMasterKey: true });
+    await obj.save({ pin, parent, cancelled, visitors }, { useMasterKey: true });
 
     /// V2.1) Save Event
     let invitation = obj;
     let owner = invitation.getValue("parent");
-    let event = new EventInvitationComplete({
+    let event = new EventFlow1InvitationComplete({
         owner,
         invitation,
         company,
-        visitor
+        visitors
     });
-    let visitorName = visitor.getValue("name");
     let purpose = invitation.getValue("purpose");
-    Events.save(event, {owner, invitation, company, visitor, purpose, visitorName});
+    Events.save(event, {owner, invitation, company, visitors, purpose});
+    let qrcode = await QRCode.make(pin);
 
     /// send email
-    data.inputType.notify.visitor.email && Config.smtp.enable && new ScheduleControllerEmail_PreRegistration().do(obj);
-    /// send sms
-    data.inputType.notify.visitor.phone && Config.sms.enable && new ScheduleControllerSMS_PreRegistration().do(obj);
-    data.inputType.notify.visitor.phone && Config.sgsms.enable && new ScheduleControllerSGSMS_PreRegistration().do(obj);
+    if (Config.smtp.enable) {
+        for (let visitor of visitors) {
+            new Flow1ScheduleControllerEmail_CompleteInvitation().do(event, { visitor, qrcode, pin });
+        }
+    }
 
     /// 3) Output
-    return ParseObject.toOutputJSON(obj, inviteFilter);
+    return ParseObject.toOutputJSON({
+        ...obj.attributes,
+        visitors: obj.attributes.visitors.map( (visitor) => visitor.attributesRemovePrivacy )
+    }, inviteFilter);
 }
+
+/// CRUD start /////////////////////////////////
+/********************************
+ * C: create object
+ ********************************/
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data: ActionParam<ICInvitations>) => {
     let result = await doInvitation(data);
     return result;
 });
 
+/********************************
+ * R: get object
+ ********************************/
+type InputR = Restful.InputR<IInvitations>;
+type OutputR = Restful.OutputR<IInvitations>;
+
+action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+    /// 1) Make Query
+    var query = new Parse.Query(Invitations)
+        .include("visitor")
+        .include("company")
+        .include("purpose");
+        //.equalTo("parent", data.user);
+
+    /// 2) With Extra Filters
+    query = Restful.Filter(query, data.inputType);
+    /// 3) Output
+    return Restful.Pagination(query, data.parameters, inviteFilter);
+});
+
+/********************************
+ * U: update object
+ ********************************/
+interface IUInvitations {
+    purpose?: Purposes;
+    cancelled?: boolean;
+}
+
+type InputU = Restful.InputU<IUInvitations>;
+type OutputU = Restful.OutputU<IInvitations>;
+
+action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+    /// 1) Get Object
+    var { objectId } = data.inputType;
+    var obj = await new Parse.Query(Invitations)
+        .include("visitor")
+        .include("purpose")
+        .get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Invitation <${objectId}> not exists.`]);
+    /// 2) Modify
+    await obj.save({ ...data.inputType, objectId: undefined });
+    /// 3) Output
+    return ParseObject.toOutputJSON(obj, inviteFilter);
+});
+
+/********************************
+ * D: delete object
+ ********************************/
+type InputD = Restful.InputD<IInvitations>;
+type OutputD = Restful.OutputD<IInvitations>;
+
+action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+    /// 1) Get Object
+    var { objectId } = data.inputType;
+    var obj = await new Parse.Query(Invitations).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Invitation <${objectId}> not exists.`]);
+    /// V2) Delete = cancel
+    await obj.save({ cancelled: true });
+    /// 3) Output
+    return ParseObject.toOutputJSON(obj);
+});
+/// CRUD end ///////////////////////////////////
+
+export default action;
 
 // import PinCode from 'services/pin-code';
 // import { Invitations, IInvitations } from './../../../custom/models/invitations';

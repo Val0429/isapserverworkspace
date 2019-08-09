@@ -4,6 +4,7 @@ import { Flow1Visitors } from './visitors';
 
 import { Flow1Purposes } from './purposes';
 import { Pin } from 'services/pin-code';
+import { Flow1Companies } from './companies';
 
 export interface IFlow1InvitationNotify {
     visitor: {
@@ -12,11 +13,13 @@ export interface IFlow1InvitationNotify {
     }
 }
 
+export type IFlow1InvitationVisitors = [Flow1Visitors, ...Array<Flow1Visitors>];
 
-export interface IFlow1InvitationDate {
+export interface IFlow1InvitationDateUnit {
     start: Date;
     end: Date;
 }
+export type IFlow1InvitationDate = [IFlow1InvitationDateUnit, ...Array<IFlow1InvitationDateUnit>];
 
 export interface IFlow1Invitations {
     /**
@@ -24,13 +27,17 @@ export interface IFlow1Invitations {
      */
     parent: Parse.User;
     /**
+     * For Raffle Link case, fill up company when initiate this invitation. 
+     */
+    company: Flow1Companies;
+    /**
      * All visitors being invited
      */
-    visitors: Flow1Visitors[];
+    visitors: IFlow1InvitationVisitors;
     pin: Pin;
-    dates: IFlow1InvitationDate[];
+    dates: IFlow1InvitationDate;
     purpose: Flow1Purposes;
-    notify: IFlow1InvitationNotify;
+    // notify: IFlow1InvitationNotify;
     cancelled?: boolean;
     // walkIn?: boolean;
 }

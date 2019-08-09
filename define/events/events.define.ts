@@ -30,7 +30,7 @@ flow = "Flow1";
         ["3100", `${flow}InvitationComplete`, `
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
-            visitor: ${flow}Visitors;
+            visitors: ${flow}Visitors[];
         `, [`${flow}Companies`, `${flow}Invitations`, `${flow}Visitors`]],
     
         /// Strict Rule Register
@@ -56,9 +56,8 @@ flow = "Flow1";
              * Company that invites this visitor.
              */
             company: ${flow}Companies;
-            visitor: ${flow}Visitors;
             kiosk: Parse.User;
-        `],
+        `, [`I${flow}InvitationVisitors`]],
     
         ["3111", `${flow}StrictConfirmPhoneNumber`, `
             pin: string;
@@ -75,7 +74,6 @@ flow = "Flow1";
              * Company that invites this visitor.
              */
             company: ${flow}Companies;
-            visitor: ${flow}Visitors;
             kiosk: Parse.User;
         `],
     

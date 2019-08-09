@@ -2,6 +2,7 @@ import * as request from 'request';
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { Log } from 'helpers/utility';
 import { LogTitle, IFRSServiceConfig, RequestLoginReason } from './libs/core';
+import { Config } from 'core/config.gen';
 
 /**
  * Submodules should take this into consideration:
@@ -22,6 +23,17 @@ export class FRSService {
     private sjRequestLogin: Subject<RequestLoginReason> = new Subject<RequestLoginReason>();
     private config: IFRSServiceConfig;
     static initializer: ((this: FRSService) => void)[] = [];
+
+    /// use for fixed config frs
+    private static _sharedInstance: FRSService;
+    static sharedInstance(): FRSService {
+        if (this._sharedInstance) return this._sharedInstance;
+        this._sharedInstance = new FRSService({
+            debug: true,
+            frs: Config.frs
+        });
+        this._sharedInstance.start();
+    }
 
     constructor(config: IFRSServiceConfig) {
         this.config = config;

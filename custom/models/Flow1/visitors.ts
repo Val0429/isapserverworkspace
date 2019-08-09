@@ -63,6 +63,9 @@ export interface IFlow1Visitors {
         }
         return super.get(key as string);
     }
+    getValue<U extends keyof IFlow1Visitors>(key: U): IFlow1Visitors[U] | undefined {
+        return this.get(key);
+    }
 
     set<U extends keyof IFlow1Visitors>(key: U, value: IFlow1Visitors[U], options?: Parse.Object.SetOptions): boolean;
     set<U extends keyof IFlow1Visitors>(attrs: Partial<IFlow1Visitors>, options?: Parse.Object.SetOptions): boolean;
