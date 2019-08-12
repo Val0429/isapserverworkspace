@@ -37,14 +37,19 @@ export default new Action<Input, Output>({
     let request = data.request;
 
     let { owner, invitation, result, company, visitors, index } = await tryCheckInWithPinCode(pin);
+    /// find out visitor
+    let idx = visitors.findIndex( (value) => {
+        return value.attributes.name === name;
+    });
+    let visitor = visitors[idx];
     let kiosk = data.user;
-    let eventData = { owner, pin, invitation, company, kiosk, visitorName: name };
+    let eventData = { owner, pin, invitation, company, kiosk, visitor, visitorName: name };
 
     let saveEvent = () => {
         /// save event
         let event = new EventStrictCompleteCheckIn(eventData);
         let purpose = invitation.getValue("purpose");
-        Events.save(event, {owner, invitation, company, kiosk, purpose, visitorName: name});
+        Events.save(event, {owner, invitation, company, kiosk, purpose, visitor, visitorName: name});
     }
 
     saveEvent();

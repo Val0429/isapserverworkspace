@@ -42,45 +42,45 @@ action.get({inputType: "Input"}, async (data) => {
         .include('visitor.company')
         .find();
 
-    // /// arrange
-    // let index: { [objectId: string]: {
-    //     visitor: Visitors;
-    //     totalVisit: number;
-    //     lastVisitDate: Date;
-    // } } = {};
-    // for (let col of query) {
-    //     let visitor = col.attributes.visitor;
-    //     if (!visitor) continue;
-    //     let objectId = visitor.id;
-    //     if (!objectId) continue;
-    //     let lastVisitDate = col.createdAt;
+    /// arrange
+    let index: { [objectId: string]: {
+        visitor: Visitors;
+        totalVisit: number;
+        lastVisitDate: Date;
+    } } = {};
+    for (let col of query) {
+        let visitor = col.attributes.visitor;
+        if (!visitor) continue;
+        let objectId = visitor.id;
+        if (!objectId) continue;
+        let lastVisitDate = col.createdAt;
 
-    //     if (!index[objectId]) {
-    //         index[objectId] = {
-    //             visitor: col.attributes.visitor,
-    //             totalVisit: 1,
-    //             lastVisitDate
-    //         }
-    //     } else {
-    //         index[objectId].totalVisit = index[objectId].totalVisit+1;
-    //         index[objectId].lastVisitDate = lastVisitDate;
-    //     }
-    // }
+        if (!index[objectId]) {
+            index[objectId] = {
+                visitor: col.attributes.visitor,
+                totalVisit: 1,
+                lastVisitDate
+            }
+        } else {
+            index[objectId].totalVisit = index[objectId].totalVisit+1;
+            index[objectId].lastVisitDate = lastVisitDate;
+        }
+    }
 
-    // // sort out
-    // let result: OutputData[] = [];
-    // for (let key in index) {
-    //     let value = index[key];
-    //     result.push(value);
-    // }
-    // /// order by totalVisit
-    // result.sort( (a, b) => b.totalVisit - a.totalVisit );
+    // sort out
+    let result: OutputData[] = [];
+    for (let key in index) {
+        let value = index[key];
+        result.push(value);
+    }
+    /// order by totalVisit
+    result.sort( (a, b) => b.totalVisit - a.totalVisit );
 
-    // return ParseObject.toOutputJSON({
-    //     data: result
-    // });
+    return ParseObject.toOutputJSON({
+        data: result
+    });
 
-    return "" as any;
+    // return "" as any;
 
 });
 
