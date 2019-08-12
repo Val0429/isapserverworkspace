@@ -141,7 +141,7 @@ action.get(
                 checklistRemark7: work.getValue('checklistRemark7'),
                 checklist8: work.getValue('checklist8'),
                 checklist9: work.getValue('checklist9'),
-                attachments: work.getValue('attachments').map((n) => n.url()),
+                attachments: (work.getValue('attachments') || []).map((n) => n.url()),
                 termsAccepted: work.getValue('termsAccepted'),
                 persons: work.getValue('persons'),
                 personNames: work.getValue('personNames'),

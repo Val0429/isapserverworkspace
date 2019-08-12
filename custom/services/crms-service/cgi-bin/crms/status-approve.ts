@@ -54,8 +54,6 @@ action.put(
 
             await SendEmail(title, content, [work.getValue('contactEmail')]);
 
-            work.setValue('status', EWorkPermitStatus.reject);
-
             work.setValue('status', EWorkPermitStatus.approve);
 
             await work.save(null, { useMasterKey: true }).fail((e) => {

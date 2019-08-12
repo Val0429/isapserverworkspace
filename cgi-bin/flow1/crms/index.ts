@@ -314,7 +314,7 @@ action.get(
                             checklistRemark7: value.getValue('checklistRemark7'),
                             checklist8: value.getValue('checklist8'),
                             checklist9: value.getValue('checklist9'),
-                            attachments: value.getValue('attachments').map((n) => n.url()),
+                            attachments: (value.getValue('attachments') || []).map((n) => n.url()),
                             termsAccepted: value.getValue('termsAccepted'),
                             persons: value.getValue('persons'),
                             personNames: value.getValue('personNames'),
