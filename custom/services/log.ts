@@ -54,7 +54,7 @@ export namespace Log {
     export async function Info(title: string, message: string, user?:User, isHidden?:boolean) {
         if (!TestPass(Level.Info)) return;
         let msg = getInfoMessage(title, message);
-        if(!isHidden)await (new SystemLog({title, message, user, hidden:(isHidden === undefined ? true :isHidden)})).save();
+        if(isHidden===false)await (new SystemLog({title, message, user, hidden:(isHidden === undefined ? true :isHidden)})).save();
         console.log(msg);
         return msg;
     }
