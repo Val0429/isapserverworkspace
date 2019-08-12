@@ -143,7 +143,8 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(Door).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Door <${objectId}> not exists.`]);
     /// 2) Modify
-    await obj.save({ ...data.inputType, objectId: undefined });
+    let update = new Door(data.inputType);
+    await update.save({ ...data.inputType, objectId: undefined });
 
     Log.Info(`info`, `putDoor ${obj.get("doorname")}`, data.user, false);
 
