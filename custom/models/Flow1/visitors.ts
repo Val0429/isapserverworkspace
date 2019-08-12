@@ -22,6 +22,15 @@ export interface IFlow1Visitors {
     company?: Flow1Companies;
 
     /**
+     * RaffleLink info
+     */
+    contractorCompanyName?: string;
+    unitNumber?: string;
+    vehicle?: string;
+    occupation?: string;
+    shift?: string;
+
+    /**
      * It's privacy. Don't input this field manually.
      */
     privacy?: Flow1Privacies;

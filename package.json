@@ -5,12 +5,13 @@
     "displayname": "iSap VMS Service"
   },
   "description": "iSap VMS Service v2.01.00",
-
   "scripts": {
     "start": "npm start --prefix ./../",
     "create-project": "git checkout --orphan"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "moment": "^2.24.0"
+  }
 }
