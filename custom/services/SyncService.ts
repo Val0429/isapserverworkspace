@@ -108,32 +108,36 @@ export class SyncService{
         if(!records || records.length<=0)return;
         let objects = await new Parse.Query(Floor)
                         .limit(Number.MAX_SAFE_INTEGER)
-                        .containedIn("floorid", records.map(x=>x.floorId))
+                        //.containedIn("floorid", records.map(x=>x.floorId))
+                        //.equalTo("status", 1)
                         .equalTo("system", 800)
                         .find();
         //console.log("Floors", records);
-        let parseObjects=[];
-            for ( const r of records) {
-                Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
-                let obj = objects.find(x=>x.get("floorid")== r.floorId);
-                if (!obj) {
-                    let d = {
-                        system: 800,
-                        floorid: +r["floorId"],
-                        floorname: r["floorName"],
-                        status: 1
-                    };
-                    let o = new Floor(d);
-                    parseObjects.push(o);
-                }
-                else {
-                    obj.set("system", 800);
-                    obj.set("floorid", +r["floorId"]);
-                    obj.set("floorname", r["floorName"]);
-                    parseObjects.push(obj);
-                }
+        // "delete" non existing object
+        for (let obj of objects){
+            obj.set("status", 0);
+        }
+        for ( const r of records) {
+            Log.Info(`${this.constructor.name}`, `Import data CCURE800 Floors ${r["floorName"]}-${r["floorId"]}`);
+            let obj = objects.find(x=>x.get("floorid")== r.floorId);
+            if (!obj) {
+                let d = {
+                    system: 800,
+                    floorid: +r["floorId"],
+                    floorname: r["floorName"],
+                    status: 1
+                };
+                let o = new Floor(d);
+                objects.push(o);
             }
-        await ParseObject.saveAll(parseObjects);
+            else {
+                obj.set("system", 800);
+                obj.set("floorid", +r["floorId"]);
+                obj.set("floorname", r["floorName"]);
+                obj.set("status", 1)
+            }
+        }
+        await ParseObject.saveAll(objects);
     }
 
      async syncCcureDoorReader() {
@@ -143,15 +147,20 @@ export class SyncService{
         //console.log("Readers", records);
         let objects = await new Parse.Query(Reader)
                     .limit(Number.MAX_SAFE_INTEGER)
-                    .containedIn("readerid", records.map(x=>x.deviceId))
+                    //.containedIn("readerid", records.map(x=>x.deviceId))
+                    //.equalTo("status", 1)
                     .equalTo("system", 800)
                     .find();
+        // "delete" non existing object
+        for (let obj of objects){
+            obj.set("status", 0);
+        }
         let doors = await new Parse.Query(Door)
                     .limit(Number.MAX_SAFE_INTEGER)
                     .include("readerin")
                     .containedIn("doorid", records.map(x=>x.doorId))
                     .find();
-        let parseObjects =[];
+        let doorObjects =[];
         for (const r of records) {
             
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 Readers ${r["deviceName"]}-${r["deviceId"]}`);
@@ -164,13 +173,13 @@ export class SyncService{
                     status: 1
                 };
                 obj = new Reader(d);
-                parseObjects.push(obj);
+                objects.push(obj);
             }
             else {
                 obj.set("system", 800);
                 obj.set("readerid", r["deviceId"]);
                 obj.set("readername", r["deviceName"]);
-                parseObjects.push(obj);
+                obj.set("status", 1);
             }
             let door = doors.find(x=>x.get("doorid") == r.doorId);
             if (door) {
@@ -178,17 +187,18 @@ export class SyncService{
                 if (!readers){
                     readers = [obj];
                     door.set("readerin", readers);
-                    parseObjects.push(door);
+                    doorObjects.push(door);
                 }                     
                 else if(!readers.find(x=>x.get("readerid")==r.deviceId)){
                     readers.push(obj);                    
                     door.set("readerin", readers);
-                    parseObjects.push(door);
+                    doorObjects.push(door);
                 }
                     
             }
         }
-        await ParseObject.saveAll(parseObjects);
+        await ParseObject.saveAll(objects);
+        await ParseObject.saveAll(doorObjects);
     }
 
      async syncCcureDoor() {
@@ -198,10 +208,14 @@ export class SyncService{
         //console.log("Doors", records);
         let objects = await new Parse.Query(Door)
                 .limit(Number.MAX_SAFE_INTEGER)
-                .containedIn("doorid", records.map(x=>x.doorId))
+                //.containedIn("doorid", records.map(x=>x.doorId))
+                //.equalTo("status", 1)
                 .equalTo("system", 800)
                 .find();
-        let parseObjects = [];
+        // "delete" non existing object
+        for (let obj of objects){
+            obj.set("status", 0);
+        }
         for (const r of records) {            
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 Doors ${r["doorName"]}-${r["doorId"]}`);            
             let obj = objects.find(x=>x.get("doorid") == r.doorId)
@@ -213,16 +227,16 @@ export class SyncService{
                     status: 1
                 };
                 let o = new Door(d);
-                parseObjects.push(o);
+                objects.push(o);
             }
             else {
                 obj.set("system", 800);
                 obj.set("doorid", +r["doorId"]);
                 obj.set("doorname", r["doorName"]);
-                parseObjects.push(obj);
+                obj.set("status", 1);
             }
         }
-        await ParseObject.saveAll(parseObjects);      
+        await ParseObject.saveAll(objects);      
     }
 
      async syncCcureTimeSchedule() {
@@ -266,9 +280,13 @@ export class SyncService{
         if(!records || records.length<=0)return;
         let objects = await new Parse.Query(Reader)
                     .limit(Number.MAX_SAFE_INTEGER)
-                    .containedIn("readerid", records.map(x=>parseInt(x.Token)))
+                    //.containedIn("readerid", records.map(x=>parseInt(x.Token)))
+                    //.equalTo("status", 1)
                     .find();
-        let parseObjects=[];
+        // "delete" non existing object
+        for (let obj of objects){
+            obj.set("status", 0);
+        }
         for (const r of records) {
             
             Log.Info(`CGI acsSync`, `Import data SiPass Reader ${r["Name"]}-${r["Token"]}`);
@@ -281,17 +299,17 @@ export class SyncService{
                     status: 1
                 };
                 let o = new Reader(d);
-                parseObjects.push(o);
+                objects.push(o);
             }
             else {
                 obj.set("system", 1);
                 obj.set("readerid", parseInt(r["Token"]));
                 obj.set("readername", r["Name"]);
-                parseObjects.push(obj);
+                obj.set("status", 1)
             }
         }
         
-        await ParseObject.saveAll(parseObjects);
+        await ParseObject.saveAll(objects);
     }
      async syncSipassCredentialProfile() {
         Log.Info(`${this.constructor.name}`, `SiPass 2.9 Get All Credential Profiles`);
@@ -464,34 +482,38 @@ export class SyncService{
         if(!records || records.length<=0)return;
         let objects = await new Parse.Query(Floor)
                     .limit(Number.MAX_SAFE_INTEGER)
-                    .containedIn("floorid",records.map(x=>parseInt(x.Token)))
+                    //.containedIn("floorid",records.map(x=>parseInt(x.Token)))
+                    //.equalTo("status", 1)
                     .equalTo("system", 1)
                     .find();
        // console.log("Floors", records);
-        let parseObjects=[];
-            for (let idx = 0; idx < records.length; idx++) {
-                const r = records[idx];
-                Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
-                let obj = objects.find(x=>x.get("floorid")==parseInt(r.Token));
-                if (!obj) {
-                    let d = {
-                        system: 1,
-                        floorid: +r["Token"],
-                        floorname: r["Name"],
-                        status: 1
-                    };
-                    let o = new Floor(d);
-                    parseObjects.push(o);
-                }
-                else {
-                    obj.set("system", 1);
-                    obj.set("floorid", +r["Token"]);
-                    obj.set("floorname", r["Name"]);
-                    parseObjects.push(obj);
-                }
+        // "delete" non existing object
+        for (let obj of objects){
+            obj.set("status", 0);
+        }
+        for (let idx = 0; idx < records.length; idx++) {
+            const r = records[idx];
+            Log.Info(`${this.constructor.name}`, `Import data SiPass FloorPoints ${r["Name"]}-${r["Token"]}`);
+            let obj = objects.find(x=>x.get("floorid")==parseInt(r.Token));
+            if (!obj) {
+                let d = {
+                    system: 1,
+                    floorid: +r["Token"],
+                    floorname: r["Name"],
+                    status: 1
+                };
+                let o = new Floor(d);
+                objects.push(o);
+            }
+            else {
+                obj.set("system", 1);
+                obj.set("floorid", +r["Token"]);
+                obj.set("floorname", r["Name"]);
+                obj.set("status", 1);
+            }
             
         }
-        await ParseObject.saveAll(parseObjects);
+        await ParseObject.saveAll(objects);
     }
 
      async syncSipassDoorReader() {
@@ -534,7 +556,8 @@ export class SyncService{
         let records = await siPassAdapter.getTimeSchedule();
         let objects = await new Parse.Query(TimeSchedule)
                     .limit(Number.MAX_SAFE_INTEGER)
-                    .containedIn("timeid", records.map(x=> parseInt(x.Token)))
+                    //.containedIn("timeid", records.map(x=> parseInt(x.Token)))
+                    //.equalTo("status", 1)
                     .equalTo("system", 1)
                     .find();
         //console.log("Time Schedule", records);

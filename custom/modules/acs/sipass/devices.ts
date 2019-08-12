@@ -122,8 +122,8 @@ export class SiPassDeviceService {
                 
         let url: string = `https://${data.domain}:${data.port}/api/v1/hr/FloorPoints/`;
 
-        console.info(`url = ${url}`);
-        console.info(`requestHeader = ${requestHeader}`);
+        //console.info(`url = ${url}`);
+        //console.info(`requestHeader = ${requestHeader}`);
         
         let result: any = await new Promise<any>((resolve, reject) => {
             try {

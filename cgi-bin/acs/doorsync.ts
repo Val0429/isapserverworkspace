@@ -18,9 +18,11 @@ action.get<any, any>({}, async () => {
     
    
     let syncService = new SyncService();
-    await syncService.syncCcureDoor();
-    await syncService.syncSipassReader();
-    await syncService.syncCcureDoorReader();      
+    await Promise.all([
+        syncService.syncCcureDoor(),
+        syncService.syncSipassReader(),
+        syncService.syncCcureDoorReader()
+    ])
     
 
     return { success: true };
