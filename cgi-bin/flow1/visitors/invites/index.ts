@@ -135,7 +135,8 @@ export async function doInvitation(data: ActionParam<ICInvitations>) {
     /// send email
     if (Config.smtp.enable) {
         for (let visitor of visitors) {
-            new Flow1ScheduleControllerEmail_CompleteInvitation().do(event, { visitor, qrcode, pin });
+            let email = visitor.getValue("email");
+            email && new Flow1ScheduleControllerEmail_CompleteInvitation().do(event, { visitor, qrcode, pin });
         }
     }
 
