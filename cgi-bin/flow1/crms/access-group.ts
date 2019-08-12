@@ -4,7 +4,7 @@ import { FRSService } from 'workspace/custom/services/frs-service';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.SystemAdministrator, RoleList.Administrator],
 });
 
 export default action;
