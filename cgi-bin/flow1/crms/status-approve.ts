@@ -31,7 +31,7 @@ action.put(
 
             let work: WorkPermit = await new Parse.Query(WorkPermit)
                 .equalTo('objectId', _input.objectId)
-                .include('company')
+                .include(['company', 'workCategory'])
                 .first()
                 .fail((e) => {
                     throw e;
@@ -47,7 +47,7 @@ action.put(
                 <div style='font-family:Microsoft JhengHei UI; color: #444;'>
                     <h3>Dear ${work.getValue('contact')},</h3>
                     <h4>One Raffles Link has approved your PTW request for:</h4>
-                    <h4>Conducting “${work.getValue('workCategory')}” at “${work.getValue('workLocation')}” for “${work.getValue('company').getValue('name')}”</h4>
+                    <h4>Conducting “${work.getValue('workCategory').getValue('name')}” at “${work.getValue('workLocation')}” for “${work.getValue('company').getValue('name')}”</h4>
                     <h4>From “${DateTime.ToString(work.getValue('workStartDate'), 'MMMM Do YYYY')}” to “${DateTime.ToString(work.getValue('workEndDate'), 'MMMM Do YYYY')}” between “${DateTime.ToString(work.getValue('workStartTime'), 'HH:mm')}” and “${DateTime.ToString(work.getValue('workEndTime'), 'HH:mm')}”</h4>
                     <h4>On the day of your visit, please remember to bring this QR code</h4>
                     <img src="${(await qrcode.make(`PTW # ${work.getValue('ptwId')}`)).url()}" />
@@ -57,33 +57,46 @@ action.put(
 
             work.setValue('status', EWorkPermitStatus.approve);
 
-            /// Val added: make invitation
-            let company = work.getValue("company");
-            let visitors: any = work.getValue("persons").map( (person) => {
+            let company = work.getValue('company');
+
+            let visitors: any = work.getValue('persons').map((person) => {
                 return {
                     name: person.name,
-                    phone: person.phone
-                }
+                    phone: person.phone,
+                };
             });
-            let purpose: any = work.getValue("workCategory");
-            let startdate = work.getValue("workStartDate");
-            let enddate = work.getValue("workEndDate");
-            let starttime = work.getValue("workStartTime");
-            let endtime = work.getValue("workEndTime");
+
+            let purpose = work.getValue('workCategory');
+
+            let startDate: Date = work.getValue('workStartDate');
+            let startTime: Date = work.getValue('workStartTime');
+            let endDate: Date = work.getValue('workEndDate');
+            let endTime: Date = work.getValue('workEndTime');
 
             let dates: IFlow1InvitationDateUnit[] = [];
+            for (let i: number = startDate.getTime(); i <= endDate.getTime(); i += 86400000) {
+                let date: Date = new Date(i);
 
-            //for (let i = startdate.setDa)
+                let start: Date = new Date(new Date(date).setHours(startTime.getHours(), startTime.getMinutes(), startTime.getSeconds(), startTime.getMilliseconds()));
+                let end: Date = new Date(new Date(date).setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds()));
 
-            doInvitation({
+                dates.push({
+                    start: start,
+                    end: end,
+                });
+            }
+
+            let invitation = await doInvitation({
                 ...data,
                 inputType: {
                     company,
                     visitors,
                     purpose,
-                    dates
-                }
-            })
+                    dates: dates as any,
+                } as any,
+            });
+
+            work.setValue('invitation', invitation);
 
             await work.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
