@@ -214,10 +214,10 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         }
     }
 
-
+    
      // AccessRules
      let permissionTables = await new Parse.Query(PermissionTable)
-                            .containedIn("tableid", obj.get("AccessRules").map(x=>parseInt(x)))
+                            .containedIn("tableid", update.get("AccessRules").map(x=>parseInt(x)))
                             .limit(Number.MAX_SAFE_INTEGER).find();
 
     let ccureAccessRules:string[] = [];
