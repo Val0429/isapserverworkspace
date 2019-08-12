@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes, IFlow1InvitationDateUnit } from 'core/cgi-package';
 import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPerson, IFlow1WorkPermitAccessGroup as IWorkPermitAccessGroup, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import pinCode from 'services/pin-code';
 import { Email, Utility } from './__api__';
@@ -423,6 +423,7 @@ action.put(
 
             let work: WorkPermit = await new Parse.Query(WorkPermit)
                 .equalTo('objectId', _input.objectId)
+                .include('invitation')
                 .first()
                 .fail((e) => {
                     throw e;
@@ -478,6 +479,46 @@ action.put(
             delete _input.objectId;
 
             await work.save(_input, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
+            let company = work.getValue('company');
+
+            let visitors: any = work.getValue('persons').map((person) => {
+                return {
+                    name: person.name,
+                    phone: person.phone,
+                };
+            });
+
+            let purpose = work.getValue('workCategory');
+
+            let startDate: Date = work.getValue('workStartDate');
+            let startTime: Date = work.getValue('workStartTime');
+            let endDate: Date = work.getValue('workEndDate');
+            let endTime: Date = work.getValue('workEndTime');
+
+            let dates: IFlow1InvitationDateUnit[] = [];
+            for (let i: number = startDate.getTime(); i <= endDate.getTime(); i += 86400000) {
+                let date: Date = new Date(i);
+
+                let start: Date = new Date(new Date(date).setHours(startTime.getHours(), startTime.getMinutes(), startTime.getSeconds(), startTime.getMilliseconds()));
+                let end: Date = new Date(new Date(date).setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds()));
+
+                dates.push({
+                    start: start,
+                    end: end,
+                });
+            }
+
+            let invitation = work.getValue('invitation');
+
+            invitation.setValue('company', company);
+            invitation.setValue('visitors', visitors);
+            invitation.setValue('purpose', purpose);
+            invitation.setValue('dates', dates as any);
+
+            await invitation.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });
 
