@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes } from 'core/cgi-package';
 import { WorkPermit, IWorkPermitPerson, IWorkPermitAccessGroup, EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import pinCode from 'services/pin-code';
 import { Email, Utility } from './__api__';
@@ -6,6 +6,9 @@ import { QRCode } from 'services/qr-code';
 
 type Companies = Flow1Companies;
 let Companies = Flow1Companies;
+
+type Purposes = Flow1Purposes;
+let Purposes = Flow1Purposes;
 
 let action = new Action({
     loginRequired: true,
@@ -21,7 +24,7 @@ type InputC = {
     contact: string;
     contactEmail: string;
     companyId: string;
-    workCategory: string;
+    workCategoryId: string;
 };
 
 type OutputC = Date;
@@ -61,6 +64,16 @@ action.post(
                 throw Errors.throw(Errors.CustomBadRequest, ['company not found']);
             }
 
+            let workCategory: Purposes = await new Parse.Query(Purposes)
+                .equalTo('objectId', _input.workCategoryId)
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+            if (!workCategory) {
+                throw Errors.throw(Errors.CustomBadRequest, ['work category not found']);
+            }
+
             let host: string = Config.core.publicExternalIP;
             let url: string = `${host}/contractorRegistration?id=${verify}`;
 
@@ -85,7 +98,7 @@ action.post(
             work.setValue('contact', _input.contact);
             work.setValue('contactEmail', _input.contactEmail);
             work.setValue('company', company);
-            work.setValue('workCategory', _input.workCategory);
+            work.setValue('workCategory', workCategory);
 
             await work.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -139,7 +152,10 @@ type OutputR = {
             objectId: string;
             name: string;
         };
-        workCategory: string;
+        workCategory: {
+            objectId: string;
+            name: string;
+        };
         applicantName: string;
         contractorCompanyName: string;
         contractorCompanyAddress: string;
@@ -247,7 +263,7 @@ action.get(
             let works: WorkPermit[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include('company')
+                .include(['company', 'workCategory'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -274,7 +290,10 @@ action.get(
                                 objectId: value.getValue('company').id,
                                 name: value.getValue('company').getValue('name'),
                             },
-                            workCategory: value.getValue('workCategory'),
+                            workCategory: {
+                                objectId: value.getValue('workCategory').id,
+                                name: value.getValue('workCategory').getValue('name'),
+                            },
                             applicantName: value.getValue('applicantName'),
                             contractorCompanyName: value.getValue('contractorCompanyName'),
                             contractorCompanyAddress: value.getValue('contractorCompanyAddress'),

@@ -25,7 +25,10 @@ type OutputR = {
         objectId: string;
         name: string;
     };
-    workCategory: string;
+    workCategory: {
+        objectId: string;
+        name: string;
+    };
     applicantName: string;
     contractorCompanyName: string;
     contractorCompanyAddress: string;
@@ -82,7 +85,7 @@ action.get(
 
             let work: WorkPermit = await new Parse.Query(WorkPermit)
                 .equalTo('verify', _input.verify)
-                .include('company')
+                .include(['company', 'workCategory'])
                 .first()
                 .fail((e) => {
                     throw e;
@@ -101,7 +104,10 @@ action.get(
                     objectId: work.getValue('company').id,
                     name: work.getValue('company').getValue('name'),
                 },
-                workCategory: work.getValue('workCategory'),
+                workCategory: {
+                    objectId: work.getValue('workCategory').id,
+                    name: work.getValue('workCategory').getValue('name'),
+                },
                 applicantName: work.getValue('applicantName'),
                 contractorCompanyName: work.getValue('contractorCompanyName'),
                 contractorCompanyAddress: work.getValue('contractorCompanyAddress'),
@@ -158,8 +164,6 @@ action.get(
  */
 type InputU = {
     verify: string;
-    contact?: string;
-    contactEmail?: string;
     pdpaAccepted?: boolean;
     applicantName?: string;
     contractorCompanyName?: string;
