@@ -42,7 +42,8 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(DoorGroup)
         .include("area.site")
-        .include("doors");
+        .include("doors.readerin")
+        .include("doors.readerout");
     let filter = data.parameters as any;
     if(filter.name){
         query.matches("groupname", new RegExp(filter.name), "i");
