@@ -7,7 +7,7 @@ import { doInvitation } from '../visitors/invites';
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.SystemAdministrator, RoleList.Administrator],
 });
 
 export default action;

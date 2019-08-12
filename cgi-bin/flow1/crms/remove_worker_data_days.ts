@@ -2,7 +2,7 @@ import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/c
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.SystemAdministrator, RoleList.Administrator],
 });
 
 export default action;
