@@ -340,7 +340,7 @@ async function getCCureDoor(doorObjectId: any) {
         readers.push(...door.readerin);
     if (door.readerout && door.readerout.length > 0)
         readers.push(...door.readerout);
-    let doorIsInCCure = readers.find(x=>x.readername.length>=2 && (x.system==1 && x.readername.substring(0,2)!="A_" || (x.system==800 && x.readername.substring(0,2)!="D_") ))
+    let doorIsInCCure = readers.find(x=>x.readername.length>=2 && (x.system==1 && x.readername.substring(0,2)!="A_" && (x.system==800 && x.readername.substring(0,2)!="D_") ))
     console.log("doorIsInCcure", doorIsInCCure, "readers", readers);
     return { doorIsInCCure, door };
 }
@@ -350,7 +350,7 @@ async function getCCureFloor(floorObjectId: any) {
         .equalTo("objectId", floorObjectId)
         .first();
     let floor = ParseObject.toOutputJSON(floorObject);
-    let floorIsInCCure = floor.find(x=>x.floorname.length>=2 && (x.system==1 && x.floorname.substring(0,2)!="A_" || (x.system==800 && x.floorname.substring(0,2)!="D_") ))
+    let floorIsInCCure = floor.find(x=>x.floorname.length>=2 && (x.system==1 && x.floorname.substring(0,2)!="A_" && (x.system==800 && x.floorname.substring(0,2)!="D_") ))
     console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
     return { floorIsInCCure, floor };
 }
