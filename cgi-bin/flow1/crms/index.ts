@@ -361,7 +361,7 @@ action.get(
 type InputU = {
     objectId: string;
     companyId?: string;
-    workCategory?: string;
+    workCategoryId?: string;
     contact?: string;
     contactEmail?: string;
     pdpaAccepted?: boolean;
@@ -461,6 +461,21 @@ action.put(
                 work.setValue('company', company);
 
                 delete _input.companyId;
+            }
+            if (_input.workCategoryId) {
+                let workCategory: Purposes = await new Parse.Query(Purposes)
+                    .equalTo('objectId', _input.workCategoryId)
+                    .first()
+                    .fail((e) => {
+                        throw e;
+                    });
+                if (!workCategory) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['work category not found']);
+                }
+
+                work.setValue('workCategory', workCategory);
+
+                delete _input.workCategoryId;
             }
 
             if (_input.workStartDate) {
