@@ -45,7 +45,7 @@ action.put(
                     <h4>Please remember to review it, and approve / reject it accordingly.</h4>
                 </div>`;
 
-            await SendEmail(title, content, [work.getValue('creator').getEmail()]);
+            await SendEmail(title, content, [work.getValue('creator').get('publicEmailAddress') || '']);
 
             work.setValue('status', EWorkPermitStatus.pendding);
             work.unset('verify');
