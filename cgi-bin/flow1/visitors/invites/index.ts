@@ -94,7 +94,7 @@ async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Pr
 }
 
 
-export async function doInvitation(data: ActionParam<ICInvitations>) {
+export async function doInvitation(data: ActionParam<ICInvitations>): Flow1Invitations {
     /// V0) Initiate
     let parent = data.user;
     let cancelled = false;
@@ -140,11 +140,7 @@ export async function doInvitation(data: ActionParam<ICInvitations>) {
         }
     }
 
-    /// 3) Output
-    return ParseObject.toOutputJSON({
-        ...obj.attributes,
-        visitors: obj.attributes.visitors.map( (visitor) => visitor.attributesRemovePrivacy )
-    }, inviteFilter);
+    return obj;
 }
 
 /// CRUD start /////////////////////////////////
@@ -152,8 +148,13 @@ export async function doInvitation(data: ActionParam<ICInvitations>) {
  * C: create object
  ********************************/
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data: ActionParam<ICInvitations>) => {
-    let result = await doInvitation(data);
-    return result;
+    let obj = await doInvitation(data);
+
+    /// 3) Output
+    return ParseObject.toOutputJSON({
+        ...obj.attributes,
+        visitors: obj.attributes.visitors.map( (visitor) => visitor.attributesRemovePrivacy )
+    }, inviteFilter);
 });
 
 /********************************
