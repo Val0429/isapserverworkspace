@@ -108,7 +108,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     
     var query = new Parse.Query(Door)
-        .equalTo("status", 1)
         .include("readerout")
         .include("readerin");
     let filter = data.parameters as any;
