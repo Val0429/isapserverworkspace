@@ -28,7 +28,7 @@ action.put(
 
             let work: WorkPermit = await new Parse.Query(WorkPermit)
                 .equalTo('verify', _input.verify)
-                .include('creator')
+                .include(['company', 'workCategory'])
                 .first()
                 .fail((e) => {
                     throw e;
@@ -41,7 +41,7 @@ action.put(
             let content: string = `
                 <div style='font-family:Microsoft JhengHei UI; color: #444;'>
                     <h3>Hi,</h3>
-                    <h4>Contractor “${work.getValue('workCategory')}” has submitted PTW # ${work.getValue('ptwId')}.</h4>
+                    <h4>Contractor “${work.getValue('workCategory').getValue('name')}” has submitted PTW # ${work.getValue('ptwId')}.</h4>
                     <h4>Please remember to review it, and approve / reject it accordingly.</h4>
                 </div>`;
 
