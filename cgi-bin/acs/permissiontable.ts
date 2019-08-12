@@ -80,8 +80,11 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
         errors.push({type:"clearanceIsNotInCCure"});
         return {permTableNames, errors};
     }
-    delete(ccurePermissionTable.devices);
-    data.inputType.ccurePermissionTable=ccurePermissionTable;
+    if(ccurePermissionTable){
+        delete(ccurePermissionTable.devices);
+        data.inputType.ccurePermissionTable=ccurePermissionTable;
+    }
+    
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
@@ -167,8 +170,10 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
         errors.push({type:"clearanceIsNotInCCure"});
         return {permTableNames, errors};
     }
-    delete(ccurePermissionTable.devices);
-    data.inputType.ccurePermissionTable = ccurePermissionTable;
+    if(ccurePermissionTable){
+        delete(ccurePermissionTable.devices);
+        data.inputType.ccurePermissionTable=ccurePermissionTable;
+    }
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     await siPassAdapter.putAccessGroup(ag);
     /// 2) Modify
