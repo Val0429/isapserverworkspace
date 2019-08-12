@@ -143,6 +143,7 @@ interface IOutputPaging {
 type OutputR = {
     paging: IOutputPaging;
     results: {
+        objectId: string;
         status: string;
         contact: string;
         contactEmail: string;
@@ -285,6 +286,7 @@ action.get(
                 results: await Promise.all(
                     works.map(async (value, index, array) => {
                         return {
+                            objectId: value.id,
                             status: EWorkPermitStatus[value.getValue('status')],
                             contact: value.getValue('contact'),
                             contactEmail: value.getValue('contactEmail'),
