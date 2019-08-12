@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject } from 'core/cgi-package';
-import { WorkPermit, IWorkPermitPerson, IWorkPermitAccessGroup, EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
+import { Flow1WorkPermit as WorkPermit, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import { SendEmail } from './';
 
 let action = new Action({

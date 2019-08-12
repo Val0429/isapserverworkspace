@@ -1,5 +1,5 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { Flow1Companies, Flow1Purposes } from '../';
+import { Flow1Companies, Flow1Purposes, Flow1Invitations } from '../';
 
 type Companies = Flow1Companies;
 let Companies = Flow1Companies;
@@ -7,10 +7,13 @@ let Companies = Flow1Companies;
 type Purposes = Flow1Purposes;
 let Purposes = Flow1Purposes;
 
+type Invitations = Flow1Invitations;
+let Invitations = Flow1Invitations;
+
 /**
  *
  */
-export interface IWorkPermitPerson {
+export interface IFlow1WorkPermitPerson {
     name: string;
     phone: string;
     nric: string;
@@ -24,7 +27,7 @@ export interface IWorkPermitPerson {
 /**
  *
  */
-export interface IWorkPermitAccessGroup {
+export interface IFlow1WorkPermitAccessGroup {
     doorId: string;
     doorName: string;
 }
@@ -32,7 +35,7 @@ export interface IWorkPermitAccessGroup {
 /**
  *
  */
-export enum EWorkPermitStatus {
+export enum EFlow1WorkPermitStatus {
     new = 1,
     pendding,
     approve,
@@ -42,7 +45,7 @@ export enum EWorkPermitStatus {
 /**
  *
  */
-export interface IWorkPermit {
+export interface IFlow1WorkPermit {
     /**
      * Creator
      */
@@ -51,7 +54,7 @@ export interface IWorkPermit {
     /**
      * Status
      */
-    status: EWorkPermitStatus;
+    status: EFlow1WorkPermitStatus;
 
     /**
      * Verify
@@ -137,14 +140,15 @@ export interface IWorkPermit {
     /**
      * Step 7
      */
-    persons: IWorkPermitPerson[];
+    persons: IFlow1WorkPermitPerson[];
     personNames: string[];
+    invitation: Invitations;
 
     /**
      * Step 8
      */
-    accessGroups: IWorkPermitAccessGroup[];
+    accessGroups: IFlow1WorkPermitAccessGroup[];
 }
 
 @registerSubclass()
-export class WorkPermit extends ParseObject<IWorkPermit> {}
+export class Flow1WorkPermit extends ParseObject<IFlow1WorkPermit> {}

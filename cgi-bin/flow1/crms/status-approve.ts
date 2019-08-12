@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject, IFlow1InvitationDate, IFlow1InvitationDateUnit } from 'core/cgi-package';
-import { WorkPermit, IWorkPermitPerson, IWorkPermitAccessGroup, EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
+import { Flow1WorkPermit as WorkPermit, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import { DateTime } from './__api__';
 import { SendEmail } from './';
 import { QRCode } from 'services/qr-code';

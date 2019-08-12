@@ -1,5 +1,5 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes } from 'core/cgi-package';
-import { WorkPermit, IWorkPermitPerson, IWorkPermitAccessGroup, EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
+import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPerson, IFlow1WorkPermitAccessGroup as IWorkPermitAccessGroup, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import pinCode from 'services/pin-code';
 import { Email, Utility } from './__api__';
 import { QRCode } from 'services/qr-code';
