@@ -231,6 +231,19 @@ action.put(
                 throw Errors.throw(Errors.CustomBadRequest, ['work permit not found']);
             }
 
+            if (_input.workStartDate) {
+                _input.workStartDate.setHours(0, 0, 0, 0);
+            }
+            if (_input.workStartTime) {
+                _input.workStartTime.setFullYear(2000, 0, 1);
+            }
+            if (_input.workEndDate) {
+                _input.workEndDate.setHours(0, 0, 0, 0);
+            }
+            if (_input.workEndTime) {
+                _input.workEndTime.setFullYear(2000, 0, 1);
+            }
+
             delete _input.verify;
 
             await work.save(_input, { useMasterKey: true }).fail((e) => {
