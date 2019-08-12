@@ -1,8 +1,11 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
-import { Flow1Companies } from '../companies';
+import { Flow1Companies, Flow1Purposes } from '../';
 
 type Companies = Flow1Companies;
 let Companies = Flow1Companies;
+
+type Purposes = Flow1Purposes;
+let Purposes = Flow1Purposes;
 
 /**
  *
@@ -71,7 +74,7 @@ export interface IWorkPermit {
      */
     ptwId: string;
     company: Companies;
-    workCategory: string;
+    workCategory: Purposes;
 
     applicantName: string;
     contractorCompanyName: string;
