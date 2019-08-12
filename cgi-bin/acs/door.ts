@@ -108,6 +108,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     
     var query = new Parse.Query(Door)
+        .equalTo("status", 1)
         .include("readerout")
         .include("readerin");
     let filter = data.parameters as any;
@@ -115,33 +116,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         query.matches("doorname", new RegExp(filter.name), "i");
     }
     let groupQuery = new Parse.Query(DoorGroup);
-    
-    if(filter.sitename){
-        let siteQuery = new Parse.Query(LocationSite)
-            .matches("name", new RegExp(filter.sitename), "i");
-        let areaQuery = new Parse.Query(LocationArea)
-            .matchesQuery("site", siteQuery);
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)
-            .include("doors")
-            .include("area.site")
-            .find();
-        let doorIds = getDoorIds(groups);
-        query.containedIn("objectId", doorIds);
-    }
-    if(filter.areaname){
-        let areaQuery = new Parse.Query(LocationArea)
-            .matches("name", new RegExp(filter.areaname), "i");
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)
-            .include("doors")
-            .include("area")
-            .find();            
-        
-        let doorIds = getDoorIds(groups);
-        query.containedIn("objectId", doorIds);
-    }
-
     if(filter.doorgroup){        
         let groups = await groupQuery.matches("groupname", new RegExp(filter.doorgroup), "i")
             .limit(Number.MAX_SAFE_INTEGER)

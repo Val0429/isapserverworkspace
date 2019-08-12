@@ -40,13 +40,12 @@ type OutputR = Restful.OutputR<IFloor>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Floor);
+    var query = new Parse.Query(Floor).equalTo("status", 1);
     /// 2) With Extra Filters
     let filter = data.parameters as any;
 
     let groupQuery = new Parse.Query(ElevatorGroup)
-                    .include("elevators")
-                    .include("area.site");
+                    .include("elevators");
     
     if(filter.sitename){
         let siteQuery = new Parse.Query(LocationSite)
