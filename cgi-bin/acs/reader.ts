@@ -39,38 +39,11 @@ type OutputR = Restful.OutputR<IReader>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Reader);
+    var query = new Parse.Query(Reader).equalTo("status", 1);
     let filter = data.parameters as any;
 
     let groupQuery = new Parse.Query(DoorGroup);
     
-    if(filter.sitename){
-        let siteQuery = new Parse.Query(LocationSite)
-            .matches("name", new RegExp(filter.sitename), "i");
-        let areaQuery = new Parse.Query(LocationArea)
-            .matchesQuery("site", siteQuery);
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)
-            .include("doors")
-            .include("area.site")
-            .find();
-
-        let readerIds = getReaderIds(groups);
-        query.containedIn("objectId", readerIds);
-    }
-    if(filter.areaname){
-        let areaQuery = new Parse.Query(LocationArea)
-            .matches("name", new RegExp(filter.areaname), "i");
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)
-            .include("doors")
-            .include("area")
-            .find();            
-        
-        let readerIds = getReaderIds(groups);
-        query.containedIn("objectId", readerIds);
-    }
-
     if(filter.doorgroup){        
         let groups = await groupQuery.matches("groupname", new RegExp(filter.doorgroup), "i")
             .limit(Number.MAX_SAFE_INTEGER)
