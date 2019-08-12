@@ -125,8 +125,8 @@ type InputR = {
     status?: EWorkPermitStatus;
     ptwId?: string;
     contactEmail?: string;
-    company?: Companies;
-    workCategory?: string;
+    companyId?: string;
+    workCategoryId?: string;
     workType?: number;
     workPremisesUnit?: string;
     contractorCompanyName?: string;
@@ -233,11 +233,15 @@ action.get(
             if (_input.contactEmail) {
                 query.equalTo('contactEmail', _input.contactEmail);
             }
-            if (_input.company) {
-                query.equalTo('company', _input.company);
+            if (_input.companyId) {
+                let company: Companies = new Companies();
+                company.id = _input.companyId;
+                query.equalTo('company', company);
             }
-            if (_input.workCategory) {
-                query.equalTo('workCategory', _input.workCategory);
+            if (_input.workCategoryId) {
+                let workCategory: Purposes = new Purposes();
+                workCategory.id = _input.workCategoryId;
+                query.equalTo('workCategory', workCategory);
             }
             if (_input.workType) {
                 query.equalTo(`workType${_input.workType}`, true);
