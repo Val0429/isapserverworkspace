@@ -94,7 +94,7 @@ async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Pr
 }
 
 
-export async function doInvitation(data: ActionParam<ICInvitations>): Flow1Invitations {
+export async function doInvitation(data: ActionParam<ICInvitations>): Promise<Flow1Invitations> {
     /// V0) Initiate
     let parent = data.user;
     let cancelled = false;
