@@ -3,7 +3,7 @@ import { Member, IMember, AttendanceRecords, Door, PermissionTable, TimeSchedule
 import moment = require("moment");
 import { ParseObject } from "helpers/parse-server/parse-helper";
 import { data } from "jquery";
-import { Restful } from "core/cgi-package";
+import { Restful, Reader } from "core/cgi-package";
 
 const fieldNames = {
     DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
@@ -109,6 +109,7 @@ export class ReportService{
     }
     async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
+        .equalTo("type", 21)
         .exists("card_no")
         .notEqualTo("card_no", "")
         .addAscending("card_no")
@@ -126,14 +127,24 @@ export class ReportService{
             let end = new Date(filter.end);
             query.lessThanOrEqualTo("date_time_occurred", end);
         }
+        
         let results = [];
         let records = await query.skip(skip).limit(limit).find();
         let total = await query.count();
+        let readers = await new Parse.Query(Reader)
+                        .containedIn("readername", records.map(x=>x.get("point_name")))
+                        .find();
         for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
             if (!record.date_occurred || !record.date_time_occurred) continue;        
             let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);
-            let at_id = await new Parse.Query(Door).equalTo("doorid", record.at_id).first();
-            if(at_id)  record.at_id = at_id.get('doorname');
+            record.at_id = record.point_name;
+            let reader = readers.find(x=>x.get("readername") == record.point_name);
+            //console.log("reader", reader, record.point_name);
+            if(reader){
+                let at_id = await new Parse.Query(Door).equalTo("readerin.objectId", reader.get("objectId")).first();
+                //console.log("at_id", at_id);
+                if(at_id)  record.at_id = at_id.get('doorname');
+            }
             //start, assume in and out at the same time
             if(thisDayRecords.length<2){
                 results.push(Object.assign({},record));
@@ -144,9 +155,9 @@ export class ReportService{
                 for(const key of Object.keys(record)){
                     thisDayRecords[1][key] = record[key];
                 }            
-            } 
-            
+            }             
         }
+        
         return {results, total};
     }
     async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
