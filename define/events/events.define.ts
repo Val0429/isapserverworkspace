@@ -105,9 +105,10 @@ flow = "Flow1";
             pin: string;
             invitation: ${flow}Invitations;
             company: ${flow}Companies;
+            visitor: ${flow}Visitors;
             visitorName: string;
             kiosk: Parse.User;
-        `],
+        `, [`${flow}Visitors`]],
     
         /// Register
         // ["3115", `${flow}TryRegister`],

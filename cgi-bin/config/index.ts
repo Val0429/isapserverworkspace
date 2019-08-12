@@ -19,7 +19,11 @@ interface InputR {
 }
 type OutputR = IConfig | IConfig[keyof IConfig];
 
-action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+action.get<InputR, OutputR>({
+    inputType: "InputR",
+    loginRequired: true,
+    permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.Kiosk]
+}, async (data) => {
     var { key } = data.inputType;
     var config = key ? Config[key] : Config;
     if (!config) throw Errors.throw(Errors.ParametersInvalid, ["key"]);
