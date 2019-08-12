@@ -47,19 +47,20 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // VenueBooking = 12
 
     if (data.inputType.reader && data.inputType.reader.length > 0) {
-        console.log("bop1");
-        for (let idx = 0; idx < data.inputType.reader.length; idx++) {
-            let e = data.inputType.reader[idx];
+       
+        for (let e of data.inputType.reader) {            
 
             if (e.get("system") == 1) {
-                console.log("bop2");
+                let readername = e.get("readername");
+                if(readername.substring(0, 2)=="A_") readername = readername.substring(2, readername.length);
+                console.log("bop2", readername);
                 let r = {
                     token: "-1",
-                    name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
+                    name: readername + "-" + data.inputType.timeschedule.get("timename"),
                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
                     accessRule: [
                         {
-                            objectName: e.get("readername"),
+                            objectName: readername,
                             objectToken: e.get("readerid"),
                             ruleToken: e.get("readerid"),
                             ruleType: 2
@@ -93,13 +94,15 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
             let e = data.inputType.floor[idx];
 
             if (e.get("system") == 1) {
+                let readername = e.get("floorname");
+                if(readername.substring(0, 2)=="A_") readername = readername.substring(2, readername.length);
                 let r = {
                     token: "-1",
-                    name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
+                    name: readername + "-" + data.inputType.timeschedule.get("timename"),
                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
                     accessRule: [
                         {
-                            objectName: e.get("floorname"),
+                            objectName: readername,
                             objectToken: e.get("floorid"),
                             ruleToken: e.get("floorid"),
                             ruleType: 8
