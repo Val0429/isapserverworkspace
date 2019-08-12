@@ -112,6 +112,8 @@ type OutputR = Restful.OutputR<IPermissionTable>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(PermissionTable)
+                .include("accesslevels.door")
+                .include("accesslevels.doorgroup.doors")
                 .include("accesslevels.timeschedule");
 
     let filter = data.parameters as any;
