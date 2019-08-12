@@ -14,7 +14,7 @@ export enum Flow1VisitorStatus {
 export interface IFlow1Visitors {
     name: IFlow1MaybePrivacyName_String;
     phone: IFlow1MaybePrivacyPhone_String;
-    email: IFlow1MaybePrivacyEmail_String;
+    email?: IFlow1MaybePrivacyEmail_String;
     image?: IFlow1MaybePrivacyImage_ParseFile;
     idcard?: IFlow1MaybePrivacyIDCard_Object;
 

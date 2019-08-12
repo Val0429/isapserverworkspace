@@ -1,8 +1,9 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject, IFlow1InvitationDate, IFlow1InvitationDateUnit } from 'core/cgi-package';
 import { WorkPermit, IWorkPermitPerson, IWorkPermitAccessGroup, EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import { DateTime } from './__api__';
 import { SendEmail } from './';
 import { QRCode } from 'services/qr-code';
+import { doInvitation } from '../visitors/invites';
 
 let action = new Action({
     loginRequired: true,
@@ -55,6 +56,34 @@ action.put(
             await SendEmail(title, content, [work.getValue('contactEmail')]);
 
             work.setValue('status', EWorkPermitStatus.approve);
+
+            /// Val added: make invitation
+            let company = work.getValue("company");
+            let visitors: any = work.getValue("persons").map( (person) => {
+                return {
+                    name: person.name,
+                    phone: person.phone
+                }
+            });
+            let purpose: any = work.getValue("workCategory");
+            let startdate = work.getValue("workStartDate");
+            let enddate = work.getValue("workEndDate");
+            let starttime = work.getValue("workStartTime");
+            let endtime = work.getValue("workEndTime");
+
+            let dates: IFlow1InvitationDateUnit[] = [];
+
+            //for (let i = startdate.setDa)
+
+            doInvitation({
+                ...data,
+                inputType: {
+                    company,
+                    visitors,
+                    purpose,
+                    dates
+                }
+            })
 
             await work.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
