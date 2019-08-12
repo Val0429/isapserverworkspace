@@ -89,22 +89,28 @@ export async function tryCheckInWithPinCode(pin: Pin): Promise<IResultTryCheckIn
             .include("parent")
             .include("purpose")
             .first();
-        if (!invitation) break;
+        if (!invitation) throw Errors.throw( Errors.CustomBadRequest, ["Pin-Code doesn't exists."] );
 
         /// 2) resolve date
         let dates: IInvitationDate = invitation.getValue("dates");
         let now = new Date();
 
+        let outdated = true;
         result = dates.reduce<IInvitationDateUnit>( (final, value, idx) => {
             if (final) return final;
             let start = new Date(value.start), end = new Date(value.end);
+            if (end < now) outdated = false;
             if (start <= now && end > now) {
                 index = idx;
                 return value;
             }
             return final;
         }, null);
-        if (!result) break;
+        //if (!result) break;
+        if (!result) {
+            if (outdated) throw Errors.throw( Errors.CustomBadRequest, ["Pin-Code has already expired."] );
+            throw Errors.throw( Errors.CustomBadRequest, ["Pin-Code has arrived not in authorized time."] );
+        }
 
         /// 3) visitor
         let visitors = invitation.getValue("visitors");
