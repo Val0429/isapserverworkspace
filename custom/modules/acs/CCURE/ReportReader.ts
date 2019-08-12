@@ -1,7 +1,48 @@
 import { isNullOrUndefined, isNull } from "util";
 import { toArray } from "rxjs/operator/toArray";
 import { SignalObject } from "./signalObject";
-import queryMap, { IQueryParam, QueryContent, IQueryMap } from './queryMap'
+import {IQueryMap, IQueryParam} from './queryMap'
+
+export enum ReaderQueryContent {
+    Reports,
+    Person,
+    Door
+}
+
+export var ReaderQueryMap : IQueryMap = {};
+{
+    //ReportsAll
+    /**
+     * messageCode :
+     *  1002 人 - 卡 : 核可進入
+     *  1003 人 - 卡 : 拒絕進入
+     */
+    ReaderQueryMap[ReaderQueryContent.Reports] = {
+        "table": "dbo.Journ",
+        "selector":  'R_Date_Time as dateTime,' +  
+                     'Person_ID as personId,'+
+                     'C_Number as cardNumber,'+
+                     'Door_ID as doorId'
+    }
+
+    ReaderQueryMap[ReaderQueryContent.Person] = {
+        "table": "dbo.Person",
+        "selector":  'Person_ID as personId,'+
+                     'Last_Name as name'
+    }
+
+    ReaderQueryMap[ReaderQueryContent.Door] = {
+        "table": "dbo.Door",
+        "selector":  'Door_ID as doorId,' +  
+                     'Door_Name as name'
+    }
+
+    let keys = Object.keys(ReaderQueryContent).filter(key => !isNaN(Number(ReaderQueryContent[key])));
+    for (let type in keys) {
+        if (isNullOrUndefined(ReaderQueryMap[type]))
+            throw `Internal Error: <CCUREReader::setDefaultMap> Verify _ReaderQueryMap fail, please check {QueryContent.${ReaderQueryContent[type]}} again`;
+    }
+}
 
 enum StateCode {
     Wait = 0,
@@ -9,9 +50,9 @@ enum StateCode {
     Error = 2
 }
 
-export class CCUREReader {
+export class ReportReader {
 
-    protected static _instance: CCUREReader = undefined;
+    protected static _instance: ReportReader = undefined;
 
     protected _isConnected: boolean;
 
@@ -20,8 +61,6 @@ export class CCUREReader {
     protected _conn;
 
     protected _bacthCount = 1000;
-
-    protected _lastQueryTime: Date;
 
     protected _signalRead: SignalObject = new SignalObject(false);
 
@@ -34,22 +73,11 @@ export class CCUREReader {
     /**
      * Return CCUREReader instance
      */
-    public static getInstance(): CCUREReader {
+    public static getInstance(): ReportReader {
         if (isNullOrUndefined(this._instance) === true){
-            this._instance = new CCUREReader();
+            this._instance = new ReportReader();
             const fs = require('fs');
-            fs.readFile('./workspace/custom/modules/acs/CCURE/ReportQueryTimeSavedFile.tmp', function (err, data) {
-            
-                if (err || isNullOrUndefined( data)) {
-                    console.log("=>Read ReportQueryTimeSavedFile.tmp file failed");
-                    CCUREReader._instance.setLastReportQueryTime(new Date("1970-01-01T00:00:00.000"));
-                }
-                else {
-                    CCUREReader._instance.setLastReportQueryTime(new Date(data.toString('utf8')));
-                    console.log("=>ReportQueryTimeSavedFile.tmp file was loaded!");
-                }
-                CCUREReader._instance._signalRead.set(true);
-            });
+            ReportReader._instance._signalRead.set(true);
         }
         return this._instance;
     }
@@ -107,17 +135,17 @@ export class CCUREReader {
      * @return Return sample : 
      * { doorId: 2087, doorName: 'D001', unlockTime: 5, shuntTime: 10 }
      */
-    public async queryStreamAsync(queryContent: QueryContent,
-                                    OnDatareceived: (rows: JSON[], queryContent: QueryContent) => void,
-                                    OnDone?: (result: JSON, queryContent: QueryContent) => void,
-                                    OnError?: (err, queryContent: QueryContent) => void,
+    public async queryStreamAsync(queryContent,
+                                    OnDatareceived: (rows: JSON[], queryContent: ReaderQueryContent) => void,
+                                    OnDone?: (result: JSON, queryContent: ReaderQueryContent) => void,
+                                    OnError?: (err, queryContent: ReaderQueryContent) => void,
                                     condition?: String,
                                     isOpenquery ?: boolean): Promise<void> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
         if (isNullOrUndefined(OnDatareceived) === true) throw `Internal Error: <CCUREReader::queryStream> OnDatareceived cannot be null`;
 
-        let queryParam: IQueryParam = queryMap[queryContent];
+        let queryParam: IQueryParam = ReaderQueryMap[queryContent];
 
         let request = new this._sql.Request(this._conn);
         request.stream = true;
@@ -129,7 +157,6 @@ export class CCUREReader {
         await this._signalRead.wait(10000);
                                 
         let queryCmd = this.generateQueryString(queryContent, queryParam, condition, isNullOrUndefined(isOpenquery) ? false : isOpenquery);
-        if (queryContent === QueryContent.ReportsNewUpdate) this.updateReportQueryTime();
 
         console.log(`=>Send SQL command ${queryCmd}`);
         request.query(queryCmd);
@@ -174,11 +201,11 @@ export class CCUREReader {
      *      { clearId: 2205, clearName: 'qqq7' } 
      * ]
      */
-    public async queryAllAsync(queryContent: QueryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<JSON>> {
+    public async queryAllAsync(queryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<JSON>> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
 
-        let queryParam: IQueryParam = queryMap[queryContent];
+        let queryParam: IQueryParam = ReaderQueryMap[queryContent];
 
         //Use to wait ( read/write after connected)
         let signal: SignalObject<StateCode> = new SignalObject<StateCode>(StateCode.Wait);
@@ -192,7 +219,6 @@ export class CCUREReader {
         await this._signalRead.wait(10000);
 
         let queryCmd = this.generateQueryString(queryContent, queryParam, condition, isNullOrUndefined(isOpenquery) ? false : isOpenquery);
-        if (queryContent === QueryContent.ReportsNewUpdate) this.updateReportQueryTime();
 
         console.log(`=>Send SQL command ${queryCmd}`);
 
@@ -211,48 +237,11 @@ export class CCUREReader {
     }
 
     /**
-     * Return last query report time unix timestamp
-     */
-    public getLastReportQueryTime(): Date {
-        return this._lastQueryTime;
-    }
-
-    /**
-     * Set last query report time unix timestamp
-     * Please assign the value from previus time get from getLastReportQueryTime()
-     * It use to avoid server restart then query duplicate data
-     */
-    public setLastReportQueryTime(timeVal: Date): void {
-        this._lastQueryTime = timeVal;
-    }
-
-    /**
-     * Use to update last query time
-     */
-    protected updateReportQueryTime() {
-        console.log(`=>Query from  ${this.getLastReportQueryTime()}`);
-        this.queryAllAsync(QueryContent.ReportsLastUpdateTime).then((resolve) => {
-            if(resolve[0]["updateTime"].toString() == this.getLastReportQueryTime().toISOString()) console.log("The same, dont changed");
-            this.setLastReportQueryTime(resolve[0]["updateTime"]);
-            const fs = require('fs');
-            fs.writeFile('./workspace/custom/modules/acs/CCURE/ReportQueryTimeSavedFile.tmp', this.getLastReportQueryTime().toISOString(), function (err) {
-                if (err) {
-                    return console.log(err);
-                }
-                console.log("=>ReportQueryTimeSavedFile.tmp file was saved!");
-            });
-            console.log(`=>Update 'lastUpdateTime to ${this.getLastReportQueryTime()}`);
-        }).catch(err => {
-            console.log(`=>Update 'lastUpdateTime fail`);
-        });
-    }
-
-    /**
      * Generate query string
      * @param queryContent Query type
      * @param queryParam Query parameters
      */
-    protected generateQueryString(queryContent: QueryContent, queryParam: IQueryParam, condition?: String, isOpenquery : boolean = false): string {
+    protected generateQueryString(queryContent: ReaderQueryContent, queryParam: IQueryParam, condition?: String, isOpenquery : boolean = false): string {
         
         let queryCmd: string ;
         let alreadyWhere = false;
@@ -279,10 +268,6 @@ export class CCUREReader {
                     else queryCmd += ` where (${condition.substring(6)})`;
                     innerSelect = true;
                 }
-            }
-    
-            if (queryContent === QueryContent.ReportsNewUpdate) {
-                queryCmd += ` and PANELLOCALTZDT>''${this.getLastReportQueryTime().toISOString().replace(/T/, ' ').replace(/\..+/, '')}''`;
             }
     
             queryCmd += `')`;
@@ -317,7 +302,7 @@ export class CCUREReader {
      * Default Callbackfunction
      * @param err error message
      */
-    protected defaultErrCalback(err, queryContent: QueryContent) {
+    protected defaultErrCalback(err, queryContent: ReaderQueryContent) {
         throw (`defaultErrCalback : happened\n Message: ${err}`);
     }
 

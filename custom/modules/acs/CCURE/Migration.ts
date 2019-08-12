@@ -1,4 +1,6 @@
 import {CCUREService} from "./../CCURE"
+import {ReportReader, ReaderQueryContent, ReaderQueryMap } from "./../CCURE/ReportReader"
+
 import { delay } from "bluebird";
 import { isNullOrUndefined } from "util";
 import { SignalObject } from "./signalObject";
@@ -32,6 +34,8 @@ function WriteJsonFile(path,json){
 }
 
 export async function GetMigrationDataPermissionTable(){
+
+    console.log("=====Start GetMigrationDataPermissionTable=====");
 
     let _service : CCUREService = new CCUREService();
 
@@ -244,11 +248,15 @@ export async function GetMigrationDataPermissionTable(){
         }
     });
 
+    console.log("=====Finish GetMigrationDataPermissionTable=====");
+
     return result;
 }
 
 export async function GetMigrationDataPerson(csvPath:string)
 {
+    console.log("=====Start GetMigrationDataPerson=====");
+
     let signal = new SignalObject(false);
     const csv=require('csvtojson');
     let result;
@@ -257,6 +265,43 @@ export async function GetMigrationDataPerson(csvPath:string)
         signal.set(true);
     });
     await signal.wait();
+
+    console.log("=====Finish GetMigrationDataPerson=====");
+
+
     return result;
 }
+
+export async function GetOldAccessReport(config, onRaw : (rows: JSON[]) => void, startDatetime: Date, endDatetime: Date){
+
+    console.log("=====Start GetOldAccessReport=====");
+
+    let _reader : ReportReader = ReportReader.getInstance();
+    await _reader.connectAsync(config);
+    await delay(3000);
+    
+    let persons = await _reader.queryAllAsync(ReaderQueryContent.Person,null,false,180000);
+    let doors = await _reader.queryAllAsync(ReaderQueryContent.Door,null,false,180000);
+    let personsKeyMap = GetKeyMap(persons,"personId", "name");
+    let doorsKeyMap = GetKeyMap(doors,"doorId", "name");
+
+    let onRawCallback = rows =>{
+        let result = [];
+        for(var i = 0 ; i < rows.length ; i++){
+            result.push({
+                "dateTime" : rows[i]["dateTime"],
+                "person" : personsKeyMap[rows[i]["personId"]],
+                "cardNumber" : rows[i]["cardNumber"],
+                "door" : doorsKeyMap[rows[i]["doorId"]]
+            });
+        }
+        onRaw(result);
+    }
+    _reader.queryStreamAsync(ReaderQueryContent.Reports, onRawCallback, null,null,
+    `R_Date_Time BETWEEN '${startDatetime.toISOString().replace(/T/, ' ').replace(/\..+/, '')}' and '${endDatetime.toISOString().replace(/T/, ' ').replace(/\..+/, '')}'`,false);
+
+    console.log("=====Finish GetOldAccessReport=====");
+
+}
+
 

@@ -40,7 +40,7 @@ export interface IQueryParam {
     OnError?: Function;
     table: string;
     selector: string;
-    dsn: string;
+    dsn ?: string;
     condition?: string;
     inner_selector?: string;
     left_join_on ?: string;

@@ -2,6 +2,7 @@ import { CCUREReader } from './CCUREReader'
 import { QueryContent } from './queryMap'
 import { SignalObject } from "./signalObject";
 import { isNullOrUndefined } from 'util';
+import { Config } from 'core/config.gen';
 
 type OnRawsCallback = (rows: JSON[], queryContent: QueryContent) => void;
 type OnDoneCallback = (result: JSON, queryContent: QueryContent) => void;
@@ -34,7 +35,7 @@ export class CCUREService {
     //Connect to SQL server
     public async Login() {
         if(this._reader)
-        await this._reader.connectAsync();
+        await this._reader.connectAsync(Config.CCUREconnect);
         this._signal.set(true);
     }
 
@@ -122,10 +123,10 @@ export class CCUREService {
     public async GetNewAccessReport(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ReportsNewUpdate, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ReportsNewUpdate, OnRaws, OnDone, null, null, true);
             return null;
         }
-        else return this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, 30000);
+        else return this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, 30000);
     }
 
     /*
@@ -166,10 +167,10 @@ export class CCUREService {
     public async GetAllAccessReport(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, null, true);
             return null;
         }
-        else return this._reader.queryAllAsync(QueryContent.Reports, null, 30000);
+        else return this._reader.queryAllAsync(QueryContent.Reports, null, true, 30000);
     }
 
     /*
@@ -191,10 +192,10 @@ export class CCUREService {
     public async GetAllBadgeLayout(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, true, 5000);
     }
 
     /*
@@ -218,10 +219,10 @@ export class CCUREService {
     public async GetAllEnumFieldValue(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.EnumFields, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.EnumFields, null, true, 5000);
     }
 
     /*
@@ -269,10 +270,10 @@ export class CCUREService {
     public async GetAllPersons(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            await this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone);
+            await this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Persons, null, 1800000);
+        return this._reader.queryAllAsync(QueryContent.Persons, null, true, 1800000);
     }
 
     /*
@@ -300,10 +301,10 @@ export class CCUREService {
     public async GetAllPersonExtendInfo(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, 1800000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, true, 1800000);
     }
 
     /*
@@ -327,10 +328,10 @@ export class CCUREService {
     public async GetAllPersonExtendInfoEnumList(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, true, 5000);
     }
 
     /*
@@ -352,10 +353,10 @@ export class CCUREService {
     public async GetAllPersonPropList(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonPropList, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonPropList, null, true, 5000);
     }
 
     /*
@@ -377,10 +378,10 @@ export class CCUREService {
     public async GetAllTimeSchedules(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Timespec);
+        return this._reader.queryAllAsync(QueryContent.Timespec, null, true);
     }
 
     /*
@@ -411,10 +412,10 @@ export class CCUREService {
     public async GetAllTimeScheduleDay(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.TimespecDays);
+        return this._reader.queryAllAsync(QueryContent.TimespecDays, null, true);
     }
 
     /*
@@ -442,10 +443,10 @@ export class CCUREService {
     public async GetAllDevices(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reader);
+        return this._reader.queryAllAsync(QueryContent.Reader, null, true);
     }
 
     /*
@@ -485,10 +486,10 @@ export class CCUREService {
     public async GetAllDoors(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Doors);
+        return this._reader.queryAllAsync(QueryContent.Doors, null, true);
     }
 
     /*
@@ -514,10 +515,10 @@ export class CCUREService {
     public async GetAllFloors(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Floor);
+        return this._reader.queryAllAsync(QueryContent.Floor, null, true);
     }
 
     /*
@@ -545,10 +546,10 @@ export class CCUREService {
     public async GetAllElevators(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Elevator);
+        return this._reader.queryAllAsync(QueryContent.Elevator, null, true);
     }
 
     /*
@@ -574,10 +575,10 @@ export class CCUREService {
     public async GetAllElevatorFloor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorFloor);
+        return this._reader.queryAllAsync(QueryContent.ElevatorFloor, null, true);
     }
 
     /*
@@ -599,10 +600,10 @@ export class CCUREService {
     public async GetAllPermissionTables(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Clearance);
+        return this._reader.queryAllAsync(QueryContent.Clearance, null, true);
     }
 
     /*
@@ -624,10 +625,10 @@ export class CCUREService {
     public async GetAllPermissionTablePerson(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearPerson);
+        return this._reader.queryAllAsync(QueryContent.ClearPerson, null, true);
     }
 
     /*
@@ -651,10 +652,10 @@ export class CCUREService {
     public async GetAllPermissionTableDoor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return await this._reader.queryAllAsync(QueryContent.ClearDoor);
+        return await this._reader.queryAllAsync(QueryContent.ClearDoor, null, true);
     }
 
     /*
@@ -678,10 +679,10 @@ export class CCUREService {
     public async GetAllPermissionTableDoorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup);
+        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, null, true);
     }
 
     /*
@@ -707,10 +708,10 @@ export class CCUREService {
     public async GetAllPermissionTableElevatorFloor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor);
+        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, null, true);
     }
 
     /*
@@ -732,10 +733,10 @@ export class CCUREService {
     public async GetAllDoorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.DoorGroup);
+        return this._reader.queryAllAsync(QueryContent.DoorGroup, null, true);
     }
 
     /*
@@ -757,10 +758,10 @@ export class CCUREService {
     public async GetAllFloorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.FloorGroup);
+        return this._reader.queryAllAsync(QueryContent.FloorGroup, null, true);
     }
 
     /*
@@ -782,10 +783,10 @@ export class CCUREService {
     public async GetAllElevatorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorGroup);
+        return this._reader.queryAllAsync(QueryContent.ElevatorGroup, null, true);
     }
 
     /*
@@ -807,10 +808,10 @@ export class CCUREService {
     public async GetAllGroupMember(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.GroupMember, null, 30000);
+        return this._reader.queryAllAsync(QueryContent.GroupMember, null, true, 30000);
     }
 
     /*
@@ -838,10 +839,10 @@ export class CCUREService {
     public async GetAllUsers(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Users);
+        return this._reader.queryAllAsync(QueryContent.Users, null, true);
     }
 
     /*
@@ -867,10 +868,10 @@ export class CCUREService {
     public async GetAllObjects(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone);
+            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ObjectList, null, 30000);
+        return this._reader.queryAllAsync(QueryContent.ObjectList, null, true, 30000);
     }
 
 
@@ -896,10 +897,10 @@ export class CCUREService {
     public async GetAccessReport(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reports, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.Reports, condition, true, 30000);
     }
 
     /**
@@ -911,10 +912,10 @@ export class CCUREService {
     public async GetBadgeLayout(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, true, 30000);
     }
     
     /*
@@ -938,10 +939,10 @@ export class CCUREService {
     public async GetEnumFieldValue(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.EnumFields, condition);
+        return this._reader.queryAllAsync(QueryContent.EnumFields, condition, true);
     }
 
     /**
@@ -966,10 +967,10 @@ export class CCUREService {
     public async GetPerson(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Persons, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.Persons, condition, true, 30000);
     }
 
     /**
@@ -985,10 +986,10 @@ export class CCUREService {
     public async GetPersonExtendInfo(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        let result = await this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, 30000);
+        let result = await this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, true, 30000);
         return result;
     }
 
@@ -1002,10 +1003,10 @@ export class CCUREService {
     public async GetPersonExtendInfoEnumList(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, true, 5000);
     }
 
 
@@ -1030,10 +1031,10 @@ export class CCUREService {
     public async GetPersonPropList(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonPropList, condition, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonPropList, condition, true, 5000);
     }
 
     /**
@@ -1045,10 +1046,10 @@ export class CCUREService {
     public async GetTimeSchedules(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Timespec, condition);
+        return this._reader.queryAllAsync(QueryContent.Timespec, condition, true);
     }
 
     /**
@@ -1062,10 +1063,10 @@ export class CCUREService {
     public async GetTimeScheduleDay(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.TimespecDays, condition);
+        return this._reader.queryAllAsync(QueryContent.TimespecDays, condition, true);
     }
 
     /**
@@ -1080,10 +1081,10 @@ export class CCUREService {
     public async GetDevice(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reader, condition);
+        return this._reader.queryAllAsync(QueryContent.Reader, condition, true);
     }
 
     /**
@@ -1104,10 +1105,10 @@ export class CCUREService {
     public async GetDoor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Doors, condition);
+        return this._reader.queryAllAsync(QueryContent.Doors, condition, true);
     }
 
     /**
@@ -1121,10 +1122,10 @@ export class CCUREService {
     public async GetFloor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Floor, condition);
+        return this._reader.queryAllAsync(QueryContent.Floor, condition, true);
     }
 
     /**
@@ -1139,10 +1140,10 @@ export class CCUREService {
     public async GetElevator(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Elevator, condition);
+        return this._reader.queryAllAsync(QueryContent.Elevator, condition, true);
     }
 
     /**
@@ -1156,10 +1157,10 @@ export class CCUREService {
     public async GetElevatorFloor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorFloor, condition);
+        return this._reader.queryAllAsync(QueryContent.ElevatorFloor, condition, true);
     }
 
     /**
@@ -1171,10 +1172,10 @@ export class CCUREService {
     public async GetPermissionTable(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Clearance, condition);
+        return this._reader.queryAllAsync(QueryContent.Clearance, condition, true);
     }
 
     /**
@@ -1186,10 +1187,10 @@ export class CCUREService {
     public async GetPermissionTablePerson(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearPerson, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearPerson, condition, true);
     }
 
     /**
@@ -1202,10 +1203,10 @@ export class CCUREService {
     public async GetPermissionTableDoor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoor, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearDoor, condition, true);
     }
 
     /**
@@ -1218,10 +1219,10 @@ export class CCUREService {
     public async GetPermissionTableElevatorFloor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, condition, true);
     }
 
     /**
@@ -1235,10 +1236,10 @@ export class CCUREService {
     public async GetPermissionTableDoorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, condition, true);
     }
 
     /**
@@ -1250,10 +1251,10 @@ export class CCUREService {
     public async GetDoorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.DoorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.DoorGroup, condition, true);
     }
 
     /**
@@ -1265,10 +1266,10 @@ export class CCUREService {
     public async GetFloorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.FloorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.FloorGroup, condition, true);
     }
 
     /**
@@ -1280,10 +1281,10 @@ export class CCUREService {
     public async GetElevatorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.ElevatorGroup, condition, true);
     }
 
     /**
@@ -1295,10 +1296,10 @@ export class CCUREService {
     public async GetGroupMember(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.GroupMember, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.GroupMember, condition, true, 30000);
     }
 
     /**
@@ -1313,10 +1314,10 @@ export class CCUREService {
     public async GetUser(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Users, condition);
+        return this._reader.queryAllAsync(QueryContent.Users, condition, true);
     }
 
     /**
@@ -1330,9 +1331,9 @@ export class CCUREService {
     public async GetObject(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ObjectList, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.ObjectList, condition, true, 30000);
     }
 }
