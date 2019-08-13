@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes, IFlow1InvitationDateUnit } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes, IFlow1InvitationDateUnit, FileHelper } from 'core/cgi-package';
 import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPerson, IFlow1WorkPermitAccessGroup as IWorkPermitAccessGroup, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import pinCode from 'services/pin-code';
 import { Email, Utility, Regex } from './__api__';
@@ -339,12 +339,12 @@ action.get(
                             checklistRemark7: value.getValue('checklistRemark7'),
                             checklist8: value.getValue('checklist8'),
                             checklist9: value.getValue('checklist9'),
-                            attachments: (value.getValue('attachments') || []).map((n) => n.url()),
+                            attachments: (value.getValue('attachments') || []).map((n) => FileHelper.getURL(n, data)),
                             termsAccepted: value.getValue('termsAccepted'),
                             persons: value.getValue('persons'),
                             personNames: value.getValue('personNames'),
                             accessGroups: value.getValue('accessGroups'),
-                            qrcode: (await qrcode.make(`PTW # ${value.getValue('ptwId')}`)).url(),
+                            qrcode: FileHelper.getURL(await qrcode.make(`PTW # ${value.getValue('ptwId')}`), data),
                         };
                     }),
                 ),

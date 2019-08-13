@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject, FileHelper } from 'core/cgi-package';
 import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPerson, IFlow1WorkPermitAccessGroup as IWorkPermitAccessGroup, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 
 let action = new Action({
@@ -147,7 +147,7 @@ action.get(
                 checklistRemark7: work.getValue('checklistRemark7'),
                 checklist8: work.getValue('checklist8'),
                 checklist9: work.getValue('checklist9'),
-                attachments: (work.getValue('attachments') || []).map((n) => n.url()),
+                attachments: (work.getValue('attachments') || []).map((n) => FileHelper.getURL(n, data)),
                 termsAccepted: work.getValue('termsAccepted'),
                 persons: work.getValue('persons'),
                 personNames: work.getValue('personNames'),
