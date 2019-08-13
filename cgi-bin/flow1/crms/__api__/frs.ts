@@ -28,10 +28,9 @@ FRSService.prototype.GetEntrances = async function(times: number = 0): Promise<{
                         } else if (body.message.toLowerCase() !== 'ok') {
                             return reject(body.message);
                         }
-
                         resolve(
                             (body.group_list.groups || [])
-                                .filters((value, index, array) => {
+                                .filter((value, index, array) => {
                                     return index > 3;
                                 })
                                 .map((value, index, array) => {
