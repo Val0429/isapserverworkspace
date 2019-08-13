@@ -192,7 +192,7 @@ export class CCureAdapter {
 
         this.normalizeJSON(groupMemberGroupby);
 
-        let result = {"doorGroups":[]};
+        let result = [];
 
         for(var i = 0 ; i < doorGroups.length ; i++){
             let groupId : string = doorGroups[i]["groupId"];
@@ -205,7 +205,7 @@ export class CCureAdapter {
                     "doorName":doorKeyMap[doorId]
                 });
             }
-            result["doorGroups"].push({
+            result.push({
                 "groupId":groupId,
                 "groupName":doorGroupKeyMap[groupId],
                 "doors":doorArr
@@ -232,7 +232,7 @@ export class CCureAdapter {
 
         this.normalizeJSON(groupMemberGroupby);
 
-        let result = {"floorGroups":[]};
+        let result = [];
 
         for(var i = 0 ; i < floorGroups.length ; i++){
             let groupId : string = floorGroups[i]["groupId"];
@@ -245,7 +245,7 @@ export class CCureAdapter {
                     "floorName":floorsKeyMap[floorId]
                 });
             }
-            result["floorGroups"].push({
+            result.push({
                 "groupId":groupId,
                 "groupName":floorGroupsKeyMap[groupId],
                 "floors":floorArr
