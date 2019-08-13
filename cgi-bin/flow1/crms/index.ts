@@ -497,36 +497,36 @@ action.put(
                 throw e;
             });
 
-            let company = work.getValue('company');
-
-            let visitors: any = work.getValue('persons').map((person) => {
-                return {
-                    name: person.name,
-                    phone: person.phone,
-                };
-            });
-
-            let purpose = work.getValue('workCategory');
-
-            let startDate: Date = work.getValue('workStartDate');
-            let startTime: Date = work.getValue('workStartTime');
-            let endDate: Date = work.getValue('workEndDate');
-            let endTime: Date = work.getValue('workEndTime');
-
-            let dates: IFlow1InvitationDateUnit[] = [];
-            for (let i: number = startDate.getTime(); i <= endDate.getTime(); i += 86400000) {
-                let date: Date = new Date(i);
-
-                let start: Date = new Date(new Date(date).setHours(startTime.getHours(), startTime.getMinutes(), startTime.getSeconds(), startTime.getMilliseconds()));
-                let end: Date = new Date(new Date(date).setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds()));
-
-                dates.push({
-                    start: start,
-                    end: end,
-                });
-            }
-
             if (work.getValue('status') === EWorkPermitStatus.approve) {
+                let company = work.getValue('company');
+
+                let visitors: any = work.getValue('persons').map((person) => {
+                    return {
+                        name: person.name,
+                        phone: person.phone,
+                    };
+                });
+
+                let purpose = work.getValue('workCategory');
+
+                let startDate: Date = work.getValue('workStartDate');
+                let startTime: Date = work.getValue('workStartTime');
+                let endDate: Date = work.getValue('workEndDate');
+                let endTime: Date = work.getValue('workEndTime');
+
+                let dates: IFlow1InvitationDateUnit[] = [];
+                for (let i: number = startDate.getTime(); i <= endDate.getTime(); i += 86400000) {
+                    let date: Date = new Date(i);
+
+                    let start: Date = new Date(new Date(date).setHours(startTime.getHours(), startTime.getMinutes(), startTime.getSeconds(), startTime.getMilliseconds()));
+                    let end: Date = new Date(new Date(date).setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds()));
+
+                    dates.push({
+                        start: start,
+                        end: end,
+                    });
+                }
+
                 let invitation = work.getValue('invitation');
 
                 invitation.setValue('company', company);
