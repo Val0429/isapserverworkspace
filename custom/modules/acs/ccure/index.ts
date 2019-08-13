@@ -35,7 +35,7 @@ export class CCUREService {
     //Connect to SQL server
     public async Login() {
         if(this._reader)
-        await this._reader.connectAsync(Config.ccureconnect);
+        await this._reader.connectAsync(Config.CCUREconnect);
         this._signal.set(true);
     }
 
@@ -1350,7 +1350,7 @@ export class CCUREService {
 
         NormalizeJSON(groupMemberGroupby);
 
-        let result = {"doorGroups":[]};
+        let result = [];
 
         for(var i = 0 ; i < doorGroups.length ; i++){
             let groupId : string = doorGroups[i]["groupId"];
@@ -1363,7 +1363,7 @@ export class CCUREService {
                     "doorName":doorKeyMap[doorId]
                 });
             }
-            result["doorGroups"].push({
+            result.push({
                 "groupId":groupId,
                 "groupName":doorGroupKeyMap[groupId],
                 "doors":doorArr
@@ -1387,7 +1387,7 @@ export class CCUREService {
 
         NormalizeJSON(groupMemberGroupby);
 
-        let result = {"floorGroups":[]};
+        let result = [];
 
         for(var i = 0 ; i < floorGroups.length ; i++){
             let groupId : string = floorGroups[i]["groupId"];
@@ -1400,7 +1400,7 @@ export class CCUREService {
                     "floorName":floorsKeyMap[floorId]
                 });
             }
-            result["floorGroups"].push({
+            result.push({
                 "groupId":groupId,
                 "groupName":floorGroupsKeyMap[groupId],
                 "floors":floorArr
@@ -1424,7 +1424,7 @@ export class CCUREService {
 
         NormalizeJSON(groupMemberGroupby);
 
-        let result = {"elevatorGroups":[]};
+        let result = [];
 
         for(var i = 0 ; i < elevatorGroups.length ; i++){
             let groupId : string = elevatorGroups[i]["groupId"];
@@ -1437,12 +1437,54 @@ export class CCUREService {
                     "elevatorName":elevatorsKeyMap[elevatorId]
                 });
             }
-            result["elevatorGroups"].push({
+            result.push({
                 "groupId":groupId,
                 "groupName":elevatorGroupsKeyMap[groupId],
                 "elevators":elevatorArr
             });
         }
+
+        return result;
+    }
+
+    public async GetAllOrganizedElevatorFloor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ) {
+
+        let groupMember = await this.GetAllGroupMember();
+        let elevators = await this.GetAllElevators();
+        let elevatorGroups = await this.GetAllElevatorGroup();
+        let floors = await this.GetAllFloors();
+        let floorGroups = await this.GetAllFloorGroup();
+        let elevatorFloors = await this.GetAllElevatorFloor();
+
+        let floorsKeyMap = GetKeyMap(floors,"floorId", "floorName");
+        let elevatorsKeyMap = GetKeyMap(elevators,"elevatorId", "elevatorName");
+        let elevatorGroupsKeyMap = GetKeyMap(elevatorGroups,"groupId", "groupName");
+        let floorGroupsKeyMap = GetKeyMap(floorGroups,"groupId", "groupName");
+
+        var jsonata = require("jsonata");
+        let elevatorFloorsGroupby : JSON = await jsonata("{$string(`elevatorId`): $ }").evaluate(elevatorFloors);
+
+        NormalizeJSON(elevatorFloorsGroupby);
+
+        let result = [];
+        
+        Object.keys(elevatorFloorsGroupby).forEach(function(elevatorId){
+            let floorArr = [];
+            for (let index = 0; index < elevatorFloorsGroupby[elevatorId].length; index++) {
+                const element = elevatorFloorsGroupby[elevatorId][index];
+                console.log(element);
+                floorArr.push({
+                    "floorId":element["floorId"],
+                    "floorName":floorsKeyMap[element["floorId"]]
+                })
+            }
+            result.push({
+                "elevatorId":elevatorId,
+                "elevatorName":elevatorsKeyMap[elevatorId],
+                "floors":floorArr
+            });
+        });
+
 
         return result;
     }
