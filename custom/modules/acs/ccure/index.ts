@@ -35,7 +35,7 @@ export class CCUREService {
     //Connect to SQL server
     public async Login() {
         if(this._reader)
-        await this._reader.connectAsync(Config.CCUREconnect);
+        await this._reader.connectAsync(Config.ccureconnect);
         this._signal.set(true);
     }
 

@@ -14,10 +14,11 @@ var action = new Action({
 
 action.get<any, any>({}, async () => {
     
-   
-    let doorGroups:any[] = await cCureAdapter.getDoorGroups();
+  
 
-    return { doorGroups };
+    let doorGroups = await cCureAdapter.getAllOrganizedDoorGroup();
+    let floorGroups = await cCureAdapter.getAllOrganizedFloorGroup();
+    return { doorGroups, floorGroups };
 });
 
 

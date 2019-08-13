@@ -7,7 +7,7 @@ import { QueryContent } from '../../modules/acs/ccure/queryMap'
 import { SignalObject } from "../../modules/acs/ccure/signalObject";
 
 import { isNullOrUndefined } from 'util';
-
+var jsonata = require("jsonata");
 type OnRawsCallback = (rows: JSON[], queryContent: QueryContent) => void;
 
 interface IdNameMap {
@@ -96,7 +96,10 @@ export class CCureAdapter {
         */
         return records;
     }
-
+    async getPermissionTableDoorGroup(){
+            await this._signal.wait(this._waitTime, x => x);
+            return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, null, true);
+    }
     async getReaders() {
         Log.Info(`${this.constructor.name}`, `getReaders`);
 
@@ -171,7 +174,103 @@ export class CCureAdapter {
 
 
     }
+    async getGroupMembers(){
+        await this._signal.wait(this._waitTime, x => x);
+        return this._reader.queryAllAsync(QueryContent.GroupMember);
+    }
+    async getAllOrganizedDoorGroup( ) {
 
+        let doors = await this.getDoors();
+        let doorGroups = await this.getDoorGroups();
+        let groupMember = await this.getGroupMembers();
+        
+        let doorKeyMap = this.getKeyMap(doors,"doorId", "doorName");
+        let doorGroupKeyMap = this.getKeyMap(doorGroups, "groupId", "groupName");
+
+        var jsonata = require("jsonata");
+        let groupMemberGroupby : JSON = await jsonata("{$string(`groupId`): $ }").evaluate(groupMember);
+
+        this.normalizeJSON(groupMemberGroupby);
+
+        let result = {"doorGroups":[]};
+
+        for(var i = 0 ; i < doorGroups.length ; i++){
+            let groupId : string = doorGroups[i]["groupId"];
+            if(!groupMemberGroupby[groupId]) continue;
+            let doorArr = [];
+            for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                let doorId = groupMemberGroupby[groupId][j]["objectId"];
+                doorArr.push({
+                    "doorId":doorId,
+                    "doorName":doorKeyMap[doorId]
+                });
+            }
+            result["doorGroups"].push({
+                "groupId":groupId,
+                "groupName":doorGroupKeyMap[groupId],
+                "doors":doorArr
+            });
+        }
+
+        return result;
+    }
+    async getFloorGroups( ): Promise<any[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        return this._reader.queryAllAsync(QueryContent.FloorGroup, null, true);
+    }
+    async getAllOrganizedFloorGroup() {
+
+        let floors = await this.getFloors();
+        let floorGroups = await this.getFloorGroups();
+        let groupMember = await this.getGroupMembers();
+        
+        let floorsKeyMap = this.getKeyMap(floors,"floorId", "floorName");
+        let floorGroupsKeyMap = this.getKeyMap(floorGroups,"groupId", "groupName");
+
+        var jsonata = require("jsonata");
+        let groupMemberGroupby : JSON = await jsonata("{$string(`groupId`): $ }").evaluate(groupMember);
+
+        this.normalizeJSON(groupMemberGroupby);
+
+        let result = {"floorGroups":[]};
+
+        for(var i = 0 ; i < floorGroups.length ; i++){
+            let groupId : string = floorGroups[i]["groupId"];
+            if(!groupMemberGroupby[groupId]) continue;
+            let floorArr = [];
+            for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                let floorId = groupMemberGroupby[groupId][j]["objectId"];
+                floorArr.push({
+                    "floorId":floorId,
+                    "floorName":floorsKeyMap[floorId]
+                });
+            }
+            result["floorGroups"].push({
+                "groupId":groupId,
+                "groupName":floorGroupsKeyMap[groupId],
+                "floors":floorArr
+            });
+        }
+
+        return result;
+    }
+    getKeyMap(jsons: JSON[], keyIDName : string, valueName : string) : Map<number,string>{
+        let result = new Map();
+        for(var i = 0 ; i < jsons.length ; i++){
+            result[jsons[i][keyIDName]] = jsons[i][valueName];
+        }
+        return result;
+    }
+    
+    normalizeJSON(obj){
+        Object.keys(obj).forEach(function(k){
+            if(isNullOrUndefined(obj[k].length) == true){
+                let arr = []
+                arr.push(obj[k]);
+                obj[k] = arr;
+            }
+        });
+    }
     async getFloors() {
         Log.Info(`${this.constructor.name}`, `getFloors`);
 
