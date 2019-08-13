@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes } from 'core/cgi-package';
 import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPerson, IFlow1WorkPermitAccessGroup as IWorkPermitAccessGroup, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
-import { Excel, DateTime } from './__api__';
+import { Excel, DateTime, File } from './__api__';
 import { Utility } from 'workspace/custom/services/crms-service/cgi-bin/crms/__api__';
 
 type Companies = Flow1Companies;
@@ -142,6 +142,7 @@ action.post(
 
             let path: string = './workspace/custom/web';
             let filename: string = `/export/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.xlsx`;
+            File.CreateFolder('./workspace/custom/web/export');
             Excel.Write(`${path}${filename}`, workbook);
 
             return filename;
