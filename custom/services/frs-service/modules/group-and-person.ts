@@ -3,6 +3,7 @@ import { FRSService } from '../index';
 import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
 import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/services/frs-service/libs/core';
+import { padLeft } from 'helpers/utility';
 
 interface IGroupInfo {
     name: string;
@@ -17,7 +18,7 @@ declare module "workspace/custom/services/frs-service" {
     interface FRSService {
         getGroupList(): Promise<IGroupInfo[]>;
         createGroup(name: string): Promise<IGroupInfo>;
-        createPerson(name: string, image: string, employeeno?: string): Promise<IResponsePersonInfo>;
+        createPerson(name: string, image: string, employeeno?: string, expirationDate?: Date): Promise<IResponsePersonInfo>;
         applyGroupsToPerson(personId: string, groupId: string): Promise<any>;
     }
 }
@@ -66,10 +67,15 @@ FRSService.prototype.createGroup = async function(name: string, times: number = 
     }, times, "FRSService.createGroup");
 }
 
-FRSService.prototype.createPerson = async function(name: string, image: string, employeeno?: string, times: number = 1): Promise<IResponsePersonInfo> {
+FRSService.prototype.createPerson = async function(name: string, image: string, employeeno?: string, expirationDate?: Date, times: number = 1): Promise<IResponsePersonInfo> {
     return retry<IResponsePersonInfo>( async (resolve, reject) => {
         await this.waitForLogin();
         const url: string = this.makeUrl(`frs/cgi/createperson`);
+
+        const convertDateString = (date: Date): string => {
+            return `${padLeft(date.getMonth()+1, 2)}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds}`;
+        }
+
         request({
             url, method: 'POST', json: true,
             headers: { "Content-Type": "application/json" },
@@ -77,7 +83,8 @@ FRSService.prototype.createPerson = async function(name: string, image: string, 
                 session_id: this.sessionId,
                 person_info: {
                     fullname: name,
-                    employeeno
+                    employeeno,
+                    expiration_date: expirationDate ? undefined : convertDateString(expirationDate)
                 },
                 image
             }
