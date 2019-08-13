@@ -28,7 +28,7 @@ action.put(
 
             let work: WorkPermit = await new Parse.Query(WorkPermit)
                 .equalTo('verify', _input.verify)
-                .include(['company', 'workCategory'])
+                .include(['company', 'workCategory', 'creator'])
                 .first()
                 .fail((e) => {
                     throw e;
