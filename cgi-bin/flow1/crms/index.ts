@@ -196,7 +196,7 @@ type OutputR = {
         checklistRemark7: string;
         checklist8: boolean;
         checklist9: boolean;
-        attachments: string[];
+        attachments: { name: string; type: string; url: string }[];
         termsAccepted: boolean;
         persons: IWorkPermitPerson[];
         personNames: string[];
@@ -339,7 +339,14 @@ action.get(
                             checklistRemark7: value.getValue('checklistRemark7'),
                             checklist8: value.getValue('checklist8'),
                             checklist9: value.getValue('checklist9'),
-                            attachments: (value.getValue('attachments') || []).map((n) => FileHelper.getURL(n, data)),
+                            attachments: (value.getValue('attachments') || []).map((value1, index1, array1) => {
+                                let url: string = FileHelper.getURL(value1, data);
+                                return {
+                                    name: value1.name(),
+                                    type: url.substring(url.lastIndexOf('.') + 1, url.length),
+                                    url: url,
+                                };
+                            }),
                             termsAccepted: value.getValue('termsAccepted'),
                             persons: value.getValue('persons'),
                             personNames: value.getValue('personNames'),
