@@ -507,12 +507,7 @@ action.put(
             if (work.getValue('status') === EWorkPermitStatus.approve) {
                 let company = work.getValue('company');
 
-                let visitors: any = work.getValue('persons').map((person) => {
-                    return {
-                        name: person.name,
-                        phone: person.phone,
-                    };
-                });
+                let visitors: any = work.getValue('persons');
 
                 let purpose = work.getValue('workCategory');
 
@@ -597,7 +592,7 @@ action.delete(
  * @param content
  * @param tos
  */
-export async function SendEmail(title: string, content: string, tos: string[]): Promise<void> {
+export async function SendEmail(title: string, content: string, tos: string[], ccs: string[] = []): Promise<void> {
     try {
         if (!Config.smtp.enable) {
             throw Errors.throw(Errors.Custom, ['smtp service not enable']);
@@ -622,8 +617,15 @@ export async function SendEmail(title: string, content: string, tos: string[]): 
             }
         });
 
+        ccs.forEach((value, index, array) => {
+            if (!Regex.IsEmail(value)) {
+                throw Errors.throw(Errors.Custom, [`can not cc email to ${value}`]);
+            }
+        });
+
         let result = await email.Send(title, content, {
             tos: tos,
+            ccs: ccs,
         });
     } catch (e) {
         throw e;
