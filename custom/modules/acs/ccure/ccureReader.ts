@@ -128,7 +128,7 @@ export class CCUREReader {
 
         await this._signalRead.wait(10000);
                                 
-        let queryCmd = this.generateQueryString(queryContent, queryParam, condition, isNullOrUndefined(isOpenquery) ? false : isOpenquery);
+        let queryCmd = this.generateQueryString(queryContent, queryParam, condition, true);
         if (queryContent === QueryContent.ReportsNewUpdate) this.updateReportQueryTime();
 
         console.log(`=>Send SQL command ${queryCmd}`);
