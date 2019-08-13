@@ -19,9 +19,11 @@ function WriteJsonFile(path,json){
 
 let _service : CCUREService = new CCUREService();
 _service.Login();
+
 _service.GetAllOrganizedDoorGroup().then(result=>WriteJsonFile("E://doorgroup.txt",result));
 _service.GetAllOrganizedFloorGroup().then(result=>WriteJsonFile("E://floorgroup.txt",result));
 _service.GetAllOrganizedElevatorGroup().then(result=>WriteJsonFile("E://elevatorgroup.txt",result));
+_service.GetAllOrganizedElevatorFloor().then(result=>WriteJsonFile("E://test.txt",result));
 
 /*
 
