@@ -70,7 +70,7 @@ export class AttendanceRecord {
             // 2.0 Query Records
             {
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from SiPass`);
-
+                let objects=[];
                 var end = now = new Date();
                 var begin = new Date(new Date().setHours( end.getHours() - 1 ));
 
@@ -89,8 +89,8 @@ export class AttendanceRecord {
                     r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
 
                     let o = new AttendanceRecords(r);
-                    await o.save();
-                    await delay(100);
+                    objects.push(o);
+                    
                 });
 
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
@@ -106,7 +106,8 @@ export class AttendanceRecord {
                     r["point_no"] = r["doorId"] + "";
                     r["point_name"] = r["doorName"];
                     r["category"] = r["messageCode"];
-
+                    //make it similar to sipass
+                    r["type"]=21;
                     delete r["reportId"];
                     delete r["updateTime"];
                     delete r["cardNum"];
@@ -116,9 +117,10 @@ export class AttendanceRecord {
 
                     let o = new AttendanceRecords(r);
 
-                    await o.save();
-                    await delay(100);
+                    objects.push(o);
+                    
                 });
+                await ParseObject.saveAll(objects);
             }
             await delay(1000);
         }
