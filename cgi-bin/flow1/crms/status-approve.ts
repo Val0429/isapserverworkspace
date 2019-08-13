@@ -1,4 +1,4 @@
-import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject, IFlow1InvitationDate, IFlow1InvitationDateUnit, FileHelper } from 'core/cgi-package';
+import { IUser, Action, Restful, RoleList, Errors, Socket, Config, ParseObject, IFlow1InvitationDate, IFlow1InvitationDateUnit, FileHelper, Flow1Visitors } from 'core/cgi-package';
 import { Flow1WorkPermit as WorkPermit, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import { DateTime } from './__api__';
 import { SendEmail } from './';
@@ -44,7 +44,19 @@ action.put(
 
             let company = work.getValue('company');
 
-            let visitors: any = work.getValue('persons');
+            let visitors: any = work.getValue('persons').map( (visitor) => {
+                return new Flow1Visitors({
+                    name: visitor.name,
+                    idcard: {
+                        idnumber: visitor.nric,
+                        name: visitor.name,
+                        birthdate: '',
+                        images: []
+                    },
+                    company: company,
+                    phone: visitor.phone
+                });
+            });
 
             let purpose = work.getValue('workCategory');
 
