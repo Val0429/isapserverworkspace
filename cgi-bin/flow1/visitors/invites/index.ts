@@ -6,7 +6,7 @@ import {
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, ActionParam, Flow1Visitors, Flow1Companies, Flow1VisitorStatus, EventFlow1InvitationComplete, Flow1Purposes,
 } from 'core/cgi-package';
 
-import PinCode from 'services/pin-code';
+import PinCode, { Pin } from 'services/pin-code';
 import { Flow1ScheduleControllerEmail_CompleteInvitation } from 'workspace/custom/schedulers';
 import QRCode from 'services/qr-code';
 
@@ -94,7 +94,7 @@ async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Pr
 }
 
 
-export async function doInvitation(data: ActionParam<ICInvitations>): Promise<Flow1Invitations> {
+export async function doInvitation(data: ActionParam<ICInvitations>, pin?: Pin): Promise<Flow1Invitations> {
     /// V0) Initiate
     let parent = data.user;
     let cancelled = false;
@@ -103,7 +103,7 @@ export async function doInvitation(data: ActionParam<ICInvitations>): Promise<Fl
     let obj = new Flow1Invitations(data.inputType);
 
     /// V1.1) Make Pin
-    let pin = await PinCode.next();
+    pin = pin || await PinCode.next();
 
     /// V1.2) Fetch or Create Visitors
     let company = data.inputType.company;
@@ -130,15 +130,15 @@ export async function doInvitation(data: ActionParam<ICInvitations>): Promise<Fl
     });
     let purpose = invitation.getValue("purpose");
     Events.save(event, {owner, invitation, company, visitors, purpose});
-    let qrcode = await QRCode.make(pin);
 
-    /// send email
-    if (Config.smtp.enable) {
-        for (let visitor of visitors) {
-            let email = visitor.getValue("email");
-            email && new Flow1ScheduleControllerEmail_CompleteInvitation().do(event, { visitor, qrcode, pin });
-        }
-    }
+    // let qrcode = await QRCode.make(pin);
+    // /// send email
+    // if (Config.smtp.enable) {
+    //     for (let visitor of visitors) {
+    //         let email = visitor.getValue("email");
+    //         email && new Flow1ScheduleControllerEmail_CompleteInvitation().do(event, { visitor, qrcode, pin });
+    //     }
+    // }
 
     return obj;
 }
