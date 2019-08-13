@@ -140,9 +140,8 @@ action.post(
                 },
             ]);
 
-            let path: string = './workspace/custom/web';
+            let path: string = './workspace/custom/assets';
             let filename: string = `/export/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.xlsx`;
-            File.CreateFolder('./workspace/custom/web/export');
             Excel.Write(`${path}${filename}`, workbook);
 
             return filename;

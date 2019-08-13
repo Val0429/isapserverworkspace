@@ -1,4 +1,5 @@
 import * as Xlsx from 'xlsx';
+import { File } from './';
 
 export namespace Excel {
     /**
@@ -21,6 +22,7 @@ export namespace Excel {
      */
     export function Write(filename: string, data: Xlsx.WorkBook): void {
         try {
+            File.CreateFolder(File.GetPath(filename));
             Xlsx.writeFile(data, filename);
         } catch (e) {
             throw e;
