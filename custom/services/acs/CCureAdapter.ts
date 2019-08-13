@@ -42,7 +42,7 @@ export class CCureAdapter {
 
     async getRecords() {
         await this._signal.wait(this._waitTime, x => x);
-        let records = this._reader.queryAllAsync(QueryContent.Reports, null, 30000);
+        let records = this._reader.queryAllAsync(QueryContent.Reports);
 
         // [
         //     { 
@@ -69,7 +69,7 @@ export class CCureAdapter {
     async Login() {
         Log.Info(`${this.constructor.name}`, `Login`);
 
-        await this._reader.connectAsync();
+        await this._reader.connectAsync(Config.ccureconnect);
         this._signal.set(true);
 
         return "";
@@ -169,18 +169,6 @@ export class CCureAdapter {
 
         return records;
 
-        // { 
-        //     floorId: 64358,
-        //     floorName: 'S_KSMSC_D客梯 7F',
-        //     online: true,
-        //     description: '' 
-        // },
-        // { 
-        //     floorId: 64359,
-        //     floorName: 'S_KSMSC_D客梯 8F',
-        //     online: true,
-        //     description: '' 
-        // }
 
     }
 
@@ -237,7 +225,7 @@ export class CCureAdapter {
         Log.Info(`${this.constructor.name}`, `getCardHolderList`);
 
         await this._signal.wait(this._waitTime, x => x);
-        let records = await this._reader.queryAllAsync(QueryContent.Persons, null, 30000);
+        let records = await this._reader.queryAllAsync(QueryContent.Persons);
 
         // console.log(records);
         // [
@@ -267,7 +255,7 @@ export class CCureAdapter {
         Log.Info(`${this.constructor.name}`, `getPermissionTable`);
 
         await this._signal.wait(this._waitTime, x => x);
-        let records = await this._reader.queryAllAsync(QueryContent.Clearance, null, 30000);
+        let records = await this._reader.queryAllAsync(QueryContent.Clearance);
 
         // { 
         //     permissionTableId: 5205,
@@ -284,7 +272,7 @@ export class CCureAdapter {
         Log.Info(`${this.constructor.name}`, `GetAllPermissionTableFloor`);
 
         await this._signal.wait(this._waitTime, x => x);
-        let records = await this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, null, 30000);
+        let records = await this._reader.queryAllAsync(QueryContent.ClearElevatorFloor);
 
         // [
         //     { 
@@ -307,7 +295,7 @@ export class CCureAdapter {
         Log.Info(`${this.constructor.name}`, `GetAllPermissionTableDoor`);
 
         await this._signal.wait(this._waitTime, x => x);
-        let records = await this._reader.queryAllAsync(QueryContent.ClearDoor, null, 30000);
+        let records = await this._reader.queryAllAsync(QueryContent.ClearDoor);
 
         // [
         //     { 

@@ -2,8 +2,10 @@ import { CCUREReader } from './CCUREReader'
 import { QueryContent } from './queryMap'
 import { SignalObject } from "./signalObject";
 import { isNullOrUndefined } from 'util';
+import { Config } from 'core/config.gen';
 
 type OnRawsCallback = (rows: JSON[], queryContent: QueryContent) => void;
+type OnDoneCallback = (result: JSON, queryContent: QueryContent) => void;
 
 interface IdNameMap {
     [key: number]: string;
@@ -32,14 +34,15 @@ export class CCUREService {
 
     //Connect to SQL server
     public async Login() {
-        await this._reader.connectAsync();
+        if(this._reader)
+        await this._reader.connectAsync(Config.CCUREconnect);
         this._signal.set(true);
     }
 
     //Disconnect to SQL server
     public async Logout() {
         this._signal.set(false);
-        this._reader.disconnectAsync();
+        await this._reader.disconnectAsync();
     }
 
 /* Get New Report Related */
@@ -117,13 +120,13 @@ export class CCUREService {
       * IF [messageCode]==1003 : 人-卡:拒絕進入
       * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
       */
-    public async GetNewAccessReport(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetNewAccessReport(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ReportsNewUpdate, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ReportsNewUpdate, OnRaws, OnDone, null, null, true);
             return null;
         }
-        else return this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, 30000);
+        else return this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, 30000);
     }
 
     /*
@@ -161,13 +164,13 @@ export class CCUREService {
       * IF [messageCode]==1003 : 人-卡:拒絕進入
       * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
       */
-    public async GetAllAccessReport(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllAccessReport(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, null, true);
             return null;
         }
-        else return this._reader.queryAllAsync(QueryContent.Reports, null, 30000);
+        else return this._reader.queryAllAsync(QueryContent.Reports, null, true, 30000);
     }
 
     /*
@@ -186,13 +189,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllBadgeLayout(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllBadgeLayout(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, true, 5000);
     }
 
     /*
@@ -213,13 +216,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllEnumFieldValue(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllEnumFieldValue(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.EnumFields, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.EnumFields, null, true, 5000);
     }
 
     /*
@@ -264,13 +267,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPersons(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPersons(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, null);
+            await this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Persons, null, 30000);
+        return this._reader.queryAllAsync(QueryContent.Persons, null, true, 1800000);
     }
 
     /*
@@ -295,13 +298,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPersonExtendInfo(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPersonExtendInfo(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, 30000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, true, 1800000);
     }
 
     /*
@@ -322,13 +325,38 @@ export class CCUREService {
      * Note: Different kinds of field, value will put on one of charVal and decimalVal
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPersonExtendInfoEnumList(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPersonExtendInfoEnumList(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, true, 5000);
+    }
+
+    /*
+    [
+        { 
+            fieldId: 1000000055, 
+            fieldName: 'leave_return_card' 
+        },
+        { 
+            fieldId: 1000000056, 
+            fieldName: 'take_card_his_no1' 
+        }
+    ]
+    */
+    /**
+     * Note: Different kinds of field, value will put on one of charVal and decimalVal
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetAllPersonPropList(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone, null, null, true);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.PersonPropList, null, true, 5000);
     }
 
     /*
@@ -347,13 +375,13 @@ export class CCUREService {
     /**
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllTimeSchedules(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllTimeSchedules(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Timespec);
+        return this._reader.queryAllAsync(QueryContent.Timespec, null, true);
     }
 
     /*
@@ -381,13 +409,13 @@ export class CCUREService {
      * [startTime] and [endTime] 從半夜00:00計算到該時間的"秒數"
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllTimeScheduleDay(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllTimeScheduleDay(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.TimespecDays);
+        return this._reader.queryAllAsync(QueryContent.TimespecDays, null, true);
     }
 
     /*
@@ -412,13 +440,13 @@ export class CCUREService {
     /**
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllDevices(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllDevices(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reader);
+        return this._reader.queryAllAsync(QueryContent.Reader, null, true);
     }
 
     /*
@@ -455,13 +483,13 @@ export class CCUREService {
     /**
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllDoors(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllDoors(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Doors);
+        return this._reader.queryAllAsync(QueryContent.Doors, null, true);
     }
 
     /*
@@ -484,13 +512,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllFloors(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllFloors(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Floor);
+        return this._reader.queryAllAsync(QueryContent.Floor, null, true);
     }
 
     /*
@@ -515,13 +543,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllElevators(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllElevators(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Elevator);
+        return this._reader.queryAllAsync(QueryContent.Elevator, null, true);
     }
 
     /*
@@ -544,13 +572,13 @@ export class CCUREService {
     * 
     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
     */
-    public async GetAllElevatorFloor(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllElevatorFloor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorFloor);
+        return this._reader.queryAllAsync(QueryContent.ElevatorFloor, null, true);
     }
 
     /*
@@ -569,13 +597,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPermissionTables(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPermissionTables(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Clearance);
+        return this._reader.queryAllAsync(QueryContent.Clearance, null, true);
     }
 
     /*
@@ -594,13 +622,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPermissionTablePerson(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPermissionTablePerson(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearPerson);
+        return this._reader.queryAllAsync(QueryContent.ClearPerson, null, true);
     }
 
     /*
@@ -621,13 +649,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPermissionTableDoor(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPermissionTableDoor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoor);
+        return await this._reader.queryAllAsync(QueryContent.ClearDoor, null, true);
     }
 
     /*
@@ -648,13 +676,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPermissionTableDoorGroup(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPermissionTableDoorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup);
+        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, null, true);
     }
 
     /*
@@ -677,13 +705,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllPermissionTableElevatorFloor(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllPermissionTableElevatorFloor(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor);
+        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, null, true);
     }
 
     /*
@@ -702,13 +730,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllDoorGroup(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllDoorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.DoorGroup);
+        return this._reader.queryAllAsync(QueryContent.DoorGroup, null, true);
     }
 
     /*
@@ -727,13 +755,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllFloorGroup(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllFloorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.FloorGroup);
+        return this._reader.queryAllAsync(QueryContent.FloorGroup, null, true);
     }
 
     /*
@@ -752,13 +780,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllElevatorGroup(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllElevatorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorGroup);
+        return this._reader.queryAllAsync(QueryContent.ElevatorGroup, null, true);
     }
 
     /*
@@ -777,13 +805,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllGroupMember(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllGroupMember(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.GroupMember, null, 30000);
+        return this._reader.queryAllAsync(QueryContent.GroupMember, null, true, 30000);
     }
 
     /*
@@ -808,13 +836,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetAllUsers(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllUsers(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Users);
+        return this._reader.queryAllAsync(QueryContent.Users, null, true);
     }
 
     /*
@@ -837,13 +865,13 @@ export class CCUREService {
     * 
     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
     */
-    public async GetAllObjects(OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAllObjects(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, null);
+            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ObjectList, null, 30000);
+        return this._reader.queryAllAsync(QueryContent.ObjectList, null, true, 30000);
     }
 
 
@@ -866,13 +894,13 @@ export class CCUREService {
     * @param condition Query string, e.g. cardNum=35798 and doorId=2087
     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
     */
-    public async GetAccessReport(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetAccessReport(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reports, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.Reports, condition, true, 30000);
     }
 
     /**
@@ -881,13 +909,13 @@ export class CCUREService {
      * @param condition Query string, e.g. lost=true and deleted=false
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetBadgeLayout(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetBadgeLayout(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, true, 30000);
     }
     
     /*
@@ -908,13 +936,13 @@ export class CCUREService {
      * 
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetEnumFieldValue(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetEnumFieldValue(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.EnumFields, condition);
+        return this._reader.queryAllAsync(QueryContent.EnumFields, condition, true);
     }
 
     /**
@@ -936,13 +964,13 @@ export class CCUREService {
      * @param condition Query string, e.g. lost=true and deleted=false
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPerson(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPerson(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Persons, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.Persons, condition, true, 30000);
     }
 
     /**
@@ -955,13 +983,14 @@ export class CCUREService {
      * @param condition Query string, e.g. lost=true and deleted=false
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPersonExtendInfo(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPersonExtendInfo(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, 30000);
+        let result = await this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, true, 30000);
+        return result;
     }
 
     /**
@@ -971,13 +1000,41 @@ export class CCUREService {
      * @param condition Query string, e.g. lost=true and deleted=false
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPersonExtendInfoEnumList(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPersonExtendInfoEnumList(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, true, 5000);
+    }
+
+
+    /*
+    [
+        { 
+            fieldId: 1000000055, 
+            fieldName: 'leave_return_card' 
+        },
+        { 
+            fieldId: 1000000056, 
+            fieldName: 'take_card_his_no1' 
+        }
+    ]
+    */
+  /**
+        fieldId: 1000000087, 
+        fieldName: 'leave_return_card' 
+     * @param condition Query string, e.g. lost=true and deleted=false
+     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
+     */
+    public async GetPersonPropList(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
+        await this._signal.wait(this._waitTime, x => x);
+        if (isNullOrUndefined(OnRaws) == false) {
+            this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone, null, condition, true);
+            return null;
+        }
+        return this._reader.queryAllAsync(QueryContent.PersonPropList, condition, true, 5000);
     }
 
     /**
@@ -986,13 +1043,13 @@ export class CCUREService {
      * @param condition Query string, e.g. timespecId=1620
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetTimeSchedules(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetTimeSchedules(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Timespec, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Timespec, condition);
+        return this._reader.queryAllAsync(QueryContent.Timespec, condition, true);
     }
 
     /**
@@ -1003,13 +1060,13 @@ export class CCUREService {
      * @param condition Query string, e.g. dayCode=8
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetTimeScheduleDay(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetTimeScheduleDay(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.TimespecDays, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.TimespecDays, condition);
+        return this._reader.queryAllAsync(QueryContent.TimespecDays, condition, true);
     }
 
     /**
@@ -1021,13 +1078,13 @@ export class CCUREService {
      * @param condition Query string, e.g. deviceId=3405
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetDevice(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetDevice(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Reader, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reader, condition);
+        return this._reader.queryAllAsync(QueryContent.Reader, condition, true);
     }
 
     /**
@@ -1045,13 +1102,13 @@ export class CCUREService {
      * @param condition Query string, e.g. Door_Has_RTE=false
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetDoor(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetDoor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Doors, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Doors, condition);
+        return this._reader.queryAllAsync(QueryContent.Doors, condition, true);
     }
 
     /**
@@ -1062,13 +1119,13 @@ export class CCUREService {
      * @param condition Query string, e.g. floorId=64359
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetFloor(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetFloor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Floor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Floor, condition);
+        return this._reader.queryAllAsync(QueryContent.Floor, condition, true);
     }
 
     /**
@@ -1080,13 +1137,13 @@ export class CCUREService {
      * @param condition Query string, e.g. deviceId=null
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetElevator(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetElevator(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Elevator, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Elevator, condition);
+        return this._reader.queryAllAsync(QueryContent.Elevator, condition, true);
     }
 
     /**
@@ -1097,13 +1154,13 @@ export class CCUREService {
     * @param condition Query string, e.g. deleted=false
     * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
     */
-    public async GetElevatorFloor(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetElevatorFloor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ElevatorFloor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorFloor, condition);
+        return this._reader.queryAllAsync(QueryContent.ElevatorFloor, condition, true);
     }
 
     /**
@@ -1112,13 +1169,13 @@ export class CCUREService {
      * @param condition Query string, e.g. permissionTableId=5604
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPermissionTable(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPermissionTable(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Clearance, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Clearance, condition);
+        return this._reader.queryAllAsync(QueryContent.Clearance, condition, true);
     }
 
     /**
@@ -1127,13 +1184,13 @@ export class CCUREService {
      * @param condition Query string, e.g. personId=14775
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPermissionTablePerson(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPermissionTablePerson(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearPerson, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearPerson, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearPerson, condition, true);
     }
 
     /**
@@ -1143,13 +1200,13 @@ export class CCUREService {
      * @param condition Query string, e.g. timespecId=5209
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPermissionTableDoor(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPermissionTableDoor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearDoor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoor, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearDoor, condition, true);
     }
 
     /**
@@ -1159,13 +1216,13 @@ export class CCUREService {
      * @param condition Query string, e.g. groupId=48632
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPermissionTableElevatorFloor(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPermissionTableElevatorFloor(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearElevatorFloor, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearElevatorFloor, condition, true);
     }
 
     /**
@@ -1176,13 +1233,13 @@ export class CCUREService {
      * @param condition Query string, e.g. groupId=48632
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetPermissionTableDoorGroup(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetPermissionTableDoorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ClearDoorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.ClearDoorGroup, condition, true);
     }
 
     /**
@@ -1191,13 +1248,13 @@ export class CCUREService {
      * @param condition Query string, e.g. groupId=10513
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetDoorGroup(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetDoorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.DoorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.DoorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.DoorGroup, condition, true);
     }
 
     /**
@@ -1206,13 +1263,13 @@ export class CCUREService {
      * @param condition Query string, e.g. groupId=38005
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetFloorGroup(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetFloorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.FloorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.FloorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.FloorGroup, condition, true);
     }
 
     /**
@@ -1221,13 +1278,13 @@ export class CCUREService {
      * @param condition Query string, e.g. groupId=65166
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetElevatorGroup(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetElevatorGroup(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ElevatorGroup, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ElevatorGroup, condition);
+        return this._reader.queryAllAsync(QueryContent.ElevatorGroup, condition, true);
     }
 
     /**
@@ -1236,13 +1293,13 @@ export class CCUREService {
      * @param condition Query string, e.g. groupId=5484
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetGroupMember(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetGroupMember(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.GroupMember, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.GroupMember, condition, true, 30000);
     }
 
     /**
@@ -1254,13 +1311,13 @@ export class CCUREService {
      * @param condition Query string, e.g. enabled=false
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetUser(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetUser(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.Users, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Users, condition);
+        return this._reader.queryAllAsync(QueryContent.Users, condition, true);
     }
 
     /**
@@ -1271,12 +1328,12 @@ export class CCUREService {
      * @param condition Query string, e.g. objId=1672
      * @param OnRaws If OnRaws != null, streaming receive, then return will be NULL
      */
-    public async GetObject(condition: String, OnRaws?: OnRawsCallback): Promise<JSON[]> {
+    public async GetObject(condition: String, OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ): Promise<JSON[]> {
         await this._signal.wait(this._waitTime, x => x);
         if (isNullOrUndefined(OnRaws) == false) {
-            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, null, null, condition);
+            this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ObjectList, condition, 30000);
+        return this._reader.queryAllAsync(QueryContent.ObjectList, condition, true, 30000);
     }
 }
