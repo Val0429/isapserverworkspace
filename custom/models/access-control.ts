@@ -215,8 +215,7 @@ export interface IPermissionTable {     // CRUD  V
     ccureToken?: string;
     sipassToken?: string;
     status?: number,
-    accesslevels?: AccessLevel[],
-    ccurePermissionTable?:CCurePermissionTable
+    accesslevels?: AccessLevel[]
 }
 @registerSubclass()
 export class PermissionTable extends ParseObject<IPermissionTable> { }

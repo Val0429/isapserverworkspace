@@ -6,6 +6,7 @@ import { IPermissionTable, PermissionTable, PermissionTableDoor } from '../../cu
 import { siPassAdapter, cCureAdapter } from '../../custom/services/acsAdapter-Manager';
 
 import { Log } from 'workspace/custom/services/log';
+import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
 
 var action = new Action({
     loginRequired: true,
@@ -72,18 +73,8 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     };
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
     
-    let {permTableNames, devices, errors} = await checkCCureDevices(accessLevels);
+    let {devices, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
     if(errors.length>0)return {errors};
-    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length && x.permissionTableName==data.inputType.tablename);
-
-    if(!ccurePermissionTable && devices.length>0){
-        errors.push({type:"clearanceIsNotInCCure"});
-        return {permTableNames, errors};
-    }
-    if(ccurePermissionTable){
-        delete(ccurePermissionTable.devices);
-        data.inputType.ccurePermissionTable=ccurePermissionTable;
-    }
     
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     let r1 = await siPassAdapter.postAccessGroup(ag);
@@ -100,7 +91,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     
 
     /// 2) Output
-    return { permTableNames, errors };
+    return { devices, errors };
 });
 
 /********************************
@@ -164,24 +155,16 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     };
     
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
-    let {permTableNames, devices, errors} = await checkCCureDevices(accessLevels);
+    let {devices, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
     if(errors.length>0)return {errors};
-    let ccurePermissionTable = permTableNames.find(x=>x.devices.length == devices.length && x.permissionTableName==data.inputType.tablename);;
-
-    if(!ccurePermissionTable && devices.length>0){
-        errors.push({type:"clearanceIsNotInCCure"});
-        return {permTableNames, errors};
-    }
-    if(ccurePermissionTable){
-        delete(ccurePermissionTable.devices);
-        data.inputType.ccurePermissionTable=ccurePermissionTable;
-    }
+    
+    
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     await siPassAdapter.putAccessGroup(ag);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
-    return {permTableNames, errors};
+    return {devices, errors};
 });
 
 /********************************
@@ -206,44 +189,17 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
-function getPermTableDoors(ccureDoors: any[], door: any, timeSchedules: any[], timeschedule: any, errors: any[], cCurePermissionTableDoors: any[], ccurePermissionTables: any[]) {
-    let type="accessLevelIsNotInCCure";
-    let err={ type, devicename: door.doorname, timename: timeschedule.timename };
-    let ccureDoor = ccureDoors.find(x => x.doorName == door.doorname);
-    let ccureTimeSchedule = timeSchedules.find(x => x.timespecName == timeschedule.timename);
-    if (!ccureDoor || !ccureTimeSchedule) {        
-        errors.push(err);
-        return;
-    }    
-    
-    let permissionTableDoors = cCurePermissionTableDoors.filter(x => x.timespecId == ccureTimeSchedule.timespecId && x.doorId == ccureDoor.doorId)
-        .map(x=>x.permissionTableId).filter((value, index, self)=> self.indexOf(value)==index);
-    if (permissionTableDoors.length==0) {            
-        errors.push(err);
-    }
-    else {
-        let permissionTables = ccurePermissionTables.filter(x => permissionTableDoors.indexOf(x.permissionTableId)>=0);
-        if (permissionTables.length==0){
-            errors.push(err);
-        }else{
-            return permissionTables;
-        }                
-    }
-    
-}
 
-async function checkCCureDevices( accessLevels:any[]){
+
+async function checkCCureDevices(tablename:string, accessLevels:any[]){
     let errors:any[]=[];
     let devices=[];
-    let permissionTables:any[] = await cCureAdapter.getPermissionTables();
-    let timeSchedules:any[] = await cCureAdapter.getTimeSchedule();
-
-    let ccureDoors:any[];    
-    let permissionTableDoors:any[];    
-    let permissionTableFloors:any[];
-    let ccureFloors:any[];
-    let ccureElevators:any[];
-    let permTableNames:any[]=[];
+    let ccureClearances = await GetMigrationDataPermissionTable();    
+    let ccureClearance = ccureClearances[tablename];
+    console.log("ccureClearance", ccureClearance);
+    
+    let accessLevelIsNotInCCure="accessLevelIsNotInCCure";
+    let clearanceIsNotInCCure="clearanceIsNotInCCure";
 
     for (let accesslevelInput of accessLevels) {
         let accesslevelObject = await new Parse.Query(AccessLevel).equalTo("objectId", accesslevelInput.objectId)
@@ -255,82 +211,91 @@ async function checkCCureDevices( accessLevels:any[]){
         console.log("accesslevel", accesslevel)
         let tsObject = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule.objectId).first();
         let timeschedule = ParseObject.toOutputJSON(tsObject);
-
+        
         
         if(accesslevel.type=="door"){
             if(!accesslevel.door || !accesslevel.timeschedule)continue;
-            if(!ccureDoors) ccureDoors = await cCureAdapter.getDoors();
-            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.getAllPermissionTableDoor();
+           
             //compare content with ccure door name and timename            
             let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
             if(!doorIsInCCure) continue;
             devices.push(door);
-            let perms = getPermTableDoors(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
-            checkPermTables(permTableNames, perms, door.doorname, timeschedule.timename);
+            if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+                errors.push({ type: clearanceIsNotInCCure });
+            }
+            else {
+                let exists = ccureClearance.find(x => x.type == "door" && x.name == door.doorname && x.timespec == timeschedule.timename);
+                if (!exists)
+                    errors.push({ type: accessLevelIsNotInCCure, devicename: door.doorname, timename: timeschedule.timename });
+            }
         }
 
         if(accesslevel.type=="doorGroup"){
             if(!accesslevel.doorgroup || !accesslevel.timeschedule)continue;
-            if(!ccureDoors) ccureDoors = await cCureAdapter.getDoors();
-            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.getAllPermissionTableDoor();
-
-            for(let doorid of accesslevel.doorgroup.doors){               
+                        
+            for(let doorid of accesslevel.doorgroup.doors){
+                //compare content with ccure door name and timename                  
                 let { doorIsInCCure, door } = await getCCureDoor(doorid.objectId);
                 if(!doorIsInCCure) continue;
                 devices.push(door);
-                //compare content with ccure door name and timename    
-                let perms = getPermTableDoors(ccureDoors, door, timeSchedules, timeschedule, errors, permissionTableDoors, permissionTables);
-                checkPermTables(permTableNames, perms, door.doorname, timeschedule.timename);
+                if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+                    errors.push({ type: clearanceIsNotInCCure });
+                }
+                else {
+                    let exists = ccureClearance.find(x => x.type == "doorGroup" && x.name == accesslevel.doorgroup.groupname &&
+                             x.timespec == timeschedule.timename && x.doors.find(y=>y.name==door.doorname));
+                    if (!exists)
+                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.doorgroup.groupname}-${door.doorname}`, timename: timeschedule.timename });
+                }
+                 
             }            
         }
 
         if(accesslevel.type=="elevator"){
             if(!accesslevel.elevator || !(accesslevel.floor && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
-            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.getAllPermissionTableFloor();
-            if(!ccureFloors)ccureFloors = await cCureAdapter.getFloors();
-            if(!ccureElevators) ccureElevators = await cCureAdapter.getElevators();
+            
             //compare content with ccure floor name and timename            
             let { floorIsInCCure, floor } = await getCCureFloor(accesslevel.floor[0].objectId);            
             if(!floorIsInCCure) continue;
             devices.push(floor);
-            let perms = getPermTableFloors(ccureElevators, accesslevel.elevator, ccureFloors, floor, timeSchedules, timeschedule, errors, permissionTableFloors, permissionTables);
-            checkPermTables(permTableNames, perms, accesslevel.elevator.elevatorname+"-"+floor.floorname, timeschedule.timename);
+            if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+                errors.push({ type: clearanceIsNotInCCure });
+            }
+            else {
+                let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.name == accesslevel.elevator.elevatorname && 
+                                x.timespec == timeschedule.timename && x.floor && x.floor.type=="floor" && x.floor.name == floor.floorname);
+                if (!exists)
+                    errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: timeschedule.timename });
+            }
+            
         }
         if(accesslevel.type=="floorGroup"){
             if(!accesslevel.elevator || !(accesslevel.floorgroup && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
-            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.getAllPermissionTableFloor();
-            if(!ccureFloors)ccureFloors = await cCureAdapter.getFloors();
-            if(!ccureElevators) ccureElevators = await cCureAdapter.getElevators();
+            
             //compare content with ccure floor name and timename 
             for(let alFloor of accesslevel.floor){
                 let { floorIsInCCure, floor } = await getCCureFloor(alFloor.objectId);            
                 if(!floorIsInCCure) continue;
                 devices.push(floor);
-                let perms = getPermTableFloors(ccureElevators, accesslevel.elevator, ccureFloors, floor, timeSchedules, timeschedule, errors, permissionTableFloors, permissionTables);
-                checkPermTables(permTableNames, perms, accesslevel.elevator.elevatorname+"-"+floor.floorname, timeschedule.timename);
+                if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+                    errors.push({ type: clearanceIsNotInCCure });
+                }
+                else {
+                    let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.name == accesslevel.elevator.elevatorname && 
+                                    x.timespec == timeschedule.timename && x.floor  && x.floor.type=="floorGroup" && x.floors.find(y=>y.floor.name == floor.floorname));
+                    if (!exists)
+                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: timeschedule.timename });
+                }
             }    
             
         }
     }
-    return {permTableNames, devices, errors};
+    return {devices, errors};
 
     
 }
-function checkPermTables(permTableNames: any[],perms: any[],devicename:string, timename:string) {
-    if(!perms)return;
-    
-    for (let perm of perms) {
-        let exists = permTableNames.find(x => x.permissionTableName == perm.permissionTableName);
-        if (exists) {
-            perm.devices.push({devicename, timename});
-        }
-        else {
-            perm.devices = [{devicename, timename}];
-            permTableNames.push(perm);            
-        }
-        
-    }
-}
+
+
 async function getCCureDoor(doorObjectId: any) {
     let doorObject = await new Parse.Query(Door).equalTo("objectId", doorObjectId)
         .include("readerin")
@@ -355,34 +320,4 @@ async function getCCureFloor(floorObjectId: any) {
     let floorIsInCCure = floor.find(x=>x.floorname.length>=2 && x.system==800 && x.floorname.substring(0,2)!="D_")
     console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
     return { floorIsInCCure, floor };
-}
-function getPermTableFloors(ccureElevators:any[], elevator:any, ccureFloors: any[], floor: any, timeSchedules: any[], timeschedule: any, errors: any[], cCurePermissionTableFloors: any[], ccurePermissionTables: any[]) {
-    let type="accessLevelIsNotInCCure";
-    let err ={ type, devicename: `${elevator.elevatorname}-${floor.floorname}`, timename: timeschedule.timename};
-    let ccureElevator = ccureElevators.find(x => x.elevatorName == elevator.elevatorname);
-    let ccureFloor = ccureFloors.find(x => x.floorName == elevator.floorname);
-    let ccureTimeSchedule = timeSchedules.find(x => x.timespecName == timeschedule.timename);
-    if (!ccureElevator || !ccureTimeSchedule || !ccureFloor) {        
-        errors.push(err);
-        return;
-    }
-
-    let permissionTableFloors = cCurePermissionTableFloors.filter(x => 
-                    x.timespecId == ccureTimeSchedule.timespecId && 
-                    x.elevatorId == ccureElevator.elevatorId && 
-                    x.floorId == ccureElevator.floorId)
-                .map(x=>x.permissionTableId)
-                .filter((value, index, self)=> self.indexOf(value)==index);
-    if (permissionTableFloors.length==0) {            
-        errors.push(err);
-    }
-    else {
-        let permissionTables = ccurePermissionTables.filter(x => permissionTableFloors.indexOf(x.permissionTableId)>=0);
-        if (permissionTables.length==0){
-            errors.push(err);
-        }else{
-            return permissionTables;
-        }                
-    }
-    
 }
