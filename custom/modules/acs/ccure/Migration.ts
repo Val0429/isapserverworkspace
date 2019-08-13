@@ -33,6 +33,8 @@ function WriteJsonFile(path,json){
     });
 }
 
+
+
 export async function GetMigrationDataPermissionTable(){
 
     console.log("=====Start GetMigrationDataPermissionTable=====");
@@ -111,7 +113,7 @@ export async function GetMigrationDataPermissionTable(){
             if(!devicesGroupby[doorId]) continue;//////
             let deviceNames = []; 
             for(var j = 0 ; j < devicesGroupby[doorId].length ; j++) {
-                deviceNames.push(devicesGroupby[doorId][j]["deviceName"]);
+                deviceNames.push(devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g,""));
             }
             pushDoor(result,permissionTableId,permIdjsonArr[i]["timespecId"],doorId,deviceNames);
         }
@@ -138,7 +140,7 @@ export async function GetMigrationDataPermissionTable(){
                 if(!devicesGroupby[doorId]) continue;
                 let devicesJson = [];
                 for(var n = 0 ; n < devicesGroupby[doorId].length ; n++){
-                    devicesJson.push(devicesGroupby[doorId][n]["deviceName"]);
+                    devicesJson.push(devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g,""));
                 }
                 doorDevices.push(
                     {
@@ -179,7 +181,7 @@ export async function GetMigrationDataPermissionTable(){
                 {
                     "type":"elevator",
                     "name":elevatorsGroupby[elevatorId][0]["elevatorName"],
-                    "device":[devicesKeyMap[deviceId]]
+                    "device":[devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g,"")]
                 }
             }
                 // 4.1.2 Check Group
@@ -195,7 +197,7 @@ export async function GetMigrationDataPermissionTable(){
                         {
                             "type":"elevator",
                             "name":elevatorsGroupby[elevatorId]["elevatorName"],
-                            "device":devicesKeyMap[deviceId]
+                            "device":devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g,"")
                         }
                     );
                 }

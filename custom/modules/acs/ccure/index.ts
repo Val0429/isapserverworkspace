@@ -1009,7 +1009,6 @@ export class CCUREService {
         return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, true, 5000);
     }
 
-
     /*
     [
         { 
@@ -1336,4 +1335,133 @@ export class CCUREService {
         }
         return this._reader.queryAllAsync(QueryContent.ObjectList, condition, true, 30000);
     }
+
+    public async GetAllOrganizedDoorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ) {
+
+        let doors = await this.GetAllDoors();
+        let doorGroups = await this.GetAllDoorGroup();
+        let groupMember = await this.GetAllGroupMember();
+        
+        let doorKeyMap = GetKeyMap(doors,"doorId", "doorName");
+        let doorGroupKeyMap = GetKeyMap(doorGroups,"groupId", "groupName");
+
+        var jsonata = require("jsonata");
+        let groupMemberGroupby : JSON = await jsonata("{$string(`groupId`): $ }").evaluate(groupMember);
+
+        NormalizeJSON(groupMemberGroupby);
+
+        let result = {"doorGroups":[]};
+
+        for(var i = 0 ; i < doorGroups.length ; i++){
+            let groupId : string = doorGroups[i]["groupId"];
+            if(!groupMemberGroupby[groupId]) continue;
+            let doorArr = [];
+            for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                let doorId = groupMemberGroupby[groupId][j]["objectId"];
+                doorArr.push({
+                    "doorId":doorId,
+                    "doorName":doorKeyMap[doorId]
+                });
+            }
+            result["doorGroups"].push({
+                "groupId":groupId,
+                "groupName":doorGroupKeyMap[groupId],
+                "doors":doorArr
+            });
+        }
+
+        return result;
+    }
+
+    public async GetAllOrganizedFloorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ) {
+
+        let floors = await this.GetAllFloors();
+        let floorGroups = await this.GetAllFloorGroup();
+        let groupMember = await this.GetAllGroupMember();
+        
+        let floorsKeyMap = GetKeyMap(floors,"floorId", "floorName");
+        let floorGroupsKeyMap = GetKeyMap(floorGroups,"groupId", "groupName");
+
+        var jsonata = require("jsonata");
+        let groupMemberGroupby : JSON = await jsonata("{$string(`groupId`): $ }").evaluate(groupMember);
+
+        NormalizeJSON(groupMemberGroupby);
+
+        let result = {"floorGroups":[]};
+
+        for(var i = 0 ; i < floorGroups.length ; i++){
+            let groupId : string = floorGroups[i]["groupId"];
+            if(!groupMemberGroupby[groupId]) continue;
+            let floorArr = [];
+            for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                let floorId = groupMemberGroupby[groupId][j]["objectId"];
+                floorArr.push({
+                    "floorId":floorId,
+                    "floorName":floorsKeyMap[floorId]
+                });
+            }
+            result["floorGroups"].push({
+                "groupId":groupId,
+                "groupName":floorGroupsKeyMap[groupId],
+                "floors":floorArr
+            });
+        }
+
+        return result;
+    }
+
+    public async GetAllOrganizedElevatorGroup(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ) {
+
+        let elevators = await this.GetAllElevators();
+        let elevatorGroups = await this.GetAllElevatorGroup();
+        let groupMember = await this.GetAllGroupMember();
+        
+        let elevatorsKeyMap = GetKeyMap(elevators,"elevatorId", "elevatorName");
+        let elevatorGroupsKeyMap = GetKeyMap(elevatorGroups,"groupId", "groupName");
+
+        var jsonata = require("jsonata");
+        let groupMemberGroupby : JSON = await jsonata("{$string(`groupId`): $ }").evaluate(groupMember);
+
+        NormalizeJSON(groupMemberGroupby);
+
+        let result = {"elevatorGroups":[]};
+
+        for(var i = 0 ; i < elevatorGroups.length ; i++){
+            let groupId : string = elevatorGroups[i]["groupId"];
+            if(!groupMemberGroupby[groupId]) continue;
+            let elevatorArr = [];
+            for(var j = 0 ; j < groupMemberGroupby[groupId].length ; j++){
+                let elevatorId = groupMemberGroupby[groupId][j]["objectId"];
+                elevatorArr.push({
+                    "elevatorId":elevatorId,
+                    "elevatorName":elevatorsKeyMap[elevatorId]
+                });
+            }
+            result["elevatorGroups"].push({
+                "groupId":groupId,
+                "groupName":elevatorGroupsKeyMap[groupId],
+                "elevators":elevatorArr
+            });
+        }
+
+        return result;
+    }
+}
+
+function GetKeyMap(jsons: JSON[], keyIDName : string, valueName : string) : Map<number,string>{
+    let result = new Map();
+    for(var i = 0 ; i < jsons.length ; i++){
+        result[jsons[i][keyIDName]] = jsons[i][valueName];
+    }
+    return result;
+}
+
+function NormalizeJSON(obj){
+    Object.keys(obj).forEach(function(k){
+        if(isNullOrUndefined(obj[k].length) == true){
+            let arr = []
+            arr.push(obj[k]);
+            obj[k] = arr;
+        }
+    });
 }

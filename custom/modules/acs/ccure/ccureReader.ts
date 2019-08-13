@@ -174,7 +174,7 @@ export class CCUREReader {
      *      { clearId: 2205, clearName: 'qqq7' } 
      * ]
      */
-    public async queryAllAsync(queryContent: QueryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<any>> {
+    public async queryAllAsync(queryContent: QueryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<JSON>> {
 
         if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
 
@@ -191,7 +191,7 @@ export class CCUREReader {
 
         await this._signalRead.wait(10000);
 
-        let queryCmd = this.generateQueryString(queryContent, queryParam, condition, true);
+        let queryCmd = this.generateQueryString(queryContent, queryParam, condition, isNullOrUndefined(isOpenquery) ? false : isOpenquery);
         if (queryContent === QueryContent.ReportsNewUpdate) this.updateReportQueryTime();
 
         console.log(`=>Send SQL command ${queryCmd}`);
