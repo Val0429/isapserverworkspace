@@ -1,9 +1,13 @@
 import * as express from 'express';
 import * as history from 'connect-history-api-fallback';
 import { app } from './../core/main.gen';
+import { deployWeb } from 'helpers/deploy-web';
+import { Config } from 'core/config.gen';
 
 app.use(history());
 app.use(`/export`, express.static(`workspace/custom/assets/export`));
+
+deployWeb(`${__dirname}/../workspace/custom/web-crms`, Config.vms.crmsWebPort);
 
 import './custom/shells/index';
 import 'services/pin-code';
