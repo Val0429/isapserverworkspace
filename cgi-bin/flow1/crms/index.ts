@@ -526,16 +526,18 @@ action.put(
                 });
             }
 
-            let invitation = work.getValue('invitation');
+            if (work.getValue('status') === EWorkPermitStatus.approve) {
+                let invitation = work.getValue('invitation');
 
-            invitation.setValue('company', company);
-            invitation.setValue('visitors', visitors);
-            invitation.setValue('purpose', purpose);
-            invitation.setValue('dates', dates as any);
+                invitation.setValue('company', company);
+                invitation.setValue('visitors', visitors);
+                invitation.setValue('purpose', purpose);
+                invitation.setValue('dates', dates as any);
 
-            await invitation.save(null, { useMasterKey: true }).fail((e) => {
-                throw e;
-            });
+                await invitation.save(null, { useMasterKey: true }).fail((e) => {
+                    throw e;
+                });
+            }
 
             return new Date();
         } catch (e) {
