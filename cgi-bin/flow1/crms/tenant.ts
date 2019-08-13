@@ -71,7 +71,6 @@ type OutputR = {
     attachments: { name: string; type: string; url: string }[];
     termsAccepted: boolean;
     persons: IWorkPermitPerson[];
-    personNames: string[];
     accessGroups: IWorkPermitAccessGroup[];
 };
 
@@ -157,7 +156,6 @@ action.get(
                 }),
                 termsAccepted: work.getValue('termsAccepted'),
                 persons: work.getValue('persons'),
-                personNames: work.getValue('personNames'),
                 accessGroups: work.getValue('accessGroups'),
             };
         } catch (e) {
@@ -249,6 +247,13 @@ action.put(
             }
             if (_input.workEndTime) {
                 _input.workEndTime.setFullYear(2000, 0, 1);
+            }
+            if (_input.persons) {
+                let personNames: string[] = _input.persons.map((value, index, array) => {
+                    return value.name;
+                });
+
+                work.setValue('personNames', personNames);
             }
 
             delete _input.verify;
