@@ -5,6 +5,7 @@ import { Flow1Visitors } from './visitors';
 import { Flow1Purposes } from './purposes';
 import { Pin } from 'services/pin-code';
 import { Flow1Companies } from './companies';
+import { IFlow1WorkPermitAccessGroup } from './crms/work-permit';
 
 export interface IFlow1InvitationNotify {
     visitor: {
@@ -40,5 +41,6 @@ export interface IFlow1Invitations {
     // notify: IFlow1InvitationNotify;
     cancelled?: boolean;
     // walkIn?: boolean;
+    accessGroups?: IFlow1WorkPermitAccessGroup[];
 }
 @registerSubclass() export class Flow1Invitations extends ParseObject<IFlow1Invitations> {}

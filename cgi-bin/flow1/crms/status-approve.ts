@@ -74,6 +74,7 @@ action.put(
                         visitors,
                         purpose,
                         dates: dates as any,
+                        accessGroups: work.getValue('accessGroups'),
                     } as any,
                 },
                 work.getValue('ptwId'),

@@ -535,6 +535,7 @@ action.put(
                 invitation.setValue('visitors', visitors);
                 invitation.setValue('purpose', purpose);
                 invitation.setValue('dates', dates as any);
+                invitation.setValue('accessGroups', work.getValue('accessGroups'));
 
                 await invitation.save(null, { useMasterKey: true }).fail((e) => {
                     throw e;
