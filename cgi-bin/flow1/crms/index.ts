@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config, Flow1Companies, Flow1Purposes, IFlow1InvitationDateUnit } from 'core/cgi-package';
 import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPerson, IFlow1WorkPermitAccessGroup as IWorkPermitAccessGroup, EFlow1WorkPermitStatus as EWorkPermitStatus } from 'workspace/custom/models/Flow1/crms/work-permit';
 import pinCode from 'services/pin-code';
-import { Email, Utility } from './__api__';
+import { Email, Utility, Regex } from './__api__';
 import { QRCode } from 'services/qr-code';
 
 type Companies = Flow1Companies;
@@ -606,6 +606,12 @@ export async function SendEmail(title: string, content: string, tos: string[]): 
         } catch (e) {
             throw Errors.throw(Errors.Custom, [e]);
         }
+
+        tos.forEach((value, index, array) => {
+            if (!Regex.IsEmail(value)) {
+                throw Errors.throw(Errors.Custom, [`can not send email to ${value}`]);
+            }
+        });
 
         let result = await email.Send(title, content, {
             tos: tos,
