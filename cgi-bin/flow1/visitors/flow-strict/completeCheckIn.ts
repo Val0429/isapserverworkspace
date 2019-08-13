@@ -64,24 +64,30 @@ export default new Action<Input, Output>({
     /// 2.3) add person into group
     
     /// 1)
+    //let acgroups = ["Visitor", ...invitation.getValue("accessGroups").map( (v) => v.doorName )];
+    let acgroups = invitation.getValue("accessGroups").map( (v) => v.doorName );
     let groups = await FRS.getGroupList();
     /// 1.1)
-    let groupid: string = groups.reduce<string>( (final, value) => {
+    let groupids: string[] = groups.reduce<string[]>( (final, value) => {
         if (final) return final;
-        if (value.name === 'Visitor') return value.group_id;
+        //if (value.name === 'Visitor') return value.group_id;
+        if (acgroups.indexOf(value.name) >= 0) final.push(value.group_id);
         return final;
-    }, undefined);
+    }, []);
     /// 1.2)
-    if (groupid === undefined) {
-        let res = await FRS.createGroup("Visitor");
-        groupid = res.group_id;
-    }
+    // if (groupid === undefined) {
+    //     let res = await FRS.createGroup("Visitor");
+    //     groupid = res.group_id;
+    // }
     /// 2)
     /// 2.1)
     /// 2.2)
-    let person = await FRS.createPerson(name, liveFace);
+    let person = await FRS.createPerson(name, liveFace, '', invitation.getValue("dates")[index].end);
     /// 2.3)
-    await FRS.applyGroupsToPerson(person.person_id, groupid);
+    for (let groupid of groupids) {
+        await FRS.applyGroupsToPerson(person.person_id, groupid);
+    }
+    //await FRS.applyGroupsToPerson(person.person_id, groupid);
 
     return ParseObject.toOutputJSON({
         invitation: {
