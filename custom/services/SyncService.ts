@@ -45,7 +45,7 @@ export class SyncService{
 
      async syncCcurePermissionTableDoor() {
         Log.Info(`${this.constructor.name}`, `CCure 2.6 syncCcurePermissionTableDoor`);
-        let records = await cCureAdapter.GetAllPermissionTableDoor();
+        let records = await cCureAdapter.getAllPermissionTableDoor();
 
         /*
         [

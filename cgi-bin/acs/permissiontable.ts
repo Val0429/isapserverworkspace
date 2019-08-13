@@ -260,7 +260,7 @@ async function checkCCureDevices( accessLevels:any[]){
         if(accesslevel.type=="door"){
             if(!accesslevel.door || !accesslevel.timeschedule)continue;
             if(!ccureDoors) ccureDoors = await cCureAdapter.getDoors();
-            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
+            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.getAllPermissionTableDoor();
             //compare content with ccure door name and timename            
             let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
             if(!doorIsInCCure) continue;
@@ -272,7 +272,7 @@ async function checkCCureDevices( accessLevels:any[]){
         if(accesslevel.type=="doorGroup"){
             if(!accesslevel.doorgroup || !accesslevel.timeschedule)continue;
             if(!ccureDoors) ccureDoors = await cCureAdapter.getDoors();
-            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.GetAllPermissionTableDoor();
+            if(!permissionTableDoors)permissionTableDoors = await cCureAdapter.getAllPermissionTableDoor();
 
             for(let doorid of accesslevel.doorgroup.doors){               
                 let { doorIsInCCure, door } = await getCCureDoor(doorid.objectId);
@@ -286,7 +286,7 @@ async function checkCCureDevices( accessLevels:any[]){
 
         if(accesslevel.type=="elevator"){
             if(!accesslevel.elevator || !(accesslevel.floor && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
-            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.GetAllPermissionTableFloor();
+            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.getAllPermissionTableFloor();
             if(!ccureFloors)ccureFloors = await cCureAdapter.getFloors();
             if(!ccureElevators) ccureElevators = await cCureAdapter.getElevators();
             //compare content with ccure floor name and timename            
@@ -298,7 +298,7 @@ async function checkCCureDevices( accessLevels:any[]){
         }
         if(accesslevel.type=="floorGroup"){
             if(!accesslevel.elevator || !(accesslevel.floorgroup && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
-            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.GetAllPermissionTableFloor();
+            if(!permissionTableFloors) permissionTableFloors = await cCureAdapter.getAllPermissionTableFloor();
             if(!ccureFloors)ccureFloors = await cCureAdapter.getFloors();
             if(!ccureElevators) ccureElevators = await cCureAdapter.getElevators();
             //compare content with ccure floor name and timename 

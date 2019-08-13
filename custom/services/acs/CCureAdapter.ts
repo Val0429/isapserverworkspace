@@ -42,7 +42,7 @@ export class CCureAdapter {
 
     async getRecords() {
         await this._signal.wait(this._waitTime, x => x);
-        let records = this._reader.queryAllAsync(QueryContent.Reports);
+        let records = this._reader.queryAllAsync(QueryContent.Reports, null, true, 30000);
 
         // [
         //     { 
@@ -367,7 +367,7 @@ export class CCureAdapter {
 
         return records;
     }
-    async GetAllPermissionTableFloor() {
+    async getAllPermissionTableFloor() {
         Log.Info(`${this.constructor.name}`, `GetAllPermissionTableFloor`);
 
         await this._signal.wait(this._waitTime, x => x);
@@ -390,7 +390,7 @@ export class CCureAdapter {
 
         return records;
     }
-    async GetAllPermissionTableDoor() {
+    async getAllPermissionTableDoor() {
         Log.Info(`${this.constructor.name}`, `GetAllPermissionTableDoor`);
 
         await this._signal.wait(this._waitTime, x => x);
@@ -408,6 +408,16 @@ export class CCureAdapter {
         //         timespecId: 5209 
         //     }
         // ]
+
+        return records;
+    }
+
+    async getAllPermissionTableDoorGroup() {
+        Log.Info(`${this.constructor.name}`, `GetAllPermissionTableDoorGroup`);
+
+        await this._signal.wait(this._waitTime, x => x);
+        let records = await this._reader.queryAllAsync(QueryContent.ClearDoorGroup);
+
 
         return records;
     }
