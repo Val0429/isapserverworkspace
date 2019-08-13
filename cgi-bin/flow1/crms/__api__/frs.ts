@@ -14,7 +14,7 @@ FRSService.prototype.GetEntrances = async function(times: number = 0): Promise<{
             try {
                 await this.waitForLogin();
 
-                let url: string = `${this.makeUrl(`devicegroup`)}?sessionId=${this.sessionId}`;
+                let url: string = `${this.makeUrl(`persons/group`)}?sessionId=${this.sessionId}&page_size=1000&skip_pages=0`;
                 HttpClient.get(
                     {
                         url: url,
@@ -25,15 +25,21 @@ FRSService.prototype.GetEntrances = async function(times: number = 0): Promise<{
                             return reject(error);
                         } else if (response.statusCode !== 200) {
                             return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                        } else if (body.message.toLowerCase() !== 'ok') {
+                            return reject(body.message);
                         }
 
                         resolve(
-                            (body.results || []).map((value, index, array) => {
-                                return {
-                                    objectId: value.objectId,
-                                    name: value.name,
-                                };
-                            }),
+                            (body.group_list.groups || [])
+                                .filters((value, index, array) => {
+                                    return index > 3;
+                                })
+                                .map((value, index, array) => {
+                                    return {
+                                        objectId: value.group_id,
+                                        name: value.name,
+                                    };
+                                }),
                         );
                     },
                 );
