@@ -8,6 +8,8 @@ app.use(`/export`, express.static(`workspace/custom/assets/export`));
 import './custom/shells/index';
 import 'services/pin-code';
 
+import 'workspace/custom/services/crms-service';
+
 // import './custom/services/frs-service';
 // import './custom/schedulers/index';
 
