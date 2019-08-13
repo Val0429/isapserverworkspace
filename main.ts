@@ -1,19 +1,11 @@
 import { app } from 'core/main.gen';
-import { Config } from 'core/config.gen';
-
 import './custom/schedulers/index';
 import './custom/shells/create-index';
-
 import * as express from 'express';
 app.use('/files', express.static(`${__dirname}/custom/files`));
-
-import { ModBusService, ModbusDescriptions } from './custom/services/modbus-service/modbus-service';
-import { ModbusHelper } from './custom/services/modbus-service/modbus-helper';
-
 import {CCUREService} from './custom/modules/acs/CCURE'
 import { GetMigrationDataPermissionTable, GetMigrationDataPerson, GetOldAccessReport } from './custom/modules/acs/CCURE/Migration';
 
-let _service : CCUREService = new CCUREService();
 
 function WriteJsonFile(path,json){
     const fs = require('fs');
@@ -24,9 +16,22 @@ function WriteJsonFile(path,json){
         console.log("Save finish");
     });
 }
-let counter = 0;
+
+let _service : CCUREService = new CCUREService();
+_service.Login();
+_service.GetAllOrganizedDoorGroup().then(result=>WriteJsonFile("E://doorgroup.txt",result));
+_service.GetAllOrganizedFloorGroup().then(result=>WriteJsonFile("E://floorgroup.txt",result));
+_service.GetAllOrganizedElevatorGroup().then(result=>WriteJsonFile("E://elevatorgroup.txt",result));
+
+/*
+
+//Permission table
 GetMigrationDataPermissionTable().then(result => WriteJsonFile("E://permissionResult.txt",result));
+//Person
 GetMigrationDataPerson("E:/person.csv");
+
+//Old report
+let counter = 0;
 GetOldAccessReport({
     "server": "172.16.10.67",
     "port": 65062,
@@ -35,6 +40,8 @@ GetOldAccessReport({
     "database": "FET_CHECK_SYSTEM",
     "connectionTimeout": 15000,
 },rows=>WriteJsonFile(`E://reportList/${counter++}.txt`,rows),new Date(2019,1,1,0,0,0,0),new Date(2019,2,1,0,0,0,0));
+
+*/
 
 
 
