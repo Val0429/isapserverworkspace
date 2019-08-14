@@ -2,7 +2,7 @@ var config: Config = {
     flow: 'Flow1',
     compareFaceThreshold: 0.7,
     workerExpiredDay: 150,
-    privacyFields: ['name', 'phone', 'email'],
+    privacyFields: ['name', 'phone', 'email', 'image', 'idcard'],
     crmsWebPort: 6061,
 };
 export default config;
