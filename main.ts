@@ -1,8 +1,6 @@
 import * as express from 'express';
-import * as history from 'connect-history-api-fallback';
 import { app } from './../core/main.gen';
 
-app.use(history());
 app.use(`/export`, express.static(`workspace/custom/assets/export`));
 
 import './custom/shells/index';
