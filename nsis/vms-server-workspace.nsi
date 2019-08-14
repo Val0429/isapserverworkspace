@@ -10,7 +10,7 @@
 !define OUTPUT_NAME "vms-server"
 
 !system 'md "${PATH_OUT}"'	
-OutFile "${PATH_OUT}\${OUTPUT_NAME}-v${PRODUCT_VERSION}.exe"
+OutFile "${PATH_OUT}\${OUTPUT_NAME}-v${PRODUCT_VERSION}-workspace.exe"
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 
 InstallDir "$PROGRAMFILES64\VMS"
@@ -97,13 +97,11 @@ Function ${UN}isEmptyDir
 FunctionEnd
 
 Function ${UN}DoUninstall
-    Delete "$INSTDIR\uninstall.exe"
-
 	SetOutPath $INSTDIR
 
 	ExecWait '"uninstall.bat" /s'
 
-	Push "$INSTDIR"
+	Push "$INSTDIR\workspace"
 	Push "assets" 		;dir to exclude
 	Call ${UN}DeleteFoldersWithExclusion
 
@@ -168,16 +166,12 @@ FunctionEnd
 ; Installer Sections
 Section
     SetOutPath $INSTDIR
-
-    WriteUninstaller "$INSTDIR\uninstall.exe"
-
-	SetOutPath $INSTDIR
-	File /r *.bat
-	File /r /x license.xml /x .git /x logs /x .gitignore /x assets /x nsis ..\..\*.* 
-
-    CreateDirectory $INSTDIR\logs
 	
-	ExecWait '"install_mongo.bat" /s'
+    CreateDirectory "$INSTDIR\workspace"
+	SetOutPath "$INSTDIR\workspace"
+	File /r /x .git /x .gitignore /x assets /x nsis ..\*.* 
+
+    SetOutPath $INSTDIR
 	
 	ExecWait '"install.bat" /s'
 	
@@ -188,9 +182,9 @@ Section
 	WriteRegStr HKLM "${ARP}" "URLInfoAbout" "${PRODUCT_URL}"
 	WriteRegStr HKLM "${ARP}" "DisplayVersion" "${PRODUCT_VERSION}"
 		
-    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
-    IntFmt $0 "0x%08X" $0
-    WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
+	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+	IntFmt $0 "0x%08X" $0
+	WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
 SectionEnd
 
 

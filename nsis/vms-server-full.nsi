@@ -1,11 +1,11 @@
 !include "MUI2.nsh"
 
 !define PRODUCT_NAME "VMS Server"
-!define PRODUCT_VERSION "3.00.00"
+!define PRODUCT_VERSION "3.00.02"
 !define MONGO "mongodb-win32-x86_64-2008plus-ssl-3.6.7-rc1-signed.msi"
 !define NODE "node-v8.12.0-x64.msi"
-; !define VCREDIST "vc_redist.x64.exe"
-; !define VCREDIST2010 "vcredist_x64.exe"
+!define VCREDIST "vc_redist.x64.exe"
+!define VCREDIST2010 "vcredist_x64.exe"
 ; !define NETFRAMEWORK "NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
 !define OUTPUT_NAME "vms-server" 
 
@@ -41,17 +41,13 @@ Section "MongoDb v3.6.7" SEC02
   
 SectionEnd 
 
-; Section "MS Visual C++ Redist 2015 x64" SEC03
+Section "MS Visual C++ Redist 2015 x64" SEC03
   
-; SectionEnd 
+SectionEnd 
 
-; Section "MS Visual C++ Redist 2010 x64" SEC04
+Section "MS Visual C++ Redist 2010 x64" SEC04
   
-; SectionEnd 
-  
-; Section "Install Mongo Db Service" SEC03
-
-; SectionEnd 
+SectionEnd 
 
 ; !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -90,15 +86,15 @@ Section
 		ExecWait 'msiexec /i "${MONGO}"'
 	${EndIf}
 	
-	; ${If} ${SectionIsSelected} ${SEC03}	
-	; 	File "Release\Prerequisites\${VCREDIST}"
-	; 	ExecWait "${VCREDIST}"
-	; ${EndIf}
+	${If} ${SectionIsSelected} ${SEC03}	
+		File "Release\Prerequisites\${VCREDIST}"
+		ExecWait "${VCREDIST}"
+	${EndIf}
 
-	; ${If} ${SectionIsSelected} ${SEC04}	
-	; 	File "Release\Prerequisites\${VCREDIST2010}"
-	; 	ExecWait "${VCREDIST2010}"
-	; ${EndIf}
+	${If} ${SectionIsSelected} ${SEC04}	
+		File "Release\Prerequisites\${VCREDIST2010}"
+		ExecWait "${VCREDIST2010}"
+	${EndIf}
 
 	RMDir /r $INSTDIR\Release\Prerequisites
 	
