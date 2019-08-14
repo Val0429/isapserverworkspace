@@ -600,7 +600,7 @@ action.delete(
  * @param content
  * @param tos
  */
-export async function SendEmail(title: string, content: string, object: Email.IObject, attachments: object[] = []): Promise<void> {
+export async function SendEmail(title: string, content: string, object: Email.IObject, attachments: Email.Attachment[] = []): Promise<void> {
     try {
         if (!Config.smtp.enable) {
             throw Errors.throw(Errors.Custom, ['smtp service not enable']);
