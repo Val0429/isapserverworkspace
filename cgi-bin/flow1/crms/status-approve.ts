@@ -110,7 +110,7 @@ action.put(
                     <h4>Conducting “${work.getValue('workCategory').getValue('name')}” at “${work.getValue('workLocation')}” for “${work.getValue('company').getValue('name')}”</h4>
                     <h4>From “${DateTime.ToString(work.getValue('workStartDate'), 'MMMM Do YYYY')}” to “${DateTime.ToString(work.getValue('workEndDate'), 'MMMM Do YYYY')}” between “${DateTime.ToString(work.getValue('workStartTime'), 'HH:mm')}” and “${DateTime.ToString(work.getValue('workEndTime'), 'HH:mm')}”</h4>
                     <h4>On the day of your visit, please remember to bring this QR code</h4>
-                    <img src="qrcode.png" />
+                    <img src="cid:qrcode" />
                 </div>`;
 
             await SendEmail(
@@ -125,6 +125,7 @@ action.put(
                         filename: 'qrcode.png',
                         content: File.GetBase64Data(qrcode),
                         encoding: 'base64',
+                        cid: 'qrcode',
                     },
                 ],
             );
