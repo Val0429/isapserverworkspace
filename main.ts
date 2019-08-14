@@ -1,10 +1,16 @@
 import * as express from 'express';
 import { app } from './../core/main.gen';
+import { deployWeb } from 'helpers/deploy-web';
+import { Config } from 'core/config.gen';
 
 app.use(`/export`, express.static(`workspace/custom/assets/export`));
 
+deployWeb(`${__dirname}/../workspace/custom/web-crms`, Config.vms.crmsWebPort);
+
 import './custom/shells/index';
 import 'services/pin-code';
+
+import 'workspace/custom/services/crms-service';
 
 // import './custom/services/frs-service';
 // import './custom/schedulers/index';

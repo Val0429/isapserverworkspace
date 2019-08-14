@@ -1,11 +1,14 @@
-if not exist "%ProgramW6432%/MongoDB/log_evis" mkdir "%ProgramW6432%/MongoDB/log_evis"
-if not exist "%ProgramW6432%/MongoDB/data_evis" (
-    mkdir "%ProgramW6432%/MongoDB/data_evis"    
-    "%MONGODB_HOME%\mongod" --port 27017 --dbpath "%ProgramW6432%\MongoDB\data_evis" --logpath="%ProgramW6432%\MongoDB\log_evis\log.txt" --install --serviceName "EVIS MongoDB" --serviceDisplayName "EVIS MongoDB" --replSet rs0
-    net start "EVIS MongoDB"
-	"%MONGODB_HOME%\mongo" --port 27017 --eval "rs.initiate({_id : 'rs0', members : [{_id : 0, host : 'localhost:27017'}]})"
-	"%MONGODB_HOME%\mongo" --port 27017 --eval "while(true) {if (rs.status().ok) break;sleep(1000)};"
-) else (
-    "%MONGODB_HOME%\mongod" --port 27017 --dbpath "%ProgramW6432%\MongoDB\data_evis" --logpath="%ProgramW6432%\MongoDB\log_evis\log.txt" --install --serviceName "EVIS MongoDB" --serviceDisplayName "EVIS MongoDB" --replSet rs0
-    net start "EVIS MongoDB"    
-)
+c:
+cd \
+cd "C:\Program Files\MongoDB"
+md data_isap
+cd data_isap
+md db
+cd ..
+md log_isap
+
+cd "C:\Program Files\MongoDB\Server\3.6\bin"
+mongod --port 27017 --dbpath "C:\Program Files\MongoDB\data_isap" --logpath="C:\Program Files\MongoDB\log_isap\log.txt" --install --serviceName "iSap MongoDB" --serviceDisplayName "iSap MongoDB" --replSet rs0
+net start "iSap MongoDB"
+mongo --port 27017 --eval "rs.initiate({_id : 'rs0', members : [{_id : 0, host : 'localhost:27017'}]})"
+mongo --port 27017 --eval "while(true) {if (rs.status().ok) break;sleep(1000)};"
