@@ -220,7 +220,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
             if(!doorIsInCCure) continue;
             devices.push(door);
-            if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+            if (!ccureClearance) {
                 errors.push({ type: clearanceIsNotInCCure });
             }
             else {
@@ -238,7 +238,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
                 let { doorIsInCCure, door } = await getCCureDoor(doorid.objectId);
                 if(!doorIsInCCure) continue;
                 devices.push(door);
-                if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+                if (!ccureClearance) {
                     errors.push({ type: clearanceIsNotInCCure });
                 }
                 else {
@@ -258,7 +258,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             let { floorIsInCCure, floor } = await getCCureFloor(accesslevel.floor[0].objectId);            
             if(!floorIsInCCure) continue;
             devices.push(floor);
-            if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+            if (!ccureClearance) {
                 errors.push({ type: clearanceIsNotInCCure });
             }
             else {
@@ -277,7 +277,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
                 let { floorIsInCCure, floor } = await getCCureFloor(alFloor.objectId);            
                 if(!floorIsInCCure) continue;
                 devices.push(floor);
-                if (!ccureClearance && !errors.find(x => x.type == clearanceIsNotInCCure)) {
+                if (!ccureClearance) {
                     errors.push({ type: clearanceIsNotInCCure });
                 }
                 else {
