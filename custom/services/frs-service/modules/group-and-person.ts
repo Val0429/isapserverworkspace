@@ -89,8 +89,9 @@ FRSService.prototype.createPerson = async function(name: string, image: string, 
                 image
             }
         }, async (err, res, body) => {
-            if (err || res.statusCode !== 200) {
-                reject(err || body.toString());
+            if (err || res.statusCode !== 200 || body.message !== "ok") {
+                let message = body.message !== "ok" ? body.message : (err || body.toString());
+                reject(message);
                 if (res.statusCode === 401) {
                     this.sjRequestLogin.next(RequestLoginReason.SessionExpired);
                     await this.waitForLogin();
