@@ -63,7 +63,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     }
     console.log("access levels", al);
     if ( al.length <= 0) {
-        throw Errors.throw(Errors.CustomNotExists, [`Create Permission Table FAil Access Level is Empty!`]);
+        throw Errors.throw(Errors.CustomNotExists, [`accessLevelIsNotInSipass`]);
     }
 
     let ag = {
@@ -146,7 +146,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
         }
     }
     if ( al.length <= 0) {
-        throw Errors.throw(Errors.CustomNotExists, [`Create Permission Table FAil Access Level is Empty!`]);
+        throw Errors.throw(Errors.CustomNotExists, [`accessLevelIsNotInSipass`]);
     }
 
 	let ag = {
