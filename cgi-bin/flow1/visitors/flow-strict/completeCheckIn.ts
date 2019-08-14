@@ -12,7 +12,6 @@ import { tryCheckInWithPinCode } from './__api__/core';
 
 import { FRSService } from 'workspace/custom/services/frs-service';
 import 'workspace/custom/services/frs-service/modules/group-and-person';
-const FRS = FRSService.sharedInstance();
 
 type Invitations = Flow1Invitations;
 
@@ -33,6 +32,7 @@ export default new Action<Input, Output>({
     permission: [RoleList.Kiosk]
 })
 .post(async (data) => {
+const FRS = FRSService.sharedInstance();
     let { pin, name, liveFace } = data.inputType;
     let request = data.request;
 
@@ -68,26 +68,26 @@ export default new Action<Input, Output>({
     let acgroups = invitation.getValue("accessGroups").map( (v) => v.doorName );
     let groups = await FRS.getGroupList();
     /// 1.1)
-    let groupids: string[] = groups.reduce<string[]>( (final, value) => {
-        if (final) return final;
+    let groupids: any[] = groups.reduce<any[]>( (final, value) => {
+        //if (final) return final;
         //if (value.name === 'Visitor') return value.group_id;
-        if (acgroups.indexOf(value.name) >= 0) final.push(value.group_id);
+        if (acgroups.indexOf(value.name) >= 0) final.push({id: value.group_id, groupname: value.name});
         return final;
     }, []);
     /// 1.2)
-    // if (groupid === undefined) {
-    //     let res = await FRS.createGroup("Visitor");
-    //     groupid = res.group_id;
-    // }
+    //if (groupid === undefined) {
+    //    let res = await FRS.createGroup("Visitor");
+    //    groupid = res.group_id;
+    //}
     /// 2)
     /// 2.1)
     /// 2.2)
-    let person = await FRS.createPerson(name, liveFace, '', invitation.getValue("dates")[index].end);
+    let person = await FRS.createPerson(name, liveFace, '', invitation.getValue("dates")[index].end, groupids);
     /// 2.3)
-    for (let groupid of groupids) {
-        await FRS.applyGroupsToPerson(person.person_id, groupid);
-    }
-    //await FRS.applyGroupsToPerson(person.person_id, groupid);
+    //for (let groupid of groupids) {
+    //    await FRS.applyGroupsToPerson(person.person_id, groupid);
+    //}
+    //let rr = await FRS.applyGroupsToPerson(person.person_id, groupids);
 
     return ParseObject.toOutputJSON({
         invitation: {

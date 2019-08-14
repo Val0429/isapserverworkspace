@@ -33,6 +33,7 @@ export class FRSService {
             frs: Config.frs
         });
         this._sharedInstance.start();
+        return this._sharedInstance;
     }
 
     constructor(config: IFRSServiceConfig) {

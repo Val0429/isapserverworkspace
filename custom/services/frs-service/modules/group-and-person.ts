@@ -18,8 +18,8 @@ declare module "workspace/custom/services/frs-service" {
     interface FRSService {
         getGroupList(): Promise<IGroupInfo[]>;
         createGroup(name: string): Promise<IGroupInfo>;
-        createPerson(name: string, image: string, employeeno?: string, expirationDate?: Date): Promise<IResponsePersonInfo>;
-        applyGroupsToPerson(personId: string, groupId: string): Promise<any>;
+        createPerson(name: string, image: string, employeeno?: string, expirationDate?: Date, groups?: string[]): Promise<IResponsePersonInfo>;
+        applyGroupsToPerson(personId: string, groupId: string | string[]): Promise<any>;
     }
 }
 
@@ -67,15 +67,14 @@ FRSService.prototype.createGroup = async function(name: string, times: number = 
     }, times, "FRSService.createGroup");
 }
 
-FRSService.prototype.createPerson = async function(name: string, image: string, employeeno?: string, expirationDate?: Date, times: number = 1): Promise<IResponsePersonInfo> {
+FRSService.prototype.createPerson = async function(name: string, image: string, employeeno?: string, expirationDate?: Date, groups?: string[], times: number = 1): Promise<IResponsePersonInfo> {
     return retry<IResponsePersonInfo>( async (resolve, reject) => {
         await this.waitForLogin();
         const url: string = this.makeUrl(`frs/cgi/createperson`);
 
         const convertDateString = (date: Date): string => {
-            return `${padLeft(date.getMonth()+1, 2)}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds}`;
+            return `${padLeft(date.getMonth()+1, 2)}/${padLeft(date.getDate(), 2)}/${date.getFullYear()} ${padLeft(date.getHours(), 2)}:${padLeft(date.getMinutes(), 2)}:${padLeft(date.getSeconds(), 2)}`;
         }
-
         request({
             url, method: 'POST', json: true,
             headers: { "Content-Type": "application/json" },
@@ -84,7 +83,8 @@ FRSService.prototype.createPerson = async function(name: string, image: string, 
                 person_info: {
                     fullname: name,
                     employeeno,
-                    expiration_date: expirationDate ? undefined : convertDateString(expirationDate)
+                    expiration_date: !expirationDate ? undefined : convertDateString(expirationDate),
+		    group_list: groups
                 },
                 image
             }
@@ -102,7 +102,8 @@ FRSService.prototype.createPerson = async function(name: string, image: string, 
     }, times, "FRSService.createPerson");
 }
 
-FRSService.prototype.applyGroupsToPerson = async function(personId: string, groupId: string, times: number = 1): Promise<any> {
+FRSService.prototype.applyGroupsToPerson = async function(personId: string, groupId: string | string[], times: number = 1): Promise<any> {
+    let groupIds = typeof groupId === 'string' ? [groupId] : groupId;
     return retry<IResponsePersonInfo>( async (resolve, reject) => {
         await this.waitForLogin();
         const url: string = this.makeUrl(`frs/cgi/applypersontogroups`);
@@ -112,7 +113,7 @@ FRSService.prototype.applyGroupsToPerson = async function(personId: string, grou
             body: {
                 session_id: this.sessionId,
                 person_id: personId,
-                group_id_list: [ groupId ]
+                group_id_list: groupIds
             }
         }, async (err, res, body) => {
             if (err || res.statusCode !== 200) {
