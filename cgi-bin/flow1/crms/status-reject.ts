@@ -43,7 +43,9 @@ action.put(
                     <h4>We’re sorry to inform you that One Raffles Link has REJECTED your PTW (PTW ID #${work.getValue('ptwId')}) request.</h4>
                 </div>`;
 
-            await SendEmail(title, content, [work.getValue('contactEmail')]);
+            await SendEmail(title, content, {
+                tos: [work.getValue('contactEmail')],
+            });
 
             work.setValue('status', EWorkPermitStatus.reject);
 

@@ -55,7 +55,7 @@ export class Email {
      * @param ccs
      * @param bccs
      */
-    public async Send(subject: string, body: string, object: Email.IObject): Promise<any> {
+    public async Send(subject: string, body: string, object: Email.IObject, attachments: any[] = []): Promise<any> {
         try {
             if (!this._isInitialization) {
                 throw 'not initialization';
@@ -82,6 +82,7 @@ export class Email {
                 bcc: bcc,
                 subject: subject,
                 html: body,
+                attachments: attachments,
             });
 
             return result;
