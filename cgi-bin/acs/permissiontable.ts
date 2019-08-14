@@ -73,7 +73,8 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     };
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
     
-    let {devices, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
+    let {ccureClearance, acsAcessLevels, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
+    if(ccureClearance) checkCcureClearance(ccureClearance, acsAcessLevels, errors);
     if(errors.length>0)return {errors};
     
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
@@ -91,7 +92,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     
 
     /// 2) Output
-    return { devices, errors };
+    return { ccureClearance, acsAcessLevels, errors };
 });
 
 /********************************
@@ -155,16 +156,16 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     };
     
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
-    let {devices, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
-    if(errors.length>0)return {errors};
-    
+    let {ccureClearance, acsAcessLevels, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
+    if(ccureClearance) checkCcureClearance(ccureClearance, acsAcessLevels, errors);    
+    if(errors.length>0)return {errors};    
     
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     await siPassAdapter.putAccessGroup(ag);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
-    return {devices, errors};
+    return {ccureClearance, acsAcessLevels, errors};
 });
 
 /********************************
@@ -193,7 +194,7 @@ export default action;
 
 async function checkCCureDevices(tablename:string, accessLevels:any[]){
     let errors:any[]=[];
-    let devices=[];
+    let acsAcessLevels=[];
     let ccureClearances = await GetMigrationDataPermissionTable();    
     let ccureClearance = ccureClearances[tablename];
     console.log("ccureClearance", ccureClearance);
@@ -206,11 +207,10 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             .include("doorgroup.doors")
             .include("elevator")
             .include("floorgroup.floors")
+            .include("timeschedule")
             .first();
         let accesslevel = ParseObject.toOutputJSON(accesslevelObject);
         console.log("accesslevel", accesslevel)
-        let tsObject = await new Parse.Query(TimeSchedule).equalTo("objectId", accesslevel.timeschedule.objectId).first();
-        let timeschedule = ParseObject.toOutputJSON(tsObject);
         
         
         if(accesslevel.type=="door"){
@@ -219,14 +219,14 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             //compare content with ccure door name and timename            
             let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
             if(!doorIsInCCure) continue;
-            devices.push(door);
+            acsAcessLevels.push(accesslevel);
             if (!ccureClearance) {
                 errors.push({ type: clearanceIsNotInCCure });
             }
             else {
-                let exists = ccureClearance.find(x => x.type == "door" && x.name == door.doorname && x.timespec == timeschedule.timename);
+                let exists = ccureClearance.find(x => x.type == "door" && x.name == door.doorname && x.timespec == accesslevel.timeschedule.timename);
                 if (!exists)
-                    errors.push({ type: accessLevelIsNotInCCure, devicename: door.doorname, timename: timeschedule.timename });
+                    errors.push({ type: accessLevelIsNotInCCure, devicename: door.doorname, timename: accesslevel.timeschedule.timename });
             }
         }
 
@@ -237,15 +237,15 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
                 //compare content with ccure door name and timename                  
                 let { doorIsInCCure, door } = await getCCureDoor(doorid.objectId);
                 if(!doorIsInCCure) continue;
-                devices.push(door);
+                acsAcessLevels.push(accesslevel);
                 if (!ccureClearance) {
                     errors.push({ type: clearanceIsNotInCCure });
                 }
                 else {
                     let exists = ccureClearance.find(x => x.type == "doorGroup" && x.name == accesslevel.doorgroup.groupname &&
-                             x.timespec == timeschedule.timename && x.doors.find(y=>y.name==door.doorname));
+                             x.timespec == accesslevel.timeschedule.timename && x.doors.find(y=>y.name==door.doorname));
                     if (!exists)
-                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.doorgroup.groupname}-${door.doorname}`, timename: timeschedule.timename });
+                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.doorgroup.groupname}-${door.doorname}`, timename: accesslevel.timeschedule.timename });
                 }
                  
             }            
@@ -257,15 +257,15 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             //compare content with ccure floor name and timename            
             let { floorIsInCCure, floor } = await getCCureFloor(accesslevel.floor[0].objectId);            
             if(!floorIsInCCure) continue;
-            devices.push(floor);
+            acsAcessLevels.push(accesslevel);
             if (!ccureClearance) {
                 errors.push({ type: clearanceIsNotInCCure });
             }
             else {
                 let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.name == accesslevel.elevator.elevatorname && 
-                                x.timespec == timeschedule.timename && x.floor && x.floor.type=="floor" && x.floor.name == floor.floorname);
+                                x.timespec == accesslevel.timeschedule.timename && x.floor && x.floor.type=="floor" && x.floor.name == floor.floorname);
                 if (!exists)
-                    errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: timeschedule.timename });
+                    errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: accesslevel.timeschedule.timename });
             }
             
         }
@@ -276,21 +276,21 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             for(let alFloor of accesslevel.floor){
                 let { floorIsInCCure, floor } = await getCCureFloor(alFloor.objectId);            
                 if(!floorIsInCCure) continue;
-                devices.push(floor);
+                acsAcessLevels.push(accesslevel);
                 if (!ccureClearance) {
                     errors.push({ type: clearanceIsNotInCCure });
                 }
                 else {
                     let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.name == accesslevel.elevator.elevatorname && 
-                                    x.timespec == timeschedule.timename && x.floor  && x.floor.type=="floorGroup" && x.floors.find(y=>y.floor.name == floor.floorname));
+                                    x.timespec == accesslevel.timeschedule.timename && x.floor  && x.floor.type=="floorGroup" && x.floors.find(y=>y.floor.name == floor.floorname));
                     if (!exists)
-                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: timeschedule.timename });
+                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: accesslevel.timeschedule.timename });
                 }
             }    
             
         }
     }
-    return {devices, errors};
+    return {ccureClearance, acsAcessLevels, errors};
 
     
 }
@@ -320,4 +320,37 @@ async function getCCureFloor(floorObjectId: any) {
     let floorIsInCCure = floor.find(x=>x.floorname.length>=2 && x.system==800 && x.floorname.substring(0,2)!="D_")
     console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
     return { floorIsInCCure, floor };
+}
+function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors:any[]){
+    let accessLevelIsNotInAcs="accessLevelIsNotInAcs"
+    for(let accessRule of ccureClearance){
+        if(accessRule.type=="door" ){
+            let exists = acsAccessLevels.find(x => x.type == "door" && accessRule.name == x.door.doorname && accessRule.timespec == x.timeschedule.timename);
+            if (!exists)
+                errors.push({ type: accessLevelIsNotInAcs, devicename: accessRule.name, timename: accessRule.timespec });
+        }
+        if(accessRule.type=="doorGroup"){
+            for(let door of accessRule.doors){
+                let exists = acsAccessLevels.find(x => x.type == "doorGroup" && accessRule.name == x.doorgroup.groupname &&
+                accessRule.timespec == x.timeschedule.timename && x.doorgroup.doors.find(y=>door.name==y.doorname));
+                if (!exists)
+                    errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.name}-${door.name}`, timename: accessRule.timespec });
+            }            
+        }
+
+        if(accessRule.type=="elevatorFloor" && accessRule.floor.type=="floor"){
+                let exists = acsAccessLevels.find(x => x.type == "elevator" && x.elevator.elevatorname == accessRule.elevator.name &&
+                            accessRule.timespec == x.timeschedule.timename && x.floor.length > 0 && x.floor[0].floorname == accessRule.floor.name);
+                if (!exists)
+                    errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${accessRule.floor.name}`, timename: accessRule.timespec });
+        }
+        if(accessRule.type=="elevatorFloor" && accessRule.floor.type=="floorGroup"){
+            for(let floor of accessRule.floors){
+                let exists = acsAccessLevels.find(x => x.type == "floorGroup" && x.elevator.elevatorname == accessRule.elevator.name &&
+                accessRule.timespec == x.timeschedule.timename && x.floors.find(y=>floor.name==y.floorname));
+                if (!exists)
+                    errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${floor.name}`, timename: accessRule.timespec });
+            }
+        }
+    }
 }
