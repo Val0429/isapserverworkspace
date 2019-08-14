@@ -87,7 +87,9 @@ action.post(
                     </h4>
                 </div>`;
 
-            await SendEmail(title, content, [_input.contactEmail]);
+            await SendEmail(title, content, {
+                tos: [_input.contactEmail],
+            });
 
             let work: WorkPermit = new WorkPermit();
 
@@ -598,7 +600,7 @@ action.delete(
  * @param content
  * @param tos
  */
-export async function SendEmail(title: string, content: string, tos: string[], ccs: string[] = []): Promise<void> {
+export async function SendEmail(title: string, content: string, object: Email.IObject, attachments: object[] = []): Promise<void> {
     try {
         if (!Config.smtp.enable) {
             throw Errors.throw(Errors.Custom, ['smtp service not enable']);
@@ -617,22 +619,29 @@ export async function SendEmail(title: string, content: string, tos: string[], c
             throw Errors.throw(Errors.Custom, [e]);
         }
 
+        let tos = object.tos || [];
         tos.forEach((value, index, array) => {
             if (!Regex.IsEmail(value)) {
                 throw Errors.throw(Errors.Custom, [`can not send email to ${value}`]);
             }
         });
 
+        let ccs = object.ccs || [];
         ccs.forEach((value, index, array) => {
             if (!Regex.IsEmail(value)) {
                 throw Errors.throw(Errors.Custom, [`can not cc email to ${value}`]);
             }
         });
 
-        let result = await email.Send(title, content, {
-            tos: tos,
-            ccs: ccs,
-        });
+        let result = await email.Send(
+            title,
+            content,
+            {
+                tos: tos,
+                ccs: ccs,
+            },
+            attachments,
+        );
     } catch (e) {
         throw e;
     }
