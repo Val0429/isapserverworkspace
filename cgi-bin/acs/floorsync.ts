@@ -18,10 +18,10 @@ action.get<any, any>({}, async () => {
     
    
     let syncService = new SyncService();
-    await Promise.all([
-        syncService.syncSipassFloor(),
-        syncService.syncCcureFloor()
-    ]);
+    //await Promise.all([
+        await syncService.syncSipassFloor();
+        await syncService.syncCcureFloor();
+    //]);
       
     
 
