@@ -9,7 +9,6 @@ import { Pin } from 'services/pin-code';
 import { tryCheckInWithPinCode } from './__api__/core';
 
 import { FRSService } from 'workspace/custom/services/frs-service';
-const FRS = FRSService.sharedInstance();
 import 'workspace/custom/services/frs-service/modules/compare-face';
 
 type Invitations = Flow1Invitations;
@@ -38,6 +37,7 @@ export default new Action<Input, Output>({
     postSizeLimit: 1024*1024*10
 })
 .post(async (data) => {
+    const FRS = FRSService.sharedInstance();
     let { pin, cardImage, liveImage } = data.inputType;
 
     let { owner, invitation, result, company, visitors } = await tryCheckInWithPinCode(pin);
@@ -60,8 +60,10 @@ export default new Action<Input, Output>({
             image1: FileHelper.removeBase64Meta(cardImage),
             image2: FileHelper.removeBase64Meta(liveImage)
         });
-        score = Math.max(score, +compResult);
-    } catch(e) { throw JSON.stringify(e) }
+        score = Math.max(score, +(compResult as any).score);
+    } catch(e) {
+        throw JSON.stringify(e);
+    }
 
     eventData.score = score;
     let scoreResult = score >= Config.vms.compareFaceThreshold;

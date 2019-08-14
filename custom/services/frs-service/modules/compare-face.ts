@@ -11,12 +11,12 @@ interface ICompareFace {
 
 declare module "workspace/custom/services/frs-service" {
     interface FRSService {
-        compareFace(face: ICompareFace, times?: number): Promise<string>;
+        compareFace(face: ICompareFace, times?: number): Promise<{ result: string; score: number; }>;
     }
 }
 
-FRSService.prototype.compareFace = async function(face: ICompareFace, times: number = 0): Promise<string> {
-    return retry<string>( async (resolve, reject) => {
+FRSService.prototype.compareFace = async function(face: ICompareFace, times: number = 0): Promise<{ result: string; score: number; }> {
+    return retry<any>( async (resolve, reject) => {
         await this.waitForLogin();
         let { image1, image2 } = face;
         const url: string = this.makeUrl(`frs/cgi/compareface`);
