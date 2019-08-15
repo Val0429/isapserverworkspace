@@ -12,13 +12,15 @@ export class CCure800SqlAdapter {
 
     private sqlClient = null;
     private adodbConn = null;
-
+    private adodbConn2 = null;
     constructor() {
         var me = this;
         let dbPath=Config.ccureconnect.mdbpath || (p.dirname(__filename)+"/mdb/ccure800.mdb");
+        let dbPath2=Config.ccureconnect.mdbpath2 || (p.dirname(__filename)+"/mdb/ccure8002.mdb");
         console.log("mdbpath", dbPath);
+        console.log("mdbpath2", dbPath2);
         this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${dbPath};`);
-
+        this.adodbConn2 = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${dbPath2};`);
         // this.waitTimer = setTimeout(() => {
         //     me.doHumanResourcesSync();
         // }, 1000 * this.startDelayTime);
@@ -46,10 +48,27 @@ export class CCure800SqlAdapter {
         //     Log.Info(`${this.constructor.name}`, ex);
         // }
     }
-
+    async clearMember(tableName:string="Member"){
+        let delData = `Delete * From ${tableName}`;
+    
+            //console.log(insert);
+    
+            this.adodbConn
+                .execute(delData)
+                .then(data => {
+                    console.log(JSON.stringify(data, null, 2));
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+    
+            return null;
+    }
     async writeMember(data, ccureAccessRules:string[], customFields:any[], permission = "") {
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
-
+        await this.writeToMdb(data, ccureAccessRules, customFields, permission);        
+    }
+    async writeToMdb(data, ccureAccessRules:string[], customFields:any[], permission = "", tableName:string="Member"){
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
         
         for (let i = 0; i < ccureAccessRules.length; i++) {
@@ -159,7 +178,7 @@ export class CCure800SqlAdapter {
             }
         }
         let credential = data["Credentials"] && data["Credentials"][0]? data["Credentials"][0]:undefined;
-        let insert = `INSERT INTO Member(
+        let insert = `INSERT INTO ${tableName}(
         EmployeeNumber, PD_DateOfBirth, PD_CD_MobileNumber, CustomTextBoxControl6__CF, CustomTextBoxControl5__CF4
         ,CustomTextBoxControl5__CF3, PD_CD_Email,LastName ,PrimaryWorkgroupName ,CustomDropdownControl1__CF
         ,FirstName ,StartDate ,PhoneNumber ,CustomTextBoxControl5__CF6 ,CustomTextBoxControl5__CF2
@@ -286,7 +305,14 @@ export class CCure800SqlAdapter {
             .catch(error => {
                 console.error(error);
             });
-
+        this.adodbConn2
+        .execute(insert)
+        .then(data => {
+            console.log(JSON.stringify(data, null, 2));
+        })
+        .catch(error => {
+            console.error(error);
+        });
         return null;
     }
 }

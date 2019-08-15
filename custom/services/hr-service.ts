@@ -14,7 +14,7 @@ import { CCure800SqlAdapter } from './acs/CCure800SqlAdapter';
 import { SyncNotification } from './../models/access-control';
 import { vieMember } from '../../custom/models'
 
-import { siPassAdapter } from './acsAdapter-Manager';
+import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject, Member } from 'core/cgi-package';
 import { stringify } from 'querystring';
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
@@ -60,6 +60,7 @@ export class HRService {
 
         if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
         // if (now.getMinutes() < 70) {
+            await this.CCure800SqlAdapter.clearMember();
             let memChange = [];
             let memNew = [];
             let memOff = [];

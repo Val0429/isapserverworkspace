@@ -5,7 +5,8 @@ let config: Config = {
 	"password": "manager",
 	"database": "master",
 	"connectionTimeout": 15000,
-    "mdbpath": ""
+    mdbpath: "",
+    mdbpath2: ""
 };
 
 export default config;
@@ -27,6 +28,7 @@ export interface Config {
         idleTimeoutMillis: number;
     };
     mdbpath:string;
+    mdbpath2:string;
 }
 
 
