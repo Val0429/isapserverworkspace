@@ -41,6 +41,14 @@ export class Hanwha {
     }
 
     /**
+     * Live stream catch
+     */
+    private _liveStreamCatch$: Rx.Subject<string> = new Rx.Subject();
+    public get liveStreamCatch$(): Rx.Subject<string> {
+        return this._liveStreamCatch$;
+    }
+
+    /**
      * Live stream stop
      */
     private _liveStreamStop$: Rx.Subject<{}> = new Rx.Subject();
@@ -60,7 +68,7 @@ export class Hanwha {
             if (!this._config.ip || !Regex.IsIp(this._config.ip)) {
                 throw Base.Message.SettingIpError;
             }
-            if (!this._config.port || !Regex.IsNum(this._config.port.toString()) || this._config.port < 1 || this._config.port > 65535) {
+            if (!this._config.port || !Regex.IsPort(this._config.port.toString())) {
                 throw Base.Message.SettingPortError;
             }
         }
@@ -112,7 +120,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -124,7 +131,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(`${response.statusCode}, ${response.statusMessage}`);
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -157,7 +164,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -169,7 +175,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(`${response.statusCode}, ${response.statusMessage}`);
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -213,7 +219,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -225,7 +230,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(`${response.statusCode}, ${response.statusMessage}`);
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -258,7 +263,6 @@ export class Hanwha {
                 HttpClient.get(
                     {
                         url: url,
-                        encoding: null,
                         json: true,
                         auth: {
                             username: this._config.account,
@@ -270,7 +274,7 @@ export class Hanwha {
                         if (error) {
                             return reject(error);
                         } else if (response.statusCode !== 200) {
-                            return reject(`${response.statusCode}, ${response.statusMessage}`);
+                            return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
                         } else if (body.Error) {
                             return reject(body.Error.Details);
                         }
@@ -297,6 +301,16 @@ export class Hanwha {
         }
 
         this._liveStream$ = new Rx.Subject();
+        this._liveStreamCatch$ = new Rx.Subject();
+        this._liveStreamStop$ = new Rx.Subject();
+
+        this._liveStreamStop$.subscribe({
+            next: () => {
+                this._liveStream$.complete();
+                this._liveStreamCatch$.complete();
+                this._liveStreamStop$.complete();
+            },
+        });
 
         let next$: Rx.Subject<{}> = new Rx.Subject();
         Rx.Observable.interval(intervalSecond)
@@ -309,10 +323,11 @@ export class Hanwha {
                         let counts: Hanwha.ICount[] = await this.GetDoStatus();
 
                         this._liveStream$.next(counts);
-                        next$.next();
                     } catch (e) {
-                        this._liveStreamStop$.error(e);
+                        this._liveStreamCatch$.next(e);
                     }
+
+                    next$.next();
                 },
                 error: (e) => {
                     this._liveStream$.error(e);

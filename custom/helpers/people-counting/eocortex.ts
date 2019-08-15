@@ -227,6 +227,10 @@ export class Eocortex {
             throw Base.Message.NotInitialization;
         }
 
+        this._liveStream$ = new Rx.Subject();
+        this._liveStreamCatch$ = new Rx.Subject();
+        this._liveStreamStop$ = new Rx.Subject();
+
         this._liveStreamStop$.subscribe({
             next: () => {
                 this._liveStream$.complete();
@@ -234,8 +238,6 @@ export class Eocortex {
                 this._liveStreamStop$.complete();
             },
         });
-
-        this._liveStream$ = new Rx.Subject();
 
         let next$: Rx.Subject<{}> = new Rx.Subject();
         let queue$: Rx.Subject<{ channelId: string; date: Date }> = new Rx.Subject();
@@ -264,11 +266,11 @@ export class Eocortex {
                         ).catch((e) => {
                             throw e;
                         });
-
-                        next$.next();
                     } catch (e) {
                         this._liveStreamCatch$.next(e);
                     }
+
+                    next$.next();
                 },
                 error: (e) => {
                     this._liveStream$.error(e);

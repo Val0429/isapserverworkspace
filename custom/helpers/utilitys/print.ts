@@ -106,13 +106,17 @@ export namespace Print {
         );
     }
 
+    interface ILogOption {
+        now?: boolean;
+    }
+
     /**
      * Print log
      * @param message
      * @param error
      * @param mode
      */
-    export function Log(message: any, error: Error, mode: 'message' | 'warning' | 'info' | 'error' | 'success'): void {
+    export function Log(message: any, error: Error, mode: 'message' | 'warning' | 'info' | 'error' | 'success', options?: ILogOption): void {
         let font: FontColor = FontColor.white;
         let back: BackColor = BackColor.white;
         let title: string = 'Message';
@@ -174,6 +178,10 @@ export namespace Print {
             },
         );
 
-        Action.WriteLog.action$.next(`${date} ${title} ---> ${message} (${path})`);
+        if (options && options.now) {
+            Action.WriteLog.WriteLogs([`${date} ${title} ---> ${message} (${path})`]);
+        } else {
+            Action.WriteLog.action$.next(`${date} ${title} ---> ${message} (${path})`);
+        }
     }
 }

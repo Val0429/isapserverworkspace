@@ -34,27 +34,29 @@ export namespace Utility {
     /**
      * Interface with ip
      */
-    export interface IIp {
-        name: string;
+    export interface INetwork {
+        ifname: string;
         family: string;
-        ip: string;
+        address: string;
+        mac: string;
     }
 
     /**
      * Get ip list
      */
-    export function GetIp(): IIp[] {
+    export function GetNetwork(): INetwork[] {
         let ifaces = Os.networkInterfaces();
 
-        let ips: IIp[] = new Array<IIp>()
+        let ips: INetwork[] = new Array<INetwork>()
             .concat(
                 ...Object.keys(ifaces).map((ifname) => {
                     return ifaces[ifname].map((iface) => {
                         if ('IPv4' === iface.family && iface.internal === false) {
                             return {
-                                name: ifname,
+                                ifname: ifname,
                                 family: iface.family,
-                                ip: iface.address,
+                                address: iface.address,
+                                mac: iface.mac.toUpperCase(),
                             };
                         }
                     });
@@ -142,5 +144,107 @@ export namespace Utility {
                 data: vlaue.data,
             };
         });
+    }
+
+    let pools: { num: string[]; EN: string[]; en: string[]; symbol: string[] } = {
+        num: [...Array(10).keys()].map((value, index, array) => {
+            return String.fromCharCode(48 + value);
+        }),
+        EN: [...Array(26).keys()].map((value, index, array) => {
+            return String.fromCharCode(65 + value);
+        }),
+        en: [...Array(26).keys()].map((value, index, array) => {
+            return String.fromCharCode(97 + value);
+        }),
+        symbol: ['!', '@', '#', '$', '%', '&', '*', '+', '-', '?'],
+    };
+
+    /**
+     * Random Text
+     * @param len
+     * @param option
+     */
+    export function RandomText(len: number, option?: { num?: boolean; EN?: boolean; en?: boolean; symbol?: boolean }): string {
+        try {
+            option = {
+                ...{
+                    num: true,
+                    EN: true,
+                    en: true,
+                    symbol: true,
+                },
+                ...option,
+            };
+
+            let strs: string[] = [];
+            if (option.num) strs.push(...pools.num);
+            if (option.EN) strs.push(...pools.EN);
+            if (option.en) strs.push(...pools.en);
+            if (option.symbol) strs.push(...pools.symbol);
+
+            let str: string = [...Array(len).keys()]
+                .map((value, index, array) => {
+                    return strs[Math.floor(Math.random() * strs.length)];
+                })
+                .join('');
+
+            return str;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Math round
+     * @param x
+     * @param position
+     */
+    export function Round(x: number, position: number): number {
+        try {
+            let multiple: number = Math.pow(10, position);
+
+            return Math.round(x * multiple) / multiple;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Percentile
+     * @param datas
+     * @param percent 0-1
+     */
+    export function Percentile(datas: number[], percent: number): number {
+        try {
+            datas = JSON.parse(JSON.stringify(datas)).sort((a, b) => {
+                return a - b;
+            });
+
+            let serial: number = (datas.length - 1) * percent;
+            let i = Math.floor(serial);
+            let j = serial - i;
+
+            let percentile: number = (1 - j) * (datas[i] || 0) + j * (datas[i + 1] || 0);
+
+            return Round(percentile, 2);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Delay
+     * @param time
+     */
+    export async function Delay(time: number): Promise<void> {
+        try {
+            await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve();
+                }, time);
+            });
+        } catch (e) {
+            throw e;
+        }
     }
 }

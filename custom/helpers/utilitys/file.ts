@@ -1,5 +1,6 @@
 import * as Fs from 'fs';
 import * as Path from 'path';
+import { execFile } from 'child_process';
 import { Parser } from './';
 
 export namespace File {
@@ -123,7 +124,9 @@ export namespace File {
      */
     export function ReadFile(filename: string): Buffer {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
+
             let buffer: Buffer = Fs.readFileSync(realpath);
 
             return buffer;
@@ -138,9 +141,32 @@ export namespace File {
      */
     export function DeleteFile(filename: string): void {
         try {
+            CreateFolder(GetPath(filename));
             let realpath: string = RealPath(filename);
 
             Fs.unlinkSync(realpath);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Delete folder
+     * @param path
+     * @param recursive
+     */
+    export function DeleteFolder(path: string, recursive: boolean = true): void {
+        try {
+            CreateFolder(path);
+
+            if (recursive) {
+                let files = ReadFolder(path);
+                files.forEach((value, index, array) => {
+                    DeleteFile(`${path}/${value}`);
+                });
+            }
+
+            Fs.rmdirSync(path);
         } catch (e) {
             throw e;
         }
@@ -166,6 +192,36 @@ export namespace File {
     }
 
     /**
+     * Get file status
+     * @param filename
+     */
+    export function GetFileStatus(filename: string): Fs.Stats {
+        CreateFolder(GetPath(filename));
+        let realpath: string = RealPath(filename);
+
+        let status = Fs.statSync(realpath);
+
+        return status;
+    }
+
+    /**
+     * Get file alive
+     * @param filename
+     */
+    export function GetFileAlive(filename: string): boolean {
+        CreateFolder(GetPath(filename));
+        let realpath: string = RealPath(filename);
+
+        try {
+            Fs.accessSync(realpath);
+
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
      * File path to url
      * @param filename
      */
@@ -180,11 +236,11 @@ export namespace File {
     }
 
     /**
-     * Get file extension
+     * Get base64 data extension
      * image/jpeg、image/png、application/pdf、audio/mp4、video/mp4、video/x-ms-wmv
      * @param data
      */
-    export function GetExtension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
+    export function GetBase64Extension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
         try {
             if (data.indexOf('image/jpeg') > -1) {
                 return {
@@ -229,6 +285,20 @@ export namespace File {
             } else {
                 return undefined;
             }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get base64 data
+     * @param data
+     */
+    export function GetBase64Data(data: string) {
+        try {
+            let regex = /data:.*;base64, */;
+
+            return data.replace(regex, '');
         } catch (e) {
             throw e;
         }
