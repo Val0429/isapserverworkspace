@@ -68,9 +68,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);
         console.log("permission", permission, rid);
         if(!permission)continue;
-        if(permission.get("ccurePermissionTable")){
-            ccureAccessRules.push(permission.get("ccurePermissionTable")["permissionTableName"]);
-        }
+        ccureAccessRules.push(permission.get("tablename"));
         let newRule = {
             ObjectName: permission.get("tablename"),
             ObjectToken:  permission.get("tableid").toString(),
@@ -228,9 +226,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);        
 
         if(!permission)continue;
-        if(permission.get("ccurePermissionTable")){
-            ccureAccessRules.push(permission.get("ccurePermissionTable")["permissionTableName"]);
-        }
+        
+        ccureAccessRules.push(permission.get("tablename"));
+        
         let newRule = {
                 ObjectName: permission.get("tablename"),
                 ObjectToken: permission.get("tableid").toString(),
