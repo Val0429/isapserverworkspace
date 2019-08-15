@@ -17,20 +17,22 @@ function WriteJsonFile(path,json){
     });
 }
 
+/*
 let _service : CCUREService = new CCUREService();
 _service.Login();
-
 _service.GetAllOrganizedDoorGroup().then(result=>WriteJsonFile("E://doorgroup.txt",result));
 _service.GetAllOrganizedFloorGroup().then(result=>WriteJsonFile("E://floorgroup.txt",result));
 _service.GetAllOrganizedElevatorGroup().then(result=>WriteJsonFile("E://elevatorgroup.txt",result));
 _service.GetAllOrganizedElevatorFloor().then(result=>WriteJsonFile("E://test.txt",result));
+*/
 
-/*
+
 
 //Permission table
-GetMigrationDataPermissionTable().then(result => WriteJsonFile("E://permissionResult.txt",result));
+//GetMigrationDataPermissionTable().then(result => WriteJsonFile("E://permissionResult.txt",result));
+
 //Person
-GetMigrationDataPerson("E:/person.csv");
+//GetMigrationDataPerson("E:/person.csv");
 
 //Old report
 let counter = 0;
@@ -40,10 +42,10 @@ GetOldAccessReport({
     "user": "sa",
     "password": "manager",
     "database": "FET_CHECK_SYSTEM",
-    "connectionTimeout": 15000,
-},rows=>WriteJsonFile(`E://reportList/${counter++}.txt`,rows),new Date(2019,1,1,0,0,0,0),new Date(2019,2,1,0,0,0,0));
+    "connectionTimeout": 3000000,
+},rows=>WriteJsonFile(`E://reportList/${counter++}.txt`,rows),new Date(2019,1,1,0,0,0,0),new Date(2019,1,2,0,0,0,0));
 
-*/
+
 
 
 
