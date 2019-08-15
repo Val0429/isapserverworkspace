@@ -142,7 +142,7 @@ export class ReportService{
             let reader = readers.find(x=>x.get("readername") == record.point_name);
             //console.log("reader", reader, record.point_name);
             if(reader){
-                let at_id = await new Parse.Query(Door).equalTo("readerin.objectId", reader.get("objectId")).first();
+                let at_id = await new Parse.Query(Door).equalTo("readerin", reader).first();
                 //console.log("at_id", at_id);
                 if(at_id)  record.at_id = at_id.get('doorname');
             }
