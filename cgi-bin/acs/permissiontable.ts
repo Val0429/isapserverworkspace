@@ -75,7 +75,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     
     let {ccureClearance, acsAcessLevels, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
     if(ccureClearance) checkCcureClearance(ccureClearance, acsAcessLevels, errors);
-    if(errors.length>0)return {errors};
+    if(errors.length>0)return {ccureClearance, acsAcessLevels, errors};
     
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     let r1 = await siPassAdapter.postAccessGroup(ag);
@@ -158,7 +158,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     let accessLevels=data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x));
     let {ccureClearance, acsAcessLevels, errors} = await checkCCureDevices(data.inputType.tablename, accessLevels);
     if(ccureClearance) checkCcureClearance(ccureClearance, acsAcessLevels, errors);    
-    if(errors.length>0)return {errors};    
+    if(errors.length>0)return {ccureClearance, acsAcessLevels, errors};  
     
     Log.Info(`info`, `Sync to SiPass ${ JSON.stringify(ag) }`, data.user);
     await siPassAdapter.putAccessGroup(ag);
@@ -205,7 +205,9 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
     for (let accesslevelInput of accessLevels) {
         let accesslevelObject = await new Parse.Query(AccessLevel).equalTo("objectId", accesslevelInput.objectId)
             .include("doorgroup.doors")
-            .include("elevator")
+            .include("door")
+            .include("floor")
+            .include("elevator.floors")
             .include("floorgroup.floors")
             .include("timeschedule")
             .first();
