@@ -30,6 +30,7 @@ export const CustomFields = [
     { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF", name:"area", date:false},
     { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF", name:"workArea", date:false},
     { fieldName:"CustomDateControl1__CF_CF_CF", name:"registrationDate", date:true},
+    { fieldName:"CustomDateControl1__CF_CF", name:"birthday", date:true},
     { fieldName:"CustomDateControl1__CF", name:"resignationDate", date:true},
     { fieldName:"CustomDropdownControl2__CF", name:"carLicenseCategory", date:false},
     { fieldName:"CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF", name:"cardLicense", date:false},
