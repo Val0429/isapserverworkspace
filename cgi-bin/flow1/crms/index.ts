@@ -81,7 +81,7 @@ action.post(
             let content: string = `
                 <div style='font-family:Microsoft JhengHei UI; color: #444;'>
                     <h3>Dear ${_input.contact},</h3>
-                    <h4>One Raffles Link has send you a Pre-Registration Link (PTW #${ptwId}) for Plumbing works at ${company.getValue('name')}.</h4>
+                    <h4>One Raffles Link has send you a Pre-Registration Link (PTW #${ptwId}) for ${workCategory.getValue('name')} at ${company.getValue('name')}.</h4>
                     <h4>Please compete your registration by clicking on this link
                         <a href="${url}">${host}</a>
                     </h4>
