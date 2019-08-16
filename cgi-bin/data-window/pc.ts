@@ -38,23 +38,28 @@ action.ws(async (data) => {
 
         let counts: IPushData[] = [];
 
-        let send$: Rx.Subject<IPushData[]> = new Rx.Subject();
-        send$.debounceTime(1000).subscribe({
-            next: async (x) => {
-                try {
-                    if (_mode !== EPushMode.stop) {
-                        let _x = DataFilter(x, _mode, _id);
-                        if (_x.length > 0) {
-                            _socket.send(_x);
-                        }
-                    }
-                } catch (e) {
-                    Print.Log(e, new Error(), 'error');
-                }
-            },
-        });
+        let stop$: Rx.Subject<{}> = new Rx.Subject();
 
-        push$.subscribe({
+        let send$: Rx.Subject<IPushData[]> = new Rx.Subject();
+        send$
+            .debounceTime(1000)
+            .takeUntil(stop$)
+            .subscribe({
+                next: async (x) => {
+                    try {
+                        if (_mode !== EPushMode.stop) {
+                            let _x = DataFilter(x, _mode, _id);
+                            if (_x.length > 0) {
+                                _socket.send(_x);
+                            }
+                        }
+                    } catch (e) {
+                        Print.Log(e, new Error(), 'error');
+                    }
+                },
+            });
+
+        push$.takeUntil(stop$).subscribe({
             next: async (x) => {
                 try {
                     let count = counts.find((n) => n.areaId === x.areaId);
@@ -72,6 +77,10 @@ action.ws(async (data) => {
                     Print.Log(e, new Error(), 'error');
                 }
             },
+        });
+
+        _socket.io.on('close', (x) => {
+            stop$.next();
         });
 
         _socket.io.on('message', async (data) => {

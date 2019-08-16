@@ -46,7 +46,7 @@ action.ws(async (data) => {
         let stop$: Rx.Subject<{}> = new Rx.Subject();
 
         let send$: Rx.Subject<{}> = new Rx.Subject();
-        send$.subscribe({
+        send$.takeUntil(stop$).subscribe({
             next: async (x) => {
                 try {
                     if (_mode !== EPushMode.stop) {
@@ -76,7 +76,7 @@ action.ws(async (data) => {
                 },
             });
 
-        push$.subscribe({
+        push$.takeUntil(stop$).subscribe({
             next: async (x) => {
                 try {
                     if (!counts.find((n) => n.areaId === x.areaId)) {
