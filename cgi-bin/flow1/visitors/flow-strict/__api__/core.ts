@@ -99,7 +99,7 @@ export async function tryCheckInWithPinCode(pin: Pin): Promise<IResultTryCheckIn
         result = dates.reduce<IInvitationDateUnit>( (final, value, idx) => {
             if (final) return final;
             let start = new Date(value.start), end = new Date(value.end);
-            if (end < now) outdated = false;
+            if (end > now) outdated = false;
             if (start <= now && end > now) {
                 index = idx;
                 return value;
