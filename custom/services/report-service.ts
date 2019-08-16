@@ -111,6 +111,7 @@ export class ReportService{
     async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
         .equalTo("type", 21)
+        .equalTo("state_id", 2)
         .exists("card_no")
         .notEqualTo("card_no", "")
         .addAscending("card_no")
