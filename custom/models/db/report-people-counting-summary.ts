@@ -44,12 +44,12 @@ export interface IReportPeopleCountingSummary {
     /**
      * in 總和
      */
-    inTotal: number;
+    inTotal: string;
 
     /**
      * out 總和
      */
-    outTotal: number;
+    outTotal: string;
 }
 
 @registerSubclass()

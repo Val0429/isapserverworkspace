@@ -197,8 +197,8 @@ export class Eocortex {
                             }
 
                             resolve({
-                                in: result.result.in[0] || 0,
-                                out: result.result.out[0] || 0,
+                                in: parseInt(result.result.in[0] || 0),
+                                out: parseInt(result.result.out[0] || 0),
                             });
                         },
                     );

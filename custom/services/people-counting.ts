@@ -169,8 +169,8 @@ class Service {
                 });
 
             let prevCount: PeopleCounting.Eocortex.ICount = {
-                in: prevSummary ? prevSummary.getValue('inTotal') : 0,
-                out: prevSummary ? prevSummary.getValue('outTotal') : 0,
+                in: prevSummary ? parseInt(prevSummary.getValue('inTotal')) : 0,
+                out: prevSummary ? parseInt(prevSummary.getValue('outTotal')) : 0,
             };
 
             if (!currSummary) {
@@ -185,8 +185,8 @@ class Service {
 
             currSummary.setValue('in', count.in - prevCount.in);
             currSummary.setValue('out', count.out - prevCount.out);
-            currSummary.setValue('inTotal', count.in);
-            currSummary.setValue('outTotal', count.out);
+            currSummary.setValue('inTotal', count.in.toString());
+            currSummary.setValue('outTotal', count.out.toString());
 
             await currSummary.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
