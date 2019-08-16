@@ -26,3 +26,11 @@ export interface IIndexR {
     cameraHeight: number;
     snapshotBase64: string;
 }
+
+export interface IPcCameraIndexR {
+    objectId: string;
+    name: string;
+    mode: string;
+    type: string;
+    config: any;
+}

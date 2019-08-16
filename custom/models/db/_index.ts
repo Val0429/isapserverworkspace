@@ -4,6 +4,7 @@ export * from './action';
 export * from './base';
 export * from './camera';
 export * from './config-cms-camera';
+export * from './config-dahua-camera';
 export * from './config-eocorpex-camera';
 export * from './config-eocorpex-server';
 export * from './location-area';
