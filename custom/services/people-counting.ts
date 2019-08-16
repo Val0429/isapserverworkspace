@@ -122,12 +122,12 @@ class Service {
                 });
 
             this._devices = this.devices.filter((value, index, array) => {
-                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted') && value.getValue('camera').getValue('type') === Enum.ECameraType.eocortex;
+                return !value.getValue('floor').getValue('isDeleted') && !value.getValue('area').getValue('isDeleted');
             });
 
             this._devices.forEach((value, index, array) => {
                 let config = value.getValue('camera').getValue('config') as IDB.IConfigEocorpexCamera;
-                Print.Log(`People Counting: (${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}->${value.getValue('camera').id}->${config.server.id}), ${value.getValue('name')}, Id: ${config.id}`, new Error(), 'info');
+                Print.Log(`People Counting: (${value.getValue('floor').id}->${value.getValue('area').id}->${value.id}->${value.getValue('camera').id}), ${value.getValue('name')}, Id: ${config.id}`, new Error(), 'info');
             });
         } catch (e) {
             throw e;
@@ -386,26 +386,28 @@ class Service {
             let pcConfig = Config.peopleCounting;
 
             let groups: Service.IDeviceGroup[] = this._devices.reduce<Service.IDeviceGroup[]>((prev, curr, index, array) => {
-                let config = curr.getValue('camera').getValue('config') as IDB.IConfigEocorpexCamera;
-                let group = prev.find((value1, index1, array1) => {
-                    return value1.server.id === config.server.id;
-                });
+                if (curr.getValue('camera').getValue('type') === Enum.ECameraType.eocortex) {
+                    let config = curr.getValue('camera').getValue('config') as IDB.IConfigEocorpexCamera;
+                    let group = prev.find((value1, index1, array1) => {
+                        return value1.server.id === config.server.id;
+                    });
 
-                if (group) {
-                    group.channels.push({
-                        device: curr,
-                        id: config.id,
-                    });
-                } else {
-                    prev.push({
-                        server: config.server,
-                        channels: [
-                            {
-                                device: curr,
-                                id: config.id,
-                            },
-                        ],
-                    });
+                    if (group) {
+                        group.channels.push({
+                            device: curr,
+                            id: config.id,
+                        });
+                    } else {
+                        prev.push({
+                            server: config.server,
+                            channels: [
+                                {
+                                    device: curr,
+                                    id: config.id,
+                                },
+                            ],
+                        });
+                    }
                 }
 
                 return prev;
@@ -469,6 +471,69 @@ class Service {
 
                 this._pcs.push(pc);
             });
+
+            this._devices
+                .filter((value, index, array) => {
+                    return value.getValue('camera').getValue('type') === Enum.ECameraType.dahua;
+                })
+                .forEach((value, index, array) => {
+                    let config = value.getValue('camera').getValue('config') as IDB.IConfigDahuaCamera;
+
+                    let pc: PeopleCounting.Dahua = new PeopleCounting.Dahua();
+                    pc.config = {
+                        protocol: config.protocol,
+                        ip: config.ip,
+                        port: config.port,
+                        account: config.account,
+                        password: config.password,
+                    };
+
+                    pc.Initialization();
+
+                    let next$: Rx.Subject<{}> = new Rx.Subject();
+
+                    pc.EnableLiveSubject(pcConfig.intervalSecond * 1000);
+                    pc.liveStreamCatch$.subscribe({
+                        next: (x) => {
+                            Print.Log(x, new Error(), 'error');
+                        },
+                    });
+                    pc.liveStream$
+                        .buffer(pc.liveStream$.bufferCount(pcConfig.bufferCount).merge(Rx.Observable.interval(1000)))
+                        .zip(next$.startWith(0))
+                        .map((x) => {
+                            return x[0];
+                        })
+                        .subscribe({
+                            next: async (x) => {
+                                await Promise.all(
+                                    x.map(async (value1, index1, array1) => {
+                                        try {
+                                            this._save$.next({
+                                                device: value,
+                                                count: {
+                                                    channelId: '',
+                                                    date: new Date(),
+                                                    in: value1.in,
+                                                    out: value1.out,
+                                                },
+                                            });
+                                        } catch (e) {
+                                            Print.Log(e, new Error(), 'error');
+                                        }
+                                    }),
+                                );
+
+                                next$.next();
+                            },
+                            error: (e) => {
+                                Print.Log(e, new Error(), 'error');
+                            },
+                            complete: () => {
+                                Print.Log('Complete', new Error(), 'success');
+                            },
+                        });
+                });
         } catch (e) {
             throw e;
         }
