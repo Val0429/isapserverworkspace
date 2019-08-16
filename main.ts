@@ -42,7 +42,8 @@ GetOldAccessReport({
     "user": "sa",
     "password": "manager",
     "database": "FET_CHECK_SYSTEM",
-    "connectionTimeout": 3000000,
+    "connectionTimeout": 15000,
+    "requestTimeout": 150000
 },rows=>WriteJsonFile(`E://reportList/${counter++}.txt`,rows),new Date(2019,1,1,0,0,0,0),new Date(2019,1,2,0,0,0,0));
 
 

@@ -299,9 +299,13 @@ export async function GetOldAccessReport(config, onRaw: (rows: JSON[]) => void, 
         onRaw(result);
     }
 
-    let startTimestring: string = startDatetime.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-    let endTimestring: string = endDatetime.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    let DateTimeStringFormater = dt =>{
+        return `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+    }
 
+    let startTimestring: string = DateTimeStringFormater(startDatetime);
+    let endTimestring: string = DateTimeStringFormater(endDatetime);
+    
     _reader.queryStreamAsync(
         ReaderQueryContent.Reports,
         onRawCallback,
@@ -309,9 +313,4 @@ export async function GetOldAccessReport(config, onRaw: (rows: JSON[]) => void, 
         null,
         `R_Date_Time BETWEEN '${startTimestring}' and '${endTimestring}'`,
         false);
-
-
-
 }
-
-
