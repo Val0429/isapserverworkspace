@@ -1,5 +1,5 @@
 let config: Config = {
-	"server": "172.16.10.27",
+	"server": "172.16.10.67",
 	"port": 65062,
 	"user": "sa",
 	"password": "manager",

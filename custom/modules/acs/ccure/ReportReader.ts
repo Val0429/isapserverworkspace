@@ -40,7 +40,7 @@ export var ReaderQueryMap : IQueryMap = {};
     let keys = Object.keys(ReaderQueryContent).filter(key => !isNaN(Number(ReaderQueryContent[key])));
     for (let type in keys) {
         if (isNullOrUndefined(ReaderQueryMap[type]))
-            throw `Internal Error: <CCUREReader::setDefaultMap> Verify _ReaderQueryMap fail, please check {QueryContent.${ReaderQueryContent[type]}} again`;
+            throw `Internal Error: <ReportReader::setDefaultMap> Verify _ReaderQueryMap fail, please check {QueryContent.${ReaderQueryContent[type]}} again`;
     }
 }
 
@@ -71,12 +71,11 @@ export class ReportReader {
     }
 
     /**
-     * Return CCUREReader instance
+     * Return ReportReader instance
      */
     public static getInstance(): ReportReader {
         if (isNullOrUndefined(this._instance) === true){
             this._instance = new ReportReader();
-            const fs = require('fs');
             ReportReader._instance._signalRead.set(true);
         }
         return this._instance;
@@ -87,8 +86,8 @@ export class ReportReader {
      */
     public async connectAsync(config): Promise<void> {
         if (this._isConnected) return;
-        if (isNullOrUndefined(config) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
-        if (config.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
+        if (isNullOrUndefined(config) === true) throw `Internal Error: <ReportReader::connectAsync> config is equal null or undefined.`;
+        if (config.database === "") throw `Internal Error: <ReportReader::connectAsync> config.odbcDSN cannot be empty`;
         this.verifyIP(config.server);
         this.verifyPort(config.port);
 
@@ -102,7 +101,7 @@ export class ReportReader {
         }
         catch (err) {
             this._conn = null;
-            return Promise.reject(`Internal Error: <CCUREReader::connectAsync> Try connect error : ${err}.`);
+            return Promise.reject(`Internal Error: <ReportReader::connectAsync> Try connect error : ${err}.`);
         }
     }
 
@@ -142,8 +141,8 @@ export class ReportReader {
                                     condition?: String,
                                     isOpenquery ?: boolean): Promise<void> {
 
-        if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
-        if (isNullOrUndefined(OnDatareceived) === true) throw `Internal Error: <CCUREReader::queryStream> OnDatareceived cannot be null`;
+        if (this._isConnected === false) throw `Internal Error: <ReportReader::queryStream> No connection with SQL server`;
+        if (isNullOrUndefined(OnDatareceived) === true) throw `Internal Error: <ReportReader::queryStream> OnDatareceived cannot be null`;
 
         let queryParam: IQueryParam = ReaderQueryMap[queryContent];
 
@@ -177,8 +176,10 @@ export class ReportReader {
             }
         });
         request.on('done', result => {
+            request.pause();
             processRows();
-            if (isNullOrUndefined(queryParam.OnDone) === false) queryParam.OnDone(result, queryContent);
+            if (isNullOrUndefined(queryParam.OnDone) === false) 
+                queryParam.OnDone(result, queryContent);
         });
         request.on('error', err => {
             if (isNullOrUndefined(queryParam.OnError) === false) queryParam.OnError(err, queryContent);
@@ -203,7 +204,7 @@ export class ReportReader {
      */
     public async queryAllAsync(queryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<JSON>> {
 
-        if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
+        if (this._isConnected === false) throw `Internal Error: <ReportReader::queryStream> No connection with SQL server`;
 
         let queryParam: IQueryParam = ReaderQueryMap[queryContent];
 
@@ -318,7 +319,7 @@ export class ReportReader {
         for (let i: number = 0; i < 4; i++) {
             var num = Number(strArr[i]);
             if (isNaN(num) || num < 0 || num > 255) {
-                throw `Internal Error: <CCUREReader::verifyIP> address format error, address ip:<${address}>`;
+                throw `Internal Error: <ReportReader::verifyIP> address format error, address ip:<${address}>`;
             }
         }
     }
@@ -329,6 +330,6 @@ export class ReportReader {
      */
     protected verifyPort(p: number): void {
         if (isNaN(p) || p < 0 || p >= 65535)
-            throw `Internal Error: <CCUREReader::verifyPort> ip format error, port:<${p}>`;
+            throw `Internal Error: <ReportReader::verifyPort> ip format error, port:<${p}>`;
     }
 };
