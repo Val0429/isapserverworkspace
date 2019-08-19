@@ -2,6 +2,7 @@ import { isNullOrUndefined, isNull } from "util";
 import { toArray } from "rxjs/operator/toArray";
 import { SignalObject } from "./signalObject";
 import queryMap, { IQueryParam, QueryContent, IQueryMap } from './queryMap'
+import { Config } from "core/config.gen";
 
 enum StateCode {
     Wait = 0,
@@ -21,7 +22,7 @@ export class CCUREReader {
 
     protected _bacthCount = 1000;
 
-    protected _lastQueryTime: Date;
+    protected _lastQueryTime: number;
 
     protected _signalRead: SignalObject = new SignalObject(false);
 
@@ -42,10 +43,10 @@ export class CCUREReader {
             
                 if (err || isNullOrUndefined( data)) {
                     console.log("=>Read ReportQueryTimeSavedFile.tmp file failed");
-                    CCUREReader._instance.setLastReportQueryTime(new Date("1970-01-01T00:00:00.000"));
+                    CCUREReader._instance.setLastReportQueryTime(0);
                 }
                 else {
-                    CCUREReader._instance.setLastReportQueryTime(new Date(data.toString('utf8')));
+                    CCUREReader._instance.setLastReportQueryTime(data);
                     console.log("=>ReportQueryTimeSavedFile.tmp file was loaded!");
                 }
                 CCUREReader._instance._signalRead.set(true);
@@ -127,7 +128,15 @@ export class CCUREReader {
         queryParam.OnError = OnError;
 
         await this._signalRead.wait(10000);
-                                
+                  
+        if(queryContent == QueryContent.Reports || queryContent == QueryContent.ReportsLastUpdateTime ||queryContent == QueryContent.ReportsNewUpdate){
+            let idx : number = (await this.queryAllAsync(QueryContent.Jnl_Directory,null,true,5000))[0]["volume"];
+            if(idx % 2 == 1){
+                queryParam.dsn = Config.CCUREdsn.Jurnal;
+            } 
+            else queryParam.dsn = Config.CCUREdsn.Jurnal2;
+        }
+
         let queryCmd = this.generateQueryString(queryContent, queryParam, condition, isNullOrUndefined(isOpenquery) ? false : isOpenquery);
         if (queryContent === QueryContent.ReportsNewUpdate) this.updateReportQueryTime();
 
@@ -191,6 +200,14 @@ export class CCUREReader {
 
         await this._signalRead.wait(10000);
 
+        if(queryContent == QueryContent.Reports || queryContent == QueryContent.ReportsLastUpdateTime ||queryContent == QueryContent.ReportsNewUpdate){
+            let idx : number = (await this.queryAllAsync(QueryContent.Jnl_Directory,null,true,5000))[0]["volume"];
+            if(idx % 2 == 1){
+                queryParam.dsn = Config.CCUREdsn.Jurnal;
+            } 
+            else queryParam.dsn = Config.CCUREdsn.Jurnal2;
+        }
+
         let queryCmd = this.generateQueryString(queryContent, queryParam, condition, isNullOrUndefined(isOpenquery) ? false : isOpenquery);
         if (queryContent === QueryContent.ReportsNewUpdate) this.updateReportQueryTime();
 
@@ -213,7 +230,7 @@ export class CCUREReader {
     /**
      * Return last query report time unix timestamp
      */
-    public getLastReportQueryTime(): Date {
+    public getLastReportQueryTime(): number {
         return this._lastQueryTime;
     }
 
@@ -222,7 +239,7 @@ export class CCUREReader {
      * Please assign the value from previus time get from getLastReportQueryTime()
      * It use to avoid server restart then query duplicate data
      */
-    public setLastReportQueryTime(timeVal: Date): void {
+    public setLastReportQueryTime(timeVal: number): void {
         this._lastQueryTime = timeVal;
     }
 
@@ -231,11 +248,14 @@ export class CCUREReader {
      */
     protected updateReportQueryTime() {
         console.log(`=>Query from  ${this.getLastReportQueryTime()}`);
-        this.queryAllAsync(QueryContent.ReportsLastUpdateTime).then((resolve) => {
-            if(resolve[0]["updateTime"].toString() == this.getLastReportQueryTime().toISOString()) console.log("The same, dont changed");
+        this.queryAllAsync(QueryContent.ReportsLastUpdateTime,null,true).then((resolve) => {
+            if(resolve[0]["updateTime"] == this.getLastReportQueryTime()){
+                console.log("Newest updateTime is the same as previous, dont changed");
+                return;
+            }
             this.setLastReportQueryTime(resolve[0]["updateTime"]);
             const fs = require('fs');
-            fs.writeFile('./workspace/custom/modules/acs/CCURE/ReportQueryTimeSavedFile.tmp', this.getLastReportQueryTime().toISOString(), function (err) {
+            fs.writeFile('./workspace/custom/modules/acs/CCURE/ReportQueryTimeSavedFile.tmp',this.getLastReportQueryTime(), function (err) {
                 if (err) {
                     return console.log(err);
                 }
@@ -282,7 +302,7 @@ export class CCUREReader {
             }
     
             if (queryContent === QueryContent.ReportsNewUpdate) {
-                queryCmd += ` and PANELLOCALTZDT>''${this.getLastReportQueryTime().toISOString().replace(/T/, ' ').replace(/\..+/, '')}''`;
+                queryCmd += ` and Host_DT>''${this.getLastReportQueryTime()}''`;
             }
     
             queryCmd += `')`;

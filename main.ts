@@ -17,15 +17,22 @@ function WriteJsonFile(path,json){
     });
 }
 
-/*
+let counter = 0;
+
 let _service : CCUREService = new CCUREService();
-_service.Login();
+_service.Login().then(_=>{
+    _service.SetLastUpdateReportTime(0);
+    _service.GetNewAccessReport(rows=>WriteJsonFile(`E://reportList/${counter++}.txt`,rows));
+});
+
+
+/*
 _service.GetAllOrganizedDoorGroup().then(result=>WriteJsonFile("E://doorgroup.txt",result));
 _service.GetAllOrganizedFloorGroup().then(result=>WriteJsonFile("E://floorgroup.txt",result));
 _service.GetAllOrganizedElevatorGroup().then(result=>WriteJsonFile("E://elevatorgroup.txt",result));
 _service.GetAllOrganizedElevatorFloor().then(result=>WriteJsonFile("E://test.txt",result));
-*/
 
+*/
 
 
 //Permission table
@@ -35,7 +42,7 @@ _service.GetAllOrganizedElevatorFloor().then(result=>WriteJsonFile("E://test.txt
 //GetMigrationDataPerson("E:/person.csv");
 
 //Old report
-let counter = 0;
+/*
 GetOldAccessReport({
     "server": "172.16.10.67",
     "port": 65062,
@@ -46,7 +53,7 @@ GetOldAccessReport({
     "requestTimeout": 150000
 },rows=>WriteJsonFile(`E://reportList/${counter++}.txt`,rows),new Date(2019,1,1,0,0,0,0),new Date(2019,1,2,0,0,0,0));
 
-
+*/
 
 
 

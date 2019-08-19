@@ -1,6 +1,7 @@
 let config: Config = {
 	"CFSRV": "CFSRV",
-	"Jurnal": "JURNAL"
+    "Jurnal": "JURNAL",
+    "Jurnal2": "JURNAL2"
 };
 
 export default config;
@@ -11,4 +12,5 @@ export default config;
 export interface Config {
     CFSRV: string;
     Jurnal: string;
+    Jurnal2: string;
 }

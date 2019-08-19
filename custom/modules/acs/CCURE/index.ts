@@ -50,7 +50,7 @@ export class CCUREService {
     /**
      * Get last update report time
      */
-    public GetLastUpdateReportTime(): Date {
+    public GetLastUpdateReportTime(): number {
         return this._reader.getLastReportQueryTime();
     }
 
@@ -58,7 +58,9 @@ export class CCUREService {
      * Set last update report time
      * @param dt report time
      */
-    public SetLastUpdateReportTime(dt: Date): void {
+    public SetLastUpdateReportTime(dt: number): void {
+        console.log("Set last update report time successfule.");
+
         this._reader.setLastReportQueryTime(dt);
     }
 
