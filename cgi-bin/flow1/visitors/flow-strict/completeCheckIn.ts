@@ -90,7 +90,7 @@ const FRS = FRSService.sharedInstance();
         persons.push({
             name,
             nric: idnumber,
-            companyName: company.getValue("name"),
+            companyName: "", //company.getValue("name"),
             unitNo: unitNumber,
             vehicle: vehicleNumber,
             occupation: "",
