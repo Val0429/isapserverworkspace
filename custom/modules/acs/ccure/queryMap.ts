@@ -31,7 +31,8 @@ export enum QueryContent {
     ElevatorGroup,
     GroupMember,
     Users,
-    ObjectList
+    ObjectList,
+    Jnl_Directory
 }
 
 export interface IQueryParam {
@@ -53,54 +54,46 @@ export interface IQueryMap {
 
 var queryMap : IQueryMap = {};
 {
-    //ReportsAll
-    /**
-     * messageCode :
-     *  1002 人 - 卡 : 核可進入
-     *  1003 人 - 卡 : 拒絕進入
-     */
-    queryMap[QueryContent.Reports] = {
-        "table": "pub.journal",
-        "selector":  'JOURNALID as reportId,' +  
-                     'PERSON1EUID as personId,'+
-                     'PERSON1FULLNAME as personName,'+
-                     'CARDNUMBER as cardNum,'+
-                     'OBJECT1EUID as doorId,'+
-                     'OBJECT1NAME as doorName,'+
-                     'OBJECT2EUID as apcId,'+
-                     'OBJECT2NAME as apcName,'+
-                     'MESSAGECODEIDX as messageCode,'+
-                     'MESSAGETEXT as message,'+
-                     'PANELLOCALTZDT as updateTime',
-        "dsn": Config.CCUREdsn.Jurnal,
-        "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
-    }
-
-    //ReportsNewUpdate
-    queryMap[QueryContent.ReportsNewUpdate] = {
-        "table": "pub.journal",
-        "selector": 'JOURNALID as reportId,' +  
-                     'PERSON1EUID as personId,'+
-                     'PERSON1FULLNAME as personName,'+
-                     'CARDNUMBER as cardNum,'+
-                     'OBJECT1EUID as doorId,'+
-                     'OBJECT1NAME as doorName,'+
-                     'OBJECT2EUID as apcId,'+
-                     'OBJECT2NAME as apcName,'+
-                     'MESSAGECODEIDX as messageCode,'+
-                     'MESSAGETEXT as message,'+
-                     'PANELLOCALTZDT as updateTime',
-        "dsn": Config.CCUREdsn.Jurnal,
-        "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
+    queryMap[QueryContent.Jnl_Directory] = {
+        "table": "pub.jnl_Directory",
+        "selector": "MAX(Volume) as volume",
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //ReportsLastUpdateTime
     queryMap[QueryContent.ReportsLastUpdateTime] = {
-        "table": "pub.journal",
-        "selector": "MAX(PANELLOCALTZDT) as updateTime",
-        "dsn": Config.CCUREdsn.Jurnal,
-        "condition": "MESSAGECODEIDX = 1002 or MESSAGECODEIDX = 1003"
+        "table": "pub.journ",
+        "selector": "MAX(Host_DT) as updateTime",
+        "condition": "Msg_Code = 2"
     }
+
+    //ReportsAll
+    /**
+     */
+    queryMap[QueryContent.Reports] = {
+        "table": "pub.journ",
+        "selector":  'Msg_Code as msgCode,'+
+                     'User_PID as personId,'+
+                     'Txt_Data2 as name,'+
+                     'Int_Data4 as cardNumber,'+
+                     'Int_Data1 as doorId,'+
+                     'Host_DT as updateTime',
+        "condition": "Msg_Code = 2"
+    }
+
+    //ReportsNewUpdate
+    queryMap[QueryContent.ReportsNewUpdate] = {
+        "table": "pub.journ",
+        "selector":  'Msg_Code as msgCode,'+
+                     'User_PID as personId,'+
+                     'Txt_Data2 as name,'+
+                     'Int_Data4 as cardNumber,'+
+                     'Int_Data1 as doorId,'+
+                     'Host_DT as updateTime',
+        "condition": "Msg_Code = 2"
+    }
+
+    
 
     //BadgeLayout
     queryMap[QueryContent.BadgeLayout] = {
