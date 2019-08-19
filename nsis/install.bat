@@ -1,1 +1,1 @@
-npm run install-windows-service
+npx winser -i -s -a --startwithnpm --name isap-vms-service --displayname "iSap VMS Service" --description "iSap VMS Service"

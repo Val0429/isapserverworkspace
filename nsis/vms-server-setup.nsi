@@ -4,12 +4,14 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "VMS Server"
-!define PRODUCT_VERSION "2.0.0"
+!define PRODUCT_VERSION "3.0.0"
 !define PRODUCT_PUBLISHER "iSAP Solution"
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
 !define ARP "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define OUTPUT_NAME "vms-server-setup"
+!define MONGO_CONFIG "vms_mongo.cfg"
+!define TEMP_FOLDER "$TEMP\${PRODUCT_NAME}"
 
 # define name of installer
 !system 'md "${PATH_OUT}"'	
@@ -19,10 +21,96 @@ Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 # define installation directory
 InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 
+!macro BackupFile FILE_DIR FILE BACKUP_TO
+ IfFileExists "${BACKUP_TO}\*.*" +2
+  CreateDirectory "${BACKUP_TO}"
+ IfFileExists "${FILE_DIR}\${FILE}" 0 +2
+  Rename "${FILE_DIR}\${FILE}" "${BACKUP_TO}\${FILE}"
+!macroend
+
+!macro RestoreFile BUP_DIR FILE RESTORE_TO
+ IfFileExists "${BUP_DIR}\${FILE}" 0 +3
+  Delete "${RESTORE_TO}\${FILE}"
+  Rename "${BUP_DIR}\${FILE}" "${RESTORE_TO}\${FILE}"
+!macroend
+
 !macro DoUninstall UN
+Function ${UN}DeleteFoldersWithExclusion
+    Exch $R0 ; exclude dir
+    Exch
+    Exch $R1 ; route dir
+    Push $R2
+    Push $R3
+ 
+    ClearErrors
+    FindFirst $R3 $R2 "$R1\*.*"
+ 
+    Top:
+        StrCmp $R2 "." Next
+        StrCmp $R2 ".." Next
+        StrCmp $R2 $R0 Next
+        IfFileExists "$R1\$R2\*.*" Jump DeleteFile
+    
+    Jump:
+        Push '$R1\$R2'
+        Push '$R0'
+        Call ${UN}DeleteFoldersWithExclusion
+    
+        Push "$R1\$R2" 
+        Call ${UN}isEmptyDir
+        Pop $0    
+        StrCmp $0 1 RmD Next
+    
+    RmD:
+        RMDir /r $R1\$R2
+        Goto Next
+    
+    DeleteFile:
+        Delete '$R1\$R2'
+    
+    Next:
+        ClearErrors
+        FindNext $R3 $R2
+        IfErrors Exit
+        Goto Top
+    
+    Exit:
+        FindClose $R3
+    
+    Pop $R3
+    Pop $R2
+    Pop $R1
+    Pop $R0
+FunctionEnd
+
+Function ${UN}isEmptyDir
+    # Stack ->                    # Stack: <directory>
+    Exch $0                       # Stack: $0
+    Push $1                       # Stack: $1, $0
+    FindFirst $0 $1 "$0\*.*"
+    strcmp $1 "." 0 _notempty
+        FindNext $0 $1
+        strcmp $1 ".." 0 _notempty
+        ClearErrors
+        FindNext $0 $1
+        IfErrors 0 _notempty
+            FindClose $0
+            Pop $1                  # Stack: $0
+            StrCpy $0 1
+            Exch $0                 # Stack: 1 (true)
+            goto _end
+        _notempty:
+        FindClose $0
+        Pop $1                   # Stack: $0
+        StrCpy $0 0
+        Exch $0                  # Stack: 0 (false)
+    _end:
+FunctionEnd
+
+
 Function ${UN}DoUninstall
 	#0, get old installation folder
-	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+	ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" "" 
 	
 	# first, delete the uninstaller
     Delete "$R1\uninstall.exe"
@@ -34,8 +122,10 @@ Function ${UN}DoUninstall
 	# third, remove services	
 	ExecWait '"uninstall.bat" /s'
 	
-	# now delete installed files
-	RMDir /r $R1
+	# now delete installed files	
+  Push "$R1"
+	Push "assets" 		;dir to exclude
+	Call ${UN}DeleteFoldersWithExclusion
 	
 	# remove registry info
 	DeleteRegKey HKLM "Software\${PRODUCT_NAME}"
@@ -58,6 +148,12 @@ Function .onInit
  
 ;Run the uninstaller
 uninst:
+  ReadRegStr $R1 HKLM "Software\${PRODUCT_NAME}" ""
+  ;just in case
+  RMDir /r "${TEMP_FOLDER}\server"
+  ;copy config first to temp folder
+	!insertmacro BackupFile "$R1\workspace\config\default" "mongodb.ts" "${TEMP_FOLDER}\server"
+
   ClearErrors
   Call DoUninstall
  
@@ -89,7 +185,12 @@ ShowInstDetails show
 ;Pages
 
   !insertmacro MUI_PAGE_LICENSE "License.txt"
-  ;!insertmacro MUI_PAGE_COMPONENTS 
+  !insertmacro MUI_PAGE_COMPONENTS
+ 
+
+Section "Stand alone MongoDb service" SEC04
+		
+SectionEnd 
   
 ;Section "Run npm start before installing service" SEC01
 	
@@ -124,15 +225,35 @@ Section
 	# source code
 	SetOutPath $INSTDIR
 	File /r *.bat
+	File /r *.ps1
 	File /r /x .git /x .gitignore /x nsis ..\..\*.* 
+
+
+  #create mongo config
+  ExecWait 'Powershell -NoProfile -ExecutionPolicy Bypass -file "$INSTDIR\add_config.ps1"'
+  
+  IfFileExists "$PROGRAMFILES64\MongoDB\${MONGO_CONFIG}" installMongo moveFile
+  moveFile:
+  Rename "$TEMP\${MONGO_CONFIG}" "$PROGRAMFILES64\MongoDB\${MONGO_CONFIG}" 
+  installMongo:
+	#install mongo service
+  ExecWait '"install_mongo.bat" /s'
+	${If} ${SectionIsSelected} ${SEC04}
+    #init mongo replica set
+		ExecWait '"init_mongo.bat" /s'
+	${EndIf}
 	
-	# intall mongo
-	ExecWait '"install_mongo.bat" /s'
-	
-	;${If} ${SectionIsSelected} ${SEC01}			
-	;	ExecWait '"start.bat"'
+	;${If} ${SectionIsSelected} ${SEC01}		
+  #run npm start for 1.5 minute	
+  DetailPrint "Run npm start for 1.5 minute"
+		ExecDos::exec /TIMEOUT=90000 '"start.bat"'
+  DetailPrint "Finished run npm"	
 	;${EndIf}
 	
+  #restore old config
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "mongodb.ts" "$INSTDIR\workspace\config\default"
+  
+
 	# install service
 	ExecWait '"install.bat" /s'
 	
@@ -148,6 +269,9 @@ Section
 	 IntFmt $0 "0x%08X" $0
 	 WriteRegDWORD HKLM "${ARP}" "EstimatedSize" "$0"
 	 
+   MessageBox MB_YESNO|MB_ICONQUESTION "Reboot is required in order to complete the installation, do you wish to reboot the system now?" IDNO +2
+   Reboot
+  
 SectionEnd
 
 UninstallText "This will uninstall ${PRODUCT_NAME}. Press uninstall to continue."
@@ -157,7 +281,7 @@ UninstallText "This will uninstall ${PRODUCT_NAME}. Press uninstall to continue.
 Section "uninstall"
   Call un.DoUninstall  
   
-  ExecWait 'net stop "Evis MongoDb"'
-  ExecWait 'sc Delete "Evis MongoDb"'
+  ExecWait 'net stop "VMS MongoDB"'
+  ExecWait 'sc Delete "VMS MongoDB"'
 # uninstaller section end
 SectionEnd
