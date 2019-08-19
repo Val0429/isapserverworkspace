@@ -84,7 +84,7 @@ FRSService.prototype.createPerson = async function(name: string, image: string, 
                     fullname: name,
                     employeeno,
                     expiration_date: !expirationDate ? undefined : convertDateString(expirationDate),
-		    group_list: groups
+		            group_list: groups
                 },
                 image
             }

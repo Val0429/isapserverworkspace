@@ -4,7 +4,8 @@ import {
     Action, Errors, Person, ParseObject, FileHelper, Config,
     Events,
     Flow1Invitations,
-    EventFlow1StrictCompleteCheckIn
+    EventFlow1StrictCompleteCheckIn,
+    Flow1Visitors
 } from 'core/cgi-package';
 
 import { Pin } from 'services/pin-code';
@@ -12,6 +13,7 @@ import { tryCheckInWithPinCode } from './__api__/core';
 
 import { FRSService } from 'workspace/custom/services/frs-service';
 import 'workspace/custom/services/frs-service/modules/group-and-person';
+import { Flow1WorkPermit } from 'workspace/custom/models/Flow1/crms/work-permit';
 
 type Invitations = Flow1Invitations;
 
@@ -20,7 +22,17 @@ let EventStrictCompleteCheckIn = EventFlow1StrictCompleteCheckIn;
 
 export interface Input {
     pin: Pin;
+
     name: string;
+    birthdate: string;
+    idnumber: string;
+    images: Parse.File[];
+    /**
+     * Raffle Link special
+     */
+    unitNumber?: string;
+    vehicleNumber?: string;
+
     liveFace: string;
 }
 
@@ -29,11 +41,12 @@ export type Output = Invitations;
 export default new Action<Input, Output>({
     loginRequired: true,
     inputType: "Input",
-    permission: [RoleList.Kiosk]
+    permission: [RoleList.Kiosk],
+    postSizeLimit: 100*1024*1024
 })
 .post(async (data) => {
 const FRS = FRSService.sharedInstance();
-    let { pin, name, liveFace } = data.inputType;
+    let { pin, name, images, idnumber, birthdate, unitNumber, vehicleNumber, liveFace } = data.inputType;
     let request = data.request;
 
     let { owner, invitation, result, company, visitors, index } = await tryCheckInWithPinCode(pin);
@@ -41,7 +54,53 @@ const FRS = FRSService.sharedInstance();
     let idx = visitors.findIndex( (value) => {
         return value.attributes.name === name;
     });
-    let visitor = visitors[idx];
+    let visitor: Flow1Visitors;
+    if (idx >= 0) visitor = visitors[idx];
+    else {
+        /// get back WorkPermit!
+        let workPermit = await new Parse.Query(Flow1WorkPermit)
+            .equalTo("invitation", invitation)
+            .include("company")
+            .first();
+        let company = workPermit.getValue("company");
+        /// add new visitor
+        visitor = new Flow1Visitors({
+            name,
+            phone: "",
+            idcard: {
+                name,
+                birthdate,
+                idnumber,
+                images
+            },
+            company,
+
+            contractorCompanyName: workPermit.getValue("contractorCompanyName"),
+            unitNumber,
+            vehicle: vehicleNumber
+        });
+        await visitor.save();
+        /// save into invitation
+        visitors.push(visitor);
+        invitation.setValue("visitors", visitors);
+        await invitation.save();
+
+        /// save backto workPermit
+        let persons = workPermit.getValue("persons");
+        persons.push({
+            name,
+            nric: idnumber,
+            companyName: company.getValue("name"),
+            unitNo: unitNumber,
+            vehicle: vehicleNumber,
+            occupation: "",
+            phone: "",
+            shift: ""
+        });
+        workPermit.setValue("persons", persons);
+        await workPermit.save();
+    }
+
     let kiosk = data.user;
     let eventData = { owner, pin, invitation, company, kiosk, visitor, visitorName: name };
 
@@ -51,7 +110,6 @@ const FRS = FRSService.sharedInstance();
         let purpose = invitation.getValue("purpose");
         Events.save(event, {owner, invitation, company, kiosk, purpose, visitor, visitorName: name});
     }
-
     saveEvent();
     
     /// enroll into FRS
