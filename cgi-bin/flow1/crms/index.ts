@@ -131,8 +131,8 @@ type InputR = {
     workCategoryId?: string;
     workType?: number;
     workPremisesUnit?: string;
+    applicantName?: string;
     contractorCompanyName?: string;
-    workContact?: string;
     personName?: string;
 };
 
@@ -251,11 +251,11 @@ action.get(
             if (_input.workPremisesUnit) {
                 query.equalTo('workPremisesUnit', _input.workPremisesUnit);
             }
+            if (_input.applicantName) {
+                query.equalTo('applicantName', _input.applicantName);
+            }
             if (_input.contractorCompanyName) {
                 query.equalTo('contractorCompanyName', _input.contractorCompanyName);
-            }
-            if (_input.workContact) {
-                query.equalTo('workContact', _input.workContact);
             }
             if (_input.personName) {
                 query.containedIn('personNames', [_input.personName]);
@@ -530,10 +530,16 @@ action.put(
                     let start: Date = new Date(new Date(date).setHours(startTime.getHours(), startTime.getMinutes(), startTime.getSeconds(), startTime.getMilliseconds()));
                     let end: Date = new Date(new Date(date).setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds()));
 
-                    dates.push({
-                        start: start,
-                        end: end,
-                    });
+                    if (startTime.getTime() >= endTime.getTime()) {
+                        end.setDate(end.getDate() + 1);
+                    }
+
+                    if (new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime() <= endDate.getTime()) {
+                        dates.push({
+                            start: start,
+                            end: end,
+                        });
+                    }
                 }
 
                 let invitation = work.getValue('invitation');

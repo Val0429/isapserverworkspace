@@ -72,10 +72,16 @@ action.put(
                 let start: Date = new Date(new Date(date).setHours(startTime.getHours(), startTime.getMinutes(), startTime.getSeconds(), startTime.getMilliseconds()));
                 let end: Date = new Date(new Date(date).setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds(), endTime.getMilliseconds()));
 
-                dates.push({
-                    start: start,
-                    end: end,
-                });
+                if (startTime.getTime() >= endTime.getTime()) {
+                    end.setDate(end.getDate() + 1);
+                }
+
+                if (new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime() <= endDate.getTime()) {
+                    dates.push({
+                        start: start,
+                        end: end,
+                    });
+                }
             }
 
             let invitation = await doInvitation(
