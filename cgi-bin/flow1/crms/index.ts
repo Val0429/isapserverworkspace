@@ -131,8 +131,8 @@ type InputR = {
     workCategoryId?: string;
     workType?: number;
     workPremisesUnit?: string;
+    applicantName?: string;
     contractorCompanyName?: string;
-    workContact?: string;
     personName?: string;
 };
 
@@ -251,11 +251,11 @@ action.get(
             if (_input.workPremisesUnit) {
                 query.equalTo('workPremisesUnit', _input.workPremisesUnit);
             }
+            if (_input.applicantName) {
+                query.equalTo('applicantName', _input.applicantName);
+            }
             if (_input.contractorCompanyName) {
                 query.equalTo('contractorCompanyName', _input.contractorCompanyName);
-            }
-            if (_input.workContact) {
-                query.equalTo('workContact', _input.workContact);
             }
             if (_input.personName) {
                 query.containedIn('personNames', [_input.personName]);
