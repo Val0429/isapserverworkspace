@@ -14,6 +14,7 @@ import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 import moment = require('moment');
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
+import { CCUREService } from '../modules/acs/CCURE';
 
 
 // import { CCUREReader } from './ccureReader'
@@ -94,8 +95,10 @@ export class AttendanceRecord {
                 });
 
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
-
-                records = await cCureAdapter.getRecords();
+                let ccureService = new CCUREService();
+                await ccureService.Login();
+                records = await ccureService.GetNewAccessReport();
+                
 
                 records.forEach( async (r) => {
                     r["rowguid"] = r["reportId"] + "";
@@ -106,7 +109,9 @@ export class AttendanceRecord {
                     r["point_no"] = r["doorId"] + "";
                     r["point_name"] = r["doorName"];
                     r["category"] = r["messageCode"];
+                    
                     //make it similar to sipass
+                    r["state_id"] = 2;
                     r["type"]=21;
                     delete r["reportId"];
                     delete r["updateTime"];
