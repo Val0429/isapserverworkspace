@@ -184,7 +184,7 @@ export class FRSManagerService {
                 throw e;
             });
 
-            let nvrs = (result.results as any[])
+            let nvrs = ((result.results as any[]) || [])
                 .map<FRSManagerService.IFRSDeviceTree>((value, index, array) => {
                     return {
                         frsId: value.objectId,
@@ -197,7 +197,7 @@ export class FRSManagerService {
                     };
                 })
                 .filter((value, index, array) => {
-                    return value;
+                    return !!value;
                 });
 
             return nvrs;
