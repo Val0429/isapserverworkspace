@@ -64,7 +64,7 @@ var queryMap : IQueryMap = {};
     queryMap[QueryContent.ReportsLastUpdateTime] = {
         "table": "pub.journ",
         "selector": "MAX(Host_DT) as updateTime",
-        "condition": "Msg_Code = 2"
+        "condition": "Int_Data2 = 64 or Int_Data2 = 128"
     }
 
     //ReportsAll
@@ -72,25 +72,25 @@ var queryMap : IQueryMap = {};
      */
     queryMap[QueryContent.Reports] = {
         "table": "pub.journ",
-        "selector":  'Msg_Code as msgCode,'+
+        "selector":  'Int_Dta2 as msgCode,'+
                      'User_PID as personId,'+
                      'Txt_Data2 as name,'+
                      'Int_Data4 as cardNumber,'+
                      'Int_Data1 as doorId,'+
                      'Host_DT as updateTime',
-        "condition": "Msg_Code = 2"
+        "condition": "Int_Data2 = 64 or Int_Data2 = 128"
     }
 
     //ReportsNewUpdate
     queryMap[QueryContent.ReportsNewUpdate] = {
         "table": "pub.journ",
-        "selector":  'Msg_Code as msgCode,'+
+        "selector":  'Int_Data2 as msgCode,'+
                      'User_PID as personId,'+
                      'Txt_Data2 as name,'+
                      'Int_Data4 as cardNumber,'+
                      'Int_Data1 as doorId,'+
                      'Host_DT as updateTime',
-        "condition": "Msg_Code = 2"
+        "condition": "Int_Data2 = 64 or Int_Data2 = 128"
     }
 
     

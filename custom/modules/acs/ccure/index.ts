@@ -1490,6 +1490,36 @@ export class CCUREService {
 
         return result;
     }
+
+    public async GetOrganizedNewReport(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ) {
+
+        let doors = await this.GetAllDoors();
+        let doorKeyMap = GetKeyMap(doors,"doorId", "doorName");
+
+        let onRawCallback = rows => {
+            let result = [];
+            for (var i = 0; i < rows.length; i++) {
+                result.push({
+                    "personId": rows[i]["personId"],
+                    "name": rows[i]["name"],
+                    "cardNumber": rows[i]["cardNumber"],
+                    "doorId": rows[i]["doorId"],
+                    "door": doorKeyMap[rows[i]["doorId"]],
+                    "updateTime":rows[i]["updateTime"],
+                    "message":rows[i]["msgCode"] == 64?"In":"Out"
+                });
+            }
+            OnRaws(result,QueryContent.ReportsNewUpdate);
+        }
+
+        this._reader.queryStreamAsync(
+            QueryContent.ReportsNewUpdate, 
+            onRawCallback, 
+            done => console.log(`=====GetOrganizedNewReport===== \ncount :${done["rowsAffected"]} \n=====Finish GetOrganizedNewReport=====`), 
+            null, 
+            null, 
+            true);
+    }
 }
 
 function GetKeyMap(jsons: JSON[], keyIDName : string, valueName : string) : Map<number,string>{
