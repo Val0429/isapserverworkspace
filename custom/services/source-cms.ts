@@ -234,18 +234,18 @@ class Service {
                                             switch (value1.getValue('mode')) {
                                                 case Enum.EDeviceMode.humanDetection:
                                                     Action.AnalysisHumanDetection.action$.next({
-                                                        type: Enum.EDeviceMode.humanDetection,
+                                                        type: 'humanDetection',
                                                         device: value1,
                                                         date: new Date(x.timestamp),
-                                                        image: temp,
+                                                        imagePath: temp,
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.heatmap:
                                                     Action.AnalysisHumanDetection.action$.next({
-                                                        type: Enum.EDeviceMode.heatmap,
+                                                        type: 'heatmap',
                                                         device: value1,
                                                         date: new Date(x.timestamp),
-                                                        image: temp,
+                                                        imagePath: temp,
                                                     });
                                                     break;
                                                 default:

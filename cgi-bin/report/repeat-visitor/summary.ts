@@ -4,7 +4,6 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import { AnalysisDemographic } from '../../../custom/actions';
 import { Report } from '../';
 
 let action = new Action({
@@ -12,6 +11,8 @@ let action = new Action({
 });
 
 export default action;
+
+const ageRanges = Utility.Str2ValueRange(Config.deviceDemographic.ageRange);
 
 /**
  * Action Create
@@ -61,7 +62,7 @@ export class ReportRepeatVisitor extends Report {
     /**
      *
      */
-    private _ageRanges = AnalysisDemographic.ageRanges;
+    private _ageRanges = ageRanges;
 
     /**
      *
@@ -103,22 +104,7 @@ export class ReportRepeatVisitor extends Report {
      */
     private GetFrequencyRange(): { min: number; max: number }[] {
         try {
-            let frequencyRange: string = Config.deviceRepeatVisitor.frequencyRange;
-
-            return frequencyRange
-                .split('-')
-                .map(Number)
-                .reduce((prev, curr, index, array) => {
-                    if (index !== 0) {
-                        curr += prev[index - 1].min;
-                        prev[index - 1].max = curr;
-                    }
-
-                    return prev.concat({
-                        min: curr,
-                        max: undefined,
-                    });
-                }, []);
+            return Utility.Str2ValueRange(Config.deviceRepeatVisitor.frequencyRange);
         } catch (e) {
             throw e;
         }

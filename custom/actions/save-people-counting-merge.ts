@@ -1,7 +1,6 @@
-import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print } from '../helpers';
+import { Print, DateTime } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
 
@@ -14,20 +13,10 @@ class Action {
     /**
      *
      */
-    private _config = Config.devicePeopleCounting;
-
-    /**
-     *
-     */
     private _action$: Rx.Subject<Action.IAction> = new Rx.Subject();
     public get action$(): Rx.Subject<Action.IAction> {
         return this._action$;
     }
-
-    /**
-     *
-     */
-    private _save$: Rx.Subject<Action.ISave> = new Rx.Subject();
 
     /**
      *
@@ -61,7 +50,6 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
-            this.EnableSaveStream();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -76,27 +64,8 @@ class Action {
      */
     private async SaveReportSummary(base: IDB.IReportBase, count: Action.ICount, type: Enum.ESummaryType): Promise<void> {
         try {
-            let currDate: Date = new Date(base.date);
-            let prevDate: Date = new Date(base.date);
-            switch (type) {
-                case Enum.ESummaryType.hour:
-                    currDate = new Date(currDate.setMinutes(0, 0, 0));
-                    prevDate = new Date(prevDate.setHours(currDate.getHours() - 1, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.day:
-                    currDate = new Date(currDate.setHours(0, 0, 0, 0));
-                    prevDate = new Date(new Date(currDate).setDate(currDate.getDate() - 1));
-                    break;
-                case Enum.ESummaryType.month:
-                    currDate = new Date(new Date(currDate.setDate(1)).setHours(0, 0, 0, 0));
-                    prevDate = new Date(new Date(currDate).setMonth(currDate.getMonth() - 1));
-                    break;
-                case Enum.ESummaryType.season:
-                    let season = Math.ceil((currDate.getMonth() + 1) / 3);
-                    currDate = new Date(new Date(new Date(currDate.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
-                    prevDate = new Date(new Date(currDate).setMonth(currDate.getMonth() - 3));
-                    break;
-            }
+            let currDate: Date = DateTime.Type2Date(base.date, type);
+            let prevDate: Date = DateTime.Type2Date(base.date, type, -1);
 
             let query: Parse.Query<IDB.ReportPeopleCountingSummary> = new Parse.Query(IDB.ReportPeopleCountingSummary).equalTo('device', base.device).equalTo('type', type);
 
@@ -142,13 +111,12 @@ class Action {
     }
 
     /**
-     * Enable save stream
+     * Enable live stream
      */
-    private EnableSaveStream(): void {
+    private EnableLiveStream(): void {
         try {
             let next$: Rx.Subject<{}> = new Rx.Subject();
-
-            this._save$
+            this._action$
                 .zip(next$.startWith(0))
                 .map((x) => {
                     return x[0];
@@ -177,74 +145,10 @@ class Action {
             Print.Log(e, new Error(), 'error');
         }
     }
-
-    /**
-     * Enable live stream
-     */
-    private EnableLiveStream(): void {
-        try {
-            let next$: Rx.Subject<{}> = new Rx.Subject();
-
-            this._action$
-                .buffer(this._action$.bufferCount(this._config.bufferCount).merge(Rx.Observable.interval(1000)))
-                .zip(next$.startWith(0))
-                .map((x) => {
-                    return x[0];
-                })
-                .subscribe({
-                    next: async (x) => {
-                        try {
-                            await Promise.all(
-                                x.map(async (value, index, array) => {
-                                    try {
-                                        let site: IDB.LocationSite = value.device.getValue('site');
-                                        let area: IDB.LocationArea = value.device.getValue('area');
-                                        let groups: IDB.DeviceGroup[] = value.device.getValue('groups');
-                                        let device: IDB.Device = value.device;
-
-                                        let base: IDB.IReportBase = {
-                                            site: site,
-                                            area: area,
-                                            device: device,
-                                            date: value.date,
-                                        };
-
-                                        let count: Action.ICount = {
-                                            in: value.in,
-                                            out: value.out,
-                                        };
-
-                                        this._save$.next({ base: base, count: count });
-                                    } catch (e) {
-                                        Print.Log(e, new Error(), 'error');
-                                    }
-                                }),
-                            );
-                        } catch (e) {
-                            Print.Log(e, new Error(), 'error');
-                        }
-
-                        next$.next();
-                    },
-                });
-        } catch (e) {
-            Print.Log(e, new Error(), 'error');
-        }
-    }
 }
 export default new Action();
 
 namespace Action {
-    /**
-     *
-     */
-    export interface IAction {
-        device: IDB.Device;
-        date: Date;
-        in: number;
-        out: number;
-    }
-
     /**
      *
      */
@@ -256,7 +160,7 @@ namespace Action {
     /**
      *
      */
-    export interface ISave {
+    export interface IAction {
         base: IDB.IReportBase;
         count: Action.ICount;
     }

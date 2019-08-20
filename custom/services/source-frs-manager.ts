@@ -208,24 +208,28 @@ class Service {
                                                 return !!value1;
                                             });
 
+                                        let isEmployee = groups.indexOf(Enum.EPeopleType.employee) > -1;
+
                                         devices.forEach((value1, index1, array1) => {
                                             let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
                                             File.WriteFile(temp, x.image);
 
                                             switch (value1.getValue('mode')) {
                                                 case Enum.EDeviceMode.peopleCounting:
-                                                    Action.DeleteFile.action$.next(temp);
-                                                    Action.AnalysisPeopleCountingSeparation.action$.next({
+                                                    Action.AnalysisPeopleCounting.action$.next({
+                                                        type: 'separation',
                                                         device: value1,
                                                         date: x.date,
-                                                        groups: groups,
+                                                        imagePath: temp,
+                                                        isEmployee: isEmployee,
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.demographic:
                                                     Action.AnalysisDemographic.action$.next({
+                                                        type: 'demographic',
                                                         device: value1,
                                                         date: x.date,
-                                                        image: temp,
+                                                        imagePath: temp,
                                                         groups: groups,
                                                     });
                                                     break;

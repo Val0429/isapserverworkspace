@@ -1,11 +1,10 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print, File, Demographic } from '../helpers';
+import { Print, File } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
-import { DeleteFile, SaveDemographic, SaveRepeatVisitor } from './';
-import saveRepeatVisitor from './save-repeat-visitor';
+import { DeleteFile, SavePeopleCountingMerge, SavePeopleCountingSeparation } from './';
 
 class Action {
     /**
@@ -16,15 +15,7 @@ class Action {
     /**
      *
      */
-    private _config = Config.deviceDemographic;
-
-    /**
-     *
-     */
-    private _demos: Action.IDemo[] = [];
-    public get demos(): Action.IDemo[] {
-        return this._demos;
-    }
+    private _config = Config.devicePeopleCounting;
 
     /**
      *
@@ -54,14 +45,6 @@ class Action {
                 },
             });
 
-        IDB.ServerDemographic.notice$.subscribe({
-            next: (x) => {
-                if (x.crud === 'c' || x.crud === 'u' || x.crud === 'd') {
-                    this._initialization$.next();
-                }
-            },
-        });
-
         Main.ready$.subscribe({
             next: async () => {
                 this._initialization$.next();
@@ -74,58 +57,9 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
-            this.Stop();
-
-            await this.Search();
-
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
-        }
-    }
-
-    /**
-     * Stop
-     */
-    private Stop(): void {
-        try {
-            this._action$.complete();
-            this._action$ = new Rx.Subject();
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Search
-     */
-    private async Search(): Promise<void> {
-        try {
-            let servers: IDB.ServerDemographic[] = await new Parse.Query(IDB.ServerDemographic).find().fail((e) => {
-                throw e;
-            });
-
-            this._demos = servers.map((value, index, array) => {
-                Print.Log(`${value.id}(server)->${value.getValue('name')}`, new Error(), 'info');
-
-                let demo: Demographic.ISap = new Demographic.ISap();
-                demo.config = {
-                    protocol: value.getValue('protocol'),
-                    ip: value.getValue('ip'),
-                    port: value.getValue('port'),
-                };
-                demo.margin = value.getValue('margin');
-
-                demo.Initialization();
-
-                return {
-                    objectId: value.id,
-                    name: value.getValue('name'),
-                    demo: demo,
-                };
-            });
-        } catch (e) {
-            throw e;
         }
     }
 
@@ -155,21 +89,6 @@ class Action {
                                         let groups: IDB.DeviceGroup[] = value.device.getValue('groups');
                                         let device: IDB.Device = value.device;
 
-                                        let demo: Action.IDemo = this._demos.find((value1, index1, array1) => {
-                                            return value1.objectId === device.getValue('demoServer').id;
-                                        });
-                                        if (!demo) {
-                                            throw `${device.id}(device) -> demographic server not found`;
-                                        }
-
-                                        buffer = File.ReadFile(value.imagePath);
-                                        DeleteFile.action$.next(value.imagePath);
-
-                                        let feature = await demo.demo.GetAnalysis(buffer);
-                                        if (!feature) {
-                                            return;
-                                        }
-
                                         let base: IDB.IReportBase = {
                                             site: site,
                                             area: area,
@@ -177,19 +96,22 @@ class Action {
                                             date: value.date,
                                         };
 
-                                        if (value.type === 'repeatVisitor') {
-                                            saveRepeatVisitor.action$.next({
+                                        if (value.type === 'merge') {
+                                            SavePeopleCountingMerge.action$.next({
                                                 base: base,
-                                                buffer: buffer,
-                                                feature: feature,
-                                                faceId: value.faceId,
+                                                count: {
+                                                    in: value.in,
+                                                    out: value.out,
+                                                },
                                             });
-                                        } else if (value.type === 'demographic') {
-                                            SaveDemographic.action$.next({
+                                        } else if (value.type === 'separation') {
+                                            buffer = File.ReadFile(value.imagePath);
+                                            DeleteFile.action$.next(value.imagePath);
+
+                                            SavePeopleCountingSeparation.action$.next({
                                                 base: base,
                                                 buffer: buffer,
-                                                feature: feature,
-                                                groups: value.groups,
+                                                isEmployee: value.isEmployee,
                                             });
                                         }
                                     } catch (e) {
@@ -217,16 +139,7 @@ namespace Action {
     /**
      *
      */
-    export interface IDemo {
-        objectId: string;
-        name: string;
-        demo: Demographic.ISap;
-    }
-
-    /**
-     *
-     */
-    export type IAction = IAction_Demographic | IAction_RepeatVisitor;
+    export type IAction = IAction_Merge | IAction_Separation;
 
     /**
      *
@@ -234,19 +147,23 @@ namespace Action {
     export interface IAction_Base {
         device: IDB.Device;
         date: Date;
-        imagePath: string;
     }
 
     /**
      *
      */
-    export interface IAction_Demographic extends IAction_Base {
-        type: 'demographic';
-        groups: Enum.EPeopleType[];
+    export interface IAction_Merge extends IAction_Base {
+        type: 'merge';
+        in: number;
+        out: number;
     }
 
-    export interface IAction_RepeatVisitor extends IAction_Base {
-        type: 'repeatVisitor';
-        faceId: string;
+    /**
+     *
+     */
+    export interface IAction_Separation extends IAction_Base {
+        type: 'separation';
+        imagePath: string;
+        isEmployee: boolean;
     }
 }

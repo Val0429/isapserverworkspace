@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, IBase } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../custom/models';
-import { Print, Utility } from '../../custom/helpers';
+import { Print, Utility, DateTime } from '../../custom/helpers';
 import * as Enum from '../../custom/enums';
 
 let action = new Action({
@@ -329,24 +329,7 @@ export class Report {
         try {
             type = type || this._type;
 
-            date = new Date(date);
-            switch (type) {
-                case Enum.ESummaryType.hour:
-                    date = new Date(date.setMinutes(0, 0, 0));
-                    break;
-                case Enum.ESummaryType.day:
-                    date = new Date(date.setHours(0, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.month:
-                    date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.season:
-                    let season = Math.ceil((date.getMonth() + 1) / 3);
-                    date = new Date(new Date(new Date(date.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
-                    break;
-            }
-
-            return date;
+            return DateTime.Type2Date(date, type);
         } catch (e) {
             throw e;
         }

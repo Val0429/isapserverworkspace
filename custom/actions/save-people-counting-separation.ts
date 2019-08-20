@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print } from '../helpers';
+import { Print, Draw, Utility, DateTime, File } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
 
@@ -19,15 +19,23 @@ class Action {
     /**
      *
      */
-    private _action$: Rx.Subject<Action.IAction> = new Rx.Subject();
-    public get action$(): Rx.Subject<Action.IAction> {
-        return this._action$;
-    }
+    private _imageConfig = this._config.output.image;
 
     /**
      *
      */
-    private _save$: Rx.Subject<Action.ISave> = new Rx.Subject();
+    private _imageSize: Draw.ISize = {
+        width: this._imageConfig.width,
+        height: this._imageConfig.height,
+    };
+
+    /**
+     *
+     */
+    private _action$: Rx.Subject<Action.IAction> = new Rx.Subject();
+    public get action$(): Rx.Subject<Action.IAction> {
+        return this._action$;
+    }
 
     /**
      *
@@ -61,7 +69,6 @@ class Action {
      */
     private async Initialization(): Promise<void> {
         try {
-            this.EnableSaveStream();
             this.EnableLiveStream();
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -74,24 +81,9 @@ class Action {
      * @param groups
      * @param type
      */
-    private async SaveReportSummary(base: IDB.IReportBase, groups: Enum.EPeopleType[], type: Enum.ESummaryType): Promise<void> {
+    private async SaveReportSummary(base: IDB.IReportBase, isEmployee: boolean, type: Enum.ESummaryType): Promise<void> {
         try {
-            let date: Date = new Date(base.date);
-            switch (type) {
-                case Enum.ESummaryType.hour:
-                    date = new Date(date.setMinutes(0, 0, 0));
-                    break;
-                case Enum.ESummaryType.day:
-                    date = new Date(date.setHours(0, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.month:
-                    date = new Date(new Date(date.setDate(1)).setHours(0, 0, 0, 0));
-                    break;
-                case Enum.ESummaryType.season:
-                    let season = Math.ceil((date.getMonth() + 1) / 3);
-                    date = new Date(new Date(new Date(date.setMonth((season - 1) * 3)).setDate(1)).setHours(0, 0, 0, 0));
-                    break;
-            }
+            let date: Date = DateTime.Type2Date(base.date, type);
 
             let reportSummary: IDB.ReportPeopleCountingSummary = await new Parse.Query(IDB.ReportPeopleCountingSummary)
                 .equalTo('device', base.device)
@@ -103,7 +95,6 @@ class Action {
                 });
 
             let isIn = base.device.getValue('direction') === Enum.EDeviceDirection.in;
-            let isEmployee = groups.indexOf(Enum.EPeopleType.employee) > -1;
 
             if (reportSummary) {
                 reportSummary.setValue('in', reportSummary.getValue('in') + (isIn ? 1 : 0));
@@ -143,84 +134,40 @@ class Action {
     }
 
     /**
-     * Enable save stream
+     * Enable live stream
      */
-    private EnableSaveStream(): void {
+    private EnableLiveStream(): void {
         try {
             let next$: Rx.Subject<{}> = new Rx.Subject();
-
-            this._save$
+            this._action$
                 .zip(next$.startWith(0))
                 .map((x) => {
                     return x[0];
                 })
                 .subscribe({
                     next: async (x) => {
+                        let buffer: Buffer = x.buffer;
+
                         try {
+                            buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
+
+                            let imageSrc: string = `images_report/people_counting/${DateTime.ToString(x.base.date, 'YYYYMMDD')}/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
+                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+
                             let tasks: Promise<any>[] = [];
 
-                            tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.hour));
-                            // tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.day));
-                            // tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.month));
-                            // tasks.push(this.SaveReportSummary(x.base, x.groups, Enum.ESummaryType.season));
+                            tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.hour));
+                            // tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.day));
+                            // tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.month));
+                            // tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.season));
 
                             await Promise.all(tasks).catch((e) => {
                                 throw e;
                             });
                         } catch (e) {
                             Print.Log(e, new Error(), 'error');
-                        }
-
-                        next$.next();
-                    },
-                });
-        } catch (e) {
-            Print.Log(e, new Error(), 'error');
-        }
-    }
-
-    /**
-     * Enable live stream
-     */
-    private EnableLiveStream(): void {
-        try {
-            let next$: Rx.Subject<{}> = new Rx.Subject();
-
-            this._action$
-                .buffer(this._action$.bufferCount(this._config.bufferCount).merge(Rx.Observable.interval(1000)))
-                .zip(next$.startWith(0))
-                .map((x) => {
-                    return x[0];
-                })
-                .subscribe({
-                    next: async (x) => {
-                        try {
-                            await Promise.all(
-                                x.map(async (value, index, array) => {
-                                    try {
-                                        let site: IDB.LocationSite = value.device.getValue('site');
-                                        let area: IDB.LocationArea = value.device.getValue('area');
-                                        let groups: IDB.DeviceGroup[] = value.device.getValue('groups');
-                                        let device: IDB.Device = value.device;
-
-                                        let base: IDB.IReportBase = {
-                                            site: site,
-                                            area: area,
-                                            device: device,
-                                            date: value.date,
-                                        };
-
-                                        this._save$.next({
-                                            base: base,
-                                            groups: value.groups,
-                                        });
-                                    } catch (e) {
-                                        Print.Log(e, new Error(), 'error');
-                                    }
-                                }),
-                            );
-                        } catch (e) {
-                            Print.Log(e, new Error(), 'error');
+                        } finally {
+                            buffer = null;
                         }
 
                         next$.next();
@@ -238,16 +185,8 @@ namespace Action {
      *
      */
     export interface IAction {
-        device: IDB.Device;
-        date: Date;
-        groups: Enum.EPeopleType[];
-    }
-
-    /**
-     *
-     */
-    export interface ISave {
         base: IDB.IReportBase;
-        groups: Enum.EPeopleType[];
+        buffer: Buffer;
+        isEmployee: boolean;
     }
 }

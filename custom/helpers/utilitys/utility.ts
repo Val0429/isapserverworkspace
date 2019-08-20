@@ -103,6 +103,9 @@ export namespace Utility {
         return str;
     }
 
+    /**
+     *
+     */
     export interface ISortData {
         key: any;
         data: string;
@@ -147,6 +150,9 @@ export namespace Utility {
         });
     }
 
+    /**
+     *
+     */
     let pools: { num: string[]; EN: string[]; en: string[]; symbol: string[] } = {
         num: [...Array(10).keys()].map((value, index, array) => {
             return String.fromCharCode(48 + value);
@@ -268,6 +274,39 @@ export namespace Utility {
             resMessage.message = e.message ? e.message : e.args ? e.args.join('; ') : e;
 
             return resMessage;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     *
+     */
+    export interface IValueRange {
+        min: number;
+        max: number;
+    }
+
+    /**
+     * String to Value Range
+     * @param str
+     */
+    export function Str2ValueRange(str: string): IValueRange[] {
+        try {
+            return str
+                .split('-')
+                .map(Number)
+                .reduce<IValueRange[]>((prev, curr, index, array) => {
+                    if (index !== 0) {
+                        curr += prev[index - 1].min;
+                        prev[index - 1].max = curr;
+                    }
+
+                    return prev.concat({
+                        min: curr,
+                        max: undefined,
+                    });
+                }, []);
         } catch (e) {
             throw e;
         }
