@@ -277,21 +277,21 @@ console.log(update);
 	delete ret["token"] ;
 	
     try {
-        let config = {
-            server: Config.ccureconnect.server,
-            port: Config.ccureconnect.port,
-            user: Config.ccureconnect.user,
-            password: Config.ccureconnect.password,
-            database: Config.ccureconnect.database,
-            requestTimeout: 50000,
-            connectionTimeout: 50000 //ms
-        }
+        // let config = {
+        //     server: Config.ccureconnect.server,
+        //     port: Config.ccureconnect.port,
+        //     user: Config.ccureconnect.user,
+        //     password: Config.ccureconnect.password,
+        //     database: Config.ccureconnect.database,
+        //     requestTimeout: 50000,
+        //     connectionTimeout: 50000 //ms
+        // }
 
         let cCure800SqlAdapter = new CCure800SqlAdapter();
         
-        await cCure800SqlAdapter.connect(config);
+        //await cCure800SqlAdapter.connect(config);
         await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
-        await cCure800SqlAdapter.disconnect();
+        //await cCure800SqlAdapter.disconnect();
     }
     catch (ex) {
         console.log(`${this.constructor.name}`, ex);
