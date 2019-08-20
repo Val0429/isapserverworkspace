@@ -85,7 +85,7 @@ export class AttendanceRecord {
                     ("0" + end.getSeconds()).slice(-2)
                 );
 
-                records.forEach( async (r) => {
+                records.forEach( (r) => {
                     let dateTime = r["date_occurred"] + r["time_occurred"];
                     r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
 
@@ -100,27 +100,22 @@ export class AttendanceRecord {
                 records = await ccureService.GetOrganizedNewReport();
                 
 
-                records.forEach( async (r) => {
-                    r["rowguid"] = r["reportId"] + "";
-                    r["date_occurred"] = moment(r["updateTime"]).format("YYYYMMDD") ;
-                    r["time_occurred"] = moment(r["updateTime"]).format('HHmmss');
-                    r["date_time_occurred"] = new Date(r["updateTime"]);
-                    r["card_no"] = r["cardNum"] + "";
-                    r["point_no"] = r["doorId"] + "";
-                    r["point_name"] = r["doorName"];
-                    r["category"] = r["messageCode"];
+                records.forEach( (r) => {
+                    let newData:any={};
+                    newData["rowguid"] = r["reportId"] + "";
+                    newData["date_occurred"] = moment(r["updateTime"]).format("YYYYMMDD") ;
+                    newData["time_occurred"] = moment(r["updateTime"]).format('HHmmss');
+                    newData["date_time_occurred"] = new Date(r["updateTime"]);
+                    newData["card_no"] = r["cardNum"] + "";
+                    newData["point_no"] = r["doorId"] + "";
+                    newData["point_name"] = r["doorName"];
+                    newData["category"] = r["messageCode"];
                     
                     //make it similar to sipass
-                    r["state_id"] = 2;
-                    r["type"]=21;
-                    delete r["reportId"];
-                    delete r["updateTime"];
-                    delete r["cardNum"];
-                    delete r["doorId"];
-                    delete r["doorName"];
-                    delete r["messageCode"];
+                    newData["state_id"] = 2;
+                    newData["type"]=21;                   
 
-                    let o = new AttendanceRecords(r);
+                    let o = new AttendanceRecords(newData);
 
                     objects.push(o);
                     
