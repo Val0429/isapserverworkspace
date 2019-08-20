@@ -97,7 +97,7 @@ export class AttendanceRecord {
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
                 let ccureService = new CCUREService();
                 await ccureService.Login();
-                records = await ccureService.GetNewAccessReport();
+                records = await ccureService.GetOrganizedNewReport();
                 
 
                 records.forEach( async (r) => {
