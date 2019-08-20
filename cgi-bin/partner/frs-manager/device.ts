@@ -15,7 +15,7 @@ export default action;
  */
 type InputC = IRequest.IPartner.IFRSManagerDevice_ObjectId | IRequest.IPartner.IFRSManagerDevice_Config;
 
-type OutputC = FRSManagerService.IFRSDevice[];
+type OutputC = FRSManagerService.IFRSDeviceTree[];
 
 action.post(
     {

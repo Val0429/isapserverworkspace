@@ -314,7 +314,7 @@ action.delete(
  * Get device list
  * @param config
  */
-export async function GetDeviceList(config: FRSManagerService.IConfig): Promise<FRSManagerService.IFRSDevice[]> {
+export async function GetDeviceList(config: FRSManagerService.IConfig): Promise<FRSManagerService.IFRSDeviceTree[]> {
     try {
         let frsManager: FRSManagerService = SourceFRSManager.frsManagers.find((value, index, array) => {
             return value.config.ip === config.ip && value.config.port === config.port;
@@ -328,7 +328,7 @@ export async function GetDeviceList(config: FRSManagerService.IConfig): Promise<
             await frsManager.Login();
         }
 
-        let devices = await frsManager.GetDeviceList();
+        let devices = await frsManager.GetDeviceTree();
 
         return devices;
     } catch (e) {
