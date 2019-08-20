@@ -267,6 +267,7 @@ action.get(
             let totalPage: number = Math.ceil(total / _paging.pageSize);
 
             let works: WorkPermit[] = await query
+                .descending('createdAt')
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
                 .include(['company', 'workCategory'])
