@@ -1491,7 +1491,7 @@ export class CCUREService {
         return result;
     }
 
-    public async GetOrganizedNewReport(OnRaws?: OnRawsCallback, OnDone ?: OnDoneCallback ) {
+    public async GetOrganizedNewReport(OnRaws: OnRawsCallback, OnDone ?: OnDoneCallback ) {
 
         let doors = await this.GetAllDoors();
         let doorKeyMap = GetKeyMap(doors,"doorId", "doorName");
