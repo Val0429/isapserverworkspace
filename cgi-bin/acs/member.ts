@@ -278,11 +278,11 @@ console.log(update);
 	
     try {
         let config = {
-            server: Config.ccuresqlserver.server,
-            port: Config.ccuresqlserver.port,
-            user: Config.ccuresqlserver.user,
-            password: Config.ccuresqlserver.password,
-            database: Config.ccuresqlserver.database,
+            server: Config.ccureconnect.server,
+            port: Config.ccureconnect.port,
+            user: Config.ccureconnect.user,
+            password: Config.ccureconnect.password,
+            database: Config.ccureconnect.database,
             requestTimeout: 50000,
             connectionTimeout: 50000 //ms
         }
