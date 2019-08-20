@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db, Parser, File, Draw, HumanDetection } from '../../../custom/helpers';
+import { Print, Db, Utility, File, Draw, HumanDetection } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { GetAnalysis } from './';
 
@@ -83,7 +83,7 @@ action.post(
             }
 
             return {
-                imageBase64: Parser.Base64Str2HtmlSrc(analysis.buffer.toString(Parser.Encoding.base64)),
+                imageBase64: Utility.Base64Str2HtmlSrc(analysis.buffer.toString(Enum.EEncoding.base64)),
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');

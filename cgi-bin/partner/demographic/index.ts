@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db, Parser, Draw, Face, Demographic } from '../../../custom/helpers';
+import { Print, Db, Utility, Draw, Face, Demographic } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 
@@ -74,7 +74,7 @@ action.post(
 
                         resMessages[index].objectId = server.id;
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -222,7 +222,7 @@ action.put(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -276,7 +276,7 @@ action.delete(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -302,7 +302,7 @@ export async function GetAnalysis(config: Demographic.ISap.IUrlConfig, margin: n
     try {
         let regex = /data:.*;base64, */;
 
-        let buffer: Buffer = Buffer.from(imageBase64.replace(regex, ''), Parser.Encoding.base64);
+        let buffer: Buffer = Buffer.from(imageBase64.replace(regex, ''), Enum.EEncoding.base64);
 
         let faces: Draw.ILocation[] = await Face.Detect(buffer).catch((e) => {
             throw e;

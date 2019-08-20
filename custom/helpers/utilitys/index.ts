@@ -4,7 +4,6 @@ export * from './draw';
 export * from './email';
 export * from './face';
 export * from './file';
-export * from './parser';
 export * from './permission';
 export * from './print';
 export * from './regex';

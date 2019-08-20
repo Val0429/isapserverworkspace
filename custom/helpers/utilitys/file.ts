@@ -1,7 +1,7 @@
 import * as Fs from 'fs';
 import * as Path from 'path';
 import { execFile } from 'child_process';
-import { Parser } from './';
+import * as Enum from '../../enums';
 
 export namespace File {
     /**
@@ -110,7 +110,7 @@ export namespace File {
             let regex = /data:.*;base64, */;
             data = data.replace(regex, '');
 
-            let buffer: Buffer = Buffer.from(data, Parser.Encoding.base64);
+            let buffer: Buffer = Buffer.from(data, Enum.EEncoding.base64);
 
             WriteFile(realpath, buffer);
         } catch (e) {

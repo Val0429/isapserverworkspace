@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db, CMSService, Draw, Parser } from '../../../custom/helpers';
+import { Print, Db, CMSService, Draw, Utility } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { GetDeviceTree } from './';
 
@@ -69,7 +69,7 @@ action.post(
             return {
                 cameraWidth: size.width,
                 cameraHeight: size.height,
-                snapshotBase64: Parser.Base64Str2HtmlSrc(snapshot.toString(Parser.Encoding.base64)),
+                snapshotBase64: Utility.Base64Str2HtmlSrc(snapshot.toString(Enum.EEncoding.base64)),
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');

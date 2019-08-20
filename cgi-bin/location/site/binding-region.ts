@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
+import { Print, File, Utility, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 
@@ -66,7 +66,7 @@ action.put(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }

@@ -1,6 +1,7 @@
 import * as HttpClient from 'request';
 import { Base } from './base';
-import { Regex, Parser } from '../../helpers';
+import { Regex } from '../../helpers';
+import * as Enum from '../../enums';
 
 export class ISap {
     /**
@@ -81,7 +82,7 @@ export class ISap {
                             url: url,
                             json: true,
                             body: {
-                                face_image64: buffer.toString(Parser.Encoding.base64),
+                                face_image64: buffer.toString(Enum.EEncoding.base64),
                                 margin: this._margin,
                             },
                         },

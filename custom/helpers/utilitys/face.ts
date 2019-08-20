@@ -1,5 +1,6 @@
 import FaceDetection from 'services/face-detection';
-import { File, Parser, Draw } from '..';
+import { File, Draw } from '..';
+import * as Enum from '../../enums';
 
 export namespace Face {
     export interface IDetectArea {
@@ -23,9 +24,9 @@ export namespace Face {
         try {
             let image: string = '';
             if (typeof source === 'string') {
-                image = File.ReadFile(source).toString(Parser.Encoding.base64);
+                image = File.ReadFile(source).toString(Enum.EEncoding.base64);
             } else {
-                image = source.toString(Parser.Encoding.base64);
+                image = source.toString(Enum.EEncoding.base64);
             }
 
             let result: IDetect = await FaceDetection.detect(image).catch((e) => {

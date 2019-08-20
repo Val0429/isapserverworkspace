@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Parser, Db } from '../../../custom/helpers';
+import { Print, Utility, Db } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 
@@ -60,7 +60,7 @@ action.post(
 
                         resMessages[index].objectId = campaign.id;
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -222,7 +222,7 @@ action.put(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -276,7 +276,7 @@ action.delete(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }

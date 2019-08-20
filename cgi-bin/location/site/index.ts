@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
+import { Print, File, Utility, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 
@@ -69,7 +69,7 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['manager not found']);
                         }
 
-                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
+                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Enum.EEncoding.base64);
 
                         let officeHour: IDB.OfficeHour = await new Parse.Query(IDB.OfficeHour)
                             .equalTo('objectId', value.officeHourId)
@@ -133,7 +133,7 @@ action.post(
                             }),
                         );
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -488,7 +488,7 @@ action.put(
                             );
                         }
                         if (value.imageBase64) {
-                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
+                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Enum.EEncoding.base64);
                             let imageSrc: string = `${extension.type}s/${site.id}_location_site_${site.createdAt.getTime()}.${extension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
 
@@ -505,7 +505,7 @@ action.put(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -557,7 +557,7 @@ action.delete(
 
                         await Delete(site);
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }

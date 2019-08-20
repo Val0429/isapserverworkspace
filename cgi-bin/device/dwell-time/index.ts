@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Parser, Db } from '../../../custom/helpers';
+import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import * as Device from '../';
@@ -41,7 +41,7 @@ action.post(
 
                         resMessages[index].objectId = device.id;
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -83,7 +83,7 @@ action.put(
                     try {
                         let device: IDB.Device = await Device.Update(Enum.EDeviceMode.dwellTime, value);
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }

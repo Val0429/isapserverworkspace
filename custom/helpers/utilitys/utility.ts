@@ -1,5 +1,6 @@
 import * as Os from 'os';
-import { File, Print } from '.';
+import { File } from '.';
+import { IResponse } from '../../models';
 
 export namespace Utility {
     /**
@@ -243,6 +244,30 @@ export namespace Utility {
                     resolve();
                 }, time);
             });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Convert base64 string to html src
+     * @param base64
+     */
+    export function Base64Str2HtmlSrc(base64: string): string {
+        return `data:image/png;base64, ${base64}`;
+    }
+
+    /**
+     * Convert e to response message
+     * @param e
+     * @param resMessage
+     */
+    export function E2ResMessage(e: any, resMessage: IResponse.IResponseMessage): IResponse.IResponseMessage {
+        try {
+            resMessage.statusCode = e.detail ? e.detail.statusCode : 500;
+            resMessage.message = e.message ? e.message : e.args ? e.args.join('; ') : e;
+
+            return resMessage;
         } catch (e) {
             throw e;
         }

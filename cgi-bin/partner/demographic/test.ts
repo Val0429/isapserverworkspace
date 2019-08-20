@@ -1,6 +1,6 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Db, Parser, File, Draw, Demographic } from '../../../custom/helpers';
+import { Print, Db, Utility, File, Draw, Demographic } from '../../../custom/helpers';
 import * as Enum from '../../../custom/enums';
 import { GetAnalysis } from './';
 
@@ -67,7 +67,7 @@ action.post(
                 return {
                     age: value.age,
                     gender: value.gender,
-                    imageBase64: Parser.Base64Str2HtmlSrc(value.buffer.toString(Parser.Encoding.base64)),
+                    imageBase64: Utility.Base64Str2HtmlSrc(value.buffer.toString(Enum.EEncoding.base64)),
                 };
             });
         } catch (e) {

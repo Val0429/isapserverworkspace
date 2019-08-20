@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Socket, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, File, Parser, Db, Draw } from '../../../custom/helpers';
+import { Print, File, Utility, Db, Draw } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 
@@ -70,8 +70,8 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate name']);
                         }
 
-                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
-                        value.mapBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.mapBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
+                        value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Enum.EEncoding.base64);
+                        value.mapBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.mapBase64), Enum.EEncoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Enum.EEncoding.base64);
 
                         area = new IDB.LocationArea();
 
@@ -101,7 +101,7 @@ action.post(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -257,14 +257,14 @@ action.put(
                         }
 
                         if (value.imageBase64) {
-                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
+                            value.imageBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Enum.EEncoding.base64);
                             let imageSrc: string = `${imageExtension.type}s/${area.id}_location_area_image_${area.createdAt.getTime()}.${imageExtension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${imageSrc}`, value.imageBase64);
 
                             area.setValue('imageSrc', imageSrc);
                         }
                         if (value.mapBase64) {
-                            value.mapBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.mapBase64), Parser.Encoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Parser.Encoding.base64);
+                            value.mapBase64 = (await Draw.Resize(Buffer.from(File.GetBase64Data(value.mapBase64), Enum.EEncoding.base64), imgSize, imgConfig.isFill, imgConfig.isTransparent)).toString(Enum.EEncoding.base64);
                             let mapSrc: string = `${mapExtension.type}s/${area.id}_location_area_map_${area.createdAt.getTime()}.${mapExtension.extension}`;
                             File.WriteBase64File(`${File.assetsPath}/${mapSrc}`, value.mapBase64);
 
@@ -278,7 +278,7 @@ action.put(
                             throw e;
                         });
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }
@@ -330,7 +330,7 @@ action.delete(
 
                         await Delete(area);
                     } catch (e) {
-                        resMessages[index] = Parser.E2ResMessage(e, resMessages[index]);
+                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
                         Print.Log(e, new Error(), 'error');
                     }

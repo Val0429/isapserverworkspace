@@ -1,5 +1,4 @@
 import * as HttpClient from 'request';
-import { Regex, Print, Parser } from '../';
 import { Base } from './base';
 
 export class Darksky {
