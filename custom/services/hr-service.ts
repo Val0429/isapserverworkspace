@@ -345,7 +345,8 @@ export class HRService {
                         try {
                             let objects = [];
                             res = await this.humanResource.getViewMember(EmpNo);
-                            let members = await new Parse.Query(vieMember).containedIn("EmpNo", res.map(x=>x["EmpNo"])).find();
+                            let vieMembers = await new Parse.Query(vieMember).containedIn("EmpNo", res.map(x=>x["EmpNo"])).find();
+                            let members = await new Parse.Query(Member).containedIn("EmployeeNumber", res.map(x=>x["EmpNo"])).find();
                             for (let record of res) {                                
 
                                 let empNo = record["EmpNo"];
@@ -411,7 +412,7 @@ export class HRService {
 
                                 Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${empNo}`);
 
-                                let obj = members.find(x=>x.get("EmpNo")== empNo);
+                                let obj = vieMembers.find(x=>x.get("EmpNo")== empNo);
                                 if (!obj) {
                                     obj = new vieMember(record);
                                     objects.push(obj);
@@ -579,8 +580,15 @@ export class HRService {
                                 console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
                                 
                                 delete d["_links"];
-                                d["_id"] = new mongo.ObjectID().toHexString();
-                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+                                //d["_id"] = new mongo.ObjectID().toHexString();
+                                //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+                                let member = members.find(x=>x.get("EmployeeNumber") == record["EmpNo"]);
+                                if(!member){
+                                    member = new Member(d);                                    
+                                }else{
+                                    member.set(d);
+                                }
+                                objects.push(member);
                                 
                             }
                             await ParseObject.saveAll(objects);
