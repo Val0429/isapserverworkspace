@@ -75,15 +75,21 @@ export class AttendanceRecord {
                 var end = now = new Date();
                 var begin = new Date(new Date().setHours( end.getHours() - 1 ));
 
-                let records = await siPassAdapter.getRecords(
-                    begin.toISOString().slice(0,10).replace(/-/g,""),
-                    ("0" + begin.getHours()).slice(-2),
-                    ("0" + begin.getMinutes()).slice(-2),
-                    ("0" + begin.getSeconds()).slice(-2),
-                    ("0" + end.getHours()).slice(-2),
-                    ("0" + end.getMinutes()).slice(-2),
-                    ("0" + end.getSeconds()).slice(-2)
-                );
+                let records = [];
+                try{                    
+                    records = await siPassAdapter.getRecords(
+                        begin.toISOString().slice(0,10).replace(/-/g,""),
+                        ("0" + begin.getHours()).slice(-2),
+                        ("0" + begin.getMinutes()).slice(-2),
+                        ("0" + begin.getSeconds()).slice(-2),
+                        ("0" + end.getHours()).slice(-2),
+                        ("0" + end.getMinutes()).slice(-2),
+                        ("0" + end.getSeconds()).slice(-2)
+                    );
+                }catch(err){
+                    console.error("cannot get data from sipass", err);
+                    records=[];
+                }
 
                 records.forEach( (r) => {
                     let dateTime = r["date_occurred"] + r["time_occurred"];
@@ -95,9 +101,15 @@ export class AttendanceRecord {
                 });
 
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
-                let ccureService = new CCUREService();
-                await ccureService.Login();
-                records = await ccureService.GetOrganizedNewReport();
+                try{
+                    let ccureService = new CCUREService();
+                    await ccureService.Login();
+                    records = await ccureService.GetOrganizedNewReport();
+                }catch(err){
+                    console.error("cannot get data from ccure", err);
+                    records=[];
+                }
+                
                 
 
                 records.forEach( (r) => {
