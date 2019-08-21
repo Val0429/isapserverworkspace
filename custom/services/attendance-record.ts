@@ -98,21 +98,17 @@ export class AttendanceRecord {
     } 
     async getSipassData() {
         Log.Info(`${this.constructor.name}`, `2.0 Query Records from SiPass`);
-                let objects=[];
-                var end = new Date();
-                var begin = new Date(new Date().setHours( end.getHours() - 1 ));
-
-                let records = [];
-                try{                    
-                    records = await siPassAdapter.getRecords(
-                        begin.toISOString().slice(0,10).replace(/-/g,""),
-                        ("0" + begin.getHours()).slice(-2),
-                        ("0" + begin.getMinutes()).slice(-2),
-                        ("0" + begin.getSeconds()).slice(-2),
-                        ("0" + end.getHours()).slice(-2),
-                        ("0" + end.getMinutes()).slice(-2),
-                        ("0" + end.getSeconds()).slice(-2)
-                    );
+        var offset = 0;// (new Date().getTimezoneOffset() / 60) * -1;
+        console.log("offset",offset);
+        let dt = new Date();
+        var end = new Date(dt.getTime() + offset*3600*1000);
+        console.log(end.toISOString());
+        var begin = new Date(dt.getTime() + (offset-1)*3600*1000);                
+        console.log(begin.toISOString());
+        let objects = [];
+        let records = [];
+        try{                    
+            records = await siPassAdapter.getRecords(begin, end);
                     console.log("sipass records",records.length);
                 let members = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.filter(x=>x.Credentials && x.Credentials.length>0).map(x=>x.Credentials[0].CardNumber)).find();
                 let readers = await new Parse.Query(Reader)

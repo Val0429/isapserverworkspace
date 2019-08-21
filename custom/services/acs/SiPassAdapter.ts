@@ -68,11 +68,11 @@ export class SiPassAdapter {
     //         }
     //     }, 5000);
     //}
-    async getRecords(date: string, bH: string, bM: string, bS: string, eH: string, eM: string, eS: string) {
+    async getRecords(begin:Date, end:Date) {
 
         await this.siPassDbService.DbConnect(this.siPassDbConnectInfo);
 
-        let rowlist = await this.siPassDbService.QueryAuditTrail({ date: date, beginHour: bH, beginMin: bM, beginSec: bS, endHour: eH, endMin: eM, endSec: eS });
+        let rowlist = await this.siPassDbService.QueryAuditTrail({ begin, end });
 
         // await this.siPassDbService.DbDisconnect(this.siPassDbConnectInfo);
 

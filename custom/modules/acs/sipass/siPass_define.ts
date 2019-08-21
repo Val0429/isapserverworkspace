@@ -341,16 +341,10 @@ export interface IConnectionInfo {
     port: string;
     //sessionId: string;
 }
-
 export interface IQueryTimeRange {
-    date: string;
-    beginHour: string; //   03
-    beginMin: string;  //   13
-    beginSec: string;  //   23
-    endHour: string;
-    endMin: string;
-    endSec: string;    
-}
+    begin:Date;
+    end:Date;
+ }
 
 export interface IDbConnectionInfo {
     server :string;
