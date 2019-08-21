@@ -1076,6 +1076,7 @@ export class CCUREService {
      *   deviceId: 3405,
          deviceName: 'NHHQ_A2-2_R3_05G043',
          doorId: 4963,
+         inOut: 'In',
          online: true,
          description: '' 
      * @param condition Query string, e.g. deviceId=3405
@@ -1525,7 +1526,7 @@ export class CCUREService {
                 true);
         }
         else {
-            let records = await this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, 15000);
+            let records = await this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, -1);
             let result = [];
             for(let record of records) {
                 result.push({
