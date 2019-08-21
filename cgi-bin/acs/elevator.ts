@@ -8,7 +8,6 @@ import {
 import { Log } from 'workspace/custom/services/log';
 import { IElevator, Elevator } from '../../custom/models'
 import licenseService from 'services/license';
-import { LocationSite, LocationArea } from 'workspace/custom/models/db/_index';
 
 var action = new Action({
     loginRequired: true,
@@ -81,31 +80,9 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let filter = data.parameters as any;
 
     let groupQuery = new Parse.Query(ElevatorGroup)
-                        .include("elevators")
-                        .include("area.site");
+                        .include("elevators");
 
-    if(filter.sitename){
-        let siteQuery = new Parse.Query(LocationSite)
-                        .matches("name", new RegExp(filter.sitename), "i");
-        let areaQuery = new Parse.Query(LocationArea)
-                    .matchesQuery("site", siteQuery);
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-                    .limit(Number.MAX_SAFE_INTEGER)            
-                    .find();
-
-        let elevatorIds = getElevatorIds(groups);
-        query.containedIn("objectId", elevatorIds);
-    }
-    if(filter.areaname){
-        let areaQuery = new Parse.Query(LocationArea)
-                        .matches("name", new RegExp(filter.areaname), "i");
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-                        .limit(Number.MAX_SAFE_INTEGER)
-                        .find();            
-
-        let elevatorIds = getElevatorIds(groups);
-        query.containedIn("objectId", elevatorIds);
-    }
+    
 
     if(filter.groupname){        
             let groups = await groupQuery.matches("groupname", new RegExp(filter.groupname), "i")

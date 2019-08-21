@@ -3,10 +3,7 @@ import {
 } from 'core/cgi-package';
 
 import { Log } from 'workspace/custom/services/log';
-import { IFloor, Floor } from '../../custom/models'
-import { LocationSite } from 'workspace/custom/models/db/location-site';
-import { LocationArea } from 'workspace/custom/models/db/location-area';
-
+import { IFloor, Floor } from '../../custom/models';
 
 var action = new Action({
     loginRequired: true,
@@ -47,28 +44,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let groupQuery = new Parse.Query(ElevatorGroup)
                     .include("elevators");
     
-    if(filter.sitename){
-        let siteQuery = new Parse.Query(LocationSite)
-            .matches("name", new RegExp(filter.sitename), "i");
-        let areaQuery = new Parse.Query(LocationArea)
-            .matchesQuery("site", siteQuery);
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)            
-            .find();
-        
-        let floorIds = getFloorIds(groups);
-        query.containedIn("objectId", floorIds);
-    }
-    if(filter.areaname){
-        let areaQuery = new Parse.Query(LocationArea)
-            .matches("name", new RegExp(filter.areaname), "i");
-        let groups = await groupQuery.matchesQuery("area", areaQuery)
-            .limit(Number.MAX_SAFE_INTEGER)
-            .find();            
-        
-        let floorIds = getFloorIds(groups);
-        query.containedIn("objectId", floorIds);
-    }
+    
 
     if(filter.groupname){        
         let groups = await groupQuery.matches("groupname", new RegExp(filter.groupname), "i")

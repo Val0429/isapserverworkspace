@@ -4,7 +4,6 @@ import {
 
 import { Log } from 'workspace/custom/services/log';
 import { IReader, Reader } from '../../custom/models'
-import { LocationArea, LocationSite } from 'workspace/custom/models/db/_index';
 
 
 var action = new Action({
