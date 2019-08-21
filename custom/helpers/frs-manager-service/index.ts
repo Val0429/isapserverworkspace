@@ -335,7 +335,7 @@ export class FRSManagerService {
         }
 
         let ws = new Ws();
-        ws.url = `${this._baseWsUrl}/frs/ws/fcsnonreconizedresult?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
+        ws.url = `${this._baseWsUrl}/listen?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
 
         this._liveStream$ = new Rx.Subject();
         this._liveStreamCatch$ = new Rx.Subject();

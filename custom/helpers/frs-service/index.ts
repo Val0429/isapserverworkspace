@@ -307,80 +307,85 @@ export class FRSService {
             throw Base.Message.NotInitialization;
         }
 
-        let ws = new Ws();
-        ws.url = `${this._baseWsUrl}/frs/ws/fcsnonreconizedresult?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
+        let urls: string[] = ['fcsrecognizedresult', 'fcsnonrecognizedresult'];
+        await Promise.all(
+            urls.map(async (value, index, array) => {
+                let ws = new Ws();
+                ws.url = `${this._baseWsUrl}/${value}`;
 
-        this._liveStream$ = new Rx.Subject();
-        this._liveStreamCatch$ = new Rx.Subject();
-        this._liveStreamClose$ = new Rx.Subject();
-        this._liveStreamStop$ = new Rx.Subject();
+                this._liveStream$ = new Rx.Subject();
+                this._liveStreamCatch$ = new Rx.Subject();
+                this._liveStreamClose$ = new Rx.Subject();
+                this._liveStreamStop$ = new Rx.Subject();
 
-        this._liveStreamStop$.subscribe({
-            next: () => {
-                this._liveStream$.complete();
-                this._liveStreamCatch$.complete();
-                this._liveStreamClose$.complete();
-                this._liveStreamStop$.complete();
+                this._liveStreamStop$.subscribe({
+                    next: () => {
+                        this._liveStream$.complete();
+                        this._liveStreamCatch$.complete();
+                        this._liveStreamClose$.complete();
+                        this._liveStreamStop$.complete();
 
-                ws.message$.complete();
-                ws.open$.complete();
-                ws.error$.complete();
-                ws.close$.complete();
-                ws.Close();
-            },
-        });
+                        ws.message$.complete();
+                        ws.open$.complete();
+                        ws.error$.complete();
+                        ws.close$.complete();
+                        ws.Close();
+                    },
+                });
 
-        this._liveStream$ = new Rx.Subject();
+                this._liveStream$ = new Rx.Subject();
 
-        ws.message$.subscribe({
-            next: async (data) => {
-                try {
-                    if ('type' in data) {
-                        let result = data as FRSCore.RecognizedUser | FRSCore.UnRecognizedUser;
+                ws.message$.subscribe({
+                    next: async (data) => {
+                        try {
+                            if ('type' in data) {
+                                let result = data as FRSCore.RecognizedUser | FRSCore.UnRecognizedUser;
 
-                        let date: Date = new Date(result.timestamp);
-                        let camera: string = result.channel;
-                        let faceId: string = result.verify_face_id;
-                        let name: string = 'unknown';
-                        let snapshot: Buffer = await this.GetSnapshot(result.snapshot);
-                        let groups: FRSService.IObject[] = [];
+                                let date: Date = new Date(result.timestamp);
+                                let camera: string = result.channel;
+                                let faceId: string = result.verify_face_id;
+                                let name: string = 'unknown';
+                                let snapshot: Buffer = await this.GetSnapshot(result.snapshot);
+                                let groups: FRSService.IObject[] = [];
 
-                        if (result.type === FRSCore.UserType.Recognized) {
-                            name = result.person_info.fullname;
-                            groups = result.groups.map((value, index, array) => {
-                                return {
-                                    objectId: value.group_id,
-                                    name: value.name,
-                                };
-                            });
+                                if (result.type === FRSCore.UserType.Recognized) {
+                                    name = result.person_info.fullname;
+                                    groups = result.person_info['group_list'].map((value, index, array) => {
+                                        return {
+                                            objectId: value.id,
+                                            name: value.groupname,
+                                        };
+                                    });
+                                }
+
+                                this._liveStream$.next({
+                                    name: name,
+                                    camera: camera,
+                                    faceId: faceId,
+                                    date: date,
+                                    groups: groups,
+                                    image: snapshot,
+                                });
+                            }
+                        } catch (e) {
+                            this._liveStreamCatch$.next(e);
                         }
+                    },
+                });
+                ws.error$.subscribe({
+                    next: (e) => {
+                        this._liveStreamCatch$.next(e.message);
+                    },
+                });
+                ws.close$.subscribe({
+                    next: (e) => {
+                        this._liveStreamClose$.next();
+                    },
+                });
 
-                        this._liveStream$.next({
-                            name: name,
-                            camera: camera,
-                            faceId: faceId,
-                            date: date,
-                            groups: groups,
-                            image: snapshot,
-                        });
-                    }
-                } catch (e) {
-                    this._liveStreamCatch$.next(e);
-                }
-            },
-        });
-        ws.error$.subscribe({
-            next: (e) => {
-                this._liveStreamCatch$.next(e.message);
-            },
-        });
-        ws.close$.subscribe({
-            next: (e) => {
-                this._liveStreamClose$.next();
-            },
-        });
-
-        await ws.Connect();
+                await ws.Connect();
+            }),
+        );
     }
 
     // /**
