@@ -106,10 +106,10 @@ export class AttendanceRecord {
                     newData["date_occurred"] = moment(r["updateTime"]).format("YYYYMMDD") ;
                     newData["time_occurred"] = moment(r["updateTime"]).format('HHmmss');
                     newData["date_time_occurred"] = new Date(r["updateTime"]);
-                    newData["card_no"] = r["cardNum"] + "";
+                    newData["card_no"] = r["cardNumber"] + "";
                     newData["point_no"] = r["doorId"] + "";
-                    newData["point_name"] = r["doorName"];
-                    newData["category"] = r["messageCode"];
+                    newData["point_name"] = r["door"];
+                    newData["category"] = r["message"];
                     
                     //make it similar to sipass
                     newData["state_id"] = 2;
