@@ -1499,15 +1499,16 @@ export class CCUREService {
         if (isNullOrUndefined(OnRaws) == false) {
             let onRawCallback = rows => {
                 let result = [];
-                for (var i = 0; i < rows.length; i++) {
+                for(let record of rows) {
                     result.push({
-                        "personId": rows[i]["personId"],
-                        "name": rows[i]["name"],
-                        "cardNumber": rows[i]["cardNumber"],
-                        "doorId": rows[i]["doorId"],
-                        "door": doorKeyMap[rows[i]["doorId"]],
-                        "updateTime": rows[i]["updateTime"],
-                        "message": rows[i]["msgCode"] == 64 ? "In" : "Out"
+                        "reportId":record["reportId"],
+                        "personId": record["personId"],
+                        "name": record["name"],
+                        "cardNumber": record["cardNumber"],
+                        "doorId": record["doorId"],
+                        "door": doorKeyMap[record["doorId"]],
+                        "updateTime": record["updateTime"],
+                        "message": record["msgCode"] == 64 ? "In" : "Out"
                     });
                 }
                 OnRaws(result, QueryContent.ReportsNewUpdate);
@@ -1522,18 +1523,18 @@ export class CCUREService {
                 true);
         }
         else {
-            let r = await this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, 15000);
+            let records = await this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, 15000);
             let result = [];
-
-            for (var i = 0; i < r.length; i++) {
+            for(let record of records) {
                 result.push({
-                    "personId": r[i]["personId"],
-                    "name": r[i]["name"],
-                    "cardNumber": r[i]["cardNumber"],
-                    "doorId": r[i]["doorId"],
-                    "door": doorKeyMap[r[i]["doorId"]],
-                    "updateTime": r[i]["updateTime"],
-                    "message": r[i]["msgCode"] == 64 ? "In" : "Out"
+                    "reportId":record["reportId"],
+                    "personId": record["personId"],
+                    "name": record["name"],
+                    "cardNumber": record["cardNumber"],
+                    "doorId": record["doorId"],
+                    "door": doorKeyMap[record["doorId"]],
+                    "updateTime": record["updateTime"],
+                    "message": record["msgCode"] == 64 ? "In" : "Out"
                 });
             }
             return result;

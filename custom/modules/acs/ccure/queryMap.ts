@@ -72,7 +72,8 @@ var queryMap : IQueryMap = {};
      */
     queryMap[QueryContent.Reports] = {
         "table": "pub.journ",
-        "selector":  'Int_Dta2 as msgCode,'+
+        "selector":  'Jnl_ID as reportId,'+
+                     'Int_Data2 as msgCode,'+
                      'User_PID as personId,'+
                      'Txt_Data2 as name,'+
                      'Int_Data4 as cardNumber,'+
@@ -84,7 +85,8 @@ var queryMap : IQueryMap = {};
     //ReportsNewUpdate
     queryMap[QueryContent.ReportsNewUpdate] = {
         "table": "pub.journ",
-        "selector":  'Int_Data2 as msgCode,'+
+        "selector":  'Jnl_ID as reportId,'+
+                     'Int_Data2 as msgCode,'+
                      'User_PID as personId,'+
                      'Txt_Data2 as name,'+
                      'Int_Data4 as cardNumber,'+
