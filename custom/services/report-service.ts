@@ -111,6 +111,8 @@ export class ReportService{
     }
     async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
+        .include("member")
+        .include("door")
         .equalTo("type", 21)
         .equalTo("state_id", 2)
         .exists("card_no")
@@ -134,20 +136,25 @@ export class ReportService{
         let results = [];
         let records = await query.skip(skip).limit(limit).find();
         let total = await query.count();
-        let readers = await new Parse.Query(Reader)
-                        .containedIn("readername", records.map(x=>x.get("point_name")))
-                        .find();
+
         for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
-            if (!record.date_occurred || !record.date_time_occurred) continue;        
-            let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);
-            record.at_id = record.point_name;
-            let reader = readers.find(x=>x.get("readername") == record.point_name);
-            //console.log("reader", reader, record.point_name);
-            if(reader){
-                let at_id = await new Parse.Query(Door).equalTo("readerin", reader).first();
-                //console.log("at_id", at_id);
-                if(at_id)  record.at_id = at_id.get('doorname');
+            if (!record.date_occurred || !record.date_time_occurred) continue;
+            //normalize member
+            if(record.member){
+                let newMember = this.normalizeMember(record.member);
+                record.memberObjectId = newMember.objectId;
+                delete(newMember.objectId);
+                delete(record.member);
+                //merge field
+                Object.assign(record, newMember);
+            }   
+            if(record.door){
+                //todo we can change this field later                
+                record.at_id = record.door.doorname;
+                delete(record.door);
             }
+            let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);           
+            
             //start, assume in and out at the same time
             if(thisDayRecords.length<2){
                 results.push(Object.assign({},record));
@@ -158,7 +165,8 @@ export class ReportService{
                 for(const key of Object.keys(record)){
                     thisDayRecords[1][key] = record[key];
                 }            
-            }             
+            }
+                      
         }
         
         return {results, total};

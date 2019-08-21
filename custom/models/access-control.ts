@@ -378,7 +378,10 @@ export interface IAttendanceRecords {
     opg_id?: number,
     emp_id?: number,
     checksum?: string,
-    archived?: number
+    archived?: number,
+    member?:Member,
+    system?:number,
+    door?:Door
 }
 @registerSubclass()
 export class AttendanceRecords extends ParseObject<IAttendanceRecords> { }

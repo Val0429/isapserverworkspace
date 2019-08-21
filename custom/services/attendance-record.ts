@@ -3,7 +3,7 @@ import { Config } from 'core/config.gen';
 import { Log } from './log';
 
 import { ScheduleActionEmail } from 'core/scheduler-loader';
-import { IAttendanceRecords, AttendanceRecords } from 'workspace/custom/models/index';
+import { IAttendanceRecords, AttendanceRecords, Member, Reader, Door } from 'workspace/custom/models/index';
 
 import * as mongo from 'mongodb';
 import * as msSQL from 'mssql';
@@ -98,16 +98,28 @@ export class AttendanceRecord {
                         ("0" + end.getMinutes()).slice(-2),
                         ("0" + end.getSeconds()).slice(-2)
                     );
-                }catch(err){
-                    console.error("cannot get data from sipass", err);
-                    records=[];
-                }
-
+                
+                let membersParse = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.filter(x=>x.Credentials && x.Credentials.length>0).map(x=>x.Credentials[0].CardNumber)).find();
+                let members = membersParse.map(x=>ParseObject.toOutputJSON(x));
+                let readers = await new Parse.Query(Reader)
+                        .containedIn("readername", records.map(x=>x["point_name"]))
+                        .find();
                 for(let r of records){
                     let dateTime = r["date_occurred"] + r["time_occurred"];
                     r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
-
+                    r["system"]=1;
+                    
+                    
                     let o = new AttendanceRecords(r);
+                    let reader = readers.find(x=>x.get("readername") == r["point_name"]);
+                    //console.log("reader", reader, record.point_name);
+                    if(reader){
+                        let door = await new Parse.Query(Door).equalTo("readerin", reader).first();
+                        if(!door) door = await new Parse.Query(Door).equalTo("readerout", reader).first();
+                        if(door) o.set("door", door);
+                    }
+                    o.set("member", members.find(x=>x.Credentials && x.Credentials.length>0 && x.Credentials[0].CardNumber == r.Credentials[0].CardNumber))
+                
                     objects.push(o);
                     //important to avoid out of memory
                     if(objects.length>=1000){
@@ -116,6 +128,10 @@ export class AttendanceRecord {
                     }
                 }
                 await ParseObject.saveAll(objects);
+            }catch(err){
+                console.error("cannot get data from sipass", err);
+                records=[];
+            }
     }
     async getCCureData(){
         
@@ -125,6 +141,12 @@ export class AttendanceRecord {
             let ccureService = new CCUREService();
             await ccureService.Login();
             let records = await ccureService.GetOrganizedNewReport();
+            let membersParse = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber)).find();
+            let members = membersParse.map(x=>ParseObject.toOutputJSON(x));
+            let doorsParse = await new Parse.Query(Door)
+                        .containedIn("door", records.map(x=>x["door"]))
+                        .find();
+            let doors = doorsParse.map(x=>ParseObject.toOutputJSON(x));         
             for(let r of records) {
                 let newData:any={};
                 let dt = new Date(r["updateTime"]);
@@ -137,13 +159,14 @@ export class AttendanceRecord {
                 newData["point_no"] = r["doorId"] + "";
                 newData["point_name"] = r["door"];
                 newData["message"] = r["message"];
-                
+                newData["system"] = 800;
                 //make it similar to sipass
                 newData["state_id"] = 2;
                 newData["type"]=21;                   
     
                 let o = new AttendanceRecords(newData);
-    
+                o.set("member", members.find(x=>x.Credentials && x.Credentials.length>0 && x.Credentials[0].CardNumber == r.cardNumber));
+                o.set("door", doors.find(x=>x.doorname == r.door));
                 objects.push(o);
                 //important to avoid out of memory
                 if(objects.length>=1000){
