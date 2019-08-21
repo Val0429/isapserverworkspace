@@ -1,9 +1,7 @@
 import {
-    express, Request, Response, Router,
-    IRole, IUser, RoleList,
-    Action, Errors, Events, IEvents,
-    Restful, FileHelper, ParseObject
-} from 'core/cgi-package';
+    RoleList,
+    Action, Events, IEvents,
+    Restful} from 'core/cgi-package';
 
 
 var action = new Action({

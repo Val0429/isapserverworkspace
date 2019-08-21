@@ -1,8 +1,5 @@
 import {
-    express, Request, Response, Router,
-    IRole, IUser, RoleList,
-    Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, DoorGroup
+    Action, Errors, Restful, ParseObject, DoorGroup
 } from 'core/cgi-package';
 
 import { Log } from 'workspace/custom/services/log';
@@ -26,12 +23,12 @@ type OutputC = Restful.OutputC<IDoor>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // let count: number = await new Parse.Query(Door).count();
-    let count: number = await new Promise((resolve, reject) => {
+    let count: number = await new Promise((resolve) => {
         new Parse.Query(Door).count().then(
             (count) => {
                 resolve(count);
             },
-            (error) => {
+            () => {
                 resolve(-1);
             }
         );

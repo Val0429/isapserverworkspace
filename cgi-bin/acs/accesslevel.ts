@@ -1,8 +1,5 @@
 import {
-    express, Request, Response, Router,
-    IRole, IUser, RoleList,
-    Action, Errors, Cameras, ICameras,
-    Restful, FileHelper, ParseObject, TimeSchedule, Door, AccessLevelinSiPass
+    Action, Errors, Restful, ParseObject, TimeSchedule, Door, AccessLevelinSiPass
 } from 'core/cgi-package';
 
 import { Log } from 'workspace/custom/services/log';
