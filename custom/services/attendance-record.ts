@@ -128,10 +128,11 @@ export class AttendanceRecord {
             for(let r of records) {
                 let newData:any={};
                 let dt = new Date(r["updateTime"]);
+                let correctDate = new Date(dt.getFullYear()+20,dt.getMonth(),dt.getDate(),dt.getHours(),dt.getMinutes(),dt.getSeconds());
                 newData["rowguid"] = r["reportId"] + "";
-                newData["date_occurred"] = moment(dt).format("YYYYMMDD") ;
-                newData["time_occurred"] = moment(dt).format('HHmmss');
-                newData["date_time_occurred"] =dt;
+                newData["date_occurred"] = moment(correctDate).format("YYYYMMDD") ;
+                newData["time_occurred"] = moment(correctDate).format('HHmmss');
+                newData["date_time_occurred"] =correctDate;
                 newData["card_no"] = r["cardNumber"] + "";
                 newData["point_no"] = r["doorId"] + "";
                 newData["point_name"] = r["door"];
