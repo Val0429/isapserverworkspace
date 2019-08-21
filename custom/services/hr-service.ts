@@ -43,24 +43,34 @@ export class HRService {
 
         console.log(this.LastUpdate);
 
-        this.waitTimer = setTimeout(() => {
-            me.doHumanResourcesSync();
-        }, 1000 * this.startDelayTime);
+        
     }
 
-    async doHumanResourcesSync() {
+    async doHumanResourcesSync(hour:number=3,minute:number=0) {
         Log.Info(`${this.constructor.name}`, `0.0 Timer Check`);
 
-        var me = this;
         let now: Date = new Date();
 
         clearTimeout(this.waitTimer);
         this.checkCycleTime = 1200;
 
 
-        if ((now.getHours() == 3) && (now.getMinutes() == 0)) {  // Startup @03:00
+        if ((now.getHours() == hour) && (now.getMinutes() == minute)) {  // Startup @03:00
         // if (now.getMinutes() < 70) {
-            await this.CCure800SqlAdapter.clearMember();
+            await this.doSync();
+        }
+
+        now = new Date();
+        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.checkCycleTime;
+        Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.checkCycleTime - s} ] sec`);
+
+        this.waitTimer = setTimeout(() => {
+            this.doHumanResourcesSync();
+        }, (this.checkCycleTime - s) * 1000);
+    }
+
+    async doSync(){
+        await this.CCure800SqlAdapter.clearMember();
             let memChange = [];
             let memNew = [];
             let memOff = [];
@@ -130,7 +140,7 @@ export class HRService {
             }
 
             // 3.0 SiPass Connection
-            let sessionId = "" ;
+            //let sessionId = "" ;
             // let sessionId = await siPassAdapter.sessionToken;
 
             // if (!sessionId) {
@@ -166,16 +176,16 @@ export class HRService {
                     //     [ { SeqNo: 1,
                     //         CompCode: '01',
 
-                    for (let idx = 0; idx < res.length; idx++) {
-                        let record = res[idx];
+                    for (let record of res) {
+                        
 
                         memChange.push(record);
 
-                        me.LastUpdate.vieChangeMemberLog = record["AddDate"];
+                        this.LastUpdate.vieChangeMemberLog = record["AddDate"];
                         EmpNo.push(record["EmpNo"]);
 
-                        await Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
-                        await delay(100);
+                        Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
+                        delay(100);
                     };
                 }
                 catch (ex) {
@@ -199,12 +209,9 @@ export class HRService {
                 let str = `${d.getFullYear()}/${month}/${day}`;
 
                 Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${str}`);
-                try {
-                    let logs = await new Parse.Query("vieHQMemberLog").lessThan("AddDate", str).find();
-                    for (let i = 0; i < logs.length; i++) {
-                        const e = logs[i];
-                        await e.destroy();
-                    }
+                try {                    
+                    let logs = await new Parse.Query("vieHQMemberLog").lessThan("AddDate", str).find();                    
+                    await ParseObject.destroyAll(logs);
                 }
                 catch (ex) {
                     this.checkCycleTime = 5;
@@ -228,32 +235,34 @@ export class HRService {
                     // 4.2.1 record not in the previous log list
                     Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);
                     let newSeqNoList = [];
+                    let members = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x=>x["SeqNo"])).find();
+                    let objects=[];
                     try {
-                        for (let idx = 0; idx < res.length; idx++) {
-                            let record = res[idx];
+                        for (let record of res) {                            
 
                             newSeqNoList.push(record["SeqNo"]);
 
-                            let log = await new Parse.Query("vieHQMemberLog").equalTo("SeqNo", record["SeqNo"]).first();
+                            let log = members.find(x=>x.get("SeqNo") == record["SeqNo"]);
 
-                            if (log == undefined) {
+                            if (!log) {
                                 EmpNo.push(record["UserNo"]);
-                                await new Parse.Object("vieHQMemberLog").save(record);
-
-                                await Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
-                                await delay(100);
+                                log = new Parse.Object("vieHQMemberLog")
+                                log.set(record);
+                                objects.push(log);
+                                Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
+                                
                             }
                             else {
                                 if (record["AddDate"] != log.get("AddDate")) {
                                     EmpNo.push(record["UserNo"]);
                                     log.set("AddDate", record["AddDate"]);
-                                    log.save();
-
-                                    await Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
-                                    await delay(100);
+                                    log;
+                                    objects.push(log);
+                                    Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);                                    
                                 }
                             }
-                        };
+                        }
+                        await ParseObject.saveAll(objects);
                     }
                     catch (ex) {
                         this.checkCycleTime = 5;
@@ -266,14 +275,12 @@ export class HRService {
                     Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);
                     try {
                         let records = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", str).find();
-                        for (let idx = 0; idx < records.length; idx++) {
-                            let record = records[idx];
+                        for (let record of records) {                            
 
                             if (newSeqNoList.indexOf(record.get("SeqNo")) < 0) {
                                 EmpNo.push(record.get("UserNo"));
 
-                                await Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record.get("UserNo")}`);
-                                await delay(100);
+                                Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record.get("UserNo")}`);
 
                                 if (record.get("DataType") == "H") {
                                     memNew.push(record);
@@ -307,15 +314,13 @@ export class HRService {
                     //      [ { SeqNo: 1,
                     //          CompCode: '01',
 
-                    for (let idx = 0; idx < res.length; idx++) {
-                        let record = res[idx];
+                    for (let record of res) {
 
-                        me.LastUpdate.vieREMemberLog = record["AddDate"];
+                        this.LastUpdate.vieREMemberLog = record["AddDate"];
                         memChange.push(record);
                         EmpNo.push(record["UserNo"]);
 
-                        await Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
-                        await delay(100);
+                        Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);                        
                     };
                 }
                 catch (ex) {
@@ -338,10 +343,11 @@ export class HRService {
 
                     {
                         try {
+                            let objects = [];
                             res = await this.humanResource.getViewMember(EmpNo);
-
-                            for (let idx = 0; idx < res.length; idx++) {
-                                let record = res[idx];
+                            let vieMembers = await new Parse.Query(vieMember).containedIn("EmpNo", res.map(x=>x["EmpNo"])).find();
+                            let members = await new Parse.Query(Member).containedIn("EmployeeNumber", res.map(x=>x["EmpNo"])).find();
+                            for (let record of res) {                                
 
                                 let empNo = record["EmpNo"];
 
@@ -406,10 +412,10 @@ export class HRService {
 
                                 Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${empNo}`);
 
-                                let obj = await new Parse.Query(vieMember).equalTo("EmpNo", empNo).first();
-                                if (obj == null) {
-                                    let o = new vieMember(record);
-                                    await o.save();
+                                let obj = vieMembers.find(x=>x.get("EmpNo")== empNo);
+                                if (!obj) {
+                                    obj = new vieMember(record);
+                                    objects.push(obj);
                                 }
                                 else {
                                     obj.set("attributes", record["attributes"]);
@@ -430,7 +436,7 @@ export class HRService {
                                     obj.set("visitorDetails", record["visitorDetails"]);
                                     obj.set("customFields", record["customFields"]);
                                     obj.set("cardholderPortrait", record["cardholderPortrait"]);
-                                    await obj.save();
+                                    objects.push(obj);
                                 }
                                 // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
 
@@ -562,22 +568,30 @@ export class HRService {
                                 console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
                                 await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields, "NH-Employee");
 
-                                console.log(`======================= ${sessionId}`);
-                                if (sessionId != "") {
+                                // console.log(`======================= ${sessionId}`);
+                                // if (sessionId != "") {
                                     // 5.1 write data to SiPass database
                                     console.log(JSON.stringify(d));
                                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
 
                                     let holder = await siPassAdapter.postCardHolder(d);
-                                }
+                                //}
 
                                 console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
                                 
                                 delete d["_links"];
-                                d["_id"] = new mongo.ObjectID().toHexString();
-                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
-                                await delay(1000);
+                                //d["_id"] = new mongo.ObjectID().toHexString();
+                                //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+                                let member = members.find(x=>x.get("EmployeeNumber") == record["EmpNo"]);
+                                if(!member){
+                                    member = new Member(d);                                    
+                                }else{
+                                    member.set(d);
+                                }
+                                objects.push(member);
+                                
                             }
+                            await ParseObject.saveAll(objects);
                         }
                         catch (ex) {
                             this.checkCycleTime = 5;
@@ -588,9 +602,13 @@ export class HRService {
 
                     {
                         try {
+                            
                             res = await this.humanResource.getViewSupporter(EmpNo);
-                            for (let idx = 0; idx < res.length; idx++) {
-                                let record = res[idx];
+                            let objects=[];
+                            let memberObjects=[];
+                            let vieMembers =  await new Parse.Query(vieMember).equalTo("EmpNo", res.map(x=>x["SupporterNo"])).find(); 
+                            let members =  await new Parse.Query(Member).equalTo("EmployeeNumber", res.map(x=>x["SupporterNo"])).find(); 
+                            for (let record of res) {                                
 
                                 let supporterNo = record["SupporterNo"];
 
@@ -602,10 +620,10 @@ export class HRService {
 
                                 Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${supporterNo}`);
 
-                                let obj = await new Parse.Query(vieMember).equalTo("EmpNo", supporterNo).first();
-                                if (obj == null) {
-                                    let o = new vieMember(record);
-                                    await o.save();
+                                let obj = vieMembers.find(x=>x.get("EmpNo")== supporterNo);
+                                if (!obj) {
+                                    obj = new vieMember(record);
+                                    objects.push(obj);
                                 }
                                 else {
                                     obj.set("employeeNumber", record["SupporterNo"]);
@@ -628,7 +646,7 @@ export class HRService {
                                         VisitorCustomValues: {}
                                     });
                                     obj.set("customFields", record["customFields"]);
-                                    await obj.save();
+                                    objects.push(obj);
                                 }
                                 // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
 
@@ -743,22 +761,29 @@ export class HRService {
                                 console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
                                 await this.CCure800SqlAdapter.writeMember(d,  d.AccessRules, d.CustomFields, "NH-Employee");
 
-                                console.log(`======================= ${sessionId}`);
-                                if (sessionId != "") {
-                                    // 5.1 write data to SiPass database
-                                    Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["SupporterNo"]} ${record["SupporterName"]}`);
+                            
+                            
+                                // 5.1 write data to SiPass database
+                                Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["SupporterNo"]} ${record["SupporterName"]}`);
 
-                                    let holder = await siPassAdapter.postCardHolder(d);
-                                }
+                                let holder = await siPassAdapter.postCardHolder(d);
+                                
 
                                 console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
 
                                 delete d["_links"];
-                                d["_id"] = new mongo.ObjectID().toHexString();
-                                this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
-                                
-                                await delay(1000);
+                                //d["_id"] = new mongo.ObjectID().toHexString();
+                                //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
+                                let member = members.find(x=>x.get("EmployeeNumber") == record["SupporterNo"]);
+                                if(!member){
+                                    member = new Member(d);                                    
+                                }else{
+                                    member.set(d);
+                                }
+                                memberObjects.push(member);
                             }
+                            await ParseObject.saveAll(objects);
+                            await ParseObject.saveAll(memberObjects);
                         }
                         catch (ex) {
                             this.checkCycleTime = 5;
@@ -841,16 +866,7 @@ export class HRService {
             catch (ex) {
                 Log.Info(`${this.constructor.name}`, ex);
             }
-        }
-
-        now = new Date();
-        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.checkCycleTime;
-        Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.checkCycleTime - s} ] sec`);
-
-        this.waitTimer = setTimeout(() => {
-            this.doHumanResourcesSync();
-        }, (this.checkCycleTime - s) * 1000);
     }
 }
 
-export default new HRService();
+//export default new HRService();

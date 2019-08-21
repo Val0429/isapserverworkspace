@@ -154,10 +154,8 @@ uninst:
   ;copy config first to temp folder
 	!insertmacro BackupFile "$R1\workspace\config\default" "mongodb.ts" "${TEMP_FOLDER}\server"
 	!insertmacro BackupFile "$R1\workspace\config\custom" "sipassconnect.ts" "${TEMP_FOLDER}\server"
-  !insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"
-	
-  !insertmacro BackupFile "$R1\workspace\config\custom" "ccureconnect.ts" "${TEMP_FOLDER}\server"
-	!insertmacro BackupFile "$R1\workspace\config\custom" "ccuresqlserver.ts" "${TEMP_FOLDER}\server"
+  !insertmacro BackupFile "$R1\workspace\custom\license" "license.xml" "${TEMP_FOLDER}\server"	
+  !insertmacro BackupFile "$R1\workspace\config\custom" "ccureconnect.ts" "${TEMP_FOLDER}\server"	
 	!insertmacro BackupFile "$R1\workspace\config\custom" "humanresource.ts" "${TEMP_FOLDER}\server"
   !insertmacro BackupFile "$R1\workspace\config\custom" "sipassdb.ts" "${TEMP_FOLDER}\server"
   !insertmacro BackupFile "$R1\workspace\custom\services\acs\mdb" "ccure800.mdb" "${TEMP_FOLDER}\server"
@@ -262,10 +260,8 @@ Section
   #restore old config
   !insertmacro RestoreFile "${TEMP_FOLDER}\server" "mongodb.ts" "$INSTDIR\workspace\config\default"
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "sipassconnect.ts" "$INSTDIR\workspace\config\custom"
-	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "license.xml" "$INSTDIR\workspace\custom\license"
-  
-  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccureconnect.ts" "$INSTDIR\workspace\config\custom"
-	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccuresqlserver.ts" "$INSTDIR\workspace\config\custom"
+	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "license.xml" "$INSTDIR\workspace\custom\license"  
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccureconnect.ts" "$INSTDIR\workspace\config\custom"	
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "humanresource.ts" "$INSTDIR\workspace\config\custom"
 	!insertmacro RestoreFile "${TEMP_FOLDER}\server" "sipassdb.ts" "$INSTDIR\workspace\config\custom"
   !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccure800.mdb" "$INSTDIR\workspace\custom\services\acs\mdb"
