@@ -182,32 +182,36 @@ export class SyncService{
                 obj.set("status", 1);
             }
             let door = doors.find(x=>x.get("doorid") == r.doorId);
-            if (door && r.inOut=="In") {
-                let readers = door.get("readerin");
-                if (!readers){
-                    readers = [obj];
-                    door.set("readerin", readers);
-                    doorObjects.push(door);
+            if (!door) continue;
+            let readerin:any[] = (door.get("readerin")||[]).filter(x=>x.get("system") == 800);
+            let readerout:any[] = (door.get("readerout")||[]).filter(x=>x.get("system") == 800);
+            if(r.inOut=="In") {                
+                if (!readerin){
+                    readerin=[obj];
                 }                     
-                else if(!readers.find(x=>x.get("readerid")==r.deviceId)){
-                    readers.push(obj);                    
-                    door.set("readerin", readers);
-                    doorObjects.push(door);
+                else if(!readerin.find(x=>x.get("readerid")==r.deviceId)){
+                    readerin.push(obj); 
+                    //changed reader position
+                    if(readerout && readerout.find(x=>x.get("readerid")==r.deviceId)){
+                        readerout.splice(readerout.indexOf(x=>x.get("readerid")==r.deviceId), 1);
+                    }
                 }                    
             }
-            if (door && r.inOut=="Out") {
-                let readers = door.get("readerout");
-                if (!readers){
-                    readers = [obj];
-                    door.set("readerout", readers);
-                    doorObjects.push(door);
+            if (r.inOut=="Out") {               
+                if (!readerout){
+                    readerout = [obj];
                 }                     
-                else if(!readers.find(x=>x.get("readerid")==r.deviceId)){
-                    readers.push(obj);                    
-                    door.set("readerout", readers);
-                    doorObjects.push(door);
-                }                    
+                else if(!readerout.find(x=>x.get("readerid")==r.deviceId)){
+                    readerout.push(obj);                    
+                    //changed reader position
+                    if(readerin && readerin.find(x=>x.get("readerid")==r.deviceId)){
+                        readerin.splice(readerin.indexOf(x=>x.get("readerid")==r.deviceId), 1);
+                    }
+                }                   
             }
+            door.set("readerin", readerin);
+            door.set("readerout", readerout);  
+            doorObjects.push(door);
         }
         await ParseObject.saveAll(objects);
         await ParseObject.saveAll(doorObjects);
