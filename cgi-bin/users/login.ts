@@ -3,9 +3,14 @@ import {
     IRole, IUser, RoleList,
     Action, Errors,
     bodyParserJson, EventLogin, Events,
-    UserHelper, getEnumKey, ParseObject, EnumConverter, sharedMongoDB
+    UserHelper, getEnumKey, ParseObject, EnumConverter, sharedMongoDB, Flow2Companies, Flow2Floors
 } from 'core/cgi-package';
 
+type Companies = Flow2Companies;
+let Companies = Flow2Companies;
+
+type Floors = Flow2Floors;
+let Floors = Flow2Floors;
 
 interface IInputNormal {
     username: string;
@@ -50,6 +55,20 @@ export default new Action<Input, Output>({
             .include("data.floor")
             .get(obj.user.id);
 
+        let company = user.attributes.data.company;
+        if (company && !(company instanceof ParseObject)) {
+            user.set("data.company", await new Parse.Query(Companies).get(company.objectId));
+        }
+        let floors = user.attributes.data.floor;
+        if (floors) {
+            for (let i=0; i<floors.length; ++i) {
+                let floor = floors[i];
+                if (!(floor instanceof ParseObject)) {
+                    floors[i] = await new Parse.Query(Floors).get(floor.objectId);
+                }
+            }
+            user.set("data.floor", floors);
+        }   
         var ev = new EventLogin({
             owner: user
         });
@@ -58,6 +77,26 @@ export default new Action<Input, Output>({
     } else {
         if (!data.session) throw Errors.throw(Errors.SessionNotExists);
         user = data.user;
+
+        let company = user.attributes.data.company;
+        if (company && !(company instanceof ParseObject)) {
+            user.set("data.company", await new Parse.Query(Companies).get(company.objectId));
+        } else {
+            await company.fetch();
+        }
+        let floors = user.attributes.data.floor;
+        if (floors) {
+            for (let i=0; i<floors.length; ++i) {
+                let floor = floors[i];
+                if (!(floor instanceof ParseObject)) {
+                    floors[i] = await new Parse.Query(Floors).get(floor.objectId);
+                } else {
+                    await floor.fetch();
+                }
+            }
+            user.set("data.floor", floors);
+        }
+
         sessionId = data.session.getSessionToken();
     }
 

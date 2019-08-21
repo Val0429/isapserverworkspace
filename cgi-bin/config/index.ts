@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList, IConfig, Config, IConfigSetup,
     Action, Errors, O,
-    Restful, FileHelper, ParseObject
+    Restful, FileHelper, ParseObject, sharedMongoDB
 } from 'core/cgi-package';
 
 var action = new Action({
@@ -46,6 +46,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }
 
     var value = data.inputType.data;
+
+    let changeFlow = (value["vms"]||{})["flow"];
+    if (changeFlow && changeFlow !== Config.vms.flow) {
+        /// drop database
+        let db = await sharedMongoDB();
+        await db.dropDatabase();
+    }
+
     for (var key in value) {
         await updateSingleKey(key, value[key]);
     }

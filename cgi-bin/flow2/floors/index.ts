@@ -5,10 +5,10 @@ import {
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 
-import { Flow1Floors, IFlow1Floors } from 'workspace/custom/models';
+import { Flow2Floors, IFlow2Floors } from 'workspace/custom/models';
 
-type IFloors = IFlow1Floors;
-let Floors = Flow1Floors;
+type IFloors = IFlow2Floors;
+let Floors = Flow2Floors;
 
 var action = new Action({
     loginRequired: true,
@@ -36,9 +36,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 type InputR = Restful.InputR<IFloors>;
 type OutputR = Restful.OutputR<IFloors>;
 
-action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+action.get<InputR, OutputR>({ inputType: "InputR", permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.TenantAdministrator] }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Floors);
+    var query = new Parse.Query(Floors)
+        .include("building");
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output

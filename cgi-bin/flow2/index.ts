@@ -8,7 +8,7 @@ import {
 
 var action = new Action({
     loginRequired: true,
-    permission: [ Config.vms.flow === "Flow1" ? RoleList.Administrator : undefined ]
+    permission: [ Config.vms.flow === "Flow2" ? RoleList.Administrator : undefined ]
 });
 
 /********************************

@@ -1,5 +1,5 @@
 import { serverReady } from 'core/pending-tasks';
-import { createIndex, sharedMongoDB } from 'helpers/parse-server/parse-helper';
+import { createIndex, sharedMongoDB, ensureCollectionExists } from 'helpers/parse-server/parse-helper';
 import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
@@ -8,7 +8,7 @@ import { Log } from 'helpers/utility';
 
     let flow = Config.vms.flow;
 
-    if (flow === "Flow1") {
+    // if (flow === "Flow1") {
         /// indexes ////////////////
         if (Config.vms.workerExpiredDay) {
             let days = Config.vms.workerExpiredDay;
@@ -16,6 +16,7 @@ import { Log } from 'helpers/utility';
             /// create touchDate TTL
             const magicString = "TTLUpdatedDate";
             let db = await sharedMongoDB();
+            await ensureCollectionExists(collection);
             let instance = db.collection(collection);
             let indexes = await instance.listIndexes().toArray();
             let touchDateIdx: string = indexes.reduce( (final, value) => {
@@ -43,7 +44,7 @@ import { Log } from 'helpers/utility';
                     { expireAfterSeconds: days*24*60*60 }
                 );
             }
-        }
+        // }
 
         ////////////////////////////
     }

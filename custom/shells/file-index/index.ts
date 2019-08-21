@@ -6,3 +6,4 @@ autoIndex('./../../schedulers/Flow1/controllers');
 autoIndex('./../../schedulers/Flow1/templates');
 
 autoIndex('./../../models/Flow1');
+autoIndex('./../../models/Flow2');

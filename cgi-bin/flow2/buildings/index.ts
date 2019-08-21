@@ -5,10 +5,15 @@ import {
     getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
 } from 'core/cgi-package';
 
-import { Flow1Floors, IFlow1Floors } from 'workspace/custom/models';
+import * as shortid from 'shortid';
 
-type IFloors = IFlow1Floors;
-let Floors = Flow1Floors;
+import {
+    Flow2Buildings, IFlow2Buildings
+} from 'workspace/custom/models';
+
+type IBuildings = IFlow2Buildings;
+let Buildings = Flow2Buildings;
+type Buildings = Flow2Buildings;
 
 var action = new Action({
     loginRequired: true,
@@ -19,13 +24,14 @@ var action = new Action({
 /********************************
  * C: create object
  ********************************/
-type InputC = Restful.InputC<IFloors>;
-type OutputC = Restful.OutputC<IFloors>;
+type InputC = Restful.InputC<IBuildings>;
+type OutputC = Restful.OutputC<IBuildings>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
-    var obj = new Floors(data.inputType);
+    var obj = new Buildings(data.inputType);
     await obj.save(null, { useMasterKey: true });
+
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -33,12 +39,13 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<IFloors>;
-type OutputR = Restful.OutputR<IFloors>;
+type InputR = Restful.InputR<IBuildings>;
+type OutputR = Restful.OutputR<IBuildings>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
-    /// 1) Make Query
-    var query = new Parse.Query(Floors);
+    /// V1) Make Query
+    var query = new Parse.Query(Buildings)
+        .include("floor");
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -48,14 +55,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 /********************************
  * U: update object
  ********************************/
-type InputU = Restful.InputU<IFloors>;
-type OutputU = Restful.OutputU<IFloors>;
+type InputU = Restful.InputU<IBuildings>;
+type OutputU = Restful.OutputU<IBuildings>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Floors).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(Buildings).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Buildings <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     /// 3) Output
@@ -65,16 +72,18 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 /********************************
  * D: delete object
  ********************************/
-type InputD = Restful.InputD<IFloors>;
-type OutputD = Restful.OutputD<IFloors>;
+type InputD = Restful.InputD<IBuildings>;
+type OutputD = Restful.OutputD<IBuildings>;
 
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Floors).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
+    var obj = await new Parse.Query(Buildings).get(objectId);
+    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Buildings <${objectId}> not exists.`]);
+
     /// 2) Delete
     obj.destroy({ useMasterKey: true });
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

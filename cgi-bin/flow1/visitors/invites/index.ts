@@ -19,6 +19,12 @@ type IInvitations = IFlow1Invitations;
 let Invitations = Flow1Invitations;
 type Invitations = Flow1Invitations;
 
+type VisitorStatus = Flow1VisitorStatus;
+let VisitorStatus = Flow1VisitorStatus;
+
+type EventInvitationComplete = EventFlow1InvitationComplete;
+let EventInvitationComplete = EventFlow1InvitationComplete;
+
 var action = new Action({
     loginRequired: true,
     permission: [RoleList.Administrator]
@@ -31,7 +37,7 @@ interface ICInvitations extends IInvitations {
 type InputC = Restful.InputC<ICInvitations>;
 type OutputC = Restful.OutputC<ICInvitations>;
 
-const inviteFilter = { parent: false, visitors: { company: false, status: (status) => getEnumKey(Flow1VisitorStatus, status) } };
+const inviteFilter = { parent: false, visitors: { company: false, status: (status) => getEnumKey(VisitorStatus, status) } };
 
 async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Promise<Visitors[]> {
     let resolvedVisitors: Visitors[] = [];
@@ -86,7 +92,7 @@ async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Pr
         }
         /// 2.X) no matches, add new
         visitor.set("company", company);
-        visitor.set("status", Flow1VisitorStatus.Pending);
+        visitor.set("status", VisitorStatus.Pending);
         resolvedVisitors.push(visitor);
     }
 
@@ -94,13 +100,13 @@ async function ruleCombineVisitors(company: Companies, visitors: Visitors[]): Pr
 }
 
 
-export async function doInvitation(data: ActionParam<ICInvitations>, pin?: Pin): Promise<Flow1Invitations> {
+export async function doInvitation(data: ActionParam<ICInvitations>, pin?: Pin): Promise<Invitations> {
     /// V0) Initiate
     let parent = data.user;
     let cancelled = false;
 
     /// 1) Create Object
-    let obj = new Flow1Invitations(data.inputType);
+    let obj = new Invitations(data.inputType);
 
     /// V1.1) Make Pin
     pin = pin || await PinCode.next();
@@ -122,7 +128,7 @@ export async function doInvitation(data: ActionParam<ICInvitations>, pin?: Pin):
     /// V2.1) Save Event
     let invitation = obj;
     let owner = invitation.getValue("parent");
-    let event = new EventFlow1InvitationComplete({
+    let event = new EventInvitationComplete({
         owner,
         invitation,
         company,
