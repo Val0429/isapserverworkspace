@@ -248,7 +248,7 @@ export class CCUREReader {
      */
     protected updateReportQueryTime() {
         console.log(`=>Query from  ${this.getLastReportQueryTime()}`);
-        this.queryAllAsync(QueryContent.ReportsLastUpdateTime,null,true).then((resolve) => {
+        this.queryAllAsync(QueryContent.ReportsLastUpdateTime,null,true,300000).then((resolve) => {
             if(resolve[0]["updateTime"] == this.getLastReportQueryTime()){
                 console.log("Newest updateTime is the same as previous, dont changed");
                 return;
@@ -263,7 +263,7 @@ export class CCUREReader {
             });
             console.log(`=>Update 'lastUpdateTime to ${this.getLastReportQueryTime()}`);
         }).catch(err => {
-            console.log(`=>Update 'lastUpdateTime fail`);
+            console.log(`=>Update 'lastUpdateTime fail`, err);
         });
     }
 
