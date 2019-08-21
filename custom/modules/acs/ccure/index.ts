@@ -427,6 +427,7 @@ export class CCUREService {
             deviceId: 3404,
             deviceName: 'NHHQ_A2-2_R2_05G042',
             doorId: 4962,
+            inOut: 'In',
             online: false,
             description: '' 
         },
@@ -434,6 +435,7 @@ export class CCUREService {
             deviceId: 3405,
             deviceName: 'NHHQ_A2-2_R3_05G043',
             doorId: 4963,
+            inOut: 'Out',
             online: true,
             description: '' 
         }

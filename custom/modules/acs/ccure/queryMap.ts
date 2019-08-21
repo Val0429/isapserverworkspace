@@ -205,9 +205,10 @@ var queryMap : IQueryMap = {};
         "selector": 'Reader_ID as deviceId,'+
                     'Reader_Name as deviceName,' +
                     'Related_Object_ID as doorId,' +
+                    'REPLACE(REPLACE(Door_Reader_Number,21,\'In\'),22,\'Out\') as inOut,' +
                     'Online as online,'+
                     'Description as description',
-        "dsn": Config.CCUREdsn.CFSRV,
+        "dsn": Config.CCUREdsn.CFSRV
     }
 
     //Door

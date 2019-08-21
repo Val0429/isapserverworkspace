@@ -96,12 +96,12 @@ export async function GetMigrationDataPermissionTable() {
     });
 
     //2. Add door 
-    function pushDoor(json, perId, timespecId, doorId, deviceNames) {
+    function pushDoor(json, perId, timespecId, doorId, devices) {
         json[permTablesKeyMap[perId]].push(
             {
                 "type": "door",
                 "name": doorKeyMap[doorId],
-                "devices": deviceNames,
+                "devices": devices,
                 "timespec": timeSchedulesKeyMap[timespecId],
             });
     }
@@ -111,11 +111,16 @@ export async function GetMigrationDataPermissionTable() {
         for (var i = 0; i < permIdjsonArr.length; i++) {
             let doorId = permIdjsonArr[i]["doorId"];
             if (!devicesGroupby[doorId]) continue;//////
-            let deviceNames = [];
+            let devices = [];
             for (var j = 0; j < devicesGroupby[doorId].length; j++) {
-                deviceNames.push(devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g, ""));
+                devices.push(
+                    {
+                        "name":devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g, ""),
+                        "inOut":devicesGroupby[doorId][j]["inOut"]
+                    }
+                );
             }
-            pushDoor(result, permissionTableId, permIdjsonArr[i]["timespecId"], doorId, deviceNames);
+            pushDoor(result, permissionTableId, permIdjsonArr[i]["timespecId"], doorId, devices);
         }
     });
 
@@ -140,7 +145,12 @@ export async function GetMigrationDataPermissionTable() {
                 if (!devicesGroupby[doorId]) continue;
                 let devicesJson = [];
                 for (var n = 0; n < devicesGroupby[doorId].length; n++) {
-                    devicesJson.push(devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g, ""));
+                    devicesJson.push(
+                        {
+                            "name":devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g, ""),
+                            "inOut":devicesGroupby[doorId][n]["inOut"]
+                        }
+                    );
                 }
                 doorDevices.push(
                     {
