@@ -109,7 +109,7 @@ export class HRService {
                     requestTimeout: 300000,
                     connectionTimeout: 300000, //ms
                     options: {
-                        tdsVersion: '7_1'
+                        tdsVersion: '7_1' //for sql server 2000
                     }
                 }
 
@@ -263,6 +263,11 @@ export class HRService {
                                     objects.push(log);
                                     Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);                                    
                                 }
+                            }
+                            //important to avoid out of memory
+                            if(objects.length>=1000){
+                                await ParseObject.saveAll(objects);
+                                objects=[];
                             }
                         }
                         await ParseObject.saveAll(objects);
@@ -592,7 +597,11 @@ export class HRService {
                                     member.set(d);
                                 }
                                 objects.push(member);
-                                
+                                //important to avoid out of memory
+                                if(objects.length>=1000){
+                                    await ParseObject.saveAll(objects);
+                                    objects=[];
+                                }
                             }
                             await ParseObject.saveAll(objects);
                         }
@@ -608,7 +617,6 @@ export class HRService {
                             
                             res = await this.humanResource.getViewSupporter(EmpNo);
                             let objects=[];
-                            let memberObjects=[];
                             let vieMembers =  await new Parse.Query(vieMember).equalTo("EmpNo", res.map(x=>x["SupporterNo"])).find(); 
                             let members =  await new Parse.Query(Member).equalTo("EmployeeNumber", res.map(x=>x["SupporterNo"])).find(); 
                             for (let record of res) {                                
@@ -783,10 +791,14 @@ export class HRService {
                                 }else{
                                     member.set(d);
                                 }
-                                memberObjects.push(member);
+                                objects.push(member);
+                                //important to avoid out of memory
+                                if(objects.length>=1000){
+                                    await ParseObject.saveAll(objects);
+                                    objects=[];
+                                }
                             }
                             await ParseObject.saveAll(objects);
-                            await ParseObject.saveAll(memberObjects);
                         }
                         catch (ex) {
                             this.checkCycleTime = 5;
