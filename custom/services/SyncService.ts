@@ -183,17 +183,17 @@ export class SyncService{
             }
             let door = doors.find(x=>x.get("doorid") == r.doorId);
             if (!door) continue;
-            let readerin:any[] = (door.get("readerin")||[]).filter(x=>x.get("system") == 800);
-            let readerout:any[] = (door.get("readerout")||[]).filter(x=>x.get("system") == 800);
+            let readerin:any[] = door.get("readerin");
+            let readerout:any[] = door.get("readerout");
             if(r.inOut=="In") {                
                 if (!readerin){
                     readerin=[obj];
                 }                     
-                else if(!readerin.find(x=>x.get("readerid")==r.deviceId)){
+                else if(!readerin.find(x=>x.get("objectId")==obj.get("objectId"))){
                     readerin.push(obj); 
                     //changed reader position
-                    if(readerout && readerout.find(x=>x.get("readerid")==r.deviceId)){
-                        readerout.splice(readerout.indexOf(x=>x.get("readerid")==r.deviceId), 1);
+                    if(readerout && readerout.find(x=>x.get("objectId")==obj.get("objectId"))){
+                        readerout.splice(readerout.indexOf(x=>x.get("objectId")==obj.get("objectId")), 1);
                     }
                 }                    
             }
@@ -201,11 +201,11 @@ export class SyncService{
                 if (!readerout){
                     readerout = [obj];
                 }                     
-                else if(!readerout.find(x=>x.get("readerid")==r.deviceId)){
+                else if(!readerout.find(x=>x.get("objectId")==obj.get("objectId"))){
                     readerout.push(obj);                    
                     //changed reader position
-                    if(readerin && readerin.find(x=>x.get("readerid")==r.deviceId)){
-                        readerin.splice(readerin.indexOf(x=>x.get("readerid")==r.deviceId), 1);
+                    if(readerin && readerin.find(x=>x.get("objectId")==obj.get("objectId"))){
+                        readerin.splice(readerin.indexOf(x=>x.get("objectId")==obj.get("objectId")), 1);
                     }
                 }                   
             }
