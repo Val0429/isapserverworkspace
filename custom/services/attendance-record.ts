@@ -58,7 +58,6 @@ export class AttendanceRecord {
     async doAccessControlSync() {
         Log.Info(`${this.constructor.name}`, `2.0 Timer Check`);
 
-        var me = this;
         let now: Date = new Date();
 
         clearTimeout(this.waitTimer);
@@ -69,10 +68,23 @@ export class AttendanceRecord {
             Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
             // 2.0 Query Records
-            {
-                Log.Info(`${this.constructor.name}`, `2.0 Query Records from SiPass`);
+            await this.getSipassData();
+            await this.getCCureData();
+            
+        }
+
+        now = new Date();
+        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.cycleTime;
+        Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.cycleTime - s} ] sec`);
+
+        this.waitTimer = setTimeout(() => {
+            this.doAccessControlSync();
+        }, (this.cycleTime - s) * 1000);
+    } 
+    async getSipassData() {
+        Log.Info(`${this.constructor.name}`, `2.0 Query Records from SiPass`);
                 let objects=[];
-                var end = now = new Date();
+                var end = new Date();
                 var begin = new Date(new Date().setHours( end.getHours() - 1 ));
 
                 let records = [];
@@ -104,57 +116,46 @@ export class AttendanceRecord {
                     }
                 }
                 await ParseObject.saveAll(objects);
-                objects=[];
-                Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
-                try{
-                    let ccureService = new CCUREService();
-                    await ccureService.Login();
-                    records = await ccureService.GetOrganizedNewReport();
-                }catch(err){
-                    console.error("cannot get data from ccure", err);
-                    records=[];
-                }
+    }
+    async getCCureData(){
+        
+        Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
+        try{
+            let objects=[];
+            let ccureService = new CCUREService();
+            await ccureService.Login();
+            let records = await ccureService.GetOrganizedNewReport();
+            for(let r of records) {
+                let newData:any={};
+                let dt = new Date(r["updateTime"]);
+                newData["rowguid"] = r["reportId"] + "";
+                newData["date_occurred"] = moment(dt).format("YYYYMMDD") ;
+                newData["time_occurred"] = moment(dt).format('HHmmss');
+                newData["date_time_occurred"] =dt;
+                newData["card_no"] = r["cardNumber"] + "";
+                newData["point_no"] = r["doorId"] + "";
+                newData["point_name"] = r["door"];
+                newData["message"] = r["message"];
                 
-                
-
-                for(let r of records) {
-                    let newData:any={};
-                    let dt = new Date(r["updateTime"]);
-                    newData["rowguid"] = r["reportId"] + "";
-                    newData["date_occurred"] = moment(dt).format("YYYYMMDD") ;
-                    newData["time_occurred"] = moment(dt).format('HHmmss');
-                    newData["date_time_occurred"] =dt;
-                    newData["card_no"] = r["cardNumber"] + "";
-                    newData["point_no"] = r["doorId"] + "";
-                    newData["point_name"] = r["door"];
-                    newData["message"] = r["message"];
-                    
-                    //make it similar to sipass
-                    newData["state_id"] = 2;
-                    newData["type"]=21;                   
-
-                    let o = new AttendanceRecords(newData);
-
-                    objects.push(o);
-                    //important to avoid out of memory
-                    if(objects.length>=1000){
-                        await ParseObject.saveAll(objects);
-                        objects=[];
-                    }
+                //make it similar to sipass
+                newData["state_id"] = 2;
+                newData["type"]=21;                   
+    
+                let o = new AttendanceRecords(newData);
+    
+                objects.push(o);
+                //important to avoid out of memory
+                if(objects.length>=1000){
+                    await ParseObject.saveAll(objects);
+                    objects=[];
                 }
-                await ParseObject.saveAll(objects);
             }
-            await delay(1000);
+            await ParseObject.saveAll(objects);
+        }catch(err){
+            console.error("cannot get data from ccure", err);            
         }
-
-        now = new Date();
-        var s = (now.getMinutes() * 60 + now.getSeconds()) % this.cycleTime;
-        Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.cycleTime - s} ] sec`);
-
-        this.waitTimer = setTimeout(() => {
-            this.doAccessControlSync();
-        }, (this.cycleTime - s) * 1000);
-    } 
+        
+    }
 }
 
 export default new AttendanceRecord();
