@@ -182,7 +182,7 @@ export class SyncService{
                 obj.set("status", 1);
             }
             let door = doors.find(x=>x.get("doorid") == r.doorId);
-            if (door) {
+            if (door && r.inOut=="In") {
                 let readers = door.get("readerin");
                 if (!readers){
                     readers = [obj];
@@ -193,8 +193,20 @@ export class SyncService{
                     readers.push(obj);                    
                     door.set("readerin", readers);
                     doorObjects.push(door);
-                }
-                    
+                }                    
+            }
+            if (door && r.inOut=="Out") {
+                let readers = door.get("readerout");
+                if (!readers){
+                    readers = [obj];
+                    door.set("readerout", readers);
+                    doorObjects.push(door);
+                }                     
+                else if(!readers.find(x=>x.get("readerid")==r.deviceId)){
+                    readers.push(obj);                    
+                    door.set("readerout", readers);
+                    doorObjects.push(door);
+                }                    
             }
         }
         await ParseObject.saveAll(objects);
