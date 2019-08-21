@@ -204,8 +204,10 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
 
     for (let accesslevelInput of accessLevels) {
         let accesslevelObject = await new Parse.Query(AccessLevel).equalTo("objectId", accesslevelInput.objectId)
-            .include("doorgroup.doors")
-            .include("door")
+            .include("doorgroup.doors.readerin")
+            .include("doorgroup.doors.readerout")
+            .include("door.readerin")
+            .include("door.readerout")
             .include("floor")
             .include("elevator.floors")
             .include("floorgroup.floors")
@@ -219,7 +221,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             if(!accesslevel.door || !accesslevel.timeschedule)continue;
            
             //compare content with ccure door name and timename            
-            let { doorIsInCCure, door } = await getCCureDoor(accesslevel.door.objectId);            
+            let { doorIsInCCure, door } = getCCureDoor(accesslevel.door);            
             if(!doorIsInCCure) continue;
             acsAcessLevels.push(accesslevel);
             if (!ccureClearance) {
@@ -237,7 +239,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
                         
             for(let doorid of accesslevel.doorgroup.doors){
                 //compare content with ccure door name and timename                  
-                let { doorIsInCCure, door } = await getCCureDoor(doorid.objectId);
+                let { doorIsInCCure, door } = getCCureDoor(doorid);
                 if(!doorIsInCCure) continue;
                 acsAcessLevels.push(accesslevel);
                 if (!ccureClearance) {
@@ -257,7 +259,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             if(!accesslevel.elevator || !(accesslevel.floor && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
             
             //compare content with ccure floor name and timename            
-            let { floorIsInCCure, floor } = await getCCureFloor(accesslevel.floor[0].objectId);            
+            let { floorIsInCCure, floor } = getCCureFloor(accesslevel.floor[0]);            
             if(!floorIsInCCure) continue;
             acsAcessLevels.push(accesslevel);
             if (!ccureClearance) {
@@ -276,7 +278,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             
             //compare content with ccure floor name and timename 
             for(let alFloor of accesslevel.floor){
-                let { floorIsInCCure, floor } = await getCCureFloor(alFloor.objectId);            
+                let { floorIsInCCure, floor } = getCCureFloor(alFloor);            
                 if(!floorIsInCCure) continue;
                 acsAcessLevels.push(accesslevel);
                 if (!ccureClearance) {
@@ -298,12 +300,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
 }
 
 
-async function getCCureDoor(doorObjectId: any) {
-    let doorObject = await new Parse.Query(Door).equalTo("objectId", doorObjectId)
-        .include("readerin")
-        .include("readerout")
-        .first();
-    let door = ParseObject.toOutputJSON(doorObject);
+function getCCureDoor(door: any) {
     let readers = [];
     if (door.readerin && door.readerin.length > 0)
         readers.push(...door.readerin);
@@ -314,12 +311,8 @@ async function getCCureDoor(doorObjectId: any) {
     return { doorIsInCCure, door };
 }
 
-async function getCCureFloor(floorObjectId: any) {
-    let floorObject = await new Parse.Query(Floor)
-        .equalTo("objectId", floorObjectId)
-        .first();
-    let floor = ParseObject.toOutputJSON(floorObject);
-    let floorIsInCCure = floor.find(x=>x.floorname.length>=2 && x.system==800 && x.floorname.substring(0,2)!="D_")
+function getCCureFloor(floor: any) {    
+    let floorIsInCCure = floor.floorname.length>=2 && floor.system==800 && floor.floorname.substring(0,2)!="D_";
     console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
     return { floorIsInCCure, floor };
 }
