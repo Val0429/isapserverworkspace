@@ -107,7 +107,10 @@ export class HRService {
                     password: Config.humanresource.password,
                     database: Config.humanresource.database,
                     requestTimeout: 300000,
-                    connectionTimeout: 300000 //ms
+                    connectionTimeout: 300000, //ms
+                    options: {
+                        tdsVersion: '7_1'
+                    }
                 }
 
                 try {
