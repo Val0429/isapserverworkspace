@@ -91,15 +91,20 @@ export class AttendanceRecord {
                     records=[];
                 }
 
-                records.forEach( (r) => {
+                for(let r of records){
                     let dateTime = r["date_occurred"] + r["time_occurred"];
                     r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
 
                     let o = new AttendanceRecords(r);
                     objects.push(o);
-                    
-                });
-
+                    //important to avoid out of memory
+                    if(objects.length>=1000){
+                        await ParseObject.saveAll(objects);
+                        objects=[];
+                    }
+                }
+                await ParseObject.saveAll(objects);
+                objects=[];
                 Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
                 try{
                     let ccureService = new CCUREService();
@@ -112,16 +117,17 @@ export class AttendanceRecord {
                 
                 
 
-                records.forEach( (r) => {
+                for(let r of records) {
                     let newData:any={};
+                    let dt = new Date(r["updateTime"]);
                     newData["rowguid"] = r["reportId"] + "";
-                    newData["date_occurred"] = moment(r["updateTime"]).format("YYYYMMDD") ;
-                    newData["time_occurred"] = moment(r["updateTime"]).format('HHmmss');
-                    newData["date_time_occurred"] = new Date(r["updateTime"]);
+                    newData["date_occurred"] = moment(dt).format("YYYYMMDD") ;
+                    newData["time_occurred"] = moment(dt).format('HHmmss');
+                    newData["date_time_occurred"] =dt;
                     newData["card_no"] = r["cardNumber"] + "";
                     newData["point_no"] = r["doorId"] + "";
                     newData["point_name"] = r["door"];
-                    newData["category"] = r["message"];
+                    newData["message"] = r["message"];
                     
                     //make it similar to sipass
                     newData["state_id"] = 2;
@@ -130,8 +136,12 @@ export class AttendanceRecord {
                     let o = new AttendanceRecords(newData);
 
                     objects.push(o);
-                    
-                });
+                    //important to avoid out of memory
+                    if(objects.length>=1000){
+                        await ParseObject.saveAll(objects);
+                        objects=[];
+                    }
+                }
                 await ParseObject.saveAll(objects);
             }
             await delay(1000);
