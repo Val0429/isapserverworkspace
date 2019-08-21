@@ -62,14 +62,29 @@ export class AttendanceRecord {
 
         clearTimeout(this.waitTimer);
 
-        if (now.getMinutes() == 5) {  // Startup @XX:05
-        // if (now.getMinutes() != 70) {
+        //if (now.getMinutes() == 5) {  // Startup @XX:05
+        if (now.getMinutes() != 70) {
             // 0.0 Initial Adapter
             Log.Info(`${this.constructor.name}`, `0.0 Initial Adapter`);
 
             // 2.0 Query Records
             await this.getSipassData();
-            await this.getCCureData();
+
+
+            Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
+            
+            try{
+                let ccureService = new CCUREService();
+                await ccureService.Login();
+                let records = await ccureService.GetOrganizedNewReport();
+                while(records.length>10000){
+                    await this.getCCureData(records.splice(0,10000));
+                }
+                await this.getCCureData(records);
+            }catch(err){
+                console.error("cannot get data from ccure", err);            
+            }
+           
             
         }
 
@@ -98,12 +113,12 @@ export class AttendanceRecord {
                         ("0" + end.getMinutes()).slice(-2),
                         ("0" + end.getSeconds()).slice(-2)
                     );
-                
-                let membersParse = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.filter(x=>x.Credentials && x.Credentials.length>0).map(x=>x.Credentials[0].CardNumber)).find();
-                let members = membersParse.map(x=>ParseObject.toOutputJSON(x));
+                    console.log("sipass records",records.length);
+                let members = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.filter(x=>x.Credentials && x.Credentials.length>0).map(x=>x.Credentials[0].CardNumber)).find();
                 let readers = await new Parse.Query(Reader)
                         .containedIn("readername", records.map(x=>x["point_name"]))
                         .find();
+                
                 for(let r of records){
                     let dateTime = r["date_occurred"] + r["time_occurred"];
                     r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
@@ -118,7 +133,7 @@ export class AttendanceRecord {
                         if(!door) door = await new Parse.Query(Door).equalTo("readerout", reader).first();
                         if(door) o.set("door", door);
                     }
-                    o.set("member", members.find(x=>x.Credentials && x.Credentials.length>0 && x.Credentials[0].CardNumber == r.Credentials[0].CardNumber))
+                    o.set("member", members.find(x=>x.get("Credentials") && x.get("Credentials").length>0 && x.get("Credentials")[0]["CardNumber"] == r.Credentials[0].CardNumber))
                 
                     objects.push(o);
                     //important to avoid out of memory
@@ -130,26 +145,24 @@ export class AttendanceRecord {
                 await ParseObject.saveAll(objects);
             }catch(err){
                 console.error("cannot get data from sipass", err);
-                records=[];
             }
     }
-    async getCCureData(){
+    async getCCureData(records:any[]){
         
-        Log.Info(`${this.constructor.name}`, `2.0 Query Records from CCure800`);
-        try{
+        
+        
             let objects=[];
-            let ccureService = new CCUREService();
-            await ccureService.Login();
-            let records = await ccureService.GetOrganizedNewReport();
-            let membersParse = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber)).find();
-            let members = membersParse.map(x=>ParseObject.toOutputJSON(x));
-            let doorsParse = await new Parse.Query(Door)
-                        .containedIn("door", records.map(x=>x["door"]))
-                        .find();
-            let doors = doorsParse.map(x=>ParseObject.toOutputJSON(x));         
+            
+            console.log("getCCureData", records.length);
+            let members = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber.toString())).find();
+            let doors = await new Parse.Query(Door)
+                        .containedIn("doorname", records.map(x=>x["door"]))
+                        .find();     
+            // console.log("members", members);
+            // console.log("doors", doors);
             for(let r of records) {
                 let newData:any={};
-                let dt = new Date(r["updateTime"]);
+                let dt = new Date(r["updateTime"]*1000);
                 let correctDate = new Date(dt.getFullYear()+20,dt.getMonth(),dt.getDate(),dt.getHours(),dt.getMinutes(),dt.getSeconds());
                 newData["rowguid"] = r["reportId"] + "";
                 newData["date_occurred"] = moment(correctDate).format("YYYYMMDD") ;
@@ -165,19 +178,16 @@ export class AttendanceRecord {
                 newData["type"]=21;                   
     
                 let o = new AttendanceRecords(newData);
-                o.set("member", members.find(x=>x.Credentials && x.Credentials.length>0 && x.Credentials[0].CardNumber == r.cardNumber));
-                o.set("door", doors.find(x=>x.doorname == r.door));
+                o.set("member", members.find(x=>x.get("Credentials") && x.get("Credentials").length>0 && x.get("Credentials")[0]["CardNumber"] == r.cardNumber));
+                o.set("door", doors.find(x=>x.get("doorname") == r.door));
                 objects.push(o);
-                //important to avoid out of memory
-                if(objects.length>=1000){
-                    await ParseObject.saveAll(objects);
-                    objects=[];
-                }
+                
+                
             }
+            //console.log("objects", objects.map(x=>ParseObject.toOutputJSON(x)))
             await ParseObject.saveAll(objects);
-        }catch(err){
-            console.error("cannot get data from ccure", err);            
-        }
+            //console.log("objects", objects.length);
+           
         
     }
 }
