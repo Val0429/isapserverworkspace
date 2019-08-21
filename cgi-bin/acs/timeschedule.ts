@@ -37,7 +37,8 @@ type OutputR = Restful.OutputR<ITimeSchedule>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(TimeSchedule);
+    var query = new Parse.Query(TimeSchedule)
+                .ascending("timename");
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
     query.equalTo("system", 1);

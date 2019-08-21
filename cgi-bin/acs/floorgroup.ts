@@ -38,8 +38,8 @@ type OutputR = Restful.OutputR<IFloorGroup>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(FloorGroup)
-    .include("area.site")
-    .include("floors");
+                .ascending("groupname")
+                .include("floors");
     let filter = data.parameters as any;
     if(filter.name){
         query.matches("groupname", new RegExp(filter.name), "i");

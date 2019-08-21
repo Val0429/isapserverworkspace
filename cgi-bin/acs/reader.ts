@@ -3,7 +3,7 @@ import {
 } from 'core/cgi-package';
 
 import { Log } from 'workspace/custom/services/log';
-import { IReader, Reader } from '../../custom/models'
+import { IReader, Reader } from '../../custom/models';
 
 
 var action = new Action({
@@ -38,7 +38,7 @@ type OutputR = Restful.OutputR<IReader>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Reader).equalTo("status", 1);
+    var query = new Parse.Query(Reader).ascending("readername").equalTo("status", 1);
     let filter = data.parameters as any;
 
     let groupQuery = new Parse.Query(DoorGroup);

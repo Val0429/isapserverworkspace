@@ -76,6 +76,7 @@ export class ReportService{
         /// 1) Make Query
         var query = new Parse.Query(PermissionTable)
             .equalTo("system", 0)
+            .ascending("tablename")
             .include("accesslevels.door")
             .include("accesslevels.doorgroup.doors")
             .include("accesslevels.floor")
@@ -164,7 +165,7 @@ export class ReportService{
     }
     async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
         /// 1) Make Query
-        var query = new Parse.Query(Member);      
+        var query = new Parse.Query(Member).ascending("LastName");      
         console.log("filter member", filter);
         // looking for duplication
         if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);

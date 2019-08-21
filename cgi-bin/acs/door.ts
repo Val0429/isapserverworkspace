@@ -106,7 +106,8 @@ type OutputR = Restful.OutputR<IDoor>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     
-    var query = new Parse.Query(Door)
+    var query = new Parse.Query(Door)    
+        .ascending("doorname")
         .include("readerout")
         .include("readerin");
     let filter = data.parameters as any;

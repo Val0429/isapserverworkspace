@@ -76,6 +76,7 @@ type OutputR = Restful.OutputR<IElevator>;
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Elevator)
+                    .ascending("elevatorname")
                     .include("reader");
     let filter = data.parameters as any;
 

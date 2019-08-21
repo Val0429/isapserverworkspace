@@ -37,7 +37,9 @@ type OutputR = Restful.OutputR<IFloor>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
-    var query = new Parse.Query(Floor).equalTo("status", 1);
+    var query = new Parse.Query(Floor)
+                    .ascending("floorname")
+                    .equalTo("status", 1);
     /// 2) With Extra Filters
     let filter = data.parameters as any;
 
