@@ -96,9 +96,9 @@ export default new Action<Input, Output>({
     let invitation = new Invitations({
         company,
         visitors: visitors as any,
-        dates: {
+        dates: [{
             start, end
-        } as any,
+        } as any],
         walkIn: true
     });
     await invitation.save();

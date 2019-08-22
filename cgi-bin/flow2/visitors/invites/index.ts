@@ -118,13 +118,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data: ActionParam<I
 type InputR = Restful.InputR<IInvitations>;
 type OutputR = Restful.OutputR<IInvitations>;
 
-action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+action.get<InputR, OutputR>({ inputType: "InputR", permission: [RoleList.TenantAdministrator, RoleList.TenantUser] }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(Invitations)
         .include("visitors")
         .include("visitors.privacy")
         .include("company")
-        .include("purpose");
+        .include("purpose")
+        .equalTo("company", data.inputType.company);
         //.equalTo("parent", data.user);
 
     /// 2) With Extra Filters

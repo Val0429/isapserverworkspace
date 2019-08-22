@@ -43,6 +43,7 @@ if (flow === 'Flow1') {
             kioskId: string;
             kioskName: string;
             activated?: boolean;
+            strictMode?: boolean;
         `]
     ];
 }
