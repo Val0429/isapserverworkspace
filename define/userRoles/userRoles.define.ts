@@ -43,7 +43,6 @@ if (flow === 'Flow1') {
             kioskId: string;
             kioskName: string;
             activated?: boolean;
-            strictMode?: boolean;
         `]
     ];
 }
@@ -88,6 +87,7 @@ if (flow === 'Flow2') {
             kioskName: string;
             building: ${flow}Buildings;
             activated?: boolean;
+            strictMode?: boolean;
         `, [`${flow}Buildings`]]
     ];
 }
