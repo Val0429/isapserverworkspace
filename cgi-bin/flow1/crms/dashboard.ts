@@ -55,8 +55,8 @@ action.post(
             }
 
             let work: WorkPermit[] = await new Parse.Query(WorkPermit)
-                .greaterThanOrEqualTo('updatedAt', startDate)
-                .lessThan('updatedAt', endDate)
+                .greaterThanOrEqualTo('workStartDate', startDate)
+                .lessThan('workEndDate', endDate)
                 .find()
                 .fail((e) => {
                     throw e;
@@ -98,36 +98,34 @@ action.post(
             let byHours: IDateCount[] = [];
             let byDays: IDateCount[] = [];
             event.forEach((value, index, array) => {
-                let date = new Date(value.createdAt);
+                let hour: Date = new Date(new Date(value.createdAt).setMinutes(0, 0, 0));
 
-                date.setMinutes(0, 0, 0);
-                let summary = byHours.find((value1, index1, array1) => {
-                    return value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.count += 1;
-                } else {
-                    byHours.push({
-                        date: new Date(date),
-                        count: 1,
-                    });
-                }
-
-                date.setHours(0, 0, 0, 0);
+                let date: Date = new Date(new Date(hour).setHours(0, 0, 0, 0));
 
                 if (date.getDate() === new Date().getDate()) {
-                    return;
-                }
-                summary = byDays.find((value1, index1, array1) => {
-                    return value1.date.getTime() === date.getTime();
-                });
-                if (summary) {
-                    summary.count += 1;
-                } else {
-                    byDays.push({
-                        date: new Date(date),
-                        count: 1,
+                    let summary = byHours.find((value1, index1, array1) => {
+                        return value1.date.getTime() === hour.getTime();
                     });
+                    if (summary) {
+                        summary.count += 1;
+                    } else {
+                        byHours.push({
+                            date: new Date(hour),
+                            count: 1,
+                        });
+                    }
+                } else {
+                    let summary = byDays.find((value1, index1, array1) => {
+                        return value1.date.getTime() === date.getTime();
+                    });
+                    if (summary) {
+                        summary.count += 1;
+                    } else {
+                        byDays.push({
+                            date: new Date(date),
+                            count: 1,
+                        });
+                    }
                 }
             });
 

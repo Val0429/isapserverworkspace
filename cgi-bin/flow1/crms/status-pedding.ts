@@ -41,7 +41,7 @@ action.put(
             let content: string = `
                 <div style='font-family:Microsoft JhengHei UI; color: #444;'>
                     <h3>Hi,</h3>
-                    <h4>Contractor “${work.getValue('contractorCompanyName')}” has submitted PTW # ${work.getValue('ptwId')}.</h4>
+                    <h4>Contractor “${work.getValue('contractorCompanyName')}” has submitted (PTW # ${work.getValue('ptwId')}) request.</h4>
                     <h4>Please remember to review it, and approve / reject it accordingly.</h4>
                 </div>`;
 
