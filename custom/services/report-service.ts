@@ -277,6 +277,13 @@ export class ReportService{
             if (member.PersonalDetails.DateOfBirth) {          
                 newMember.birthday = member.PersonalDetails.DateOfBirth;          
             }
+        }else{
+            newMember.account = "";
+            newMember.password = "";
+            newMember.email = "";
+            newMember.phone = "";
+            newMember.extensionNumber = "";       
+            newMember.birthday = "";
         }
         //custom fields      
         for(let field of CustomFields){
