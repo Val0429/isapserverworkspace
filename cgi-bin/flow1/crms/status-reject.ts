@@ -40,7 +40,7 @@ action.put(
             let content: string = `
                 <div style='font-family:Microsoft JhengHei UI; color: #444;'>
                     <h3>Dear ${work.getValue('contact')},</h3>
-                    <h4>We’re sorry to inform you that One Raffles Link has REJECTED your PTW (PTW ID #${work.getValue('ptwId')}) request.</h4>
+                    <h4>We’re sorry to inform you that One Raffles Link has REJECTED your PTW (PTW # ${work.getValue('ptwId')}) request.</h4>
                 </div>`;
 
             await SendEmail(title, content, {
