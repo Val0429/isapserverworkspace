@@ -67,8 +67,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     for (const rid of obj.get("AccessRules")) {            
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);
         console.log("permission", permission, rid);
+        //not in sipass or ccure
         if(!permission)continue;
-        ccureAccessRules.push(permission.get("tablename"));
+        //check if permission is in ccure
+        if( permissionTables.find(x=>x.get("system")==800 && x.get("tableid")== +rid)){
+            ccureAccessRules.push(permission.get("tablename"));
+        }
         let newRule = {
             ObjectName: permission.get("tablename"),
             ObjectToken:  permission.get("tableid").toString(),
@@ -224,11 +228,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     for (const rid of update.get("AccessRules").map(x=>+x)) {
 
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);        
-
+        //not in sipass or ccure
         if(!permission)continue;
-        
-        ccureAccessRules.push(permission.get("tablename"));
-        
+        //check if permission is in ccure
+        if( permissionTables.find(x=>x.get("system")==800 && x.get("tableid")== +rid)){
+            ccureAccessRules.push(permission.get("tablename"));
+        }
         let newRule = {
                 ObjectName: permission.get("tablename"),
                 ObjectToken: permission.get("tableid").toString(),
