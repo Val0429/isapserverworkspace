@@ -321,12 +321,17 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
     let accessLevelIsNotInAcs="accessLevelIsNotInAcs"
     for(let accessRule of ccureClearance){
         if(accessRule.type=="door" ){
+            let isActive = accessRule.devices && accessRule.devices.length>0 && accessRule.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
+            if(!isActive) continue;
+
             let exists = acsAccessLevels.find(x => x.type == "door" && accessRule.name == x.door.doorname && accessRule.timespec == x.timeschedule.timename);
             if (!exists)
                 errors.push({ type: accessLevelIsNotInAcs, devicename: accessRule.name, timename: accessRule.timespec });
         }
         if(accessRule.type=="doorGroup"){
             for(let door of accessRule.doors){
+                let isActive = door.devices && door.devices.length>0 && door.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
+                if(!isActive) continue;
                 let exists = acsAccessLevels.find(x => x.type == "doorGroup" && accessRule.name == x.doorgroup.groupname &&
                 accessRule.timespec == x.timeschedule.timename && x.doorgroup.doors.find(y=>door.name==y.doorname));
                 if (!exists)
@@ -335,6 +340,9 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
         }
 
         if(accessRule.type=="elevatorFloor" && accessRule.floor.type=="floor"){
+                let isActive = accessRule.elevator.device && accessRule.elevator.device.length>0 && accessRule.elevator.device.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
+                if(!isActive) continue;
+
                 let exists = acsAccessLevels.find(x => x.type == "elevator" && x.elevator.elevatorname == accessRule.elevator.name &&
                             accessRule.timespec == x.timeschedule.timename && x.floor.length > 0 && x.floor[0].floorname == accessRule.floor.name);
                 if (!exists)
@@ -342,6 +350,8 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
         }
         if(accessRule.type=="elevatorFloor" && accessRule.floor.type=="floorGroup"){
             for(let floor of accessRule.floors){
+                let isActive = accessRule.elevator.device && accessRule.elevator.device.length>0 && accessRule.elevator.device.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
+                if(!isActive) continue;
                 let exists = acsAccessLevels.find(x => x.type == "floorGroup" && x.elevator.elevatorname == accessRule.elevator.name &&
                 accessRule.timespec == x.timeschedule.timename && x.floors.find(y=>floor.name==y.floorname));
                 if (!exists)
