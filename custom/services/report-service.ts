@@ -235,57 +235,54 @@ export class ReportService{
           }    
     }
     private normalizeMember(member:any) { 
-         let newMember:any = {};
+        let newMember:any = {};
           
-          newMember.objectId = member.objectId;      
-    
-          newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
-                                        member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
-                                        .map(x=>parseInt(x.RuleToken)) : [];
-            
-          newMember.personType = member.PrimaryWorkgroupId;
-          newMember.employeeNumber = member.EmployeeNumber;      
-          newMember.chineseName = member.LastName;
-          newMember.englishName = member.FirstName;
-          newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
-          if (member.Credentials && member.Credentials.length>0){          
-            newMember.cardNumber = member.Credentials[0].CardNumber;
-            newMember.cardAllNumber = member.Credentials[0].CardNumber;
-            newMember.cardCertificate = (member.Credentials[0].ProfileId || 0).toString();
-            newMember.deviceNumber = member.Credentials[0].FacilityCode;
-            newMember.pinDigit = member.Credentials[0].PinDigit;
-            newMember.profileName = member.Credentials[0].ProfileName;
-            newMember.technologyCode = member.Credentials[0].CardTechnologyCode;    
-            newMember.pinMode = member.Credentials[0].PinMode;
-            newMember.startDate = member.Credentials[0].StartDate;
-            newMember.endDate = member.Credentials[0].StartDate;
-            newMember.pin = member.Credentials[0].Pin || "0";
-          }
-    
-            newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
-            newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
-            
-    
-          // tab2
-          if (member.PersonalDetails) {
+        newMember.objectId = member.objectId;      
+
+        newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
+                                    member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
+                                    .map(x=>parseInt(x.RuleToken)) : [];
+        
+        newMember.personType = member.PrimaryWorkgroupId;
+        newMember.employeeNumber = member.EmployeeNumber;      
+        newMember.chineseName = member.LastName;
+        newMember.englishName = member.FirstName;
+        newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
+        let credential = member.Credentials && member.Credentials.length>0 ?  member.Credentials[0]: {};
+          
+        newMember.cardNumber = credential.CardNumber || "";
+        newMember.cardAllNumber = credential.CardNumber || "";
+        newMember.cardCertificate = (credential.ProfileId || 0).toString();
+        newMember.deviceNumber = credential.FacilityCode || "";
+        newMember.pinDigit = credential.PinDigit|| "";
+        newMember.profileName = credential.ProfileName|| "";
+        newMember.technologyCode = credential.CardTechnologyCode|| "";    
+        newMember.pinMode = credential.PinMode|| "";
+        newMember.pin = credential.Pin || "0";
+        newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
+        newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
+        
+
+        // tab2
+        if (member.PersonalDetails) {
             if(member.PersonalDetails.UserDetails){
-              newMember.account = member.PersonalDetails.UserDetails.UserName;
-              newMember.password = member.PersonalDetails.UserDetails.Password;
+                newMember.account = member.PersonalDetails.UserDetails.UserName;
+                newMember.password = member.PersonalDetails.UserDetails.Password;
             }
             if(member.PersonalDetails.ContactDetails){
-              newMember.email = member.PersonalDetails.ContactDetails.Email;
-              newMember.phone = member.PersonalDetails.ContactDetails.PhoneNumber;
-              newMember.extensionNumber = member.PersonalDetails.ContactDetails.MobileNumber;
+                newMember.email = member.PersonalDetails.ContactDetails.Email;
+                newMember.phone = member.PersonalDetails.ContactDetails.PhoneNumber;
+                newMember.extensionNumber = member.PersonalDetails.ContactDetails.MobileNumber;
             }
             if (member.PersonalDetails.DateOfBirth) {          
                 newMember.birthday = member.PersonalDetails.DateOfBirth;          
             }
-          }
-          //custom fields      
-          for(let field of CustomFields){
+        }
+        //custom fields      
+        for(let field of CustomFields){
             newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields, field.date);
-          }
-          return newMember;
+        }
+        return newMember;
       }
     
 }
