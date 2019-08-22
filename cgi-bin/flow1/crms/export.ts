@@ -67,7 +67,7 @@ action.post(
                 query.equalTo('ptwId', _input.ptwId);
             }
             if (_input.contactEmail) {
-                query.equalTo('contactEmail', _input.contactEmail);
+                query.matches('contactEmail', new RegExp(_input.contactEmail), 'i');
             }
             if (_input.companyId) {
                 let company: Companies = new Companies();
@@ -83,16 +83,16 @@ action.post(
                 query.equalTo(`workType${_input.workType}`, true);
             }
             if (_input.workPremisesUnit) {
-                query.equalTo('workPremisesUnit', _input.workPremisesUnit);
+                query.matches('workPremisesUnit', new RegExp(_input.workPremisesUnit), 'i');
             }
             if (_input.applicantName) {
-                query.equalTo('applicantName', _input.applicantName);
+                query.matches('applicantName', new RegExp(_input.applicantName), 'i');
             }
             if (_input.contractorCompanyName) {
-                query.equalTo('contractorCompanyName', _input.contractorCompanyName);
+                query.matches('contractorCompanyName', new RegExp(_input.contractorCompanyName), 'i');
             }
             if (_input.personName) {
-                query.containedIn('personNames', [_input.personName]);
+                query.matches('personNames', new RegExp(_input.personName), 'i');
             }
 
             let works: WorkPermit[] = await query
