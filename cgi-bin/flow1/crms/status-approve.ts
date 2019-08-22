@@ -108,12 +108,16 @@ action.put(
                 });
             });
 
+            let doors: string[] = work.getValue('accessGroups').map((value, index, array) => {
+                return value.doorName;
+            });
+
             let title: string = 'PTW Approval';
             let content: string = `
                 <div style='font-family:Microsoft JhengHei UI; color: #444;'>
                     <h3>Dear ${work.getValue('contact')},</h3>
                     <h4>One Raffles Link has approved your PTW request for:</h4>
-                    <h4>Conducting “${work.getValue('workCategory').getValue('name')}” at “${work.getValue('workLocation')}” for “${work.getValue('company').getValue('name')}”</h4>
+                    <h4>Conducting “${work.getValue('workCategory').getValue('name')}” at “${doors.join(', ')}” for “${work.getValue('company').getValue('name')}”</h4>
                     <h4>From “${DateTime.ToString(work.getValue('workStartDate'), 'MMMM Do YYYY')}” to “${DateTime.ToString(work.getValue('workEndDate'), 'MMMM Do YYYY')}” between “${DateTime.ToString(work.getValue('workStartTime'), 'HH:mm')}” and “${DateTime.ToString(work.getValue('workEndTime'), 'HH:mm')}”</h4>
                     <h4>On the day of your visit, please remember to bring this QR code</h4>
                     <img src="cid:qrcode" />

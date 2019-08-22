@@ -3,7 +3,7 @@ import { Flow1WorkPermit as WorkPermit, IFlow1WorkPermitPerson as IWorkPermitPer
 
 let action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator],
+    permission: [RoleList.SystemAdministrator, RoleList.Administrator],
 });
 
 export default action;
@@ -108,7 +108,7 @@ action.post(
                     summary.count += 1;
                 } else {
                     byHours.push({
-                        date: date,
+                        date: new Date(date),
                         count: 1,
                     });
                 }
@@ -124,8 +124,8 @@ action.post(
                 if (summary) {
                     summary.count += 1;
                 } else {
-                    byHours.push({
-                        date: date,
+                    byDays.push({
+                        date: new Date(date),
                         count: 1,
                     });
                 }
