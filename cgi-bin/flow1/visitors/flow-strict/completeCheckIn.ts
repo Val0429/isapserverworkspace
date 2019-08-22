@@ -52,7 +52,7 @@ const FRS = FRSService.sharedInstance();
     let { owner, invitation, result, company, visitors, index } = await tryCheckInWithPinCode(pin);
     /// find out visitor
     let idx = visitors.findIndex( (value) => {
-        return value.attributes.name === name;
+        return value.get("name") === name && (value.get("idcard")||{} as any).idnumber === idnumber;
     });
     let visitor: Flow1Visitors;
     if (idx >= 0) visitor = visitors[idx];
@@ -98,6 +98,11 @@ const FRS = FRSService.sharedInstance();
             shift: ""
         });
         workPermit.setValue("persons", persons);
+
+        /// save personNames
+        let personNames = persons.map( person => person.name );
+        workPermit.setValue("personNames", personNames);
+
         await workPermit.save();
     }
 

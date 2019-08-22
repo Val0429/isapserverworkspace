@@ -133,10 +133,7 @@ export default new Action<Input, Output>({
     }
 
     return ParseObject.toOutputJSON({
-        invitation: {
-            ...invitation.attributes,
-            visitors: invitation.attributes.visitors.map( (v) => v.attributesRemovePrivacy )
-        }
+        qrcode: FileHelper.getURL(qrcode, data)
     });
 });
 
