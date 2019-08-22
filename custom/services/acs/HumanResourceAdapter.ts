@@ -75,14 +75,15 @@ export class HumanResourceAdapter {
 
         let res = [];
         if (empno.length >= 1) {
-            let strEmp = "";
+            let strEmp = empno.join("','");
 
-            empno.forEach(no => {
-                strEmp += (",'" + no + "'");
-            });
-
-            res = await this.sqlClient.request()
-                .query(`select distinct * from vieMember where EmpNo in (''${strEmp}) order by CompCode, EmpNo`);
+            // empno.forEach(no => {
+            //     strEmp += (",'" + no + "'");
+            // });
+            let q=`select distinct * from vieMember where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
+            console.log("getViewMember query", q);
+            res = await this.sqlClient.request(q)
+                .query();
         }
 
         return res["recordset"];

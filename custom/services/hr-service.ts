@@ -421,7 +421,7 @@ export class HRService {
                     // console.log(`======================= ${sessionId}`);
                     // if (sessionId != "") {
                     // 5.1 write data to SiPass database
-                    console.log(JSON.stringify(d));
+                    // console.log(JSON.stringify(d));
                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
                     let holder = await siPassAdapter.postCardHolder(d);
                     //}
