@@ -222,49 +222,50 @@ export class HRService {
                     }
                     if (memChange.indexOf(record["EmpNo"] >= 0)) {
                         let change = "";
-                        let db = await this.mongoDb.collection("vieMember").findOne({ "EmpNo": empNo });
-                        {
-                            if (db) {
-                                if (record["CompCode"] != db["CompCode"])
-                                    change += ",公司代碼:" + record["CompCode"];
-                                if (record["CompName"] != db["CompName"])
-                                    change += ",公司/廠商名稱:" + record["CompName"];
-                                if (record["EngName"] != db["EngName"])
-                                    change += ",英文姓名:" + record["EngName"];
-                                if (record["EmpName"] != db["EmpName"])
-                                    change += ",中文姓名:" + record["EmpName"];
-                                if (record["Extension"] != db["Extension"])
-                                    change += ",分機號碼:" + record["Extension"];
-                                if (record["MVPN"] != db["MVPN"])
-                                    change += ",MVPN:" + record["MVPN"];
-                                if (record["Cellular"] != db["Cellular"])
-                                    change += ",行動電話:" + record["Cellular"];
-                                if (record["EMail"] != db["EMail"])
-                                    change += ",EMail:" + record["EMail"];
-                                if (record["Sex"] != db["Sex"])
-                                    change += ",性別:" + record["Sex"];
-                                if (record["BirthDate"] != db["BirthDate"])
-                                    change += ",出生日期:" + record["BirthDate"];
-                                if (record["DeptCode"] != db["DeptCode"])
-                                    change += ",部門代號:" + record["DeptCode"];
-                                if (record["DeptChiName"] != db["DeptChiName"])
-                                    change += ",部門名稱:" + record["DeptChiName"];
-                                if (record["CostCenter"] != db["CostCenter"])
-                                    change += ",成本中心代碼:" + record["CostCenter"];
-                                if (record["LocationCode"] != db["LocationCode"])
-                                    change += ",地區代碼:" + record["LocationCode"];
-                                if (record["LocationName"] != db["LocationName"])
-                                    change += ",地區:" + record["LocationName"];
-                                if (record["RegionCode"] != db["RegionCode"])
-                                    change += ",區域代碼:" + record["RegionCode"];
-                                if (record["RegionName"] != db["RegionName"])
-                                    change += ",工作區域:" + record["RegionName"];
-                                if (record["EntDate"] != db["EntDate"])
-                                    change += ",報到日期:" + record["EntDate"];
-                                if (record["OffDate"] != db["OffDate"])
-                                    change += ",離職日期:" + record["OffDate"];
-                            }
+                        let dbParse = vieMembers.find(x=>x.get("EmpNo")== empNo );
+                        
+                        if (dbParse) {
+                            let db= ParseObject.toOutputJSON(dbParse);
+                            if (record["CompCode"] != db["CompCode"])
+                                change += ",公司代碼:" + record["CompCode"];
+                            if (record["CompName"] != db["CompName"])
+                                change += ",公司/廠商名稱:" + record["CompName"];
+                            if (record["EngName"] != db["EngName"])
+                                change += ",英文姓名:" + record["EngName"];
+                            if (record["EmpName"] != db["EmpName"])
+                                change += ",中文姓名:" + record["EmpName"];
+                            if (record["Extension"] != db["Extension"])
+                                change += ",分機號碼:" + record["Extension"];
+                            if (record["MVPN"] != db["MVPN"])
+                                change += ",MVPN:" + record["MVPN"];
+                            if (record["Cellular"] != db["Cellular"])
+                                change += ",行動電話:" + record["Cellular"];
+                            if (record["EMail"] != db["EMail"])
+                                change += ",EMail:" + record["EMail"];
+                            if (record["Sex"] != db["Sex"])
+                                change += ",性別:" + record["Sex"];
+                            if (record["BirthDate"] != db["BirthDate"])
+                                change += ",出生日期:" + record["BirthDate"];
+                            if (record["DeptCode"] != db["DeptCode"])
+                                change += ",部門代號:" + record["DeptCode"];
+                            if (record["DeptChiName"] != db["DeptChiName"])
+                                change += ",部門名稱:" + record["DeptChiName"];
+                            if (record["CostCenter"] != db["CostCenter"])
+                                change += ",成本中心代碼:" + record["CostCenter"];
+                            if (record["LocationCode"] != db["LocationCode"])
+                                change += ",地區代碼:" + record["LocationCode"];
+                            if (record["LocationName"] != db["LocationName"])
+                                change += ",地區:" + record["LocationName"];
+                            if (record["RegionCode"] != db["RegionCode"])
+                                change += ",區域代碼:" + record["RegionCode"];
+                            if (record["RegionName"] != db["RegionName"])
+                                change += ",工作區域:" + record["RegionName"];
+                            if (record["EntDate"] != db["EntDate"])
+                                change += ",報到日期:" + record["EntDate"];
+                            if (record["OffDate"] != db["OffDate"])
+                                change += ",離職日期:" + record["OffDate"];
                         }
+                        
                         if (change.length >= 2)
                             change = change.substr(1);
                         chgMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${b}</td><td>${record["EngName"]}</td><td>${change}</td></tr>`;
