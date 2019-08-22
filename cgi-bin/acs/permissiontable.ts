@@ -81,7 +81,8 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     let r1 = await siPassAdapter.postAccessGroup(ag);
 
     if(!r1["Token"]){
-        throw Errors.throw(Errors.CustomNotExists, [`cannotGetTokenFromSipass`]);
+        errors.push({type:"errorFromSipass", message:r1});
+        return { errors };
     }
     data.inputType.tableid = +r1["Token"];
     data.inputType.system = 0;
