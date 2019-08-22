@@ -5,7 +5,9 @@ import {
     RoleInterfaceLiteralList, IUserSystemAdministrator, IUserAdministrator, IUserTenantAdministrator, IUserTenantUser,
     PartialIUserSystemAdministrator, PartialIUserAdministrator, PartialIUserTenantAdministrator, PartialIUserTenantUser, PartialIUserKiosk,
     getEnumKey, getEnumKeyArray, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
-    deepMerge
+    deepMerge,
+    EventUserEdit,
+    Events
 } from 'core/cgi-package';
 
 import { permissionMapU, getAvailableRoles } from './core';
@@ -61,6 +63,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     delete input.roles;
     /// 4.1) Modify
     await user.save(input, {useMasterKey: true});
+
+    var ev = new EventUserEdit({
+        owner: data.user,
+        target: user
+    });
+    Events.save(ev);
 
     /// 4.2) Hide password
     user.set("password", undefined);

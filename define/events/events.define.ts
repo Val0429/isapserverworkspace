@@ -18,6 +18,28 @@ let flow = Config.vms.flow;
             key: string;
             value: any;
         `],
+
+        ["202", `UserAdd`],
+        ["203", `UserEdit`],
+        ["204", `UserRemove`, `
+            /**
+             * User being removed.
+             */
+            name: string;
+        `],
+
+        ["212", `KioskAdd`],
+        ["213", `KioskEdit`],
+        ["214", `KioskRemove`, `
+            /**
+             * Kiosk being removed.
+             */
+            name: string;
+        `],
+
+        ["300", `LicenseAdd`, `
+            key: string;
+        `],
         ////////////////////////////////////////////
     ];
     events.splice(events.length, 0, ...eventtmp);
@@ -237,6 +259,22 @@ if (flow === "Flow2") {
              */
             result: boolean;
         `],
+
+        /// flow 2 special
+        ["4022", `${flow}CompanyAdd`, `
+            company: ${flow}Companies;
+        `],
+        ["4023", `${flow}CompanyEdit`, `
+            company: ${flow}Companies;
+        `],
+        ["4024", `${flow}CompanyRemove`, `
+            /**
+             * Company being removed.
+             */
+            name: string;
+        `],
+
+        ["4030", `${flow}Concierge`],
         ////////////////////////////////////////////
     ];
     events.splice(events.length, 0, ...eventtmp);

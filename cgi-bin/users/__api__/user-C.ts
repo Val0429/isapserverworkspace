@@ -4,7 +4,7 @@ import {
     Action, Errors, UserType,
     RoleInterfaceLiteralList, IUserSystemAdministrator, IUserAdministrator, IUserTenantAdministrator, IUserTenantUser,
     getEnumKey, getEnumKeyArray, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
-    deepMerge
+    deepMerge, EventUserAdd, Events
 } from 'core/cgi-package';
 
 import { permissionMapC, getAvailableRoles } from './core';
@@ -57,6 +57,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         r.save(null, {useMasterKey: true});
         roleAry.push(r);
     }
+
+    var ev = new EventUserAdd({
+        owner: data.user,
+        target: user
+    });
+    Events.save(ev);
 
     /// 5) Add Role to User
     user.set("roles", roleAry);

@@ -1,8 +1,8 @@
 var config: Config = {
-    ip: "172.16.10.74",
+    ip: "172.16.10.134",
     port: 80,
-    account: "Min",
-    password: "1"
+    account: "charles",
+    password: "123456"
 }
 export default config;
 

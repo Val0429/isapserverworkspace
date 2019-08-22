@@ -87,7 +87,7 @@ export async function doInvitation(data: ActionParam<ICInvitations>): Promise<In
     let encrypted = [
         "0",
         //CryptoJS.AES.encrypt(pin, "Qyz7wQHf96").toString(CryptoJS.enc.Utf8),
-        pin,
+        CryptoJS.AES.encrypt(pin, "Qyz7wQHf96").toString(),
         `${year}${month}${day}0000`,
         `${year}${month}${day}2359`,
     ].join("");
@@ -109,10 +109,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data: ActionParam<I
     let obj = await doInvitation(data);
 
     /// 3) Output
-    return ParseObject.toOutputJSON({
-        ...obj.attributes,
-        visitors: obj.attributes.visitors.map( (visitor) => visitor.attributesRemovePrivacy )
-    }, inviteFilter);
+    return ParseObject.toOutputJSON(obj, inviteFilter);
 });
 
 /********************************
@@ -134,9 +131,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters, inviteFilter);
-    // , (input) => {
-    //     return input.map( (v) => ({ ...v.attributes, visitors: v.attributes.visitors.map( (v) => v.attributesRemovePrivacy ) }) ) as any;
-    // });
 });
 
 /********************************

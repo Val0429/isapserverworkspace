@@ -4,7 +4,9 @@ import {
     Action, Errors, UserType,
     RoleInterfaceLiteralList, IUserSystemAdministrator, IUserAdministrator, IUserTenantAdministrator, IUserTenantUser,
     getEnumKey, getEnumKeyArray, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
-    deepMerge
+    deepMerge,
+    EventUserRemove,
+    Events
 } from 'core/cgi-package';
 
 import { permissionMapD, getAvailableRoles } from './core';
@@ -42,9 +44,15 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 2) Check available
     validate(data.user, user);
 
+    var ev = new EventUserRemove({
+        owner: data.user,
+        name: user.get("username")
+    });
+    Events.save(ev);
+
     /// 3) Perform
     user.destroy({ useMasterKey: true });
-
+   
     return ParseObject.toOutputJSON(user);
 });
 

@@ -3,7 +3,7 @@ import { routerBlock } from "helpers/routers/router-block";
 var config: Config = {
     flow: "Flow2",
     compareFaceThreshold: 0.7,
-    workerExpiredDay: 10,
+    workerExpiredDay: 30,
     privacyFields: [
         "name",
         "phone",

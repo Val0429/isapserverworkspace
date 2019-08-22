@@ -120,6 +120,7 @@ export default new Action<Input, Output>({
     let encrypted = [
         "0",
         //CryptoJS.AES.encrypt(pin, "Qyz7wQHf96").toString(CryptoJS.enc.Utf8),
+        CryptoJS.AES.encrypt(pin, "Qyz7wQHf96").toString(),
         pin,
         `${year}${month}${day}0000`,
         `${year}${month}${day}2359`,

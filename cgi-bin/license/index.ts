@@ -8,7 +8,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList,
     Action, Errors,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, EventLogin, EventLicenseAdd, Events,
 } from 'core/cgi-package';
 import * as request from 'request';
 import licenseService from 'services/license';
@@ -30,6 +30,13 @@ interface InputC {
 
 action.post<InputC>({ inputType: "InputC" }, async (data) => {
     let { keyOrData: key } = data.inputType;
+
+    var ev = new EventLicenseAdd({
+        owner: data.user,
+        key
+    });
+    Events.save(ev);
+
     if (key.length === 29) {
         let mac: string = await promisify(getMac)() as string;
         /// 1) online license 29 digits

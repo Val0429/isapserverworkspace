@@ -1,19 +1,23 @@
 {
-    "name": "isap-vms-service",
-    "version": "3.00.10",
-    "config": {
-        "displayname": "iSap VMS Service"
-    },
-    "description": "iSap VMS Service v2.01.00",
-    "scripts": {
-        "start": "npm start --prefix ./../",
-        "create-project": "git checkout --orphan"
-    },
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "connect-history-api-fallback": "^1.6.0",
-        "moment": "^2.24.0",
-        "xlsx": "^0.15.0"
-    }
+  "name": "isap-vms-service",
+  "version": "3.00.10",
+  "config": {
+    "displayname": "iSap VMS Service"
+  },
+  "description": "iSap VMS Service v2.01.00",
+  "scripts": {
+    "start": "npm start --prefix ./../",
+    "create-project": "git checkout --orphan"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/crypto-js": "^3.1.43",
+    "aes-js": "^3.1.2",
+    "aes256": "^1.0.4",
+    "connect-history-api-fallback": "^1.6.0",
+    "crypto-js": "^3.1.9-1",
+    "moment": "^2.24.0",
+    "xlsx": "^0.15.0"
+  }
 }

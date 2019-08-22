@@ -55,11 +55,11 @@ export default new Action<Input, Output>({
             .include("data.floor")
             .get(obj.user.id);
 
-        let company = user.attributes.data.company;
+        let company = (user.attributes.data || {}).company;
         if (company && !(company instanceof ParseObject)) {
             user.set("data.company", await new Parse.Query(Companies).get(company.objectId));
         }
-        let floors = user.attributes.data.floor;
+        let floors = (user.attributes.data||{}).floor;
         if (floors) {
             for (let i=0; i<floors.length; ++i) {
                 let floor = floors[i];
@@ -78,13 +78,15 @@ export default new Action<Input, Output>({
         if (!data.session) throw Errors.throw(Errors.SessionNotExists);
         user = data.user;
 
-        let company = user.attributes.data.company;
-        if (company && !(company instanceof ParseObject)) {
-            user.set("data.company", await new Parse.Query(Companies).get(company.objectId));
-        } else {
-            await company.fetch();
+        let company = (user.attributes.data||{}).company;
+        if (company) {
+            if (!(company instanceof ParseObject)) {
+                user.set("data.company", await new Parse.Query(Companies).get(company.objectId));
+            } else {
+                await company.fetch();
+            }
         }
-        let floors = user.attributes.data.floor;
+        let floors = (user.attributes.data||{}).floor;
         if (floors) {
             for (let i=0; i<floors.length; ++i) {
                 let floor = floors[i];

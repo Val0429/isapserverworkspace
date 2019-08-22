@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList, IUserKioskData,
     Action, Errors,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, EventFlow2CompanyAdd, Events, EventFlow2CompanyEdit, EventFlow2CompanyRemove,
 } from 'core/cgi-package';
 
 import * as shortid from 'shortid';
@@ -31,6 +31,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Companies(data.inputType);
     await obj.save(null, { useMasterKey: true });
+
+    var ev = new EventFlow2CompanyAdd({
+        owner: data.user,
+        company: obj
+    });
+    Events.save(ev);
 
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
@@ -65,6 +71,13 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Companies <${objectId}> not exists.`]);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+
+    var ev = new EventFlow2CompanyEdit({
+        owner: data.user,
+        company: obj
+    });
+    Events.save(ev);
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -80,6 +93,12 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Companies).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Companies <${objectId}> not exists.`]);
+
+    var ev = new EventFlow2CompanyRemove({
+        owner: data.user,
+        name: obj.get("name")
+    });
+    Events.save(ev);
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

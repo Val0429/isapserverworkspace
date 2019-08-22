@@ -2,7 +2,7 @@ import {
     express, Request, Response, Router,
     IRole, IUser, RoleList, IUserKioskData,
     Action, Errors, O,
-    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject,
+    getEnumKey, omitObject, IInputPaging, IOutputPaging, Restful, UserHelper, ParseObject, EventKioskAdd, Events, EventKioskEdit, EventKioskRemove,
 } from 'core/cgi-package';
 
 import licenseService from 'services/license';
@@ -35,8 +35,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let license = await licenseService.getLicense();
     //let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
     let totalCounts = (license.summary[kioskLicense] || {} as any).totalCount || 0;
-    if (kioskCounts >= totalCounts)
-        throw Errors.throw(Errors.CustomBadRequest, [`License required to add more kiosks. Currently full: ${kioskCounts}/${totalCounts}`]);
+    // if (kioskCounts >= totalCounts)
+    //     throw Errors.throw(Errors.CustomBadRequest, [`License required to add more kiosks. Currently full: ${kioskCounts}/${totalCounts}`]);
     /// V1.3) After verify passed, set activated
     (data.inputType.data as any).activated = true;
 
@@ -83,6 +83,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     user.set("roles", roleAry);
     await user.save(null, { useMasterKey: true });
 
+    var ev = new EventKioskAdd({
+        owner: data.user,
+        target: user
+    });
+    Events.save(ev);
+
     return ParseObject.toOutputJSON(user);
 });
 ///////////////////////////////////////////
@@ -99,6 +105,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     var query = new Parse.Query(Parse.User)
         .include("roles")
+        .include("data.building")
         .equalTo("roles", kioskRole);
 
     query = Restful.Filter(query, data.inputType);
@@ -140,6 +147,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         throw Errors.throw(Errors.CustomAlreadyExists, ["<data.kioskId> already exists."]);
     }
 
+    var ev = new EventKioskEdit({
+        owner: data.user,
+        target: user
+    });
+    Events.save(ev);
+
     // /// 3) Hide password
     // user.set("password", undefined);
 
@@ -164,6 +177,12 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
         .equalTo("roles", kioskRole)
         .get(objectId);
     if (!user) throw Errors.throw(Errors.CustomNotExists, [`User <${objectId}> not exists.`]);
+
+    var ev = new EventKioskRemove({
+        owner: data.user,
+        name: user.get("username")
+    });
+    Events.save(ev);
 
     await user.destroy({ useMasterKey: true });
 
