@@ -55,8 +55,8 @@ action.post(
             }
 
             let work: WorkPermit[] = await new Parse.Query(WorkPermit)
-                .greaterThanOrEqualTo('updatedAt', startDate)
-                .lessThan('updatedAt', endDate)
+                .greaterThanOrEqualTo('workStartDate', startDate)
+                .lessThan('workEndDate', endDate)
                 .find()
                 .fail((e) => {
                     throw e;
