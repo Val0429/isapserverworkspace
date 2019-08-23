@@ -81,7 +81,7 @@ class Action {
      * @param groups
      * @param type
      */
-    private async SaveReportSummary(report: IDB.ReportPeopleCounting, isEmployee: boolean, type: Enum.ESummaryType): Promise<void> {
+    private async SaveReportSummary(report: IDB.ReportPeopleCounting, type: Enum.ESummaryType): Promise<void> {
         try {
             let date: Date = DateTime.Type2Date(report.getValue('date'), type);
 
@@ -94,7 +94,8 @@ class Action {
                     throw e;
                 });
 
-            let isIn = report.getValue('isIn');
+            let isEmployee: boolean = report.getValue('isEmployee');
+            let isIn: boolean = report.getValue('isIn');
 
             if (reportSummary) {
                 reportSummary.setValue('in', reportSummary.getValue('in') + (isIn ? 1 : 0));
@@ -162,6 +163,7 @@ class Action {
                             report.setValue('date', x.base.date);
                             report.setValue('imageSrc', '');
                             report.setValue('isIn', isIn);
+                            report.setValue('isEmployee', isEmployee);
                             report.setValue('userGroups', x.groups);
 
                             let imageSrc: string = `images_report/people_counting/${DateTime.ToString(x.base.date, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
@@ -172,10 +174,10 @@ class Action {
                             let tasks: Promise<any>[] = [];
 
                             tasks.push(report.save(null, { useMasterKey: true }) as any);
-                            tasks.push(this.SaveReportSummary(report, isEmployee, Enum.ESummaryType.hour));
-                            // tasks.push(this.SaveReportSummary(report, x.isEmployee, Enum.ESummaryType.day));
-                            // tasks.push(this.SaveReportSummary(report, x.isEmployee, Enum.ESummaryType.month));
-                            // tasks.push(this.SaveReportSummary(report, x.isEmployee, Enum.ESummaryType.season));
+                            tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.hour));
+                            // tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.day));
+                            // tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.month));
+                            // tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.season));
 
                             await Promise.all(tasks).catch((e) => {
                                 throw e;

@@ -103,7 +103,7 @@ class Action {
                     throw e;
                 });
 
-            let isEmployee = (report.getValue('userGroups') || []).indexOf(Enum.EPeopleType.employee) > -1;
+            let isEmployee: boolean = report.getValue('isEmployee');
 
             let ageIndex: number = this._ageRanges.findIndex((value, index, array) => {
                 return value.min <= report.getValue('age') && (!value.max || value.max > report.getValue('age'));
@@ -206,6 +206,8 @@ class Action {
                         try {
                             buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
+                            let isEmployee = (x.groups || []).indexOf(Enum.EPeopleType.employee) > -1;
+
                             let report: IDB.ReportDemographic = new IDB.ReportDemographic();
 
                             report.setValue('site', x.base.site);
@@ -215,6 +217,7 @@ class Action {
                             report.setValue('imageSrc', '');
                             report.setValue('age', x.feature.age);
                             report.setValue('gender', x.feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
+                            report.setValue('isEmployee', isEmployee);
                             report.setValue('userGroups', x.groups);
 
                             await report.save(null, { useMasterKey: true }).fail((e) => {

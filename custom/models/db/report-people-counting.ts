@@ -17,6 +17,11 @@ export interface IReportPeopleCounting extends IReportBase {
     isIn: boolean;
 
     /**
+     *
+     */
+    isEmployee: boolean;
+
+    /**
      * FRS user group
      */
     userGroups: Enum.EPeopleType[];

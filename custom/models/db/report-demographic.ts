@@ -22,6 +22,11 @@ export interface IReportDemographic extends IReportBase {
     gender: Enum.EGender;
 
     /**
+     *
+     */
+    isEmployee: boolean;
+
+    /**
      * FRS user group
      */
     userGroups: Enum.EPeopleType[];
