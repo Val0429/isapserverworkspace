@@ -305,7 +305,7 @@ console.log(update);
     /// 5) to Monogo
     //await obj.save({ ...ret, objectId: undefined });
     await update.save();
-    await Log.Info(`update`, `${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false, "Member");
+    await Log.Info(`update`, `${update.get("EmployeeNumber")} ${update.get("FirstName")}`, data.user, false, "Member");
 
     /// 3) Output
     return ret;
