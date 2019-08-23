@@ -12,23 +12,29 @@ let action = new Action({
 export default action;
 
 /**
- * Action Create
+ * Action Read
  */
-type InputC = IRequest.IDataList & IRequest.IReport.IPeopleCountingIndex;
+type InputR = IRequest.IDataList & IRequest.IReport.IPeopleCountingIndex;
 
-type OutputC = IResponse.IDataList<IResponse.IReport.IPeopleCountingIndex>;
+type OutputR = IResponse.IDataList<IResponse.IReport.IPeopleCountingIndex>;
 
-action.post(
+action.get(
     {
-        inputType: 'InputC',
+        inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
         permission: [RoleList.SuperAdministrator],
     },
-    async (data): Promise<OutputC> => {
+    async (data): Promise<OutputR> => {
         try {
-            let _input: InputC = data.inputType;
+            let _input: InputR = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
             let _paging: IRequest.IPaging = _input.paging;
+
+            Object.keys(_input).forEach((value, index, array) => {
+                if (_input[value] === 'undefined') {
+                    delete _input[value];
+                }
+            });
 
             let deivceQuery: Parse.Query<IDB.Device> = new Parse.Query(IDB.Device);
 
@@ -74,12 +80,6 @@ action.post(
             if ('deviceId' in _input) {
                 deivceQuery.equalTo('objectId', _input.deviceId);
             }
-            if ('isIn' in _input) {
-                deivceQuery.equalTo('isIn', _input.isIn);
-            }
-            if ('isEmployee' in _input) {
-                deivceQuery.equalTo('isEmployee', _input.isEmployee);
-            }
 
             let deviceCount: number = await deivceQuery.count().fail((e) => {
                 throw e;
@@ -101,6 +101,13 @@ action.post(
             });
 
             let query: Parse.Query<IDB.ReportPeopleCounting> = new Parse.Query(IDB.ReportPeopleCounting).containedIn('device', devices);
+
+            if ('isIn' in _input) {
+                query.equalTo('isIn', _input.isIn);
+            }
+            if ('isEmployee' in _input) {
+                query.equalTo('isEmployee', _input.isEmployee);
+            }
 
             let total: number = await query.count().fail((e) => {
                 throw e;
