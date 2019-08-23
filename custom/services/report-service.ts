@@ -225,6 +225,7 @@ export class ReportService{
         return records;
     }
     private getFieldValue(fieldName:string, customFields:any[], isDate:boolean){      
+        if(!customFields)return "";
         let exists = customFields.find(x=>x.FiledName == fieldName);
         let value = exists ? (exists.FieldValue || "") : "";
         try{        
