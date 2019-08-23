@@ -67,8 +67,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     for (const rid of obj.get("AccessRules")) {            
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);
         console.log("permission", permission, rid);
+        //not in sipass or ccure
         if(!permission)continue;
-        ccureAccessRules.push(permission.get("tablename"));
+        //check if permission is in ccure
+        if( permissionTables.find(x=>x.get("system")==800 && x.get("tableid")== +rid)){
+            ccureAccessRules.push(permission.get("tablename"));
+        }
         let newRule = {
             ObjectName: permission.get("tablename"),
             ObjectToken:  permission.get("tableid").toString(),
@@ -124,7 +128,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         console.log(`${this.constructor.name}`, ex);
     }
 
-    Log.Info(`info`, `postMember ${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false);
+    await Log.Info(`create`, `${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false, "Member");
 
     /// 2) Output
     return ret;
@@ -224,11 +228,12 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     for (const rid of update.get("AccessRules").map(x=>+x)) {
 
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);        
-
+        //not in sipass or ccure
         if(!permission)continue;
-        
-        ccureAccessRules.push(permission.get("tablename"));
-        
+        //check if permission is in ccure
+        if( permissionTables.find(x=>x.get("system")==800 && x.get("tableid")== +rid)){
+            ccureAccessRules.push(permission.get("tablename"));
+        }
         let newRule = {
                 ObjectName: permission.get("tablename"),
                 ObjectToken: permission.get("tableid").toString(),
@@ -300,7 +305,7 @@ console.log(update);
     /// 5) to Monogo
     //await obj.save({ ...ret, objectId: undefined });
     await update.save();
-    Log.Info(`info`, `putMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false);
+    await Log.Info(`update`, `${update.get("EmployeeNumber")} ${update.get("FirstName")}`, data.user, false, "Member");
 
     /// 3) Output
     return ret;
@@ -318,7 +323,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(Member).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `deleteMember ${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false);
+    await  Log.Info(`delete`, `${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false, "Member");
 
     /// 2) Delete
     obj.destroy({ useMasterKey: true });

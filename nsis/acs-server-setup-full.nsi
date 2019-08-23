@@ -6,6 +6,7 @@
 !define VCREDIST "vc_redist.x64.exe"
 !define VCREDIST2010 "vcredist_x64.exe"
 !define NETFRAMEWORK "NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
+!define MSACCESS_DB_ENGINE "AccessDatabaseEngine.exe";
 !define OUTPUT_NAME "acs-server-setup"  
 # define installation directory
 InstallDir "$TEMP\ACS\Temp"
@@ -40,6 +41,10 @@ Section "MongoDb v3.6.3" SEC02
   
 SectionEnd 
 
+Section "Access Database Engine (x86)" SEC05
+  
+SectionEnd 
+
 ;Section "MS Visual C++ Redist 2015 x64" SEC03
   
 ;SectionEnd 
@@ -48,9 +53,6 @@ Section "MS Visual C++ Redist 2010 x64" SEC04
   
 SectionEnd 
   
-;Section "Install Mongo Db Service" SEC03
-
-;SectionEnd 
   
   ;!insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
@@ -100,6 +102,11 @@ Section
 	${If} ${SectionIsSelected} ${SEC04}	
 		File "Prerequisites\${VCREDIST2010}"
 		ExecWait "${VCREDIST2010}"
+	${EndIf}
+
+	${If} ${SectionIsSelected} ${SEC05}	
+		File "Prerequisites\${MSACCESS_DB_ENGINE}"
+		ExecWait "${MSACCESS_DB_ENGINE}"
 	${EndIf}
 	;delete Prerequisites
 	;RMDir /r $INSTDIR\Prerequisites

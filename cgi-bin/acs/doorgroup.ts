@@ -24,7 +24,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     var obj = new DoorGroup(data.inputType);
     await obj.save(null, { useMasterKey: true });
     /// 2) Output
-    Log.Info(`info`, `postDoorGroup ${data.inputType.groupname}`, data.user, false);
+    await Log.Info(`create`, `${data.inputType.groupname}`, data.user, false, "DoorGroup");
 
     return ParseObject.toOutputJSON(obj);
 });
@@ -63,9 +63,11 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(DoorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`DoorGroup <${objectId}> not exists.`]);
     /// 2) Modify
-    Log.Info(`info`, `putDoorGroup ${obj.get("groupname")}`, data.user, false);
+    
 
     await obj.save({ ...data.inputType, objectId: undefined });
+    
+    await Log.Info(`update`, `${obj.get("groupname")}`, data.user, false, "DoorGroup");
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -82,10 +84,11 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(DoorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`DoorGroup <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `deleteDoorGroup ${obj.get("groupname")}`, data.user, false);
-
+   
     /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+    await Log.Info(`delete`, `${obj.get("groupname")}`, data.user, false, "DoorGroup");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

@@ -21,10 +21,9 @@ type OutputC = Restful.OutputC<IElevatorGroup>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new ElevatorGroup(data.inputType);
-
-    Log.Info(`info`, `postElevatorGroup ${data.inputType.groupname}`, data.user, false);
-
     await obj.save(null, { useMasterKey: true });
+    await Log.Info(`create`, `${data.inputType.groupname}`, data.user, false, "ElevatorGroup");
+
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -61,9 +60,10 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(ElevatorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`ElevatorGroup <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `putElevatorGroup ${obj.get("groupname")}`, data.user, false);
+    
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    await Log.Info(`update`, `${obj.get("groupname")}`, data.user, false, "ElevatorGroup");
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -80,10 +80,10 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(ElevatorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`ElevatorGroup <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `deleteElevatorGroup ${obj.get("groupname")}`, data.user, false);
-
     /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+    
+    await Log.Info(`delete`, `${obj.get("groupname")}`, data.user, false, "ElevatorGroup");
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

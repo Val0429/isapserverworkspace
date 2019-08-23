@@ -111,6 +111,8 @@ export class ReportService{
     }
     async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
+        .include("member")
+        .include("door")
         .equalTo("type", 21)
         .equalTo("state_id", 2)
         .exists("card_no")
@@ -134,20 +136,25 @@ export class ReportService{
         let results = [];
         let records = await query.skip(skip).limit(limit).find();
         let total = await query.count();
-        let readers = await new Parse.Query(Reader)
-                        .containedIn("readername", records.map(x=>x.get("point_name")))
-                        .find();
+
         for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
-            if (!record.date_occurred || !record.date_time_occurred) continue;        
-            let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);
-            record.at_id = record.point_name;
-            let reader = readers.find(x=>x.get("readername") == record.point_name);
-            //console.log("reader", reader, record.point_name);
-            if(reader){
-                let at_id = await new Parse.Query(Door).equalTo("readerin", reader).first();
-                //console.log("at_id", at_id);
-                if(at_id)  record.at_id = at_id.get('doorname');
+            if (!record.date_occurred || !record.date_time_occurred) continue;
+            //normalize member
+            if(record.member){
+                let newMember = this.normalizeMember(record.member);
+                record.memberObjectId = newMember.objectId;
+                delete(newMember.objectId);
+                delete(record.member);
+                //merge field
+                Object.assign(record, newMember);
+            }   
+            if(record.door){
+                //todo we can change this field later                
+                record.at_id = record.door.doorname;
+                delete(record.door);
             }
+            let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);           
+            
             //start, assume in and out at the same time
             if(thisDayRecords.length<2){
                 results.push(Object.assign({},record));
@@ -158,7 +165,8 @@ export class ReportService{
                 for(const key of Object.keys(record)){
                     thisDayRecords[1][key] = record[key];
                 }            
-            }             
+            }
+                      
         }
         
         return {results, total};
@@ -217,6 +225,7 @@ export class ReportService{
         return records;
     }
     private getFieldValue(fieldName:string, customFields:any[], isDate:boolean){      
+        if(!customFields)return "";
         let exists = customFields.find(x=>x.FiledName == fieldName);
         let value = exists ? (exists.FieldValue || "") : "";
         try{        
@@ -227,57 +236,61 @@ export class ReportService{
           }    
     }
     private normalizeMember(member:any) { 
-         let newMember:any = {};
+        let newMember:any = {};
           
-          newMember.objectId = member.objectId;      
-    
-          newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
-                                        member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
-                                        .map(x=>parseInt(x.RuleToken)) : [];
-            
-          newMember.personType = member.PrimaryWorkgroupId;
-          newMember.employeeNumber = member.EmployeeNumber;      
-          newMember.chineseName = member.LastName;
-          newMember.englishName = member.FirstName;
-          newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
-          if (member.Credentials && member.Credentials.length>0){          
-            newMember.cardNumber = member.Credentials[0].CardNumber;
-            newMember.cardAllNumber = member.Credentials[0].CardNumber;
-            newMember.cardCertificate = (member.Credentials[0].ProfileId || 0).toString();
-            newMember.deviceNumber = member.Credentials[0].FacilityCode;
-            newMember.pinDigit = member.Credentials[0].PinDigit;
-            newMember.profileName = member.Credentials[0].ProfileName;
-            newMember.technologyCode = member.Credentials[0].CardTechnologyCode;    
-            newMember.pinMode = member.Credentials[0].PinMode;
-            newMember.startDate = member.Credentials[0].StartDate;
-            newMember.endDate = member.Credentials[0].StartDate;
-            newMember.pin = member.Credentials[0].Pin || "0";
-          }
-    
-            newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
-            newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
-            
-    
-          // tab2
-          if (member.PersonalDetails) {
+        newMember.objectId = member.objectId;      
+
+        newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
+                                    member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
+                                    .map(x=>parseInt(x.RuleToken)) : [];
+        
+        newMember.personType = member.PrimaryWorkgroupId;
+        newMember.employeeNumber = member.EmployeeNumber;      
+        newMember.chineseName = member.LastName;
+        newMember.englishName = member.FirstName;
+        newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
+        let credential = member.Credentials && member.Credentials.length>0 ?  member.Credentials[0]: {};
+          
+        newMember.cardNumber = credential.CardNumber || "";
+        newMember.cardAllNumber = credential.CardNumber || "";
+        newMember.cardCertificate = (credential.ProfileId || 0).toString();
+        newMember.deviceNumber = credential.FacilityCode || "";
+        newMember.pinDigit = credential.PinDigit|| "";
+        newMember.profileName = credential.ProfileName|| "";
+        newMember.technologyCode = credential.CardTechnologyCode|| "";    
+        newMember.pinMode = credential.PinMode|| "";
+        newMember.pin = credential.Pin || "0";
+        newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
+        newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
+        
+
+        // tab2
+        if (member.PersonalDetails) {
             if(member.PersonalDetails.UserDetails){
-              newMember.account = member.PersonalDetails.UserDetails.UserName;
-              newMember.password = member.PersonalDetails.UserDetails.Password;
+                newMember.account = member.PersonalDetails.UserDetails.UserName;
+                newMember.password = member.PersonalDetails.UserDetails.Password;
             }
             if(member.PersonalDetails.ContactDetails){
-              newMember.email = member.PersonalDetails.ContactDetails.Email;
-              newMember.phone = member.PersonalDetails.ContactDetails.PhoneNumber;
-              newMember.extensionNumber = member.PersonalDetails.ContactDetails.MobileNumber;
+                newMember.email = member.PersonalDetails.ContactDetails.Email;
+                newMember.phone = member.PersonalDetails.ContactDetails.PhoneNumber;
+                newMember.extensionNumber = member.PersonalDetails.ContactDetails.MobileNumber;
             }
             if (member.PersonalDetails.DateOfBirth) {          
                 newMember.birthday = member.PersonalDetails.DateOfBirth;          
             }
-          }
-          //custom fields      
-          for(let field of CustomFields){
+        }else{
+            newMember.account = "";
+            newMember.password = "";
+            newMember.email = "";
+            newMember.phone = "";
+            newMember.extensionNumber = "";       
+            newMember.birthday = "";
+        }
+        //custom fields      
+        for(let field of CustomFields){
             newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields, field.date);
-          }
-          return newMember;
+        }
+        return newMember;
       }
     
 }

@@ -22,9 +22,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new TimeSchedule(data.inputType);
 
-    Log.Info(`info`, `postTimeSchedule ${data.inputType.timeid} ${data.inputType.timename}`, data.user, false);
+    
 
     await obj.save(null, { useMasterKey: true });
+    await Log.Info(`create`, `${data.inputType.timeid} ${data.inputType.timename}`, data.user, false,"TimeSchedule");
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -59,10 +60,11 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(TimeSchedule).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`TimeSchedule <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `putTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`, data.user, false);
-
+    
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    await Log.Info(`update`, `${obj.get("timeid")} ${obj.get("timename")}`, data.user, false, "TimeSchedule");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -79,10 +81,11 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(TimeSchedule).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`TimeSchedule <${objectId}> not exists.`]);
 
-    Log.Info(`info`, `deleteTimeSchedule ${obj.get("timeid")} ${obj.get("timename")}`, data.user, false);
-
     /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+    
+    await Log.Info(`delete`, `${obj.get("timeid")} ${obj.get("timename")}`, data.user, false, "TimeSchedule");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

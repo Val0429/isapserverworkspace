@@ -15,8 +15,8 @@ export class CCure800SqlAdapter {
     private adodbConn2 = null;
     constructor() {
         var me = this;
-        let dbPath=Config.ccureconnect.mdbpath || (p.dirname(__filename)+"/mdb/ccure800.mdb");
-        let dbPath2=Config.ccureconnect.mdbpath2 || (p.dirname(__filename)+"/mdb/ccure8002.mdb");
+        let dbPath=Config.ccureconnect.mdbpath || (p.dirname(__filename)+"\\mdb\\ccure800.mdb");
+        let dbPath2=Config.ccureconnect.mdbpath2 || (p.dirname(__filename)+"\\mdb\\ccure8002.mdb");
         console.log("mdbpath", dbPath);
         console.log("mdbpath2", dbPath2);
         this.adodbConn = adodb.open(`Provider=Microsoft.ACE.OLEDB.12.0;Data Source=${dbPath};`);

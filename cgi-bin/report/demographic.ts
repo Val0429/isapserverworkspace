@@ -32,7 +32,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let item = attendances.results[i];
         let item2 = attendances.results[i+1];
         i+=2;
-        let member = results.find(x=>x.cardNumber == item.card_no);
+        let member = results.find(x=>x.objectId == item.memberObjectId);
         if(!member|| !item2)continue;
         if(!member.inOutDailyCount)member.inOutDailyCount=0;
         if(member.lastDateOccured !== item.date_occurred){

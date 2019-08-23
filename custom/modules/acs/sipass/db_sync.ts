@@ -5,6 +5,7 @@ import * as SiPassDataStructure from "./siPass_define";
 import { DESTRUCTION } from "dns";
 
 import * as msSQL from 'mssql';
+import moment = require("moment");
 
 export class SiPassDbService {
 
@@ -31,11 +32,13 @@ export class SiPassDbService {
     }
 
     public async QueryAuditTrail(data: SiPassDataStructure.IQueryTimeRange) {
+        console.log("data", data)
         let record = [];
-
+        let q = "Select * From [asco4].[asco].[AuditTrail_" + moment(data.begin).format("YYYYMMDD") + "] Where time_occurred > '" +moment(data.begin).format("HHmmss") + "' and time_occurred  < '" + moment(data.end).format("HHmmss")+ "'";
+        console.log("query", q)
         try {
             let res = await this.sqlClient.request()
-                .query("Select * From [asco4].[asco].[AuditTrail_" + data.date + "] Where time_occurred > '" + data.beginHour + data.beginMin + data.beginSec + "' and time_occurred  < '" + data.endHour + data.endMin + data.endSec + "'");
+                .query(q);
 
             record = res["recordset"];
         }
@@ -45,6 +48,7 @@ export class SiPassDbService {
 
         return record ;
     }
+
 
     public async DbDisconnect(data: SiPassDataStructure.SiPassDbConnectInfo) {
         await this.sqlClient.close().then(() => {
