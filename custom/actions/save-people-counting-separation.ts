@@ -81,12 +81,12 @@ class Action {
      * @param groups
      * @param type
      */
-    private async SaveReportSummary(base: IDB.IReportBase, isEmployee: boolean, type: Enum.ESummaryType): Promise<void> {
+    private async SaveReportSummary(report: IDB.ReportPeopleCounting, type: Enum.ESummaryType): Promise<void> {
         try {
-            let date: Date = DateTime.Type2Date(base.date, type);
+            let date: Date = DateTime.Type2Date(report.getValue('date'), type);
 
             let reportSummary: IDB.ReportPeopleCountingSummary = await new Parse.Query(IDB.ReportPeopleCountingSummary)
-                .equalTo('device', base.device)
+                .equalTo('device', report.getValue('device'))
                 .equalTo('type', type)
                 .equalTo('date', date)
                 .first()
@@ -94,7 +94,8 @@ class Action {
                     throw e;
                 });
 
-            let isIn = base.device.getValue('direction') === Enum.EDeviceDirection.in;
+            let isEmployee: boolean = report.getValue('isEmployee');
+            let isIn: boolean = report.getValue('isIn');
 
             if (reportSummary) {
                 reportSummary.setValue('in', reportSummary.getValue('in') + (isIn ? 1 : 0));
@@ -107,9 +108,9 @@ class Action {
             } else {
                 reportSummary = new IDB.ReportPeopleCountingSummary();
 
-                reportSummary.setValue('site', base.site);
-                reportSummary.setValue('area', base.area);
-                reportSummary.setValue('device', base.device);
+                reportSummary.setValue('site', report.getValue('site'));
+                reportSummary.setValue('area', report.getValue('area'));
+                reportSummary.setValue('device', report.getValue('device'));
                 reportSummary.setValue('type', type);
                 reportSummary.setValue('date', date);
                 reportSummary.setValue('in', isIn ? 1 : 0);
@@ -151,15 +152,36 @@ class Action {
                         try {
                             buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
-                            let imageSrc: string = `images_report/people_counting/${DateTime.ToString(x.base.date, 'YYYYMMDD')}/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
+                            let isEmployee = (x.groups || []).indexOf(Enum.EPeopleType.employee) > -1;
+                            let isIn = x.base.device.getValue('direction') === Enum.EDeviceDirection.in;
+
+                            let report: IDB.ReportPeopleCounting = new IDB.ReportPeopleCounting();
+
+                            report.setValue('site', x.base.site);
+                            report.setValue('area', x.base.area);
+                            report.setValue('device', x.base.device);
+                            report.setValue('date', x.base.date);
+                            report.setValue('imageSrc', '');
+                            report.setValue('isIn', isIn);
+                            report.setValue('isEmployee', isEmployee);
+                            report.setValue('userGroups', x.groups);
+
+                            await report.save(null, { useMasterKey: true }).fail((e) => {
+                                throw e;
+                            });
+
+                            let imageSrc: string = `images_report/people_counting/${DateTime.ToString(x.base.date, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+
+                            report.setValue('imageSrc', imageSrc);
 
                             let tasks: Promise<any>[] = [];
 
-                            tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.hour));
-                            // tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.day));
-                            // tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.month));
-                            // tasks.push(this.SaveReportSummary(x.base, x.isEmployee, Enum.ESummaryType.season));
+                            tasks.push(report.save(null, { useMasterKey: true }) as any);
+                            tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.hour));
+                            // tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.day));
+                            // tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.month));
+                            // tasks.push(this.SaveReportSummary(report, Enum.ESummaryType.season));
 
                             await Promise.all(tasks).catch((e) => {
                                 throw e;
@@ -187,6 +209,6 @@ namespace Action {
     export interface IAction {
         base: IDB.IReportBase;
         buffer: Buffer;
-        isEmployee: boolean;
+        groups: Enum.EPeopleType[];
     }
 }

@@ -5,21 +5,16 @@ import * as Enum from '../../enums';
 /**
  * 報告
  */
-export interface IReportDemographic extends IReportBase {
+export interface IReportPeopleCounting extends IReportBase {
     /**
      * 照片
      */
     imageSrc: string;
 
     /**
-     * 年齡
+     *
      */
-    age: number;
-
-    /**
-     * 性別
-     */
-    gender: Enum.EGender;
+    isIn: boolean;
 
     /**
      *
@@ -33,4 +28,4 @@ export interface IReportDemographic extends IReportBase {
 }
 
 @registerSubclass()
-export class ReportDemographic extends ParseObjectNotice<IReportDemographic> {}
+export class ReportPeopleCounting extends ParseObjectNotice<IReportPeopleCounting> {}

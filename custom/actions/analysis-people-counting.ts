@@ -111,7 +111,7 @@ class Action {
                                             SavePeopleCountingSeparation.action$.next({
                                                 base: base,
                                                 buffer: buffer,
-                                                isEmployee: value.isEmployee,
+                                                groups: value.groups,
                                             });
                                         }
                                     } catch (e) {
@@ -164,6 +164,6 @@ namespace Action {
     export interface IAction_Separation extends IAction_Base {
         type: 'separation';
         imagePath: string;
-        isEmployee: boolean;
+        groups: Enum.EPeopleType[];
     }
 }
