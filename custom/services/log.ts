@@ -51,18 +51,18 @@ export namespace Log {
         return msg;
     }
 
-    export async function Info(title: string, message: string, user?:User, isHidden?:boolean) {
+    export async function Info(title: string, message: string, user?:User, isHidden?:boolean, type?:string) {
         if (!TestPass(Level.Info)) return;
         let msg = getInfoMessage(title, message);
-        if(isHidden===false)await (new SystemLog({title, message, user, hidden:(isHidden === undefined ? true :isHidden)})).save();
+        if(isHidden===false)await (new SystemLog({title, message, user, hidden: isHidden || true, type})).save();
         console.log(msg);
         return msg;
     }
 
-    export async function Error(title: string, message: string, user?:User) {
+    export async function Error(title: string, message: string, user?:User, type?:string) {
         if (!TestPass(Level.Error)) return;
         let msg = getErrorMessage(title, message);
-        await (new SystemLog({title, message, user})).save();
+        await (new SystemLog({title, message, user, type})).save();
         console.log(msg);
         return msg;
     }

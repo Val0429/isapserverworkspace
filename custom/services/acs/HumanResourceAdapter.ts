@@ -81,7 +81,7 @@ export class HumanResourceAdapter {
             //     strEmp += (",'" + no + "'");
             // });
             let q=`select distinct * from vieMember where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
-            console.log("getViewMember query", q);
+            //console.log("getViewMember query", q);
             res = await this.sqlClient.request(q)
                 .query();
         }
@@ -94,14 +94,14 @@ export class HumanResourceAdapter {
 
         let res = [];
         if (empno.length >= 1) {
-            let strEmp = "";
+            let strEmp = empno.join("','");
 
-            empno.forEach(no => {
-                strEmp += (",'" + no + "'");
-            });
+            // empno.forEach(no => {
+            //     strEmp += (",'" + no + "'");
+            // });
 
             res = await this.sqlClient.request()
-                .query(`select distinct * from vieSupporter where SupporterNo in (''${strEmp}) order by CompCode, SupporterNo`);
+                .query(`select distinct * from vieSupporter where SupporterNo in ('${strEmp}') order by CompCode, SupporterNo`);
         }
 
         return res["recordset"];

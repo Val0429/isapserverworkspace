@@ -22,9 +22,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new FloorGroup(data.inputType);
 
-    Log.Info(`info`, `postFloorGroup ${data.inputType.groupname}`, data.user, false);
-
+    
     await obj.save(null, { useMasterKey: true });
+    await Log.Info(`create`, `${data.inputType.groupname}`, data.user, false, "FloorGroup");
+
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -62,10 +63,11 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(FloorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`FloorGroup <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `putFloorGroup ${obj.get("groupname")}`, data.user, false);
-
+    
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    await Log.Info(`update`, `${obj.get("groupname")}`, data.user, false, "FloorGroup");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -82,10 +84,10 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(FloorGroup).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`FloorGroup <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `deleteFloorGroup ${obj.get("groupname")}`, data.user, false);
-
+    
     /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+    await Log.Info(`delete`, `${obj.get("groupname")}`, data.user, false, "FloorGroup");
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

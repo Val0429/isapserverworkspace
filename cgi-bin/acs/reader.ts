@@ -23,9 +23,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Reader(data.inputType);
 
-    Log.Info(`info`, `postReader ${data.inputType.readerid} ${data.inputType.readername}`, data.user, false);
-
     await obj.save(null, { useMasterKey: true });
+
+    await Log.Info(`create`, `${data.inputType.readerid} ${data.inputType.readername}`, data.user, false, "Reader");
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -112,11 +112,11 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(Reader).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Reader <${objectId}> not exists.`]);
-
-    Log.Info(`info`, `putReader ${obj.get("readerid")} ${obj.get("readername")}`, data.user, false);
-
+    
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    await Log.Info(`update`, `${obj.get("readerid")} ${obj.get("readername")}`, data.user, false, "Reader");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -133,10 +133,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(Reader).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Reader <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `deleteReader ${obj.get("readerid")} ${obj.get("readername")}`, data.user, false);
-    
     /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+    await Log.Info(`delete`, `${obj.get("readerid")} ${obj.get("readername")}`, data.user, false, "Reader");
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

@@ -22,9 +22,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Create Object
     var obj = new Floor(data.inputType);
 
-    Log.Info(`info`, `postFloor ${data.inputType.floorname}`, data.user, false);
-
     await obj.save(null, { useMasterKey: true });
+
+    await Log.Info(`create`, `${data.inputType.floorname}`, data.user, false, "Floor");
     /// 2) Output
     return ParseObject.toOutputJSON(obj);
 });
@@ -90,10 +90,11 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(Floor).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floor <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `putFloor ${obj.get("floorname")}`, data.user, false);
-
+    
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    await Log.Info(`update`, `${obj.get("floorname")}`, data.user, false, "Floor");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

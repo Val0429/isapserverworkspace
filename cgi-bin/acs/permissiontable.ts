@@ -89,7 +89,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     var obj = new PermissionTable(data.inputType);
     //let ccurePermissionTable = 
     await obj.save(null, { useMasterKey: true });
-    Log.Info(`info`, `postPermisiionTable ${data.inputType.tableid} ${data.inputType.tablename}`, data.user, false);
+    await Log.Info(`create`, `${data.inputType.tableid} ${data.inputType.tablename}`, data.user, false, "PermissionTable");
     
 
     /// 2) Output
@@ -131,13 +131,8 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `putPermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false);
-
-    
-
     // 2.0 Modify Access Group
-    
-        let al = [];
+    let al = [];
     if (data.inputType.accesslevels) {
         for (let i = 0; i < data.inputType.accesslevels.length; i++) {
             let levelGroup = data.inputType.accesslevels[i];
@@ -166,6 +161,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     await siPassAdapter.putAccessGroup(ag);
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
+    await Log.Info(`update`, `${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false, "PermissionTable");
     /// 3) Output
     return {ccureClearance, acsAcessLevels, errors};
 });
@@ -182,10 +178,11 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
-    Log.Info(`info`, `deletePermissionTable ${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false);
-
+   
     /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    await obj.destroy({ useMasterKey: true });
+    await Log.Info(`delete`, `${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false, "PermissionTable");
+
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });

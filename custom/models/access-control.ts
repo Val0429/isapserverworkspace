@@ -3,6 +3,7 @@ import { User } from 'parse';
 
 export interface ISystemLog{
     title:string;
+    type?:string;
     message:string;
     user?:User;
     hidden?:boolean;
