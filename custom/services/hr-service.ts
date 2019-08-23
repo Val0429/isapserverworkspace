@@ -425,6 +425,10 @@ export class HRService {
                     // 5.1 write data to SiPass database
                     // console.log(JSON.stringify(d));
                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+                    //sipass require null
+                    for(let field of d.CustomFields){
+                        field.FieldValue=field.FieldValue || null;
+                    }
                     let holder = await siPassAdapter.postCardHolder(d);
                     //}
                     console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
