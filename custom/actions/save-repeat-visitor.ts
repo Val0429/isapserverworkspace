@@ -91,31 +91,43 @@ class Action {
                         let buffer: Buffer = x.buffer;
 
                         try {
-                            buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
+                            let startDate: Date = new Date(new Date(x.base.date).setHours(0, 0, 0, 0));
+                            let endDate: Date = new Date(new Date(startDate).setDate(startDate.getDate() + 1));
 
-                            let report: IDB.ReportRepeatVisitor = new IDB.ReportRepeatVisitor();
+                            let report: IDB.ReportRepeatVisitor = await new Parse.Query(IDB.ReportRepeatVisitor)
+                                .equalTo('faceId', x.faceId)
+                                .equalTo('site', x.base.site)
+                                .greaterThanOrEqualTo('date', startDate)
+                                .lessThan('date', endDate)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!report) {
+                                buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
-                            report.setValue('site', x.base.site);
-                            report.setValue('area', x.base.area);
-                            report.setValue('device', x.base.device);
-                            report.setValue('date', x.base.date);
-                            report.setValue('imageSrc', '');
-                            report.setValue('age', x.feature.age);
-                            report.setValue('gender', x.feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
-                            report.setValue('faceId', x.faceId);
+                                report.setValue('site', x.base.site);
+                                report.setValue('area', x.base.area);
+                                report.setValue('device', x.base.device);
+                                report.setValue('date', x.base.date);
+                                report.setValue('imageSrc', '');
+                                report.setValue('age', x.feature.age);
+                                report.setValue('gender', x.feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
+                                report.setValue('faceId', x.faceId);
 
-                            await report.save(null, { useMasterKey: true }).fail((e) => {
-                                throw e;
-                            });
+                                await report.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
 
-                            let imageSrc: string = `images_report/repeat_visitor/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
-                            File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
+                                let imageSrc: string = `images_report/repeat_visitor/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
+                                File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
 
-                            report.setValue('imageSrc', imageSrc);
+                                report.setValue('imageSrc', imageSrc);
 
-                            await report.save(null, { useMasterKey: true }).fail((e) => {
-                                throw e;
-                            });
+                                await report.save(null, { useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            }
                         } catch (e) {
                             Print.Log(e, new Error(), 'error');
                         } finally {
