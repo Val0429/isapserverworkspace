@@ -80,7 +80,7 @@ export class HumanResourceAdapter {
             // empno.forEach(no => {
             //     strEmp += (",'" + no + "'");
             // });
-            let q=`select distinct * from vieMember where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
+            let q=`select * from vieMember where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
             //console.log("getViewMember query", q);
             res = await this.sqlClient.request(q)
                 .query();
@@ -101,7 +101,7 @@ export class HumanResourceAdapter {
             // });
 
             res = await this.sqlClient.request()
-                .query(`select distinct * from vieSupporter where SupporterNo in ('${strEmp}') order by CompCode, SupporterNo`);
+                .query(`select * from vieSupporter where SupporterNo in ('${strEmp}') order by CompCode, SupporterNo`);
         }
 
         return res["recordset"];
