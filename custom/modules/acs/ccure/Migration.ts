@@ -178,6 +178,7 @@ export async function GetMigrationDataPermissionTable() {
     }
     Object.keys(permTableEvevatorFloorGroupby).forEach(function (permissionTableId) {
         let permIdjsonArr = permTableEvevatorFloorGroupby[permissionTableId];
+
         for (var i = 0; i < permIdjsonArr.length; i++) {
             // 4.1 Check Elevator or Elevator Group
             let elevatorOrGroupId = permIdjsonArr[i]["elevatorOrGroupId"];
@@ -197,26 +198,27 @@ export async function GetMigrationDataPermissionTable() {
             // 4.1.2 Check Group
             else {
                 let groupId = elevatorOrGroupId;
-                if (!groupMemberGroupby[groupId]) continue;
-                let tempJson = [];
-                for (var j = 0; j < groupMemberGroupby[groupId].length; j++) {
-                    let elevatorId = groupMemberGroupby[groupId][j]["objectId"];
-                    let deviceId = elevatorsGroupby[elevatorId]["deviceId"];
-                    tempJson.push
-                        (
-                            {
-                                "type": "elevator",
-                                "name": elevatorsGroupby[elevatorId]["elevatorName"],
-                                "device": devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "")
-                            }
-                        );
+                if (groupMemberGroupby[groupId]){
+                    let tempJson = [];
+                    for (var j = 0; j < groupMemberGroupby[groupId].length; j++) {
+                        let elevatorId = groupMemberGroupby[groupId][j]["objectId"];
+                        let deviceId = elevatorsGroupby[elevatorId]["deviceId"];
+                        tempJson.push
+                            (
+                                {
+                                    "type": "elevator",
+                                    "name": elevatorsGroupby[elevatorId]["elevatorName"],
+                                    "device": devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "")
+                                }
+                            );
+                    }
+                    elevatorJson =
+                        {
+                            "type": "elevatorGroup",
+                            "name": elevatorGroupsKeyMap[groupId],
+                            "elevators": tempJson
+                        };
                 }
-                elevatorJson =
-                    {
-                        "type": "elevatorGroup",
-                        "name": elevatorGroupsKeyMap[groupId],
-                        "elevators": tempJson
-                    };
             }
 
             // 4.2 Check Floor or Floor Group
