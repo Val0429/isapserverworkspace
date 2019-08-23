@@ -114,6 +114,7 @@ export class HRService {
                 }
 
                 try {
+                    //await this.CCure800SqlAdapter.connect(Config.ccureconnect);
                     await this.humanResource.connect(config);
                 }
                 catch (ex) {
@@ -179,7 +180,7 @@ export class HRService {
             try {
                 this.mongoClient.close();
                 this.humanResource.disconnect();
-                this.CCure800SqlAdapter.disconnect();
+                //this.CCure800SqlAdapter.disconnect();
             }
             catch (ex) {
                 Log.Info(`${this.constructor.name}`, ex);
