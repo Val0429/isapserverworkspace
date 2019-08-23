@@ -82,8 +82,8 @@ export class HumanResourceAdapter {
             // });
             let q=`select * from vieMember where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
             //console.log("getViewMember query", q);
-            res = await this.sqlClient.request(q)
-                .query();
+            res = await this.sqlClient.request()
+                .query(q);
         }
 
         return res["recordset"];

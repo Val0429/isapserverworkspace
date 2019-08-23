@@ -165,6 +165,12 @@ export class HRService {
             // 4.4 request human information
             if (this.checkCycleTime != 5) {               
                 Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
+                while(EmpNo.length>100){
+                    let newEmpNo = EmpNo.splice(0,100);
+                    let { newMsg, offMsg, chgMsg } = await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange);
+                     await this.getViewSupporter(newEmpNo);
+                     await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
+                }
                 let { newMsg, offMsg, chgMsg } = await this.requestHumanInfo(EmpNo, memNew, memOff, memChange);
                 await this.getViewSupporter(EmpNo);
                 // 6.0 report log and send smtp 
@@ -302,24 +308,23 @@ export class HRService {
                     let endDate = "2100-12-31T23:59:59";
                     if (record["OffDate"])
                         endDate = JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-"));
+                        let credential = {
+                            CardNumber: record["FaxNo"]+"",
+                            EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
+                            Pin: "0000",
+                            ProfileId: 1,
+                            ProfileName: "基礎",
+                            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
+                            FacilityCode: 469,
+                            CardTechnologyCode: 10,
+                            PinMode: 4,
+                            PinDigit: 6
+                        };
                     let d = {
                         AccessRules: [],
                         ApbWorkgroupId: a,
                         Attributes: {},
-                        Credentials: [
-                            {
-                                CardNumber: record["FaxNo"],
-                                EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
-                                Pin: "0000",
-                                ProfileId: 1,
-                                ProfileName: "基礎",
-                                StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
-                                FacilityCode: 469,
-                                CardTechnologyCode: 10,
-                                PinMode: 4,
-                                PinDigit: 6
-                            }
-                        ],
+                        Credentials: credential.CardNumber && credential.CardNumber!="0" ? [credential]:[],
                         EmployeeNumber: record["EmpNo"] ? record["EmpNo"] : "",
                         EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
                         FirstName: record["EngName"] ? record["EngName"] : "_",
@@ -425,7 +430,7 @@ export class HRService {
                     // 5.1 write data to SiPass database
                     // console.log(JSON.stringify(d));
                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-                    //sipass require null
+                    //sipass requires null
                     for(let field of d.CustomFields){
                         field.FieldValue=field.FieldValue || null;
                     }
@@ -662,6 +667,10 @@ export class HRService {
                     await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields, "NH-Employee");
                     // 5.1 write data to SiPass database
                     Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["SupporterNo"]} ${record["SupporterName"]}`);
+                    //sipass requires null
+                    for(let field of d.CustomFields){
+                        field.FieldValue=field.FieldValue || null;
+                    }
                     let holder = await siPassAdapter.postCardHolder(d);
                     console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
                     delete d["_links"];
