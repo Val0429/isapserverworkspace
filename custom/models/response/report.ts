@@ -247,6 +247,20 @@ export interface IHeatmapSummary {
     summaryDatas: IHeatmapSummaryData[];
 }
 
+export interface IIndexBase {
+    site: IObject;
+    area: IObject;
+    deviceGroups: IObject[];
+    device: IObject;
+    date: Date;
+    imageSrc: string;
+}
+
+export interface IPeopleCountingIndex extends IIndexBase {
+    isIn: boolean;
+    isEmployee: boolean;
+}
+
 export interface ISendUser extends IObject {
     email: string;
 }

@@ -54,6 +54,18 @@ export interface IHeatmapSummary extends IDate.IRange {
     siteId: string;
 }
 
+export interface IIndexBase extends IDate.IRange {
+    siteId: string;
+    areaId?: string;
+    deviceGroupId?: string;
+    deviceId?: string;
+}
+
+export interface IPeopleCountingIndex extends IIndexBase {
+    isIn?: boolean;
+    isEmployee?: boolean;
+}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;
