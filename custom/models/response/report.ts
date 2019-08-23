@@ -261,6 +261,12 @@ export interface IPeopleCountingIndex extends IIndexBase {
     isEmployee: boolean;
 }
 
+export interface IDemographicIndex extends IIndexBase {
+    isEmployee: boolean;
+    age: number;
+    gender: string;
+}
+
 export interface ISendUser extends IObject {
     email: string;
 }

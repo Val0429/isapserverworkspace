@@ -66,6 +66,10 @@ export interface IPeopleCountingIndex extends IIndexBase {
     isEmployee?: boolean;
 }
 
+export interface IDemographicIndex extends IIndexBase {
+    isEmployee?: boolean;
+}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;
