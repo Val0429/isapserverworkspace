@@ -42,7 +42,7 @@ export interface Input {
      * from id card
      */
     name: string;
-    birthdate: string;
+    birthdate?: string;
     /**
      * 4 digits
      */
@@ -51,7 +51,7 @@ export interface Input {
      * sha256 data
      */
     idref: string;
-    images: Parse.File[];
+    images?: Parse.File[];
 
     company: Companies;
     liveFace: Parse.File;
