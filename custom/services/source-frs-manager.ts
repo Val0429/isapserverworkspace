@@ -208,8 +208,6 @@ class Service {
                                                 return !!value1;
                                             });
 
-                                        let isEmployee = groups.indexOf(Enum.EPeopleType.employee) > -1;
-
                                         devices.forEach((value1, index1, array1) => {
                                             let temp: string = `${File.assetsPath}/temp/${Utility.RandomText(10, { symbol: false })}_${new Date().getTime()}.png`;
                                             File.WriteFile(temp, x.image);
@@ -221,7 +219,7 @@ class Service {
                                                         device: value1,
                                                         date: x.date,
                                                         imagePath: temp,
-                                                        isEmployee: isEmployee,
+                                                        groups: groups,
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.demographic:
