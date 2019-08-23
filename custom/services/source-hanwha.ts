@@ -158,8 +158,6 @@ class Service {
                                         out: count.out,
                                     });
                                     break;
-                                default:
-                                    throw `${value.id}(device) mode not found`;
                             }
                         } catch (e) {
                             Print.Log(`${value.id}(device) -> ${e}`, new Error(), 'error');
