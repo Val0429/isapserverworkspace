@@ -70,6 +70,10 @@ export interface IDemographicIndex extends IIndexBase {
     isEmployee?: boolean;
 }
 
+export interface IRepeatVisitorIndex extends IDate.IRange {
+    siteIds: string | string[];
+}
+
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;

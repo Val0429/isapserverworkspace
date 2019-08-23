@@ -267,6 +267,12 @@ export interface IDemographicIndex extends IIndexBase {
     gender: string;
 }
 
+export interface IRepeatVisitorIndex {
+    faceId: string;
+    count: string;
+    datas: IIndexBase[];
+}
+
 export interface ISendUser extends IObject {
     email: string;
 }
