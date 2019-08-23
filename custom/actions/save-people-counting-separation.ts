@@ -166,6 +166,10 @@ class Action {
                             report.setValue('isEmployee', isEmployee);
                             report.setValue('userGroups', x.groups);
 
+                            await report.save(null, { useMasterKey: true }).fail((e) => {
+                                throw e;
+                            });
+
                             let imageSrc: string = `images_report/people_counting/${DateTime.ToString(x.base.date, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);
 
