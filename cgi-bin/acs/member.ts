@@ -100,34 +100,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let ret = ParseObject.toOutputJSON(obj);
 
     let holder = await siPassAdapter.postCardHolder(ret);
-    if (holder["Token"] == undefined ) {
-        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail ${holder}`]);
-    }
-
+    
     obj.set("Token", holder["Token"]);
+    
+    let cCure800SqlAdapter = new CCure800SqlAdapter();
+    await cCure800SqlAdapter.writeMember(ret, ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index), inputs);
     await obj.save(null, { useMasterKey: true });
-
-
-    try {
-        // let config = {
-        //     server: Config.ccuresqlserver.server,
-        //     port: Config.ccuresqlserver.port,
-        //     user: Config.ccuresqlserver.user,
-        //     password: Config.ccuresqlserver.password,
-        //     database: Config.ccuresqlserver.database,
-        //     requestTimeout: 50000,
-        //     connectionTimeout: 50000 //ms
-        // }
-        
-        let cCure800SqlAdapter = new CCure800SqlAdapter();
-        // await this.CCure800SqlAdapter.connect(config);
-        await cCure800SqlAdapter.writeMember(ret, ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index), inputs);
-        // await this.CCure800SqlAdapter.disconnect();
-    }
-    catch (ex) {
-        console.log(`${this.constructor.name}`, ex);
-    }
-
     await Log.Info(`create`, `${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false, "Member");
 
     /// 2) Output
@@ -274,33 +252,14 @@ console.log(update);
     let ret = ParseObject.toOutputJSON(update);
 
     let holder = await siPassAdapter.putCardHolder(ret);
-    if (holder["Token"] == undefined ) {
-        throw Errors.throw(Errors.CustomNotExists, [`Create Card Holder Fail ${holder}`]);
-    }
-
+   
 	ret["Token"] = ret["Token"] + "" ;
 	delete ret["token"] ;
-	
-    try {
-        // let config = {
-        //     server: Config.ccureconnect.server,
-        //     port: Config.ccureconnect.port,
-        //     user: Config.ccureconnect.user,
-        //     password: Config.ccureconnect.password,
-        //     database: Config.ccureconnect.database,
-        //     requestTimeout: 50000,
-        //     connectionTimeout: 50000 //ms
-        // }
 
-        let cCure800SqlAdapter = new CCure800SqlAdapter();
-        
-        //await cCure800SqlAdapter.connect(config);
-        await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
-        //await cCure800SqlAdapter.disconnect();
-    }
-    catch (ex) {
-        console.log(`${this.constructor.name}`, ex);
-    }
+    let cCure800SqlAdapter = new CCure800SqlAdapter();
+    
+    //await cCure800SqlAdapter.connect(config);
+    await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
     
     /// 5) to Monogo
     //await obj.save({ ...ret, objectId: undefined });

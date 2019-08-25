@@ -330,11 +330,11 @@ export class HRService {
             endDate = JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-"));
         let credential = {
             CardNumber: record["FaxNo"] + "",
-            EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
+            EndDate: endDate,
             Pin: "0000",
             ProfileId: 1,
             ProfileName: "基礎",
-            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
+            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : (new Date()).toISOString().split(".")[0],
             FacilityCode: 469,
             CardTechnologyCode: 10,
             PinMode: 4,
@@ -373,7 +373,7 @@ export class HRService {
             PrimaryWorkgroupId: a,
             PrimaryWorkgroupName: b,
             SmartCardProfileId: "0",
-            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
+            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : (new Date()).toISOString().split(".")[0],
             Status: 61,
             Token: "-1",
             TraceDetails: {},
@@ -390,7 +390,7 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomDropdownControl1__CF",
-                    FieldValue: a
+                    FieldValue: a+""
                 },
                 {
                     FiledName: "CustomTextBoxControl1__CF",
@@ -600,7 +600,7 @@ export class HRService {
                         PrimaryWorkgroupId: a,
                         PrimaryWorkgroupName: b,
                         SmartCardProfileId: "0",
-                        StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : "",
+                        StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : (new Date()).toISOString().split(".")[0],
                         Status: 61,
                         Token: "-1",
                         TraceDetails: {},
@@ -617,7 +617,7 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomDropdownControl1__CF",
-                                FieldValue: a
+                                FieldValue: a+""
                             },
                             {
                                 FiledName: "CustomTextBoxControl1__CF",
@@ -702,6 +702,7 @@ export class HRService {
                         }
                     }catch(err){
                         console.error("err", JSON.stringify(err));
+                        console.error("err data", JSON.stringify(d));
                     }
                 }
                 await ParseObject.saveAll(objects);
