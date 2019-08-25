@@ -106,7 +106,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     /// 1) Make Query
     var query = new Parse.Query(PermissionTable)
                 .ascending("tablename")
+                .include("accesslevels.elevator")
+                .include("accesslevels.elevatorgroup")                
                 .include("accesslevels.door")
+                .include("accesslevels.floor")
                 .include("accesslevels.doorgroup.doors")
                 .include("accesslevels.timeschedule");
 
