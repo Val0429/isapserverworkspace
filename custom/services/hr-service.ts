@@ -204,11 +204,9 @@ export class HRService {
                 let vieMembers = await new Parse.Query(vieMember).containedIn("EmpNo", res.map(x => x["EmpNo"])).find();
                 let members = await new Parse.Query(Member).containedIn("EmployeeNumber", res.map(x => x["EmpNo"])).find();
                 for (let record of res) {
-                    try{
-                        ({ newMsg, offMsg, chgMsg } = await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, objects, members));
-                    }catch(err){
-                        console.log("err", JSON.stringify(err))
-                    }
+                   
+                    ({ newMsg, offMsg, chgMsg } = await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, objects, members));
+                      
                     //important to avoid out of memory
                     if (objects.length >= 1000) {
                         await ParseObject.saveAll(objects);
@@ -340,11 +338,12 @@ export class HRService {
             PinMode: 4,
             PinDigit: 6
         };
+        
         let d = {
             AccessRules: [],
             ApbWorkgroupId: a,
             Attributes: {},
-            Credentials: credential.CardNumber && credential.CardNumber != "0" ? [credential] : [],
+            Credentials: credential.CardNumber && credential.CardNumber != "0" && credential.CardNumber != "null" ? [credential] : [],
             EmployeeNumber: record["EmpNo"] ? record["EmpNo"] : "",
             EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
             FirstName: record["EngName"] ? record["EngName"] : "_",
@@ -443,32 +442,40 @@ export class HRService {
             ],
             "_links": []
         };
-        console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields, "NH-Employee");
-        // console.log(`======================= ${sessionId}`);
-        // if (sessionId != "") {
-        // 5.1 write data to SiPass database
-        // console.log(JSON.stringify(d));
-        Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-        //sipass requires null
-        for (let field of d.CustomFields) {
-            field.FieldValue = field.FieldValue || null;
+        try{
+            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields, "NH-Employee");
+            // console.log(`======================= ${sessionId}`);
+            // if (sessionId != "") {
+            // 5.1 write data to SiPass database
+            // console.log(JSON.stringify(d));
+            Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+            //sipass requires null
+            for (let field of d.CustomFields) {
+                field.FieldValue = field.FieldValue || null;
+            }
+           
+            //}
+            console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+            delete d["_links"];
+            //d["_id"] = new mongo.ObjectID().toHexString();
+            //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
+            let member = members.find(x => x.get("EmployeeNumber") == record["EmpNo"]);
+            if (!member) {
+                member = new Member(d);
+                let holder = await siPassAdapter.postCardHolder(d);
+                member.set("Token", holder["Token"] || "-1");
+            }
+            else {
+                await siPassAdapter.putCardHolder(d);
+                member.set(d);
+            }
+            objects.push(member);
+            
+        }catch(err){
+            console.log("err", JSON.stringify(err));
+            console.log("err data", JSON.stringify(d));
         }
-        let holder = await siPassAdapter.postCardHolder(d);
-        //}
-        console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-        delete d["_links"];
-        //d["_id"] = new mongo.ObjectID().toHexString();
-        //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
-        let member = members.find(x => x.get("EmployeeNumber") == record["EmpNo"]);
-        if (!member) {
-            member = new Member(d);
-            member.set("Token", holder["Token"] || "-1");
-        }
-        else {
-            member.set(d);
-        }
-        objects.push(member);
         return { newMsg, offMsg, chgMsg };
     }
 
@@ -681,7 +688,7 @@ export class HRService {
                         for(let field of d.CustomFields){
                             field.FieldValue=field.FieldValue || null;
                         }
-                        let holder = await siPassAdapter.postCardHolder(d);
+                        
                         console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
                         delete d["_links"];
                         //d["_id"] = new mongo.ObjectID().toHexString();
@@ -689,9 +696,11 @@ export class HRService {
                         let member = members.find(x => x.get("EmployeeNumber") == record["SupporterNo"]);
                         if (!member) {
                             member = new Member(d);
+                            let holder = await siPassAdapter.postCardHolder(d);
                             member.set("Token", holder["Token"] || "-1");
                         }
                         else {
+                            await siPassAdapter.putCardHolder(d);
                             member.set(d);
                         }
                         objects.push(member);
@@ -701,8 +710,8 @@ export class HRService {
                             objects = [];
                         }
                     }catch(err){
-                        console.error("err", JSON.stringify(err));
-                        console.error("err data", JSON.stringify(d));
+                        console.log("err", JSON.stringify(err));
+                        console.log("err data", JSON.stringify(d));
                     }
                 }
                 await ParseObject.saveAll(objects);
