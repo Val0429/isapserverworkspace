@@ -135,7 +135,7 @@ export class SiPassPersonService {
         // console.log(`requestBody =` + JSON.stringify(requestBody));
 
         let result: any = await new Promise<any>((resolve, reject) => {
-            try {
+            // try {
                 HttpClient.post(
                     {
                         url: url,
@@ -154,14 +154,15 @@ export class SiPassPersonService {
                         resolve(body);
                     },
                 );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-            //console.log(`catch error ${e}`);
-            return JSON.stringify(e);
+            // } catch (e) {
+            //     return reject(e);
+            // }
+        })
+        // .catch((e) => {
+        //     //console.log(`catch error ${e}`);
+        //     return JSON.stringify(e);
 
-        });
+        // });
 
         // console.log('\n.........................................');
         // console.info(`result = ` + JSON.stringify(result));
@@ -195,7 +196,7 @@ export class SiPassPersonService {
         // console.dir(requestHeader, {depth: null})
 
         let result: any = await new Promise<any>((resolve, reject) => {
-            try {
+            // try {
                 HttpClient.put(
                     {
                         url: url,
@@ -214,12 +215,12 @@ export class SiPassPersonService {
                         resolve(body);
                     },
                 );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-            console.log(e);
-            return JSON.stringify(e);
+        //     } catch (e) {
+        //         return reject(e);
+        //     }
+        // }).catch((e) => {
+        //     console.log(e);
+        //     return JSON.stringify(e);
         });
 
         // console.log('\n.........................................');
