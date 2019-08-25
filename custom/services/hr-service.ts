@@ -443,7 +443,7 @@ export class HRService {
                     let member = members.find(x => x.get("EmployeeNumber") == record["EmpNo"]);
                     if (!member) {
                         member = new Member(d);
-                        member.set("Token", holder["Token"]);
+                        member.set("Token", holder["Token"] || "-1");
                     }
                     else {
                         member.set(d);
@@ -679,7 +679,7 @@ export class HRService {
                     let member = members.find(x => x.get("EmployeeNumber") == record["SupporterNo"]);
                     if (!member) {
                         member = new Member(d);
-                        member.set("Token", holder["Token"]);
+                        member.set("Token", holder["Token"] || "-1");
                     }
                     else {
                         member.set(d);
