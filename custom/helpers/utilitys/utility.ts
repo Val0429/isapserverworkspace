@@ -311,4 +311,26 @@ export namespace Utility {
             throw e;
         }
     }
+
+    /**
+     * Get value range level
+     * @param value
+     * @param ranges
+     * @param multiple
+     */
+    export function GetValueRangeLevel(value: number, ranges: IValueRange[]): number;
+    export function GetValueRangeLevel(value: number, ranges: IValueRange[], multiple: number): number;
+    export function GetValueRangeLevel(value: number, ranges: IValueRange[], multiple?: number): number {
+        try {
+            multiple = multiple || 1;
+
+            let level: number = ranges.findIndex((value1, index1, array1) => {
+                return value1.min * multiple <= value && (!value1.max || value1.max * multiple > value);
+            });
+
+            return level;
+        } catch (e) {
+            throw e;
+        }
+    }
 }
