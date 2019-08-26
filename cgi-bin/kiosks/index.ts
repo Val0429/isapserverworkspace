@@ -35,8 +35,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let license = await licenseService.getLicense();
     //let totalCounts = O(license.summary[kioskLicense]).totalCount || 0;
     let totalCounts = (license.summary[kioskLicense] || {} as any).totalCount || 0;
-    // if (kioskCounts >= totalCounts)
-    //     throw Errors.throw(Errors.CustomBadRequest, [`License required to add more kiosks. Currently full: ${kioskCounts}/${totalCounts}`]);
+    if (kioskCounts >= totalCounts)
+        throw Errors.throw(Errors.CustomBadRequest, [`License required to add more kiosks. Currently full: ${kioskCounts}/${totalCounts}`]);
     /// V1.3) After verify passed, set activated
     (data.inputType.data as any).activated = true;
 
