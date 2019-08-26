@@ -106,6 +106,8 @@ class Action {
                             if (!report) {
                                 buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
+                                report = new IDB.ReportRepeatVisitor();
+
                                 report.setValue('site', x.base.site);
                                 report.setValue('area', x.base.area);
                                 report.setValue('device', x.base.device);
