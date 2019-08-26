@@ -148,7 +148,7 @@ action.get(
                                         sourceid: frsConfig.sourceid,
                                     };
                                     break;
-                                case Enum.EDeviceModelIsap.frs:
+                                case Enum.EDeviceModelIsap.frsManager:
                                     let frsManagerConfig: IDB.ICameraFRSManager = value.getValue('config') as IDB.ICameraFRSManager;
                                     config = {
                                         server: {
@@ -580,10 +580,10 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
                     case Enum.EDeviceMode.dwellTime:
                     case Enum.EDeviceMode.visitor:
                         device = await DemoServer(device, value.demoServerId);
-                        device = await FRSCamera(device, value.config);
+                        device = await FRSManagerCamera(device, value.config);
                         break;
                     case Enum.EDeviceMode.peopleCounting:
-                        device = await FRSCamera(device, value.config);
+                        device = await FRSManagerCamera(device, value.config);
                         break;
                 }
             }
@@ -698,10 +698,10 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
                     case Enum.EDeviceMode.dwellTime:
                     case Enum.EDeviceMode.visitor:
                         if (value.demoServerId) device = await DemoServer(device, value.demoServerId);
-                        if (value.config) device = await FRSCamera(device, value.config);
+                        if (value.config) device = await FRSManagerCamera(device, value.config);
                         break;
                     case Enum.EDeviceMode.peopleCounting:
-                        if (value.config) device = await FRSCamera(device, value.config);
+                        if (value.config) device = await FRSManagerCamera(device, value.config);
                         break;
                 }
             }
