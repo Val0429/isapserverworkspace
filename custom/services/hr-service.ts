@@ -45,7 +45,14 @@ export class HRService {
 
         
     }
-
+    getDate(date, splitter="T"){
+        try{    
+         let dt = new Date(date);
+         return dt.toISOString().split(splitter)[0];
+      }catch (err){
+          return;
+      }
+    }
     async doHumanResourcesSync(hour:number=3,minute:number=0) {
         Log.Info(`${this.constructor.name}`, `0.0 Timer Check`);
 
@@ -323,16 +330,15 @@ export class HRService {
             objects.push(obj);
         }
         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-        let endDate = "2100-12-31T23:59:59";
-        if (record["OffDate"])
-            endDate = JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-"));
+        let endDate = this.getDate(record["OffDate"], ".") || "2100-12-31T23:59:59";
+        let startDate = this.getDate(record["EntDate"], ".") || (new Date()).toISOString().split(".")[0];
         let credential = {
             CardNumber: record["FaxNo"] + "",
             EndDate: endDate,
             Pin: "0000",
             ProfileId: 1,
             ProfileName: "基礎",
-            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : (new Date()).toISOString().split(".")[0],
+            StartDate: startDate,
             FacilityCode: 469,
             CardTechnologyCode: 10,
             PinMode: 4,
@@ -345,7 +351,7 @@ export class HRService {
             Attributes: {},
             Credentials: credential.CardNumber && credential.CardNumber != "0" && credential.CardNumber != "null" ? [credential] : [],
             EmployeeNumber: record["EmpNo"] ? record["EmpNo"] : "",
-            EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
+            EndDate: endDate,
             FirstName: record["EngName"] ? record["EngName"] : "_",
             GeneralInformation: "",
             LastName: record["EmpName"] ? record["EmpName"] : "_",
@@ -360,7 +366,7 @@ export class HRService {
                     PagerServiceProviderId: "0",
                     PhoneNumber: ""
                 },
-                DateOfBirth: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : "",
+                DateOfBirth: this.getDate(record["BirthDate"])||"",
                 PayrollNumber: "",
                 Title: "",
                 UserDetails: {
@@ -372,7 +378,7 @@ export class HRService {
             PrimaryWorkgroupId: a,
             PrimaryWorkgroupName: b,
             SmartCardProfileId: "0",
-            StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : (new Date()).toISOString().split(".")[0],
+            StartDate: startDate,
             Status: 61,
             Token: "-1",
             TraceDetails: {},
@@ -385,7 +391,7 @@ export class HRService {
             CustomFields: [
                 {
                     FiledName: "CustomDateControl4__CF",
-                    FieldValue: record["UpdDate"] ? JSON.parse(JSON.stringify(record["UpdDate"]).replace(/\//g, "-")) : ""
+                    FieldValue: this.getDate(record["UpdDate"])||""
                 },
                 {
                     FiledName: "CustomDropdownControl1__CF",
@@ -405,7 +411,7 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomDropdownControl2__CF_CF",
-                    FieldValue: record["Sex"] ? record["Sex"] : ""
+                    FieldValue: record["Sex"] ? (record["Sex"] =="M" ? "男" :"女"): ""
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF",
@@ -429,15 +435,15 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomDateControl1__CF_CF",
-                    FieldValue: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : ""
+                    FieldValue: this.getDate(record["BirthDate"])||""
                 },
                 {
                     FiledName: "CustomDateControl1__CF_CF_CF",
-                    FieldValue: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : ""
+                    FieldValue: this.getDate(record["EntDate"])||""
                 },
                 {
                     FiledName: "CustomDateControl1__CF",
-                    FieldValue: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : ""
+                    FieldValue: this.getDate(record["OffDate"])||""
                 }
             ],
             "_links": []
@@ -559,7 +565,7 @@ export class HRService {
                                 Email: record["Email"],
                                 MobileNumber: record["Cellular"]
                             },
-                            DateOfBirth: record["BirthDate"] ? JSON.stringify(record["BirthDate"]).replace(/\//g, "-") : ""
+                            DateOfBirth: this.getDate(record["BirthDate"]) || ""
                         });
                         obj.set("primaryWorkgroupId", a);
                         obj.set("apbWorkgroupId", a);
@@ -580,7 +586,7 @@ export class HRService {
                         Attributes: {},
                         Credentials: [],
                         EmployeeNumber: record["SupporterNo"] ? record["SupporterNo"] : "",
-                        EndDate: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : "2100-12-31T23:59:59",
+                        EndDate: this.getDate(record["OffDate"], ".") || "2100-12-31T23:59:59",
                         FirstName: record["EngName"] ? record["EngName"] : "_",
                         GeneralInformation: "",
                         LastName: record["SupporterName"] ? record["SupporterName"] : "_",
@@ -595,7 +601,7 @@ export class HRService {
                                 PagerServiceProviderId: "0",
                                 PhoneNumber: ""
                             },
-                            DateOfBirth: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : "",
+                            DateOfBirth: this.getDate(record["BirthDate"]) || "",
                             PayrollNumber: "",
                             Title: "",
                             UserDetails: {
@@ -607,7 +613,7 @@ export class HRService {
                         PrimaryWorkgroupId: a,
                         PrimaryWorkgroupName: b,
                         SmartCardProfileId: "0",
-                        StartDate: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : (new Date()).toISOString().split(".")[0],
+                        StartDate: this.getDate(record["EntDate"],".") || (new Date()).toISOString().split(".")[0],
                         Status: 61,
                         Token: "-1",
                         TraceDetails: {},
@@ -620,7 +626,7 @@ export class HRService {
                         CustomFields: [
                             {
                                 FiledName: "CustomDateControl4__CF",
-                                FieldValue: record["UpdDate"] ? JSON.parse(JSON.stringify(record["UpdDate"]).replace(/\//g, "-")) : ""
+                                FieldValue: this.getDate(record["UpdDate"]) || ""
                             },
                             {
                                 FiledName: "CustomDropdownControl1__CF",
@@ -640,7 +646,7 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomDropdownControl2__CF_CF",
-                                FieldValue: record["Sex"] ? record["Sex"] : ""
+                                FieldValue: record["Sex"] ? (record["Sex"] =="M" ? "男" :"女"): ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl5__CF_CF",
@@ -664,15 +670,15 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomDateControl1__CF_CF",
-                                FieldValue: record["BirthDate"] ? JSON.parse(JSON.stringify(record["BirthDate"]).replace(/\//g, "-")) : ""
+                                FieldValue: this.getDate(record["BirthDate"]) || ""
                             },
                             {
                                 FiledName: "CustomDateControl1__CF_CF_CF",
-                                FieldValue: record["EntDate"] ? JSON.parse(JSON.stringify(record["EntDate"]).replace(/\//g, "-")) : ""
+                                FieldValue: this.getDate(record["EntDate"] ) || ""
                             },
                             {
                                 FiledName: "CustomDateControl1__CF",
-                                FieldValue: record["OffDate"] ? JSON.parse(JSON.stringify(record["OffDate"]).replace(/\//g, "-")) : ""
+                                FieldValue: this.getDate(record["OffDate"] )||""
                             }
                         ],
                         "_links": []
