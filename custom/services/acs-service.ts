@@ -46,25 +46,25 @@ export class ACSService {
     }
 
     private async startSync() {
-        let me = this;
-        await new Promise(async function (resolve, reject) {
-            await me.syncService.syncSipassSchedule();
-            resolve();
-        });
+        
+        try{
+            await this.syncService.syncSipassSchedule();
+            await this.syncService.syncSipassDoorReader();
+            await this.syncService.syncSipassFloor();
+            //await this.syncService.syncSipassAcessGroup();
+            await this.syncService.syncSipassWorkgroup();
+            await this.syncService.syncSipassCredentialProfile();
 
- 
-        await this.syncService.syncSipassDoorReader();
-        await this.syncService.syncSipassFloor();
-        //await this.syncService.syncSipassAcessGroup();
-        await this.syncService.syncSipassWorkgroup();
-        await this.syncService.syncSipassCredentialProfile();
-
-        await this.syncService.syncCcureTimeSchedule();
-        await this.syncService.syncCcureDoor();
-        await this.syncService.syncCcureDoorReader();
-        await this.syncService.syncCcureFloor();
-        await this.syncService.syncCcurePermissionTable();
-        await this.syncService.syncCcurePermissionTableDoor() ;
+            await this.syncService.syncCcureTimeSchedule();
+            await this.syncService.syncCcureDoor();
+            await this.syncService.syncCcureDoorReader();
+            await this.syncService.syncCcureFloor();
+            await this.syncService.syncCcurePermissionTable();
+            await this.syncService.syncCcurePermissionTableDoor() ;
+        }catch(err){
+            console.log("error sync", JSON.stringify(err));
+        }
+            
  
     }
 

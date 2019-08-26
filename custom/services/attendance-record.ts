@@ -120,7 +120,7 @@ export class AttendanceRecord {
             }
             await this.saveSipassData(records);
         }catch(err){
-            console.error("cannot get data from sipass", err);
+            console.log("cannot get data from sipass", JSON.stringify(err));
         }
     }
     private async saveSipassData(records: any[]) {

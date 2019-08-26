@@ -112,7 +112,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         /// 2) Output
         return ret;
     }catch (err){
-        throw Errors.throw(Errors.CustomNotExists, [JSON.stringify(err)]);
+        console.log("member save error", JSON.stringify(err));
+        throw Errors.throw(Errors.CustomNotExists, ["Error save member, please contact admin"]);
+       
     }
 });
 
@@ -273,7 +275,8 @@ console.log(update);
         /// 3) Output
         return ret;
     }catch (err){
-        throw Errors.throw(Errors.CustomNotExists, [JSON.stringify(err)]);
+        console.log("member save error", JSON.stringify(err));
+        throw Errors.throw(Errors.CustomNotExists, ["Error save member, please contact admin"]);
     }
     
 });

@@ -43,7 +43,7 @@ export class SiPassDbService {
             record = res["recordset"];
         }
         catch (ex) {
-            console.log(ex);
+            console.log("QueryAuditTrail", JSON.stringify(ex));
         }
 
         return record ;

@@ -7,6 +7,7 @@ import { QueryContent } from '../../modules/acs/ccure/queryMap'
 import { SignalObject } from "../../modules/acs/ccure/signalObject";
 
 import { isNullOrUndefined } from 'util';
+import { Errors } from 'core/errors.gen';
 var jsonata = require("jsonata");
 type OnRawsCallback = (rows: JSON[], queryContent: QueryContent) => void;
 
@@ -67,12 +68,17 @@ export class CCureAdapter {
     }
 
     async Login() {
-        Log.Info(`${this.constructor.name}`, `Login`);
+        try{
+            Log.Info(`${this.constructor.name}`, `Login`);
 
-        await this._reader.connectAsync(Config.ccureconnect);
-        this._signal.set(true);
-
-        return "";
+            await this._reader.connectAsync(Config.ccureconnect);
+            this._signal.set(true);
+    
+            return "";
+        }catch(err){
+            console.log("Ccure adapter login error", JSON.stringify(err));
+        }
+       
     }
 
     async getTimeSchedule() {

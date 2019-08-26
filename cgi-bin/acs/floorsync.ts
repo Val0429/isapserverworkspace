@@ -1,5 +1,5 @@
 import {
-    Action
+    Action, Errors
 } from 'core/cgi-package';
 
 import {SyncService} from '../../custom/services/SyncService';
@@ -16,16 +16,20 @@ var action = new Action({
 
 action.get<any, any>({}, async () => {
     
-   
-    let syncService = new SyncService();
-    //await Promise.all([
-        await syncService.syncSipassFloor();
-        await syncService.syncCcureFloor();
-    //]);
-      
-    
+   try{
+        let syncService = new SyncService();
+        //await Promise.all([
+            await syncService.syncSipassFloor();
+            await syncService.syncCcureFloor();
+        //]);
+        
+        
 
-    return { success: true };
+        return { success: true };
+    }catch(err){
+        console.log("error floor sync", JSON.stringify(err));
+        throw Errors.throw(Errors.CustomNotExists, ["Sync failed, please contact admin"]);
+    }
 });
 
 

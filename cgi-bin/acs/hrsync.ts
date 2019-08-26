@@ -1,5 +1,5 @@
 import {
-    Action
+    Action, Errors
 } from 'core/cgi-package';
 
 import {SyncService} from '../../custom/services/SyncService';
@@ -17,16 +17,19 @@ var action = new Action({
 
 action.get<any, any>({}, async () => {
     
-   
-    let syncService = new HRService();
-    //await Promise.all([
-        let dt = new Date();
-        await syncService.doSync();
-    //]);
-      
-    
+   try{
+        let syncService = new HRService();
+        //await Promise.all([
+            let dt = new Date();
+            await syncService.doSync();
+        //]);
+        
+        
 
-    return { success: true };
+        return { success: true };
+    }catch(err){
+        throw Errors.throw(Errors.CustomNotExists, [JSON.stringify(err)]);
+    }
 });
 
 

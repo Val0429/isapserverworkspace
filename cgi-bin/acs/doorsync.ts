@@ -1,5 +1,5 @@
 import {
-    Action
+    Action, Errors
 } from 'core/cgi-package';
 
 import {SyncService} from '../../custom/services/SyncService';
@@ -16,7 +16,7 @@ var action = new Action({
 
 action.get<any, any>({}, async () => {
     
-   
+   try{
     let syncService = new SyncService();
     //await Promise.all([
         await  syncService.syncCcureDoor();
@@ -26,6 +26,10 @@ action.get<any, any>({}, async () => {
     
 
     return { success: true };
+   }catch(err){
+        console.log("error door sync", JSON.stringify(err));
+        throw Errors.throw(Errors.CustomNotExists, ["Sync failed, please contact admin"]);
+   }
 });
 
 
