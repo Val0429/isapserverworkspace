@@ -446,6 +446,7 @@ export class HRService {
                     FieldValue: this.getDate(record["OffDate"])||""
                 }
             ],
+            token:"-1",
             "_links": []
         };
         try{
@@ -468,12 +469,17 @@ export class HRService {
             //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
             let member = members.find(x => x.get("EmployeeNumber") == record["EmpNo"]);
             if (!member) {
+                delete(d.token);
                 member = new Member(d);
                 let holder = await siPassAdapter.postCardHolder(d);
                 member.set("Token", holder["Token"] || "-1");
             }
             else {
-                await siPassAdapter.putCardHolder(d);
+                d.token = member.get("Token");
+                if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
+                    await siPassAdapter.putCardHolder(d);
+                }                
+                delete(d.token);
                 member.set(d);
             }
             objects.push(member);
@@ -681,6 +687,7 @@ export class HRService {
                                 FieldValue: this.getDate(record["OffDate"] )||""
                             }
                         ],
+                        token:"-1",
                         "_links": []
                     };
                     try{
@@ -701,12 +708,17 @@ export class HRService {
                         //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
                         let member = members.find(x => x.get("EmployeeNumber") == record["SupporterNo"]);
                         if (!member) {
+                            delete(d.token);
                             member = new Member(d);
                             let holder = await siPassAdapter.postCardHolder(d);
                             member.set("Token", holder["Token"] || "-1");
                         }
                         else {
-                            await siPassAdapter.putCardHolder(d);
+                            d.token = member.get("Token");
+                            if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
+                                await siPassAdapter.putCardHolder(d);
+                            }
+                            delete(d.token);
                             member.set(d);
                         }
                         objects.push(member);
