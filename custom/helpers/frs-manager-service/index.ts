@@ -188,7 +188,7 @@ export class FRSManagerService {
                 .map<FRSManagerService.IFRSDeviceTree>((value, index, array) => {
                     return {
                         frsId: value.objectId,
-                        frsIp: value.ip_address,
+                        frsIp: value.ip,
                         channels: (value.devices as any[]).map<FRSManagerService.IFRSDeviceChannel>((value1, index1, array1) => {
                             return {
                                 ip: value1.video_source_ip,
