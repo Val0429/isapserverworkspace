@@ -70,18 +70,17 @@ action.get(
                 deviceIdDictionary[key] = value;
             });
 
-            let query: Parse.Query<IDB.ReportRepeatVisitor> = new Parse.Query(IDB.ReportRepeatVisitor)
+            let reportQuery: Parse.Query<IDB.ReportRepeatVisitor> = new Parse.Query(IDB.ReportRepeatVisitor)
                 .greaterThanOrEqualTo('date', _input.startDate)
                 .lessThan('date', _input.endDate)
                 .containedIn('device', devices);
 
-            let total: number = await query.count().fail((e) => {
+            let reportCount: number = await reportQuery.count().fail((e) => {
                 throw e;
             });
-            let totalPage: number = Math.ceil(total / _paging.pageSize);
 
-            let reports: IDB.ReportRepeatVisitor[] = await query
-                .limit(total)
+            let reports: IDB.ReportRepeatVisitor[] = await reportQuery
+                .limit(reportCount)
                 .find()
                 .fail((e) => {
                     throw e;
@@ -98,15 +97,9 @@ action.get(
                 reportFaceIdDictionary[key].push(value);
             });
 
-            let skip: number = (_paging.page - 1) * _paging.pageSize;
-
             let summarys: IResponse.IReport.IRepeatVisitorIndex[] = [];
             Object.keys(reportFaceIdDictionary).forEach((value, index, array) => {
                 let faceIds = reportFaceIdDictionary[value];
-
-                if (skip <= index && index < skip + _paging.pageSize) {
-                    return;
-                }
 
                 let summary: IResponse.IReport.IRepeatVisitorIndex = {
                     faceId: value,
@@ -149,6 +142,13 @@ action.get(
 
                 summarys.push(summary);
             });
+
+            let total: number = summarys.length;
+            let totalPage: number = Math.ceil(total / _paging.pageSize);
+
+            let skip: number = (_paging.page - 1) * _paging.pageSize;
+
+            summarys = summarys.slice(skip, skip + _paging.pageSize);
 
             return {
                 paging: {
