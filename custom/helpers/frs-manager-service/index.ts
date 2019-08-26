@@ -154,7 +154,7 @@ export class FRSManagerService {
     public async GetDeviceTree(sessionId: string): Promise<FRSManagerService.IFRSDeviceTree[]>;
     public async GetDeviceTree(sessionId?: string): Promise<FRSManagerService.IFRSDeviceTree[]> {
         try {
-            let url: string = `${this._baseUrl}/frss?sessionId=${encodeURIComponent(sessionId || this.sessionId)}&page_size=1000&skip_pages=0`;
+            let url: string = `${this._baseUrl}/frs?sessionId=${encodeURIComponent(sessionId || this.sessionId)}&page_size=1000&skip_pages=0`;
 
             let result: any = await new Promise<any>((resolve, reject) => {
                 try {
