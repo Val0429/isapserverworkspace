@@ -70,7 +70,10 @@ action.get(
                 deviceIdDictionary[key] = value;
             });
 
-            let query: Parse.Query<IDB.ReportRepeatVisitor> = new Parse.Query(IDB.ReportRepeatVisitor).containedIn('device', devices);
+            let query: Parse.Query<IDB.ReportRepeatVisitor> = new Parse.Query(IDB.ReportRepeatVisitor)
+                .greaterThanOrEqualTo('date', _input.startDate)
+                .lessThan('date', _input.endDate)
+                .containedIn('device', devices);
 
             let total: number = await query.count().fail((e) => {
                 throw e;

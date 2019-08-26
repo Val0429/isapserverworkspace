@@ -100,7 +100,10 @@ action.get(
                 deviceIdDictionary[key] = value;
             });
 
-            let query: Parse.Query<IDB.ReportPeopleCounting> = new Parse.Query(IDB.ReportPeopleCounting).containedIn('device', devices);
+            let query: Parse.Query<IDB.ReportPeopleCounting> = new Parse.Query(IDB.ReportPeopleCounting)
+                .greaterThanOrEqualTo('date', _input.startDate)
+                .lessThan('date', _input.endDate)
+                .containedIn('device', devices);
 
             if ('isIn' in _input) {
                 query.equalTo('isIn', _input.isIn);
