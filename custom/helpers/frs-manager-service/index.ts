@@ -375,12 +375,15 @@ export class FRSManagerService {
                         let relation = result.relations.find((value, index, array) => {
                             return value.frsId === frsId;
                         });
-                        let groups = (relation.person_info.group_list || []).map<FRSManagerService.IObject>((value, index, array) => {
-                            return {
-                                objectId: value.id,
-                                name: value.groupname,
-                            };
-                        });
+                        let groups = [];
+                        if (relation) {
+                            groups = (relation.person_info.group_list || []).map<FRSManagerService.IObject>((value, index, array) => {
+                                return {
+                                    objectId: value.id,
+                                    name: value.groupname,
+                                };
+                            });
+                        }
 
                         this._liveStream$.next({
                             objectId: objectId,
