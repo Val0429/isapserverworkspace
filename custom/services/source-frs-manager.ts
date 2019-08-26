@@ -235,7 +235,16 @@ class Service {
                                                     Action.DeleteFile.action$.next(temp);
                                                     break;
                                                 case Enum.EDeviceMode.visitor:
-                                                    Action.DeleteFile.action$.next(temp);
+                                                    if (groups && groups.length > 0) {
+                                                    } else {
+                                                        Action.AnalysisDemographic.action$.next({
+                                                            type: 'repeatVisitor',
+                                                            device: value1,
+                                                            date: x.date,
+                                                            imagePath: temp,
+                                                            faceId: x.objectId,
+                                                        });
+                                                    }
                                                     break;
                                                 default:
                                                     Action.DeleteFile.action$.next(temp);
