@@ -156,6 +156,7 @@ action.get(
                                             name: frsManagerConfig.server.getValue('name'),
                                         },
                                         frsId: frsManagerConfig.frsId,
+                                        frsIp: frsManagerConfig.frsIp,
                                         sourceId: frsManagerConfig.sourceId,
                                     };
                                     break;
@@ -391,6 +392,7 @@ async function FRSManagerCamera(device: IDB.Device, camera: IRequest.IDevice.ICa
         let config: IDB.ICameraFRSManager = {
             server: server,
             frsId: camera.frsId,
+            frsIp: camera.frsIp,
             sourceId: camera.sourceId,
         };
 

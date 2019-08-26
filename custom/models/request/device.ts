@@ -30,6 +30,7 @@ export interface IC_Base {
 export interface ICameraFRSManager {
     serverId: string;
     frsId: string;
+    frsIp: string;
     sourceId: string;
 }
 

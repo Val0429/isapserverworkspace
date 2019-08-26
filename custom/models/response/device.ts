@@ -26,6 +26,7 @@ export interface IGroupAll {
 export interface ICameraFRSManager {
     server: IObject;
     frsId: string;
+    frsIp: string;
     sourceId: string;
 }
 

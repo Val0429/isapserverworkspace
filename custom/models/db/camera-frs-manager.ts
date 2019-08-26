@@ -17,5 +17,10 @@ export interface ICameraFRSManager {
     /**
      *
      */
+    frsIp: string;
+
+    /**
+     *
+     */
     sourceId: string;
 }
