@@ -34,7 +34,7 @@ action.get<any, any>({}, async () => {
             // }
         ],
         "EmployeeNumber": "60227",
-        "EndDate": "",
+        "EndDate": "2019-08-25",
         "FirstName": "Barnett Chu",
         "GeneralInformation": "",
         "LastName": "朱雄明",
@@ -74,205 +74,61 @@ action.get<any, any>({}, async () => {
         },
         "CustomFields": [
             {
-            "FiledName": "CustomTextBoxControl6__CF",
-            "FieldValue": "KGEx"
-        },
-        {
-            "FiledName": "CustomTextBoxControl2__CF",
-            "FieldValue": "Lai, Chris 賴志展 (599169)"
-        },
-        {
-            "FiledName": "CustomTextBoxControl3__CF",
-            "FieldValue": "3909"
-        },
-        {
-            "FiledName": "CustomDateControl2__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl1__CF",
-            "FieldValue": "租戶"
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF",
-            "FieldValue": "0"
-        },
-        {
-            "FiledName": "CustomDropdownControl2__CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF",
-            "FieldValue": "EBU"
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF",
-            "FieldValue": "8521"
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-            "FieldValue": "N1"
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-            "FieldValue": "AKIDC"
-        },
-        {
-            "FiledName": "CustomDateControl1__CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl1__CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl1__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl2__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl3__CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF",
-            "FieldValue": "25030563"
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl3__CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl3__CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl3__CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDropdownControl3__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        },
-        {
-            "FiledName": "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF",
-            "FieldValue": ""
-        }
+                "FiledName": "CustomDateControl4__CF",
+                "FieldValue": "2019-08-25"
+            },
+            {
+                "FiledName": "CustomDropdownControl1__CF",
+                "FieldValue": "2000000006"
+            },
+            {
+                "FiledName": "CustomTextBoxControl1__CF",
+                "FieldValue": "60227"
+            },
+            {
+                "FiledName": "CustomTextBoxControl3__CF",
+                "FieldValue": ""
+            },
+            {
+                "FiledName": "CustomTextBoxControl6__CF",
+                "FieldValue": ""
+            },
+            {
+                "FiledName": "CustomDropdownControl2__CF_CF",
+                "FieldValue": "M"
+            },
+            {
+                "FiledName": "CustomTextBoxControl5__CF_CF",
+                "FieldValue": "549803"
+            },
+            {
+                "FiledName": "CustomTextBoxControl5__CF_CF_CF",
+                "FieldValue": ""
+            },
+            {
+                "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF",
+                "FieldValue": "2301"
+            },
+            {
+                "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                "FieldValue": "台中 Office"
+            },
+            {
+                "FiledName": "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                "FieldValue": ""
+            },
+            {
+                "FiledName": "CustomDateControl1__CF_CF",
+                "FieldValue": "1962-06-14"
+            },
+            {
+                "FiledName": "CustomDateControl1__CF_CF_CF",
+                "FieldValue": "1997-06-14"
+            },
+            {
+                "FiledName": "CustomDateControl1__CF",
+                "FieldValue": ""
+            }
         ],
         "_links": []
     };
