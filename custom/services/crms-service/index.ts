@@ -54,7 +54,7 @@ class Service {
                     next: async (x) => {
                         try {
                             let now: Date = new Date();
-                            let expired: Date = new Date(new Date(now).setDate(now.getDate() + this._config.workerExpiredDay));
+                            let expired: Date = new Date(new Date(now).setDate(now.getDate() - this._config.workerExpiredDay));
 
                             let works: WorkPermit[] = await new Parse.Query(WorkPermit)
                                 .lessThan('workEndDate', expired)
