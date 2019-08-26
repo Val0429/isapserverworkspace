@@ -2,7 +2,8 @@ import { ClientRequest } from "http";
 import { elementAt } from "rxjs/operator/elementAt";
 import * as HttpClient from "request";
 import * as SiPassDataStructure from "./siPass_define";
-
+import * as request from 'request-promise';
+import { Errors } from "core/errors.gen";
 
 export class SiPassHrAccountService {
 
@@ -59,60 +60,18 @@ export class SiPassHrAccountService {
         // console.log(`requestHeader = ${requestHeader}`);
         //console.log(`requestBody = ${requestBody}`);
         //console.dir(requestHeader, {depth: null})
+        const options = {
+            uri: url,
+            timeout: 0, 
+            method: 'POST',
+            headers: requestHeader,
+            rejectUnauthorized: false,
+            body: JSON.stringify(requestBody)
+        };
 
-        let result: any = await new Promise<any>((resolve, reject) => {
-            //try {
-                HttpClient.post(
-                    {
-                        url: url,
-                        json: true,
-                        body: requestBody,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            return reject({ status: `error`, message: body });
-                        }
-
-                        resolve(body);
-                    },
-                );
-            // } catch (e) {
-            //     return reject(e);
-            // }
-        })
-        // .catch((e) => {
-        //     //console.log(`catch error ${e}`);
-        //     //this.m_IsConnected = false;
-        //     console.log(e);
-        //     return JSON.stringify(e);
-        //     //}).then(() => {
-        //     //    this.m_IsConnected = true;
-        // });
-
-        // console.log("============================");
-        // console.log(result);
-
-        let token = result.Token;
-
-        // if (token) {
-        //     //data.sessionId = result.Token;
-        //     this.m_IsConnected = true;
-
-        //     var me = this;
-        //     this.m_WaitTimer = setTimeout(() => {
-        //         me.MaintainSessionRenewel(data);
-        //     }, 1000 * this.m_StartDelayTime);
-        // }
-        // else {
-        //     //data.sessionId = "";
-        //     this.m_IsConnected = false;
-        // }
-
-        return JSON.stringify(result);
-
+    
+        return await request(options);
+       
     }
 
     public async Logout(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId:string) {

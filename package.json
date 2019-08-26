@@ -17,6 +17,7 @@
     "jsonata": "^1.6.5",
     "moment": "^2.24.0",
     "mssql": "^5.1.0",
-    "node-adodb": "^5.0.2"
+    "node-adodb": "^5.0.2",
+    "request-promise": "^4.2.4"
   }
 }

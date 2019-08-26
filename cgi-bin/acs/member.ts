@@ -98,18 +98,22 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // obj.set("Token", "-1");
     obj.set("CustomFields", fields);
     let ret = ParseObject.toOutputJSON(obj);
+    try{
+        
+        let holder = await siPassAdapter.postCardHolder(ret);
+        
+        obj.set("Token", holder["Token"]);
+        
+        let cCure800SqlAdapter = new CCure800SqlAdapter();
+        await cCure800SqlAdapter.writeMember(ret, ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index), inputs);
+        await obj.save(null, { useMasterKey: true });
+        await Log.Info(`create`, `${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false, "Member");
 
-    let holder = await siPassAdapter.postCardHolder(ret);
-    
-    obj.set("Token", holder["Token"]);
-    
-    let cCure800SqlAdapter = new CCure800SqlAdapter();
-    await cCure800SqlAdapter.writeMember(ret, ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index), inputs);
-    await obj.save(null, { useMasterKey: true });
-    await Log.Info(`create`, `${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false, "Member");
-
-    /// 2) Output
-    return ret;
+        /// 2) Output
+        return ret;
+    }catch (err){
+        throw Errors.throw(Errors.CustomNotExists, [JSON.stringify(err)]);
+    }
 });
 
 /********************************
@@ -250,24 +254,28 @@ console.log(update);
     
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
-
-    let holder = await siPassAdapter.putCardHolder(ret);
+    try{
+        let holder = await siPassAdapter.putCardHolder(ret);
    
-	ret["Token"] = ret["Token"] + "" ;
-	delete ret["token"] ;
-
-    let cCure800SqlAdapter = new CCure800SqlAdapter();
+        ret["Token"] = ret["Token"] + "" ;
+        delete ret["token"] ;
     
-    //await cCure800SqlAdapter.connect(config);
-    await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
+        let cCure800SqlAdapter = new CCure800SqlAdapter();
+        
+        //await cCure800SqlAdapter.connect(config);
+        await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
+        
+        /// 5) to Monogo
+        //await obj.save({ ...ret, objectId: undefined });
+        await update.save();
+        await Log.Info(`update`, `${update.get("EmployeeNumber")} ${update.get("FirstName")}`, data.user, false, "Member");
     
-    /// 5) to Monogo
-    //await obj.save({ ...ret, objectId: undefined });
-    await update.save();
-    await Log.Info(`update`, `${update.get("EmployeeNumber")} ${update.get("FirstName")}`, data.user, false, "Member");
-
-    /// 3) Output
-    return ret;
+        /// 3) Output
+        return ret;
+    }catch (err){
+        throw Errors.throw(Errors.CustomNotExists, [JSON.stringify(err)]);
+    }
+    
 });
 
 /********************************
