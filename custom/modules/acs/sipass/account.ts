@@ -61,7 +61,7 @@ export class SiPassHrAccountService {
         //console.dir(requestHeader, {depth: null})
 
         let result: any = await new Promise<any>((resolve, reject) => {
-            try {
+            //try {
                 HttpClient.post(
                     {
                         url: url,
@@ -79,17 +79,18 @@ export class SiPassHrAccountService {
                         resolve(body);
                     },
                 );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-            //console.log(`catch error ${e}`);
-            //this.m_IsConnected = false;
-            console.log(e);
-            return JSON.stringify(e);
-            //}).then(() => {
-            //    this.m_IsConnected = true;
-        });
+            // } catch (e) {
+            //     return reject(e);
+            // }
+        })
+        // .catch((e) => {
+        //     //console.log(`catch error ${e}`);
+        //     //this.m_IsConnected = false;
+        //     console.log(e);
+        //     return JSON.stringify(e);
+        //     //}).then(() => {
+        //     //    this.m_IsConnected = true;
+        // });
 
         // console.log("============================");
         // console.log(result);

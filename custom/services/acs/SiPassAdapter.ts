@@ -90,13 +90,13 @@ export class SiPassAdapter {
         this.sessionToken = await new Parse.Query(SipassToken).greaterThan("expired", new Date()).first();
         if(this.sessionToken) return this.sessionToken.get("sessionId");
 
-        try{
+        // try{
             let a = await this.siPassAccount.Login(this.siPassHrParam);
             let ret = JSON.parse(a);
-            if(!ret.Token){                
-                Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
-                throw new Error("sipass connect fail");
-            } 
+            // if(!ret.Token){                
+            //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
+            //     throw new Error("sipass connect fail");
+            // } 
             this.sessionToken = new SipassToken();
             this.sessionToken.set("sessionId",ret.Token);
             this.sessionToken.set("expired", moment(new Date()).add(5, 'm').toDate());
@@ -114,10 +114,10 @@ export class SiPassAdapter {
             let sessionId = this.sessionToken.get("sessionId");
             console.log("sessionId", sessionId);
             return sessionId;
-        }catch(err){
-            console.error("Error from sipass login", err);
-            throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
-        }
+        // }catch(err){
+        //     console.error("Error from sipass login", err);
+        //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
+        // }
         
         
         // console.log("===================    Get Login   ========== ");

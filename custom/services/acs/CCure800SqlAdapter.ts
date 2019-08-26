@@ -297,22 +297,22 @@ export class CCure800SqlAdapter {
 
         //console.log(insert);
 
-        this.adodbConn
+        await this.adodbConn
             .execute(insert)
-            .then(data => {
-                console.log(JSON.stringify(data, null, 2));
-            })
-            .catch(error => {
-                console.error(error);
-            });
-        this.adodbConn2
+            // .then(data => {
+            //     console.log(JSON.stringify(data, null, 2));
+            // })
+            // .catch(error => {
+            //     console.error(error);
+            // });
+        await this.adodbConn2
         .execute(insert)
-        .then(data => {
-            console.log(JSON.stringify(data, null, 2));
-        })
-        .catch(error => {
-            console.error(error);
-        });
+        // .then(data => {
+        //     console.log(JSON.stringify(data, null, 2));
+        // })
+        // .catch(error => {
+        //     console.error(error);
+        // });
         return null;
     }
 }
