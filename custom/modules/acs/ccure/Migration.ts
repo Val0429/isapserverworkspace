@@ -326,3 +326,61 @@ export async function GetOldAccessReport(config, onRaw: (rows: JSON[]) => void, 
         `R_Date_Time BETWEEN '${startTimestring}' and '${endTimestring}'`,
         false);
 }
+
+export async function GetPersonImages(folderPath : string, batchCount : number, OnRows : (rows: JSON[])=>void){
+    const folder = folderPath;
+    const fs = require('fs');
+    
+    let count = 1;
+    let batch = 1;
+    let calltimes = 1;
+
+    await fs.readdir(folder, (err, fileList) => {
+
+        if(err) throw err;
+
+        let result = [];
+        
+        fileList.forEach((fileName,err) => {
+            
+            let dotPos = fileName.indexOf('.');
+            let len = fileName.length;
+            let pId = fileName.substring(0,dotPos);
+            let ext = fileName.substring(dotPos + 1,len);
+
+            ++count;
+
+            if(ext.toLowerCase() != "jpg" || isNaN(pId) == true) return;
+
+            try{
+                let data = fs.readFileSync(`${folder}${fileName}`);
+                let base64Image = new Buffer(data, 'binary').toString('base64');
+                result.push({
+                    "personId" : pId,
+                    "img":base64Image
+                });
+            }
+            catch(err){
+                throw err;
+            }
+
+            console.info(
+                `Total read photo % : ${(100*(count)/fileList.length).toFixed(2)} || Batch (${calltimes}) read photo % : ${(100*++batch/batchCount).toFixed(2)}`
+            );
+
+            if(batch >= batchCount){
+                calltimes++;
+                batch = 1;
+                let rows = Array.from(result);
+                OnRows(rows);
+                result = [];
+            }
+        });
+
+        console.info(
+            `Total read photo % : ${(100*(count)/fileList.length).toFixed(2)} || Batch (${calltimes}) read photo % : ${(100*++batch/batchCount).toFixed(2)}`
+        );
+
+        OnRows(result);
+    });
+}
