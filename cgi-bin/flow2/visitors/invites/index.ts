@@ -48,10 +48,13 @@ type OutputC = Restful.OutputC<ICInvitations>;
 // const inviteFilter = { parent: false, visitors: { company: false, status: (status) => getEnumKey(VisitorStatus, status) } };
 
 const inviteFilter = { parent: false, visitors: (visitors) => {
-    return visitors.map( v => ({
-        ...v.attributesRemovePrivacy,
-        status: getEnumKey(VisitorStatus, v.attributes.status)
-    }) );
+    return visitors.map( v => {
+        return {
+            ...v.attributesRemovePrivacy,
+            status: getEnumKey(VisitorStatus, v.attributes.status),
+            company: undefined
+        }
+    });
 }};
 
 export async function doInvitation(data: ActionParam<ICInvitations>): Promise<Invitations> {
@@ -63,12 +66,12 @@ export async function doInvitation(data: ActionParam<ICInvitations>): Promise<In
     let obj = new Invitations(data.inputType);
 
     /// V1.2) Fetch or Create Visitors
-    let company = data.user.attributes.company;
+    let company = data.user.attributes.data.company;
     let visitors = await ruleCombineVisitors(company, data.inputType.visitors);
     await Parse.Object.saveAll(visitors);
 
     /// V2.0) Save
-    await obj.save({ parent, cancelled, visitors }, { useMasterKey: true });
+    await obj.save({ parent, cancelled, visitors, company }, { useMasterKey: true });
 
     /// V2.1) Save Event
     let invitation = obj;
@@ -125,7 +128,8 @@ action.get<InputR, OutputR>({ inputType: "InputR", permission: [RoleList.TenantA
         .include("visitors.privacy")
         .include("company")
         .include("purpose")
-        .equalTo("company", data.inputType.company);
+        .equalTo("company", data.user.attributes.data.company);
+        //.equalTo("company", data.inputType.company);
         //.equalTo("parent", data.user);
 
     /// 2) With Extra Filters

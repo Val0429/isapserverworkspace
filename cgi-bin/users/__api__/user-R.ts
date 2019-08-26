@@ -36,7 +36,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         .notContainedIn("roles", prohibitRoles)
         .include("roles")
         .include("data.company")
-        .include("data.floor")
+        .include("data.floor");
 
     /// 3) Special rule: TenantAdministrator can only see others in same company
     if (
