@@ -18,6 +18,7 @@ import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject, Member } from 'core/cgi-package';
 import { stringify } from 'querystring';
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
+import moment = require('moment');
 
 
 export class HRService {
@@ -170,15 +171,18 @@ export class HRService {
             await this.vieREMemberLog(memChange, EmpNo);
 
             // 4.4 request human information
-            if (this.checkCycleTime != 5) {               
+            if (this.checkCycleTime != 5) {          
+                let newMsg: string="";
+                let chgMsg: string="";
+                let offMsg: string="";     
                 Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
+                //batch request by 100 because of lib limitation
                 while(EmpNo.length>100){
                     let newEmpNo = EmpNo.splice(0,100);
-                    let { newMsg, offMsg, chgMsg } = await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange);
-                     await this.getViewSupporter(newEmpNo);
-                     await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
+                     await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg );
+                     await this.getViewSupporter(newEmpNo);                     
                 }
-                let { newMsg, offMsg, chgMsg } = await this.requestHumanInfo(EmpNo, memNew, memOff, memChange);
+                await this.requestHumanInfo(EmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg );
                 await this.getViewSupporter(EmpNo);
                 // 6.0 report log and send smtp 
                 await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
@@ -200,10 +204,8 @@ export class HRService {
             }
     }
 
-    private async requestHumanInfo(EmpNo: string[], memNew: any[],  memOff: any[], memChange: any[]) {
-        let newMsg: string="";
-        let chgMsg: string="";
-        let offMsg: string="";
+    private async requestHumanInfo(EmpNo: string[], memNew: any[],  memOff: any[], memChange: any[], newMsg:string, offMsg:string, chgMsg:string) {
+        
         if (EmpNo.length >= 1) {
             try {
                 let objects = [];
@@ -212,7 +214,7 @@ export class HRService {
                 let members = await new Parse.Query(Member).containedIn("EmployeeNumber", res.map(x => x["EmpNo"])).find();
                 for (let record of res) {
                    
-                    ({ newMsg, offMsg, chgMsg } = await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, objects, members));
+                    await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, objects, members);
                       
                     //important to avoid out of memory
                     if (objects.length >= 1000) {
@@ -227,7 +229,7 @@ export class HRService {
                 Log.Info(`${this.constructor.name}`, ex);
             }
         }
-        return { newMsg, offMsg, chgMsg };
+        
     }
 
     private async impotFromViewMember(record: any, memNew: any[], newMsg: string, memOff: any[], offMsg: string, memChange: any[], vieMembers: vieMember[], chgMsg: string, objects: any[], members: Member[]) {
@@ -350,11 +352,11 @@ export class HRService {
             ApbWorkgroupId: a,
             Attributes: {},
             Credentials: credential.CardNumber && credential.CardNumber != "0" && credential.CardNumber != "null" ? [credential] : [],
-            EmployeeNumber: record["EmpNo"] ? record["EmpNo"] : "",
+            EmployeeNumber: record["EmpNo"] || "",
             EndDate: endDate,
-            FirstName: record["EngName"] ? record["EngName"] : "_",
+            FirstName: record["EngName"] || "_",
             GeneralInformation: "",
-            LastName: record["EmpName"] ? record["EmpName"] : "_",
+            LastName: record["EmpName"] || "_",
             NonPartitionWorkGroups: [],
             PersonalDetails: {
                 Address: "",
@@ -403,11 +405,11 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomTextBoxControl3__CF",
-                    FieldValue: record["AddUser"] ? record["AddUser"] : ""
+                    FieldValue: record["AddUser"] || ""
                 },
                 {
                     FiledName: "CustomTextBoxControl6__CF",
-                    FieldValue: record["CompName"] ? record["CompName"] : ""
+                    FieldValue: record["CompName"] || ""
                 },
                 {
                     FiledName: "CustomDropdownControl2__CF_CF",
@@ -415,23 +417,23 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF",
-                    FieldValue: record["MVPN"] ? record["MVPN"] : ""
+                    FieldValue: record["MVPN"] || ""
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                    FieldValue: record["DeptChiName"] ? record["DeptChiName"] : ""
+                    FieldValue: record["DeptChiName"] || ""
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                    FieldValue: record["CostCenter"] ? record["CostCenter"] : ""
+                    FieldValue: record["CostCenter"] || ""
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                    FieldValue: record["LocationName"] ? record["LocationName"] : ""
+                    FieldValue: record["LocationName"] || ""
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                    FieldValue: record["RegionName"] ? record["RegionName"] : ""
+                    FieldValue: record["RegionName"] || ""
                 },
                 {
                     FiledName: "CustomDateControl1__CF_CF",
@@ -593,15 +595,15 @@ export class HRService {
                         Credentials: [],
                         EmployeeNumber: record["SupporterNo"] ? record["SupporterNo"] : "",
                         EndDate: this.getDate(record["OffDate"], ".") || "2100-12-31T23:59:59",
-                        FirstName: record["EngName"] ? record["EngName"] : "_",
+                        FirstName: record["EngName"] || "_",
                         GeneralInformation: "",
-                        LastName: record["SupporterName"] ? record["SupporterName"] : "_",
+                        LastName: record["SupporterName"] || "_",
                         NonPartitionWorkGroups: [],
                         PersonalDetails: {
                             Address: "",
                             ContactDetails: {
-                                Email: record["EMail"] ? record["EMail"] : "",
-                                MobileNumber: record["Cellular"] ? record["Cellular"] : "",
+                                Email: record["EMail"] || "",
+                                MobileNumber: record["Cellular"] || "",
                                 MobileServiceProviderId: "0",
                                 PagerNumber: "",
                                 PagerServiceProviderId: "0",
@@ -640,15 +642,15 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomTextBoxControl1__CF",
-                                FieldValue: record["EmpNo"] ? record["EmpNo"] : ""
+                                FieldValue: record["EmpNo"] || ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl3__CF",
-                                FieldValue: record["AddUser"] ? record["AddUser"] : ""
+                                FieldValue: record["AddUser"] || ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl6__CF",
-                                FieldValue: record["CompName"] ? record["CompName"] : ""
+                                FieldValue: record["CompName"] || ""
                             },
                             {
                                 FiledName: "CustomDropdownControl2__CF_CF",
@@ -656,23 +658,23 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomTextBoxControl5__CF_CF",
-                                FieldValue: record["MVPN"] ? record["MVPN"] : ""
+                                FieldValue: record["MVPN"] || ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                                FieldValue: record["DeptChiName"] ? record["DeptChiName"] : ""
+                                FieldValue: record["DeptChiName"] || ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                FieldValue: record["CostCenter"] ? record["CostCenter"] : ""
+                                FieldValue: record["CostCenter"] || ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                FieldValue: record["LocationName"] ? record["LocationName"] : ""
+                                FieldValue: record["LocationName"] || ""
                             },
                             {
                                 FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                FieldValue: record["RegionName"] ? record["RegionName"] : ""
+                                FieldValue: record["RegionName"] || ""
                             },
                             {
                                 FiledName: "CustomDateControl1__CF_CF",
@@ -812,9 +814,8 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
             let d = new Date();
             d.setDate(d.getDate() - 90);
-            let month = d.getMonth() < 9 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1;
-            let day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
-            let str = `${d.getFullYear()}/${month}/${day}`;
+            
+            let str = moment(d).format("YYYY/MM/DD");
             Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${str}`);
             try {
                 let logs = await new Parse.Query("vieHQMemberLog").lessThan("AddDate", str).find();
@@ -834,12 +835,12 @@ export class HRService {
                 // 4.2.1 record not in the previous log list
                 Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);
                 let newSeqNoList = [];
-                let members = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x => x["SeqNo"])).find();
+                let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x => x["SeqNo"])).find();
                 let objects = [];
                 
                     for (let record of res) {
                         newSeqNoList.push(record["SeqNo"]);
-                        let log = members.find(x => x.get("SeqNo") == record["SeqNo"]);
+                        let log = vieHQMemberLogs.find(x => x.get("SeqNo") == record["SeqNo"]);
                         if (!log) {
                             EmpNo.push(record["UserNo"]);
                             log = new Parse.Object("vieHQMemberLog");
@@ -851,7 +852,6 @@ export class HRService {
                             if (record["AddDate"] != log.get("AddDate")) {
                                 EmpNo.push(record["UserNo"]);
                                 log.set("AddDate", record["AddDate"]);
-                                log;
                                 objects.push(log);
                                 Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
                             }
@@ -877,8 +877,8 @@ export class HRService {
     private async checkRecordNotInTheNewLog(str: string, newSeqNoList: any[], EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
         Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);
         try {
-            let records = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", str).find();
-            for (let record of records) {
+            let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", str).find();
+            for (let record of vieHQMemberLogs) {
                 if (newSeqNoList.indexOf(record.get("SeqNo")) < 0) {
                     EmpNo.push(record.get("UserNo"));
                     Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record.get("UserNo")}`);
