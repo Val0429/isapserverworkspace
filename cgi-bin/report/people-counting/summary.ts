@@ -165,7 +165,7 @@ export class ReportPeopleCounting extends Report {
                                 };
                             }
 
-                            peakHourData.level += value3.getValue('in') - (value3.getValue('inEmployee') || 0);
+                            peakHourData.level += value3.getValue('in') - value3.getValue('inEmployee');
                         });
 
                         peakHour.peakHourDatas.push(peakHourData);
@@ -252,8 +252,8 @@ export class ReportPeopleCounting extends Report {
 
                         summary.in += value2.getValue('in');
                         summary.out += value2.getValue('out');
-                        summary.inEmployee += value2.getValue('inEmployee') || 0;
-                        summary.outEmployee += value2.getValue('outEmployee') || 0;
+                        summary.inEmployee += value2.getValue('inEmployee');
+                        summary.outEmployee += value2.getValue('outEmployee');
                     });
 
                     summarys.push(summary);

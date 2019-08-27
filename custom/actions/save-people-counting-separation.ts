@@ -102,8 +102,8 @@ class Action {
                 reportSummary.setValue('out', reportSummary.getValue('out') + (isIn ? 0 : 1));
 
                 if (isEmployee) {
-                    reportSummary.setValue('inEmployee', (reportSummary.getValue('inEmployee') || 0) + (isIn ? 1 : 0));
-                    reportSummary.setValue('outEmployee', (reportSummary.getValue('outEmployee') || 0) + (isIn ? 0 : 1));
+                    reportSummary.setValue('inEmployee', reportSummary.getValue('inEmployee') + (isIn ? 1 : 0));
+                    reportSummary.setValue('outEmployee', reportSummary.getValue('outEmployee') + (isIn ? 0 : 1));
                 }
             } else {
                 reportSummary = new IDB.ReportPeopleCountingSummary();

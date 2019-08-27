@@ -192,9 +192,9 @@ export class ReportDemographic extends Report {
                         summary.maleRanges = this.MerageArray(summary.maleRanges, value2.getValue('maleRanges'));
                         summary.femaleTotal += value2.getValue('femaleTotal');
                         summary.femaleRanges = this.MerageArray(summary.femaleRanges, value2.getValue('femaleRanges'));
-                        summary.maleEmployeeTotal += value2.getValue('maleEmployeeTotal') || 0;
+                        summary.maleEmployeeTotal += value2.getValue('maleEmployeeTotal');
                         summary.maleEmployeeRanges = this.MerageArray(summary.maleEmployeeRanges, value2.getValue('maleEmployeeRanges'));
-                        summary.femaleEmployeeTotal += value2.getValue('femaleEmployeeTotal') || 0;
+                        summary.femaleEmployeeTotal += value2.getValue('femaleEmployeeTotal');
                         summary.femaleEmployeeRanges = this.MerageArray(summary.femaleEmployeeRanges, value2.getValue('femaleEmployeeRanges'));
                     });
 

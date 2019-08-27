@@ -105,12 +105,11 @@ class Action {
 
             let isEmployee: boolean = report.getValue('isEmployee');
 
-            let ageIndex: number = this._ageRanges.findIndex((value, index, array) => {
-                return value.min <= report.getValue('age') && (!value.max || value.max > report.getValue('age'));
-            });
+            let ageIndex: number = Utility.GetValueRangeLevel(report.getValue('age'), this._ageRanges);
 
             if (reportSummary) {
                 reportSummary.setValue('total', reportSummary.getValue('total') + 1);
+
                 if (report.getValue('gender') === Enum.EGender.male) {
                     let ageRange = reportSummary.getValue('maleRanges');
                     ageRange[ageIndex] += 1;
@@ -119,7 +118,7 @@ class Action {
                     reportSummary.setValue('maleRanges', ageRange);
 
                     if (isEmployee) {
-                        let ageRange = reportSummary.getValue('maleEmployeeRanges') || new Array(this._ageRanges.length).fill(0);
+                        let ageRange = reportSummary.getValue('maleEmployeeRanges');
                         ageRange[ageIndex] += 1;
 
                         reportSummary.setValue('maleEmployeeTotal', reportSummary.getValue('maleEmployeeTotal') + 1);
@@ -133,7 +132,7 @@ class Action {
                     reportSummary.setValue('femaleRanges', ageRange);
 
                     if (isEmployee) {
-                        let ageRange = reportSummary.getValue('femaleEmployeeRanges') || new Array(this._ageRanges.length).fill(0);
+                        let ageRange = reportSummary.getValue('femaleEmployeeRanges');
                         ageRange[ageIndex] += 1;
 
                         reportSummary.setValue('femaleEmployeeTotal', reportSummary.getValue('femaleEmployeeTotal') + 1);
