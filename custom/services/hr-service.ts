@@ -50,7 +50,7 @@ export class HRService {
          let dt = new Date(date);
          return dt.toISOString().split(splitter)[0];
       }catch (err){
-          return;
+          return "";
       }
     }
     async doHumanResourcesSync(hour:number=3,minute:number=0) {
@@ -366,7 +366,7 @@ export class HRService {
                     PagerServiceProviderId: "0",
                     PhoneNumber: ""
                 },
-                DateOfBirth: this.getDate(record["BirthDate"])||"",
+                DateOfBirth: this.getDate(record["BirthDate"]),
                 PayrollNumber: "",
                 Title: "",
                 UserDetails: {
@@ -391,7 +391,7 @@ export class HRService {
             CustomFields: [
                 {
                     FiledName: "CustomDateControl4__CF",
-                    FieldValue: this.getDate(record["UpdDate"])||""
+                    FieldValue: this.getDate(record["UpdDate"])
                 },
                 {
                     FiledName: "CustomDropdownControl1__CF",
@@ -435,15 +435,15 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomDateControl1__CF_CF",
-                    FieldValue: this.getDate(record["BirthDate"])||""
+                    FieldValue: this.getDate(record["BirthDate"])
                 },
                 {
                     FiledName: "CustomDateControl1__CF_CF_CF",
-                    FieldValue: this.getDate(record["EntDate"])||""
+                    FieldValue: this.getDate(record["EntDate"])
                 },
                 {
                     FiledName: "CustomDateControl1__CF",
-                    FieldValue: this.getDate(record["OffDate"])||""
+                    FieldValue: this.getDate(record["OffDate"])
                 }
             ],
             token:"-1",
@@ -684,7 +684,7 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomDateControl1__CF",
-                                FieldValue: this.getDate(record["OffDate"] )||""
+                                FieldValue: this.getDate(record["OffDate"] )
                             }
                         ],
                         token:"-1",
