@@ -21,6 +21,7 @@ export async function ruleCombineVisitors(company: Companies, visitors: Visitors
         let idcard = visitor.get("idcard");
         let email = visitor.get("email");
         let phone = visitor.get("phone");
+        let name = visitor.get("name");
 
         /// 2) apply visitor rule
         let savedVisitors = await new Parse.Query(Visitors)
@@ -67,6 +68,9 @@ export async function ruleCombineVisitors(company: Companies, visitors: Visitors
         /// 2.X) no matches, add new
         visitor.set("company", company);
         visitor.set("status", VisitorStatus.Pending);
+        /// 2.XX) overwrite name & phone
+        visitor.set("name", name);
+        visitor.set("phone", phone);
         resolvedVisitors.push(visitor);
     }
 
