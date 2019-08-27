@@ -164,11 +164,11 @@ export class HRService {
             let EmpNo: string[] = [];
             await this.cleanTempData();
             // 4.0 Get Import data
-            await this.getImportData(memChange, EmpNo);
+            await this.getVieChangeMemberLog(memChange, EmpNo);
             // 4.2 vieChangeMemberLog
-            await this.vieChangeMemberLog(EmpNo, memNew, memOff, memChange);
+            await this.getVieHQMemberLog(EmpNo, memNew, memOff, memChange);
             // 4.3 vieREMemberLog
-            await this.vieREMemberLog(memChange, EmpNo);
+            await this.getVieREMemberLog(memChange, EmpNo);
 
             // 4.4 request human information
             if (this.checkCycleTime != 5) {          
@@ -758,18 +758,21 @@ export class HRService {
         }
     }
 
-    private async getImportData(memChange: any[], EmpNo: string[]) {
+    private async getVieChangeMemberLog(memChange: any[], EmpNo: string[]) {
         if (this.checkCycleTime != 5) {
+            let effectDate = moment(new Date()).format("YYYY/MM/DD");
             Log.Info(`${this.constructor.name}`, `4.0 Get Import data`);
             Log.Info(`${this.constructor.name}`, `4.1 Get Import data getViewChangeMemberLog`);
+            Log.Info(`${this.constructor.name}`, `Effect date ${effectDate}`);
             try {
                 let res = await this.humanResource.getViewChangeMemberLog(this.LastUpdate.vieChangeMemberLog);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
+                    if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
                     memChange.push(record);
-                    this.LastUpdate.vieChangeMemberLog = record["AddDate"];
+                    this.LastUpdate.vieChangeMemberLog = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
                     EmpNo.push(record["EmpNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
                     delay(100);
@@ -784,7 +787,7 @@ export class HRService {
         }
     }
 
-    private async vieREMemberLog( memChange: any[], EmpNo: string[]) {
+    private async getVieREMemberLog( memChange: any[], EmpNo: string[]) {
         if (this.checkCycleTime != 5) {
             Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieREMemberLog`);
             try {
@@ -793,8 +796,10 @@ export class HRService {
                 //     recordset:
                 //      [ { SeqNo: 1,
                 //          CompCode: '01',
+                let effectDate = moment(new Date()).format("YYYY/MM/DD");
                 for (let record of res) {
-                    this.LastUpdate.vieREMemberLog = record["AddDate"];
+                    if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
+                    this.LastUpdate.vieREMemberLog =  moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
@@ -809,24 +814,22 @@ export class HRService {
         }
     }
 
-    private async vieChangeMemberLog(EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
+    private async getVieHQMemberLog(EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
         if (this.checkCycleTime != 5) {
-            Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
-            let d = new Date();
-            d.setDate(d.getDate() - 90);
-            
-            let str = moment(d).format("YYYY/MM/DD");
-            Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${str}`);
             try {
-                let logs = await new Parse.Query("vieHQMemberLog").lessThan("AddDate", str).find();
+                Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
+                let d = new Date();
+                d.setDate(d.getDate() - 90);
+                
+                Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${d.toISOString()}`);
+                let logs = await new Parse.Query("vieHQMemberLog")
+                .lessThan("AddDate", moment(d).format("YYYY/MM/DD"))
+                .lessThan("AddTime", moment(d).format("HH:mm:ss")).find();
                 await ParseObject.destroyAll(logs);
-            }
-            catch (ex) {
-                this.checkCycleTime = 5;
-                Log.Info(`${this.constructor.name}`, ex);
-            }
-            try {
-                let res = await this.humanResource.getViewHQMemberLog(str);
+                    
+            
+           
+                let res = await this.humanResource.getViewHQMemberLog(d);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
@@ -837,8 +840,10 @@ export class HRService {
                 let newSeqNoList = [];
                 let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x => x["SeqNo"])).find();
                 let objects = [];
-                
+                let effectDate = moment(new Date()).format("YYYY/MM/DD");
                     for (let record of res) {
+                        if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
+
                         newSeqNoList.push(record["SeqNo"]);
                         let log = vieHQMemberLogs.find(x => x.get("SeqNo") == record["SeqNo"]);
                         if (!log) {
@@ -865,7 +870,7 @@ export class HRService {
                     await ParseObject.saveAll(objects);
                 
                 // 4.2.2 record not in the new log list
-                await this.checkRecordNotInTheNewLog(str, newSeqNoList, EmpNo, memNew, memOff, memChange);
+                await this.checkRecordNotInTheNewLog(d, newSeqNoList, EmpNo, memNew, memOff, memChange);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -874,10 +879,13 @@ export class HRService {
         }
     }
 
-    private async checkRecordNotInTheNewLog(str: string, newSeqNoList: any[], EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
+    private async checkRecordNotInTheNewLog(dt: Date, newSeqNoList: any[], EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
         Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);
         try {
-            let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").greaterThanOrEqualTo("AddDate", str).find();
+            let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog")
+                                            .greaterThanOrEqualTo("AddDate", moment(dt).format("YYYY/MM/DD"))
+                                            .greaterThanOrEqualTo("AddTime", moment(dt).format("HH:mm:ss"))
+                                            .find();
             for (let record of vieHQMemberLogs) {
                 if (newSeqNoList.indexOf(record.get("SeqNo")) < 0) {
                     EmpNo.push(record.get("UserNo"));

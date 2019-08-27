@@ -2,6 +2,7 @@ import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
 import * as msSQL from 'mssql';
+import moment = require('moment');
 
 export class HumanResourceAdapter {
     private waitTimer = null;
@@ -40,32 +41,35 @@ export class HumanResourceAdapter {
         }
     }
 
-    async getViewChangeMemberLog(lastDate: string) {
-        Log.Info(`${this.constructor.name}`, `getViewChangeMemberLog ${lastDate}`);
+    async getViewChangeMemberLog(lastDate: Date) {
+        Log.Info(`${this.constructor.name}`, `getViewChangeMemberLog ${lastDate.toISOString()}`);
 
         let res = await this.sqlClient.request()
-            .input('AddDate', msSQL.VarChar(10), lastDate)
-            .query('select * from vieChangeMemberLog where AddDate >= @AddDate order by SeqNo');
+            .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
+            .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
+            .query('select * from vieChangeMemberLog where AddDate >= @AddDate AND AddTime >= @AddTime order by SeqNo');
 
         return res["recordset"];
     }
 
-    async getViewHQMemberLog(lastDate: string) {
-        Log.Info(`${this.constructor.name}`, `getViewHQMemberLog ${lastDate}`);
+    async getViewHQMemberLog(lastDate: Date) {
+        Log.Info(`${this.constructor.name}`, `getViewHQMemberLog ${lastDate.toISOString()}`);
 
         let res = await this.sqlClient.request()
-            .input('AddDate', msSQL.VarChar(10), lastDate)
-            .query('select * from vieHQMemberLog where AddDate >= @AddDate order by SeqNo');
+            .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
+            .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
+            .query('select * from vieHQMemberLog where AddDate >= @AddDate AND AddTime >= @AddTime order by SeqNo');
 
         return res["recordset"];
     }
 
-    async getViewREMemberLog(lastDate: string) {
-        Log.Info(`${this.constructor.name}`, `getViewREMemberLog ${lastDate}`);
+    async getViewREMemberLog(lastDate: Date) {
+        Log.Info(`${this.constructor.name}`, `getViewREMemberLog ${lastDate.toISOString()}`);
 
         let res = await this.sqlClient.request()
-            .input('AddDate', msSQL.VarChar(10), lastDate)
-            .query('select * from vieREMemberLog where AddDate >= @AddDate order by SeqNo');
+            .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
+            .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
+            .query('select * from vieREMemberLog where AddDate >= @AddDate AND AddTime >= @AddTime order by SeqNo');
 
         return res["recordset"];
     }
