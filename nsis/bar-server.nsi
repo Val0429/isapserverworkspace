@@ -2,7 +2,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "Bar Server"
-!define PRODUCT_VERSION "2.03.05"
+!define PRODUCT_VERSION "2.03.06"
 !define PRODUCT_PUBLISHER "iSap Solution" 
 !define PRODUCT_URL "http://www.isapsolution.com"
 !define PATH_OUT "Release"
