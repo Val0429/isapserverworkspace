@@ -115,8 +115,8 @@ export async function GetMigrationDataPermissionTable() {
             for (var j = 0; j < devicesGroupby[doorId].length; j++) {
                 devices.push(
                     {
-                        "name":devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g, ""),
-                        "inOut":devicesGroupby[doorId][j]["inOut"]
+                        "name": devicesGroupby[doorId][j]["deviceName"] ? devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g, ""):"",
+                        "inOut": devicesGroupby[doorId][j]["inOut"]
                     }
                 );
             }
@@ -147,7 +147,7 @@ export async function GetMigrationDataPermissionTable() {
                 for (var n = 0; n < devicesGroupby[doorId].length; n++) {
                     devicesJson.push(
                         {
-                            "name":devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g, ""),
+                            "name":devicesGroupby[doorId][n]["deviceName"]?devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g, ""):"",
                             "inOut":devicesGroupby[doorId][n]["inOut"]
                         }
                     );
@@ -192,7 +192,7 @@ export async function GetMigrationDataPermissionTable() {
                     {
                         "type": "elevator",
                         "name": elevatorsGroupby[elevatorId][0]["elevatorName"],
-                        "device": [devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "")]
+                        "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
                     }
             }
             // 4.1.2 Check Group
@@ -208,7 +208,7 @@ export async function GetMigrationDataPermissionTable() {
                                 {
                                     "type": "elevator",
                                     "name": elevatorsGroupby[elevatorId]["elevatorName"],
-                                    "device": devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "")
+                                    "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
                                 }
                             );
                     }
@@ -281,9 +281,74 @@ export async function GetMigrationDataPerson(csvPath: string) {
 
     console.log("=====Finish GetMigrationDataPerson=====");
 
-
     return result;
 }
+
+export async function GetMigrationDataPersonWithImage(csvPath: string, folderPath : string, batchCount : number, OnRows : (rows: JSON[])=>void) {
+    console.log("=====Start GetMigrationDataPerson=====");
+
+    let signal = new SignalObject(false);
+    const csv = require('csvtojson');
+    let idMap = new Map();
+
+    const fs = require('fs');
+    await fs.readdir(folderPath, (err, fileList) => {
+        if(err) throw err;
+        fileList.forEach((fileName,err) => {
+            let dotPos = fileName.indexOf('.');
+            let len = fileName.length;
+            let pId = fileName.substring(0,dotPos);
+            let ext = fileName.substring(dotPos + 1,len);
+            if(ext.toLowerCase() != "jpg" || isNaN(pId) == true) return;
+            idMap[pId]=`${folderPath}${fileName}`;
+        });
+        signal.set(true);
+    });
+
+    await signal.wait();
+
+    console.log("=====Get ID <--> Image file path link map=====");
+    let totalData = 0;
+    let hasImage = 0;
+
+    signal.set(false);
+
+    csv().fromFile(csvPath).then((jsonObj) => {
+        let result = [];
+        let bCount = 1;
+        jsonObj.forEach(r => {
+            let tempResult = JSON.parse(JSON.stringify(r));
+            try{
+                if(isNullOrUndefined(idMap[r["Person_ID"]]) == false){
+                    let data = fs.readFileSync(`${idMap[r["Person_ID"]]}`);
+                    let base64Image = new Buffer(data, 'binary').toString('base64');
+                    tempResult["img"]= base64Image;
+                    hasImage++;
+                }
+            }
+            catch(err){
+                throw err;
+            }
+            finally{
+                totalData++;
+                result.push(tempResult);
+                if(bCount++ >= batchCount){
+                    console.log(`GetMigrationDataPersonWithImage : Call Batch || Finish : ${(100*(totalData)/jsonObj.length).toFixed(2)} %`);
+                    OnRows(result);
+                    bCount=1;
+                    result = [];
+                }
+            }
+        });
+        OnRows(Array.from(result));
+        signal.set(true);
+    });
+    await signal.wait();
+    console.log(`=====Person : ${totalData} || Has Image : ${hasImage}=====`);
+    console.log("=====Finish GetMigrationDataPerson=====");
+
+}
+
 
 export async function GetOldAccessReport(config, onRaw: (rows: JSON[]) => void, startDatetime: Date, endDatetime: Date) {
 
