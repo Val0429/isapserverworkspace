@@ -232,7 +232,14 @@ class Service {
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.dwellTime:
-                                                    Action.DeleteFile.action$.next(temp);
+                                                    Action.AnalysisDemographic.action$.next({
+                                                        type: 'dwellTime',
+                                                        device: value1,
+                                                        date: x.date,
+                                                        imagePath: temp,
+                                                        groups: groups,
+                                                        faceId: x.objectId,
+                                                    });
                                                     break;
                                                 case Enum.EDeviceMode.visitor:
                                                     if (groups && groups.length > 0) {

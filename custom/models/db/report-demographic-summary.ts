@@ -3,14 +3,9 @@ import { ParseObjectNotice, IReportBase } from './_index';
 import * as Enum from '../../enums';
 
 /**
- * 報告
+ * 
  */
-export interface IReportDemographicSummary extends IReportBase {
-    /**
-     * 累計模式
-     */
-    type: Enum.ESummaryType;
-
+export interface IReportDemographicSummaryData {
     /**
      * 總和
      */
@@ -55,6 +50,16 @@ export interface IReportDemographicSummary extends IReportBase {
      * Employee
      */
     femaleEmployeeRanges: number[];
+}
+
+/**
+ * 報告
+ */
+export interface IReportDemographicSummary extends IReportBase, IReportDemographicSummaryData {
+    /**
+     * 累計模式
+     */
+    type: Enum.ESummaryType;
 }
 
 @registerSubclass()

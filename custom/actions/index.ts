@@ -10,6 +10,7 @@ export { default as AnalysisHumanDetection } from './analysis-human-detection';
 export { default as AnalysisPeopleCounting } from './analysis-people-counting';
 
 export { default as SaveDemographic } from './save-demographic';
+export { default as SaveDwellTime } from './save-dwell-time';
 export { default as SaveHeatmap } from './save-heatmap';
 export { default as SaveHumanDetection } from './save-human-detection';
 export { default as SavePeopleCountingMerge } from './save-people-counting-merge';

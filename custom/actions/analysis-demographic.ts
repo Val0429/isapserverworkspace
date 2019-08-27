@@ -4,8 +4,7 @@ import { IDB } from '../models';
 import { Print, File, Demographic } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
-import { DeleteFile, SaveDemographic, SaveRepeatVisitor } from './';
-import saveRepeatVisitor from './save-repeat-visitor';
+import { DeleteFile, SaveDemographic, SaveRepeatVisitor, SaveDwellTime } from './';
 
 class Action {
     /**
@@ -178,7 +177,7 @@ class Action {
                                         };
 
                                         if (value.type === 'repeatVisitor') {
-                                            saveRepeatVisitor.action$.next({
+                                            SaveRepeatVisitor.action$.next({
                                                 base: base,
                                                 buffer: buffer,
                                                 feature: feature,
@@ -190,6 +189,14 @@ class Action {
                                                 buffer: buffer,
                                                 feature: feature,
                                                 groups: value.groups,
+                                            });
+                                        } else if (value.type === 'dwellTime') {
+                                            SaveDwellTime.action$.next({
+                                                base: base,
+                                                buffer: buffer,
+                                                feature: feature,
+                                                groups: value.groups,
+                                                faceId: value.faceId,
                                             });
                                         }
                                     } catch (e) {
@@ -226,7 +233,7 @@ namespace Action {
     /**
      *
      */
-    export type IAction = IAction_Demographic | IAction_RepeatVisitor;
+    export type IAction = IAction_Demographic | IAction_RepeatVisitor | IAction_DwellTime;
 
     /**
      *
@@ -247,6 +254,12 @@ namespace Action {
 
     export interface IAction_RepeatVisitor extends IAction_Base {
         type: 'repeatVisitor';
+        faceId: string;
+    }
+
+    export interface IAction_DwellTime extends IAction_Base {
+        type: 'dwellTime';
+        groups: Enum.EPeopleType[];
         faceId: string;
     }
 }

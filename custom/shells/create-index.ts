@@ -21,6 +21,8 @@ Main.ready$.subscribe({
 
         createIndex('ReportDemographicSummary', 'index', { type: 1, site: 1, date: 1 });
         createIndex('ReportDemographic', 'index', { date: 1, device: 1 });
+        createIndex('ReportDwellTimeSummary', 'index', { type: 1, site: 1, date: 1 });
+        createIndex('ReportDwellTime', 'index', { date: 1, site: 1, area: 1 });
         createIndex('ReportHeatmapSummary', 'index', { type: 1, site: 1, date: 1 });
         createIndex('ReportHumanDetectionSummary', 'index', { type: 1, site: 1, date: 1 });
         createIndex('ReportHumanDetection', 'index', { date: 1, site: 1, area: 1 });
