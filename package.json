@@ -1,6 +1,6 @@
 {
     "name": "isap-bar-service",
-    "version": "2.03.06",
+    "version": "2.03.07",
     "config": {
         "displayname": "iSap Bar Service"
     },
