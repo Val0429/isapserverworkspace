@@ -53,7 +53,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                 let entity = event.getValue("entity");
                 promises = [...promises, ...["invitation", "company", "visitor", "kiosk"].map( (key) => tryFetch(entity, key)) ];
             }
-            await Promise.all(promises);
+            await Promise.all(promises.map(p => p.catch(e => e)));
             resolve(data);
         });
     });
