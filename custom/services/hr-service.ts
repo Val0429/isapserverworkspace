@@ -41,7 +41,7 @@ export class HRService {
 
         this.LastUpdate = require('./hr_last_update.json');
 
-        console.log(this.LastUpdate);
+        console.log("hr last update", this.LastUpdate);
 
         
     }
@@ -772,7 +772,8 @@ export class HRService {
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
                     delay(100);
                 }
-                ;
+                var fs = require('fs');
+                fs.writeFile('./hr_last_update.json', this.LastUpdate, 'utf8', null);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -796,7 +797,8 @@ export class HRService {
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
                 }
-                ;
+                var fs = require('fs');
+                fs.writeFile('./hr_last_update.json', this.LastUpdate, 'utf8', null);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
