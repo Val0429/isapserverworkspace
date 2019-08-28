@@ -18,6 +18,7 @@
     "moment": "^2.24.0",
     "mssql": "^5.1.0",
     "node-adodb": "^5.0.2",
-    "request-promise": "^4.2.4"
+    "request-promise": "^4.2.4",
+    "xlsx": "^0.15.1"
   }
 }

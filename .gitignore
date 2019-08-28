@@ -6,3 +6,5 @@ custom/assets/images/
 nsis/Release/
 
 custom/modules/acs/ccure/ReportQueryTimeSavedFile.tmp
+
+custom/files/
