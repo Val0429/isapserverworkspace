@@ -259,9 +259,11 @@ export class HRService {
             b = "正職";
         }
         if (memNew.indexOf(record["EmpNo"] >= 0)) {
+             //DeptChiName value is from vieDept deptMark2
             newMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${b}</td><td>${record["DeptChiName"]}</td><td>${record["EngName"]}</td></tr>`;
         }
         if (memOff.indexOf(record["EmpNo"] >= 0)) {
+            //DeptChiName value is from vieDept deptMark2
             offMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${b}</td><td>${record["DeptChiName"]}</td><td>${record["OffDate"]}</td><td>${record["EngName"]}</td></tr>`;
         }
         if (memChange.indexOf(record["EmpNo"] >= 0)) {
@@ -292,7 +294,7 @@ export class HRService {
                 if (record["DeptCode"] != db["DeptCode"])
                     change += ",部門代號:" + record["DeptCode"];
                 if (record["DeptChiName"] != db["DeptChiName"])
-                    change += ",部門名稱:" + record["DeptChiName"];
+                    change += ",部門名稱:" + record["DeptChiName"]; //value is from vieDept deptMark2
                 if (record["CostCenter"] != db["CostCenter"])
                     change += ",成本中心代碼:" + record["CostCenter"];
                 if (record["LocationCode"] != db["LocationCode"])
@@ -429,7 +431,7 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                    FieldValue: record["DeptChiName"] || ""
+                    FieldValue: record["DeptChiName"] || "" //value is from vieDept deptMark2
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
@@ -437,11 +439,11 @@ export class HRService {
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                    FieldValue: record["LocationName"] || ""
+                    FieldValue: ""
                 },
                 {
                     FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                    FieldValue: record["RegionName"] || ""
+                    FieldValue: record["LocationName"] || ""
                 },
                 {
                     FiledName: "CustomDateControl1__CF_CF",

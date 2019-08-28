@@ -84,7 +84,11 @@ export class HumanResourceAdapter {
             // empno.forEach(no => {
             //     strEmp += (",'" + no + "'");
             // });
-            let q=`select * from vieMember where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
+            let q=` select vMember.*,vDept.deptmark2 as DeptChiName
+                    FROM [member].[dbo].[viemember] as vMember
+                    left join [member].[dbo].[viedept] as vDept
+                    on vMember.DeptCode = vDept.DeptCode 
+                    where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
             //console.log("getViewMember query", q);
             res = await this.sqlClient.request()
                 .query(q);
