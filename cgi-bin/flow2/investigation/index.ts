@@ -47,7 +47,11 @@ export async function InvestigationResult(data) {
 
     /// 1) Make Query
     let query = new Parse.Query(Events)
-        .equalTo("action", EventList.EventFlow2StrictCompleteCheckIn);
+        .equalTo("action", EventList.EventFlow2StrictCompleteCheckIn)
+        .include("data.company")
+        .include("data.visitor")
+        .include("data.visitor.privacy")
+        ;
     
     start && (query.greaterThanOrEqualTo("createdAt", start));
     end && (query.lessThan("createdAt", end));
@@ -67,9 +71,17 @@ export async function InvestigationResult(data) {
     //query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters, {
-        visitor: {
-            status: (v) => getEnumKey(VisitorStatus, v)
+
+        data: {
+            visitor: (v) => {
+                return {
+                    ...v.attributesRemovePrivacy,
+                    status: getEnumKey(VisitorStatus, v.attributes.status),
+                    company: undefined
+                }
+            },
         },
+
         events: {
             owner: false,
             invitation: false,
