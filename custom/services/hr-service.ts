@@ -780,7 +780,7 @@ export class HRService {
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
-                    if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
+                    if(record["EffectDate"] > effectDate)continue; 
                     memChange.push(record);
                     this.LastUpdate.vieChangeMemberLog = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     EmpNo.push(record["EmpNo"]);
@@ -808,7 +808,7 @@ export class HRService {
                 //          CompCode: '01',
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
                 for (let record of res) {
-                    if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
+                    if(record["EffectDate"] > effectDate)continue; 
                     this.LastUpdate.vieREMemberLog =  moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
