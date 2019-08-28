@@ -71,7 +71,8 @@ export class CCure800SqlAdapter {
     async writeToMdb(data, ccureAccessRules:string[], customFields:any[], permission = "", tableName:string="Member"){
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
         
-        for (let i = 0; i < ccureAccessRules.length; i++) {
+        for (let i = 0; i < rules.length; i++) {
+            if(i>=ccureAccessRules.length)break;
             rules[i] = ccureAccessRules[i];
         }
 
@@ -200,7 +201,7 @@ export class CCure800SqlAdapter {
         ,CustomDateControl3__CF10 
         ) VALUES ( 
          '${data["EmployeeNumber"]}'     
-        , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + moment(data["PersonalDetails"]["DateOfBirth"]).format("YYYY-MM-DD")+ "'" : 'Null'}
+        , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + moment(data["PersonalDetails"]["DateOfBirth"]).format("YYYY-MM-DD")+ "'" : "NULL"}
         ,'${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}'
         ,'${CustomTextBoxControl6__CF}'
         ,'${CustomTextBoxControl5__CF4}'
@@ -288,14 +289,22 @@ export class CCure800SqlAdapter {
         ,'${rules[36] == undefined ? '' : rules[36]}'
         ,'${rules[37] == undefined ? '' : rules[37]}'
         ,'${rules[38] == undefined ? '' : rules[38]}'
-        , ${CustomDateControl4__CF ? CustomDateControl4__CF : 'Null'}, ${CustomDateControl3__CF11 ? CustomDateControl3__CF11 : 'Null'}, ${CustomDateControl3__CF12 ? CustomDateControl3__CF12 : 'Null'}
-        , ${CustomDateControl3__CF1 ? CustomDateControl3__CF1 : 'Null'}, ${CustomDateControl3__CF2 ? CustomDateControl3__CF2 : 'Null'}, ${CustomDateControl3__CF6 ? CustomDateControl3__CF6 : 'Null'}
-        , ${CustomDateControl3__CF7 ? CustomDateControl3__CF7 : 'Null'}, ${CustomDateControl3__CF5 ? CustomDateControl3__CF5 : 'Null'}, ${CustomDateControl3__CF3 ? CustomDateControl3__CF3 : 'Null'}
-        , ${CustomDateControl3__CF4 ? CustomDateControl3__CF4 : 'Null'}, ${CustomDateControl3__CF8 ? CustomDateControl3__CF8 : 'Null'}, ${CustomDateControl3__CF9 ? CustomDateControl3__CF9 : 'Null'}
-        , ${CustomDateControl3__CF10 ? CustomDateControl3__CF10 : 'Null'}
+        ,${CustomDateControl4__CF ? "'"+moment(CustomDateControl4__CF).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF11 ? "'"+moment(CustomDateControl3__CF11).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF12 ? "'"+moment(CustomDateControl3__CF12).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF1 ? "'"+moment(CustomDateControl3__CF1).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF2 ? "'"+moment(CustomDateControl3__CF2).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF6 ? "'"+moment(CustomDateControl3__CF6).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF7 ? "'"+moment(CustomDateControl3__CF7).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF5 ? "'"+moment(CustomDateControl3__CF5).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF3 ? "'"+moment(CustomDateControl3__CF3).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF4 ? "'"+moment(CustomDateControl3__CF4).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF8 ? "'"+moment(CustomDateControl3__CF8).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF9 ? "'"+moment(CustomDateControl3__CF9).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl3__CF10 ? "'"+moment(CustomDateControl3__CF10).format("YYYY-MM-DD") + "'" : "NULL" }
         )`;
-
-        //console.log(insert);
+        
+        console.log(insert);
 
         await this.adodbConn
             .execute(insert)
