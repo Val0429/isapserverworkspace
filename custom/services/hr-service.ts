@@ -54,7 +54,7 @@ export class HRService {
     if(result.indexOf(bom)>-1)result=result.substr(bom.length);
     return result;
 }
-    getDate(date, splitter="T"){
+    getDate(date, splitter="."){
         try{    
          let dt = new Date(date);
          return dt.toISOString().split(splitter)[0];
@@ -342,8 +342,8 @@ export class HRService {
             objects.push(obj);
         }
         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-        let endDate = this.getDate(record["OffDate"], ".") || "2100-12-31T23:59:59";
-        let startDate = this.getDate(record["EntDate"], ".") || (new Date()).toISOString().split(".")[0];
+        let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
+        let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
         let credential = {
             CardNumber: record["FaxNo"] + "",
             EndDate: endDate,
@@ -378,7 +378,7 @@ export class HRService {
                     PagerServiceProviderId: "0",
                     PhoneNumber: ""
                 },
-                DateOfBirth: this.getDate(record["BirthDate"]),
+                DateOfBirth: this.getDate(record["BirthDate"], "T"),
                 PayrollNumber: "",
                 Title: "",
                 UserDetails: {
@@ -583,7 +583,7 @@ export class HRService {
                                 Email: record["Email"],
                                 MobileNumber: record["Cellular"]
                             },
-                            DateOfBirth: this.getDate(record["BirthDate"]) || ""
+                            DateOfBirth: this.getDate(record["BirthDate"], "T") 
                         });
                         obj.set("primaryWorkgroupId", a);
                         obj.set("apbWorkgroupId", a);
@@ -604,7 +604,7 @@ export class HRService {
                         Attributes: {},
                         Credentials: [],
                         EmployeeNumber: record["SupporterNo"] ? record["SupporterNo"] : "",
-                        EndDate: this.getDate(record["OffDate"], ".") || "2100-12-31T23:59:59",
+                        EndDate: this.getDate(record["OffDate"]) || "2100-12-31T23:59:59",
                         FirstName: record["EngName"] || "_",
                         GeneralInformation: "",
                         LastName: record["SupporterName"] || "_",
@@ -619,7 +619,7 @@ export class HRService {
                                 PagerServiceProviderId: "0",
                                 PhoneNumber: ""
                             },
-                            DateOfBirth: this.getDate(record["BirthDate"]) || "",
+                            DateOfBirth: this.getDate(record["BirthDate"], "T"),
                             PayrollNumber: "",
                             Title: "",
                             UserDetails: {
@@ -631,7 +631,7 @@ export class HRService {
                         PrimaryWorkgroupId: a,
                         PrimaryWorkgroupName: b,
                         SmartCardProfileId: "0",
-                        StartDate: this.getDate(record["EntDate"],".") || (new Date()).toISOString().split(".")[0],
+                        StartDate: this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0],
                         Status: 61,
                         Token: "-1",
                         TraceDetails: {},
@@ -644,7 +644,7 @@ export class HRService {
                         CustomFields: [
                             {
                                 FiledName: "CustomDateControl4__CF",
-                                FieldValue: this.getDate(record["UpdDate"]) || ""
+                                FieldValue: this.getDate(record["UpdDate"]) 
                             },
                             {
                                 FiledName: "CustomDropdownControl1__CF",
@@ -688,11 +688,11 @@ export class HRService {
                             },
                             {
                                 FiledName: "CustomDateControl1__CF_CF",
-                                FieldValue: this.getDate(record["BirthDate"]) || ""
+                                FieldValue: this.getDate(record["BirthDate"]) 
                             },
                             {
                                 FiledName: "CustomDateControl1__CF_CF_CF",
-                                FieldValue: this.getDate(record["EntDate"] ) || ""
+                                FieldValue: this.getDate(record["EntDate"] ) 
                             },
                             {
                                 FiledName: "CustomDateControl1__CF",
