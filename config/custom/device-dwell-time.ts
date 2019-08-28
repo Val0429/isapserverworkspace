@@ -17,7 +17,7 @@ export interface Config {
 
 let config: Config = {
     productId: '',
-    timeRange: '1-1-1-1-1',
+    timeRange: '0-5-10-15-30-60',
     output: {
         image: {
             width: 150,

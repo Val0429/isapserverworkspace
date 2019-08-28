@@ -103,66 +103,68 @@ class Action {
      * Generate Dwell Time Range
      * @param report
      * @param reportSummary
-     * @param prevLevel
+     * @param prevReport
      */
-    private GenerateDwellTimeRanges(report: IDB.ReportDwellTime, reportSummary: IDB.ReportDwellTimeSummary, prevLevel: number): IDB.IReportDemographicSummaryData[] {
+    private GenerateDwellTimeRanges(report: IDB.ReportDwellTime, reportSummary: IDB.ReportDwellTimeSummary, prevReport: Partial<IDB.IReportDwellTime>): IDB.IReportDemographicSummaryData[] {
         try {
             let dwellTimeRanges: IDB.IReportDemographicSummaryData[] =
                 reportSummary.getValue('dwellTimeRanges') ||
-                new Array<IDB.IReportDemographicSummaryData>(this._timeRanges.length).fill({
-                    total: 0,
-                    maleTotal: 0,
-                    maleEmployeeTotal: 0,
-                    maleRanges: new Array(this._ageRanges.length).fill(0),
-                    maleEmployeeRanges: new Array(this._ageRanges.length).fill(0),
-                    femaleTotal: 0,
-                    femaleEmployeeTotal: 0,
-                    femaleRanges: new Array(this._ageRanges.length).fill(0),
-                    femaleEmployeeRanges: new Array(this._ageRanges.length).fill(0),
+                Array.from({ length: this._timeRanges.length }, () => {
+                    return {
+                        total: 0,
+                        maleTotal: 0,
+                        maleEmployeeTotal: 0,
+                        maleRanges: new Array(this._ageRanges.length).fill(0),
+                        maleEmployeeRanges: new Array(this._ageRanges.length).fill(0),
+                        femaleTotal: 0,
+                        femaleEmployeeTotal: 0,
+                        femaleRanges: new Array(this._ageRanges.length).fill(0),
+                        femaleEmployeeRanges: new Array(this._ageRanges.length).fill(0),
+                    };
                 });
 
             let ageIndex: number = Utility.GetValueRangeLevel(report.getValue('age'), this._ageRanges);
-            let levelIndex: number = report.getValue('dwellTimeLevel');
+            let currLevel: number = report.getValue('dwellTimeLevel');
             let isEmployee = report.getValue('isEmployee');
 
-            dwellTimeRanges[levelIndex].total += 1;
+            dwellTimeRanges[currLevel].total += 1;
 
             if (report.getValue('gender') === Enum.EGender.male) {
-                dwellTimeRanges[levelIndex].maleTotal += 1;
-                dwellTimeRanges[levelIndex].maleRanges[ageIndex] += 1;
+                dwellTimeRanges[currLevel].maleTotal += 1;
+                dwellTimeRanges[currLevel].maleRanges[ageIndex] += 1;
 
                 if (isEmployee) {
-                    dwellTimeRanges[levelIndex].maleEmployeeTotal += 1;
-                    dwellTimeRanges[levelIndex].maleEmployeeRanges[ageIndex] += 1;
+                    dwellTimeRanges[currLevel].maleEmployeeTotal += 1;
+                    dwellTimeRanges[currLevel].maleEmployeeRanges[ageIndex] += 1;
                 }
             } else {
-                dwellTimeRanges[levelIndex].femaleTotal += 1;
-                dwellTimeRanges[levelIndex].femaleRanges[ageIndex] += 1;
+                dwellTimeRanges[currLevel].femaleTotal += 1;
+                dwellTimeRanges[currLevel].femaleRanges[ageIndex] += 1;
 
                 if (isEmployee) {
-                    dwellTimeRanges[levelIndex].femaleEmployeeTotal += 1;
-                    dwellTimeRanges[levelIndex].femaleEmployeeRanges[ageIndex] += 1;
+                    dwellTimeRanges[currLevel].femaleEmployeeTotal += 1;
+                    dwellTimeRanges[currLevel].femaleEmployeeRanges[ageIndex] += 1;
                 }
             }
 
-            if (!prevLevel) {
-                dwellTimeRanges[prevLevel].total -= 1;
+            if (!!prevReport) {
+                dwellTimeRanges[prevReport.dwellTimeLevel].total -= 1;
 
                 if (report.getValue('gender') === Enum.EGender.male) {
-                    dwellTimeRanges[prevLevel].maleTotal -= 1;
-                    dwellTimeRanges[prevLevel].maleRanges[ageIndex] -= 1;
+                    dwellTimeRanges[prevReport.dwellTimeLevel].maleTotal -= 1;
+                    dwellTimeRanges[prevReport.dwellTimeLevel].maleRanges[ageIndex] -= 1;
 
                     if (isEmployee) {
-                        dwellTimeRanges[prevLevel].maleEmployeeTotal -= 1;
-                        dwellTimeRanges[prevLevel].maleEmployeeRanges[ageIndex] -= 1;
+                        dwellTimeRanges[prevReport.dwellTimeLevel].maleEmployeeTotal -= 1;
+                        dwellTimeRanges[prevReport.dwellTimeLevel].maleEmployeeRanges[ageIndex] -= 1;
                     }
                 } else {
-                    dwellTimeRanges[prevLevel].femaleTotal -= 1;
-                    dwellTimeRanges[prevLevel].femaleRanges[ageIndex] -= 1;
+                    dwellTimeRanges[prevReport.dwellTimeLevel].femaleTotal -= 1;
+                    dwellTimeRanges[prevReport.dwellTimeLevel].femaleRanges[ageIndex] -= 1;
 
                     if (isEmployee) {
-                        dwellTimeRanges[prevLevel].femaleEmployeeTotal -= 1;
-                        dwellTimeRanges[prevLevel].femaleEmployeeRanges[ageIndex] -= 1;
+                        dwellTimeRanges[prevReport.dwellTimeLevel].femaleEmployeeTotal -= 1;
+                        dwellTimeRanges[prevReport.dwellTimeLevel].femaleEmployeeRanges[ageIndex] -= 1;
                     }
                 }
             }
@@ -176,10 +178,10 @@ class Action {
     /**
      * Save report summary
      * @param report
-     * @param prevLevel
+     * @param prevReport
      * @param type
      */
-    private async SaveReportSummary(report: IDB.ReportDwellTime, prevLevel: number, type: Enum.ESummaryType): Promise<void> {
+    private async SaveReportSummary(report: IDB.ReportDwellTime, prevReport: Partial<IDB.IReportDwellTime>, type: Enum.ESummaryType): Promise<void> {
         try {
             let date: Date = DateTime.Type2Date(report.getValue('date'), type);
 
@@ -192,15 +194,21 @@ class Action {
                     throw e;
                 });
 
-            let levelIndex: number = report.getValue('dwellTimeLevel');
+            let currLevel: number = report.getValue('dwellTimeLevel');
             let ranges: number[] = reportSummary ? reportSummary.getValue('totalRanges') : new Array(this._ageRanges.length).fill(0);
-            ranges[levelIndex] += 1;
+            ranges[currLevel] += 1;
 
             if (reportSummary) {
+                if (!!prevReport) {
+                    ranges[prevReport.dwellTimeLevel] -= 1;
+                    reportSummary.setValue('total', reportSummary.getValue('total') - prevReport.dwellTimeSecond);
+                } else {
+                    reportSummary.setValue('count', reportSummary.getValue('count') + 1);
+                }
+
                 reportSummary.setValue('total', reportSummary.getValue('total') + report.getValue('dwellTimeSecond'));
-                reportSummary.setValue('count', reportSummary.getValue('count') + 1);
                 reportSummary.setValue('totalRanges', ranges);
-                reportSummary.setValue('dwellTimeRanges', this.GenerateDwellTimeRanges(report, reportSummary, prevLevel));
+                reportSummary.setValue('dwellTimeRanges', this.GenerateDwellTimeRanges(report, reportSummary, prevReport));
             } else {
                 reportSummary = new IDB.ReportDwellTimeSummary();
 
@@ -212,7 +220,7 @@ class Action {
                 reportSummary.setValue('total', report.getValue('dwellTimeSecond'));
                 reportSummary.setValue('count', 1);
                 reportSummary.setValue('totalRanges', ranges);
-                reportSummary.setValue('dwellTimeRanges', this.GenerateDwellTimeRanges(report, reportSummary, prevLevel));
+                reportSummary.setValue('dwellTimeRanges', this.GenerateDwellTimeRanges(report, reportSummary, prevReport));
             }
 
             await reportSummary.save(null, { useMasterKey: true }).fail((e) => {
@@ -252,7 +260,7 @@ class Action {
                                     throw e;
                                 });
 
-                            if (isIn && !!report.getValue('outDate')) {
+                            if (isIn && (!report || !!report.getValue('outDate'))) {
                                 report = new IDB.ReportDwellTime();
 
                                 report.setValue('inDate', x.base.date);
@@ -281,13 +289,19 @@ class Action {
                                 });
                             }
 
-                            if (!isIn) {
-                                let prevLevel: number = report.getValue('dwellTimeLevel') || NaN;
+                            if (!!report && !isIn) {
+                                let prevReport: Partial<IDB.IReportDwellTime> = undefined;
+                                if (!!report.getValue('outDate')) {
+                                    prevReport = {};
+                                    prevReport.dwellTimeLevel = report.getValue('dwellTimeLevel');
+                                    prevReport.dwellTimeSecond = report.getValue('dwellTimeSecond');
+                                }
+
+                                report.setValue('outDate', x.base.date);
 
                                 let second: number = Utility.Round((report.getValue('outDate').getTime() - report.getValue('inDate').getTime()) / 1000, 0);
                                 let level: number = Utility.GetValueRangeLevel(second, this._timeRanges, 60);
 
-                                report.setValue('outDate', x.base.date);
                                 report.setValue('dwellTimeSecond', second);
                                 report.setValue('dwellTimeLevel', level);
 
@@ -297,10 +311,10 @@ class Action {
 
                                 let tasks: Promise<any>[] = [];
 
-                                tasks.push(this.SaveReportSummary(report, prevLevel, Enum.ESummaryType.hour));
-                                // tasks.push(this.SaveReportSummary(report, prevLevel, Enum.ESummaryType.day));
-                                // tasks.push(this.SaveReportSummary(report, prevLevel, Enum.ESummaryType.month));
-                                // tasks.push(this.SaveReportSummary(report, prevLevel, Enum.ESummaryType.season));
+                                tasks.push(this.SaveReportSummary(report, prevReport, Enum.ESummaryType.hour));
+                                // tasks.push(this.SaveReportSummary(report, prevReport, Enum.ESummaryType.day));
+                                // tasks.push(this.SaveReportSummary(report, prevReport, Enum.ESummaryType.month));
+                                // tasks.push(this.SaveReportSummary(report, prevReport, Enum.ESummaryType.season));
 
                                 await Promise.all(tasks).catch((e) => {
                                     throw e;
