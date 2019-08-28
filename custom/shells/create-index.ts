@@ -19,17 +19,12 @@ import {
         { "data.kioskId": 1 },
         { unique: true, partialFilterExpression: { "data.kioskId": { $exists: true } } }
     );
-    /// Floors
-    createIndex("Floors", "floorsUniqueFloor",
-        { "floor": 1 },
-        { unique: true }
+    /// Member
+    createIndex("Member", "MemberFirstName",
+        { "FirstName": 1 },
     );
-    /// Faces
-    createIndex("FRSFaces", "facesIndexMain",
-        { "groups.name": 1, "channel": 1, "timestamp": 1 }
-    );
-    createIndex("FRSFaces", "facesIndexName",
-        { "person_info.fullname": "text" }
+    createIndex("Member", "MemberLastName",
+        { "LastName": 1 },
     );
     ////////////////////////////
 
