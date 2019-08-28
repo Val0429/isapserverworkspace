@@ -3,14 +3,38 @@ import { Restful, Action } from "core/cgi-package";
 import { IMember, PermissionTable } from "core/events.gen";
 import * as XLSX from 'xlsx';
 import moment = require("moment");
+import { Log } from "workspace/custom/services/log";
 
 var action = new Action({
     loginRequired: true,
     apiToken: "door_member_CRUD"
 });
-
 /********************************
- * R: get object
+ * R: read object
+ ********************************/
+type InputR = Restful.InputR<any>;
+
+
+action.get<InputR, any>({ inputType: "InputR" }, async (data) => {
+
+           
+    const fs = require('fs')
+
+    let path =  __dirname+"/../../custom/files/"+ data.parameters.fileName;
+
+    try {
+        console.log("path",path);
+        if (fs.existsSync(path)) {
+            //file exists
+            return {ready:true}
+        }
+    } catch(err) {
+        console.log(err);
+        return {ready:false}
+    }
+});
+/********************************
+ * C: create object
  ********************************/
 type InputC = Restful.InputC<any>;
 
@@ -38,12 +62,13 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
 
  function doExport(filename:string, members:any[],fieldSelected:any[],storedPermissionOptions:any[],extraHeader:any){
     let exportList =[];
+    //let stringExportList =[];
         let headers=[];
         
         for(let field of fieldSelected){
           headers.push(field);
         }
-        exportList.push(extraHeader)
+        exportList.push(extraHeader);
         for (let member of members){
           let newMember:any = {};
           for(let field of  fieldSelected){
@@ -58,9 +83,12 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
                 newMember.permissionTable = permissions.join(",");
               }
           }
-          let exist = exportList.find(x=>JSON.stringify(x)==JSON.stringify(newMember));
-          if(!exist) 
-          exportList.push(newMember);
+        //   let exist = stringExportList.find(x=>x==JSON.stringify(newMember));
+        //   if(!exist) {
+        //     stringExportList.push(JSON.stringify(newMember));
+            exportList.push(newMember);
+        //  }
+          
           
         }
         //console.log("response", response)
@@ -74,8 +102,13 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
         let exportFile = __dirname+"/../../custom/files/"+ filename;
         console.log("exportFile",exportFile)
         XLSX.writeFile(workbook, exportFile);
-        // console.log("result", result);
-        //return result;
+        
+        //delete file after 30 minutes
+        setTimeout(()=>{
+            const fs = require('fs');
+            fs.unlink(exportFile);
+            Log.Info("Deleted export member file", exportFile);
+        }, 1000*60*30)
 }
 
 /// CRUD end ///////////////////////////////////
