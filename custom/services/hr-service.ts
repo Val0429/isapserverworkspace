@@ -1,6 +1,6 @@
 import { Config } from 'core/config.gen';
 import * as fs from 'fs';
-
+import * as path from 'path';
 import * as delay from 'delay';
 import { Log } from './log';
 
@@ -39,13 +39,21 @@ export class HRService {
 
         this.humanResource = new HumanResourceAdapter();
         this.CCure800SqlAdapter = new CCure800SqlAdapter();
-
-        this.LastUpdate = require('./hr_last_update.json');
+        
+        this.LastUpdate = JSON.parse(this.readFile('hr_last_update.tmp'));
+    
 
         console.log("hr last update", this.LastUpdate);
 
         
     }
+    
+ readFile(filePath:string){
+    let bom="\ufeff";
+    let result = fs.readFileSync(path.join(__dirname, filePath), "utf8").toString();
+    if(result.indexOf(bom)>-1)result=result.substr(bom.length);
+    return result;
+}
     getDate(date, splitter="T"){
         try{    
          let dt = new Date(date);
@@ -765,20 +773,20 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `4.1 Get Import data getViewChangeMemberLog`);
             Log.Info(`${this.constructor.name}`, `Effect date ${effectDate}`);
             try {
-                let res = await this.humanResource.getViewChangeMemberLog(this.LastUpdate.vieChangeMemberLog);
+                let res = await this.humanResource.getViewChangeMemberLog(new Date(this.LastUpdate.vieChangeMemberLog));
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
                     if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
                     memChange.push(record);
-                    this.LastUpdate.vieChangeMemberLog = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
+                    this.LastUpdate.vieChangeMemberLog = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     EmpNo.push(record["EmpNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
                     delay(100);
                 }
                 var fs = require('fs');
-                fs.writeFile('./hr_last_update.json', this.LastUpdate, 'utf8', null);
+                fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -791,7 +799,7 @@ export class HRService {
         if (this.checkCycleTime != 5) {
             Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieREMemberLog`);
             try {
-                let res = await this.humanResource.getViewREMemberLog(this.LastUpdate.vieREMemberLog);
+                let res = await this.humanResource.getViewREMemberLog(new Date(this.LastUpdate.vieREMemberLog));
                 // { recordsets: [ [ [Object], [Object], [Object] ] ],
                 //     recordset:
                 //      [ { SeqNo: 1,
@@ -799,13 +807,13 @@ export class HRService {
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
                 for (let record of res) {
                     if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
-                    this.LastUpdate.vieREMemberLog =  moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
+                    this.LastUpdate.vieREMemberLog =  moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
                 }
                 var fs = require('fs');
-                fs.writeFile('./hr_last_update.json', this.LastUpdate, 'utf8', null);
+                fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
             }
             catch (ex) {
                 this.checkCycleTime = 5;

@@ -47,7 +47,7 @@ export class HumanResourceAdapter {
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
-            .query('select * from vieChangeMemberLog where AddDate >= @AddDate AND AddTime >= @AddTime order by SeqNo');
+            .query('select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate >= @AddDate  order by SeqNo');
 
         return res["recordset"];
     }
@@ -58,7 +58,7 @@ export class HumanResourceAdapter {
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
-            .query('select * from vieHQMemberLog where AddDate >= @AddDate AND AddTime >= @AddTime order by SeqNo');
+            .query('select * from vieHQMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate >= @AddDate order by SeqNo');
 
         return res["recordset"];
     }
@@ -69,7 +69,7 @@ export class HumanResourceAdapter {
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
-            .query('select * from vieREMemberLog where AddDate >= @AddDate AND AddTime >= @AddTime order by SeqNo');
+            .query('select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate >= @AddDate  order by SeqNo');
 
         return res["recordset"];
     }
