@@ -125,8 +125,8 @@ export class AttendanceRecord {
     }
     private async saveSipassData(records: any[]) {
         let objects = [];
-        let members = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.filter(x => x.Credentials && x.Credentials.length > 0).map(x => x.Credentials[0].CardNumber)).find();
-        let readers = await new Parse.Query(Reader)
+        let members = await new Parse.Query(Member).limit(records.length).containedIn("Credentials.CardNumber", records.filter(x => x.Credentials && x.Credentials.length > 0).map(x => x.Credentials[0].CardNumber)).find();
+        let readers = await new Parse.Query(Reader).limit(records.length)
             .containedIn("readername", records.map(x => x["point_name"]))
             .find();
         for (let r of records) {
@@ -162,8 +162,11 @@ export class AttendanceRecord {
             let objects=[];
             
             console.log("getCCureData", records.length);
-            let members = await new Parse.Query(Member).containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber.toString())).find();
-            let doors = await new Parse.Query(Door)
+            
+            let members = await new Parse.Query(Member).limit(records.length).containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber.toString())).find();
+
+            console.log("members", members.length);
+            let doors = await new Parse.Query(Door).limit(records.length)
                         .containedIn("doorname", records.map(x=>x["door"]))
                         .find();     
             // console.log("members", members);
@@ -177,7 +180,7 @@ export class AttendanceRecord {
                 newData["time_occurred"] = moment(correctDate).format('HHmmss');
                 newData["date_time_occurred"] =correctDate;
                 newData["card_no"] = r["cardNumber"] + "";
-                newData["point_no"] = r["doorId"] + "";
+                newData["point_no"] = r["doorId"] ;
                 newData["point_name"] = r["door"];
                 newData["message"] = r["message"];
                 newData["system"] = 800;
