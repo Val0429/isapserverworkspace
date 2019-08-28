@@ -62,6 +62,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         .containedIn("tableid", obj.get("AccessRules").map(x=>parseInt(x)))
         .limit(Number.MAX_SAFE_INTEGER).find();
 
+    
+    let ccurePermissionTables = await new Parse.Query(PermissionTable)
+                        .equalTo("system", 800)
+                        .containedIn("tablename", permissionTables.map(x=>x.get("tablename")))
+                        .limit(Number.MAX_SAFE_INTEGER).find();
+
     let rules=[];
     let ccureAccessRules:string[] = [];
     for (const rid of obj.get("AccessRules")) {            
@@ -70,7 +76,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         //not in sipass or ccure
         if(!permission)continue;
         //check if permission is in ccure
-        if( permissionTables.find(x=>x.get("system")==800 && x.get("tableid")== +rid)){
+        if(ccurePermissionTables.find(x=> x.get("tablename")== permission.get("tablename"))){
             ccureAccessRules.push(permission.get("tablename"));
         }
         let newRule = {
@@ -205,7 +211,10 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
      let permissionTables = await new Parse.Query(PermissionTable)
                             .containedIn("tableid", update.get("AccessRules").map(x=>parseInt(x)))
                             .limit(Number.MAX_SAFE_INTEGER).find();
-
+    let ccurePermissionTables = await new Parse.Query(PermissionTable)
+                            .equalTo("system", 800)
+                            .containedIn("tablename", permissionTables.map(x=>x.get("tablename")))
+                            .limit(Number.MAX_SAFE_INTEGER).find();
     let ccureAccessRules:string[] = [];
         
     let rules=[];
@@ -215,7 +224,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         //not in sipass or ccure
         if(!permission)continue;
         //check if permission is in ccure
-        if( permissionTables.find(x=>x.get("system")==800 && x.get("tableid")== +rid)){
+        if(ccurePermissionTables.find(x=> x.get("tablename")== permission.get("tablename"))){
             ccureAccessRules.push(permission.get("tablename"));
         }
         let newRule = {
