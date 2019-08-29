@@ -41,35 +41,38 @@ export class HumanResourceAdapter {
         }
     }
 
-    async getViewChangeMemberLog(lastDate: Date) {
+    async getViewChangeMemberLog(lastDate: Date, effectDate:string) {
         Log.Info(`${this.constructor.name}`, `getViewChangeMemberLog ${lastDate.toISOString()}`);
 
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
-            .query('select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate >= @AddDate  order by SeqNo');
+            .input('EffectDate', msSQL.VarChar(10),effectDate)
+            .query('select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate  order by SeqNo');
 
         return res["recordset"];
     }
 
-    async getViewHQMemberLog(lastDate: Date) {
+    async getViewHQMemberLog(lastDate: Date, effectDate:string) {
         Log.Info(`${this.constructor.name}`, `getViewHQMemberLog ${lastDate.toISOString()}`);
 
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
-            .query('select * from vieHQMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate >= @AddDate order by SeqNo');
+            .input('EffectDate', msSQL.VarChar(10),effectDate)
+            .query('select * from vieHQMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate order by SeqNo');
 
         return res["recordset"];
     }
 
-    async getViewREMemberLog(lastDate: Date) {
+    async getViewREMemberLog(lastDate: Date, effectDate:string) {
         Log.Info(`${this.constructor.name}`, `getViewREMemberLog ${lastDate.toISOString()}`);
 
         let res = await this.sqlClient.request()
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
-            .query('select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate >= @AddDate  order by SeqNo');
+            .input('EffectDate', msSQL.VarChar(10),effectDate)
+            .query('select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate  order by SeqNo');
 
         return res["recordset"];
     }
@@ -88,7 +91,7 @@ export class HumanResourceAdapter {
                     FROM [member].[dbo].[viemember] as vMember
                     left join [member].[dbo].[viedept] as vDept
                     on vMember.DeptCode = vDept.DeptCode 
-                    where EmpNo in ('${strEmp}') order by CompCode, EmpNo`;
+                    where vMember.EmpNo in ('${strEmp}') order by vMember.CompCode, vMember.EmpNo`;
             //console.log("getViewMember query", q);
             res = await this.sqlClient.request()
                 .query(q);

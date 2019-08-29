@@ -557,6 +557,7 @@ export class HRService {
 
     private async getViewSupporter(EmpNo: string[]) {
         {
+            if(EmpNo.length<=0)return;
             try {
                 let res = await this.humanResource.getViewSupporter(EmpNo);
                 let objects = [];
@@ -775,14 +776,15 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `4.1 Get Import data getViewChangeMemberLog`);
             Log.Info(`${this.constructor.name}`, `Effect date ${effectDate}`);
             try {
-                let res = await this.humanResource.getViewChangeMemberLog(new Date(this.LastUpdate.vieChangeMemberLog));
+                let res = await this.humanResource.getViewChangeMemberLog(new Date(this.LastUpdate.vieChangeMemberLog),effectDate);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
-                    if(record["EffectDate"] > effectDate)continue; 
+                    let lastUpdate = record["AddDate"]+" "+record["AddTime"];
+                    console.log("lastUpdate",lastUpdate);
                     memChange.push(record);
-                    this.LastUpdate.vieChangeMemberLog = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
+                    this.LastUpdate.vieChangeMemberLog = moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     EmpNo.push(record["EmpNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
                     delay(100);
@@ -801,15 +803,17 @@ export class HRService {
         if (this.checkCycleTime != 5) {
             Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieREMemberLog`);
             try {
-                let res = await this.humanResource.getViewREMemberLog(new Date(this.LastUpdate.vieREMemberLog));
+                let effectDate = moment(new Date()).format("YYYY/MM/DD");
+                let res = await this.humanResource.getViewREMemberLog(new Date(this.LastUpdate.vieREMemberLog),effectDate);
                 // { recordsets: [ [ [Object], [Object], [Object] ] ],
                 //     recordset:
                 //      [ { SeqNo: 1,
                 //          CompCode: '01',
-                let effectDate = moment(new Date()).format("YYYY/MM/DD");
+                
                 for (let record of res) {
-                    if(record["EffectDate"] > effectDate)continue; 
-                    this.LastUpdate.vieREMemberLog =  moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
+                    let lastUpdate = record["AddDate"]+" "+record["AddTime"];
+                    console.log("lastUpdate",lastUpdate);
+                    this.LastUpdate.vieREMemberLog =  moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
@@ -838,8 +842,8 @@ export class HRService {
                 await ParseObject.destroyAll(logs);
                     
             
-           
-                let res = await this.humanResource.getViewHQMemberLog(d);
+                let effectDate = moment(new Date()).format("YYYY/MM/DD");
+                let res = await this.humanResource.getViewHQMemberLog(d, effectDate);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
@@ -850,9 +854,8 @@ export class HRService {
                 let newSeqNoList = [];
                 let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x => x["SeqNo"])).find();
                 let objects = [];
-                let effectDate = moment(new Date()).format("YYYY/MM/DD");
-                    for (let record of res) {
-                        if(record["EffectDate"] < record["AddDate"] || record["EffectDate"] > effectDate)continue; 
+                
+                    for (let record of res) {                       
 
                         newSeqNoList.push(record["SeqNo"]);
                         let log = vieHQMemberLogs.find(x => x.get("SeqNo") == record["SeqNo"]);
