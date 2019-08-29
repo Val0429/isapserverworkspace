@@ -304,7 +304,7 @@ export class CCure800SqlAdapter {
         ,${CustomDateControl3__CF10 ? "'"+moment(CustomDateControl3__CF10).format("YYYY-MM-DD") + "'" : "NULL" }
         )`;
         
-        console.log(insert);
+        //console.log(insert);
 
         await this.adodbConn
             .execute(insert)
