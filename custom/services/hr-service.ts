@@ -231,8 +231,8 @@ export class HRService {
         try {
             let objects = [];
             let res = await this.humanResource.getViewMember(EmpNo);
-            let vieMembers = await new Parse.Query(vieMember).containedIn("EmpNo", res.map(x => x["EmpNo"])).find();
-            let members = await new Parse.Query(Member).containedIn("EmployeeNumber", res.map(x => x["EmpNo"])).find();
+            let vieMembers = await new Parse.Query(vieMember).limit(res.length).containedIn("EmpNo", res.map(x => x["EmpNo"])).find();
+            let members = await new Parse.Query(Member).limit(res.length).containedIn("EmployeeNumber", res.map(x => x["EmpNo"])).find();
             for (let record of res) {
                 
                 await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, objects, members);
@@ -885,15 +885,15 @@ export class HRService {
                 let d = new Date();
                 d.setDate(d.getDate() - 90);
                 
-                Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${d.toISOString()}`);
-                let logs = await new Parse.Query("vieHQMemberLog")
-                .lessThan("AddDate", moment(d).format("YYYY/MM/DD"))
-                .lessThan("AddTime", moment(d).format("HH:mm:ss")).find();
-                await ParseObject.destroyAll(logs);
+                // Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${d.toISOString()}`);
+                // let logs = await new Parse.Query("vieHQMemberLog")
+                // .lessThan("AddDate", moment(d).format("YYYY/MM/DD"))
+                // .lessThan("AddTime", moment(d).format("HH:mm:ss")).find();
+                // await ParseObject.destroyAll(logs);
                     
             
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
-                let res = await this.humanResource.getViewHQMemberLog(d, effectDate);
+                let res = await this.humanResource.getViewHQMemberLog(effectDate);
                 console.log("getVieHq result", res.length);
                 // recordset:
                 //     [ { SeqNo: 1,
@@ -903,7 +903,10 @@ export class HRService {
                 // 4.2.1 record not in the previous log list
                 Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);
                 let newSeqNoList = [];
-                let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x => x["SeqNo"])).find();
+                let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog")
+                            .limit(res.length)
+                            .containedIn("SeqNo", res.map(x => x["SeqNo"]))
+                            .find();
                 let objects = [];
                 
                     for (let record of res) {               

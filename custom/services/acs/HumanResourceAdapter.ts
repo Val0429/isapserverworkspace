@@ -53,14 +53,12 @@ export class HumanResourceAdapter {
         return res["recordset"];
     }
 
-    async getViewHQMemberLog(lastDate: Date, effectDate:string) {
-        Log.Info(`${this.constructor.name}`, `getViewHQMemberLog ${lastDate.toISOString()}`);
+    async getViewHQMemberLog(effectDate:string) {
+        Log.Info(`${this.constructor.name}`, `getViewHQMemberLog ${effectDate}`);
 
         let res = await this.sqlClient.request()
-            .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
-            .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
             .input('EffectDate', msSQL.VarChar(10),effectDate)
-            .query('select * from vieHQMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate order by SeqNo');
+            .query('select * from vieHQMemberLog where EffectDate = @EffectDate order by SeqNo');
 
         return res["recordset"];
     }
