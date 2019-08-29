@@ -174,61 +174,53 @@ export class ReportRepeatVisitor extends Report {
      */
     public SummaryTableDatas(reports: IDB.ReportRepeatVisitor[]): IResponse.IReport.IRepeatVisitorSummaryTableData[] {
         try {
-            let reportsSiteDateFaceIdDictionary: object = {};
+            let reportsSiteFaceIdDictionary: object = {};
             reports.forEach((value, index, array) => {
                 let key: string = value.getValue('site').id;
-                let key1: string = this.GetTypeDate(value.getValue('date')).toISOString();
-                let key2: string = value.getValue('faceId');
+                let key1: string = value.getValue('faceId');
 
-                if (!reportsSiteDateFaceIdDictionary[key]) {
-                    reportsSiteDateFaceIdDictionary[key] = {};
+                if (!reportsSiteFaceIdDictionary[key]) {
+                    reportsSiteFaceIdDictionary[key] = {};
                 }
-                if (!reportsSiteDateFaceIdDictionary[key][key1]) {
-                    reportsSiteDateFaceIdDictionary[key][key1] = {};
-                }
-                if (!reportsSiteDateFaceIdDictionary[key][key1][key2]) {
-                    reportsSiteDateFaceIdDictionary[key][key1][key2] = [];
+                if (!reportsSiteFaceIdDictionary[key][key1]) {
+                    reportsSiteFaceIdDictionary[key][key1] = [];
                 }
 
-                reportsSiteDateFaceIdDictionary[key][key1][key2].push(value);
+                reportsSiteFaceIdDictionary[key][key1].push(value);
             });
 
             let summarys: IResponse.IReport.IRepeatVisitorSummaryTableData[] = [];
-            Object.keys(reportsSiteDateFaceIdDictionary).forEach((value, index, array) => {
-                let site = reportsSiteDateFaceIdDictionary[value];
+            Object.keys(reportsSiteFaceIdDictionary).forEach((value, index, array) => {
+                let site = reportsSiteFaceIdDictionary[value];
+
+                let summary: IResponse.IReport.IRepeatVisitorSummaryTableData = undefined;
 
                 Object.keys(site).forEach((value1, index1, array1) => {
-                    let date = site[value1];
+                    let faces = site[value1];
 
-                    let summary: IResponse.IReport.IRepeatVisitorSummaryTableData = undefined;
+                    if (!summary) {
+                        let base = this.GetBaseSummaryData(faces[0]);
 
-                    Object.keys(date).forEach((value2, index2, array2) => {
-                        let faces = date[value2];
+                        let frequencyRanges: number[] = new Array(this._frequencyRanges.length).fill(0);
 
-                        if (!summary) {
-                            let base = this.GetBaseSummaryData(faces[0]);
+                        summary = {
+                            site: base.site,
+                            date: base.date,
+                            frequencyRanges: frequencyRanges,
+                        };
+                    }
 
-                            let frequencyRanges: number[] = new Array(this._frequencyRanges.length).fill(0);
-
-                            summary = {
-                                site: base.site,
-                                date: base.date,
-                                frequencyRanges: frequencyRanges,
-                            };
-                        }
-
-                        let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
-                            return value1.min <= faces.length && (!value1.max || value1.max > faces.length);
-                        });
-
-                        summary.frequencyRanges[frequencyIndex] += 1;
+                    let frequencyIndex: number = this._frequencyRanges.findIndex((value1, index1, array1) => {
+                        return value1.min <= faces.length && (!value1.max || value1.max > faces.length);
                     });
 
-                    summarys.push(summary);
+                    summary.frequencyRanges[frequencyIndex] += 1;
                 });
+
+                summarys.push(summary);
             });
 
-            reportsSiteDateFaceIdDictionary = null;
+            reportsSiteFaceIdDictionary = null;
 
             return summarys;
         } catch (e) {
