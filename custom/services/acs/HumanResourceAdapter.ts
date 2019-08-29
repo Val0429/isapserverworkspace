@@ -48,7 +48,8 @@ export class HumanResourceAdapter {
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
             .input('EffectDate', msSQL.VarChar(10),effectDate)
-            .query('select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate  order by SeqNo');
+            .query(`select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR
+             EffectDate = @EffectDate  order by AddDate, AddTime`);
 
         return res["recordset"];
     }
@@ -71,7 +72,8 @@ export class HumanResourceAdapter {
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
             .input('EffectDate', msSQL.VarChar(10),effectDate)
-            .query('select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate  order by SeqNo');
+            .query(`select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime)
+                        OR EffectDate = @EffectDate  order by AddDate,AddTime`);
 
         return res["recordset"];
     }
@@ -90,7 +92,7 @@ export class HumanResourceAdapter {
                     FROM [member].[dbo].[viemember] as vMember
                     left join [member].[dbo].[viedept] as vDept
                     on vMember.DeptCode = vDept.DeptCode 
-                    where vMember.EmpNo in ('${strEmp}') order by vMember.CompCode, vMember.EmpNo`;
+                    where vMember.EmpNo in ('${strEmp}')`;
             //console.log("getViewMember query", q);
             res = await this.sqlClient.request()
                 .query(q);

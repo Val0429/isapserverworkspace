@@ -826,15 +826,15 @@ export class HRService {
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
-                    console.log("record effectDate", record["EffectDate"], effectDate);
+                    //console.log("record effectDate", record["EffectDate"], effectDate);
                     if(record["EffectDate"] > effectDate)continue; 
                     let lastUpdate = record["AddDate"]+" "+record["AddTime"];
-                    console.log("lastUpdate",lastUpdate);
+                    //console.log("lastUpdate",lastUpdate);
                     memChange.push(record);
                     this.LastUpdate.vieChangeMemberLog = moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     EmpNo.push(record["EmpNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
-                    delay(100);
+                    
                 }
                 var fs = require('fs');
                 fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
@@ -859,10 +859,10 @@ export class HRService {
                 //          CompCode: '01',
                 
                 for (let record of res) {
-                    console.log("record effectDate", record["EffectDate"], effectDate);
+                    //console.log("record effectDate", record["EffectDate"], effectDate);
                     if(record["EffectDate"] > effectDate)continue; 
                     let lastUpdate = record["AddDate"]+" "+record["AddTime"];
-                    console.log("lastUpdate",lastUpdate);
+                    //console.log("lastUpdate",lastUpdate);
                     this.LastUpdate.vieREMemberLog =  moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
@@ -887,10 +887,10 @@ export class HRService {
                 console.log("getVieHq result", res.length);
                 
                 for (let record of res) {               
-                    console.log("record effectDate", record["EffectDate"], effectDate);        
+                    //console.log("record effectDate", record["EffectDate"], effectDate);        
                     if(record["EffectDate"] > effectDate)  continue; 
                     let lastUpdate = record["AddDate"]+" "+record["AddTime"];
-                    console.log("lastUpdate",lastUpdate);
+                    //console.log("lastUpdate",lastUpdate);
                     this.LastUpdate.vieHQMemberLog = moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
                     if (record["DataType"] == "H") {
                         memNew.push(record);
@@ -902,6 +902,7 @@ export class HRService {
                         memChange.push(record);
                     }                    
                     EmpNo.push(record["UserNo"]);
+                    Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
                 }
                 var fs = require('fs');
                 fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
