@@ -227,7 +227,7 @@ export class HRService {
     private async requestHumanInfo(EmpNo: string[], memNew: any[],  memOff: any[], memChange: any[], newMsg:string, offMsg:string, chgMsg:string) {
         
         if (EmpNo.length <=0) return;
-        
+
         try {
             let objects = [];
             let res = await this.humanResource.getViewMember(EmpNo);
@@ -480,11 +480,11 @@ export class HRService {
             VisitorDetails: memberJson.VisitorDetails || {VisitorCardStatus: 0, VisitorCustomValues: {}},
             CustomFields:customFields,
             token:"-1",
-            "_links": []
+            _links: []
         };
         try{
-            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-            
+            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);            
+            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields);
             // console.log(`======================= ${sessionId}`);
             // if (sessionId != "") {
             // 5.1 write data to SiPass database
@@ -497,10 +497,8 @@ export class HRService {
            
             //}
             console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-            delete d["_links"];
-            //d["_id"] = new mongo.ObjectID().toHexString();
-            //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["EmpNo"] }, d, { upsert: true })
-            let member = members.find(x => x.get("EmployeeNumber") == record["EmpNo"]);
+            delete (d._links);
+            
             if (!member) {
                 delete(d.token);
                 member = new Member(d);
@@ -514,7 +512,7 @@ export class HRService {
                 delete(d.token);
                 member.set(d);
             }
-            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields);
+            
             objects.push(member);
             
         }catch(err){
@@ -588,8 +586,8 @@ export class HRService {
                     let supporterNo = record["SupporterNo"];
                     Log.Info(`${this.constructor.name}`, `Import data vieSupporter ${supporterNo}`);
                     // 5.0 write data to SQL database
-                    let a = 2000000007;
-                    let b = "契約商";
+                    let workgroupId = 2000000007;
+                    let workgroupName = "契約商";
                     Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${supporterNo}`);
                     let obj = vieMembers.find(x => x.get("EmpNo") == supporterNo);
                     if (!obj) {
@@ -607,9 +605,9 @@ export class HRService {
                             },
                             DateOfBirth: this.getDate(record["BirthDate"], "T") 
                         });
-                        obj.set("primaryWorkgroupId", a);
-                        obj.set("apbWorkgroupId", a);
-                        obj.set("primaryWorkgroupName", b);
+                        obj.set("primaryWorkgroupId", workgroupId);
+                        obj.set("apbWorkgroupId", workgroupId);
+                        obj.set("primaryWorkgroupName", workgroupName);
                         obj.set("status", record["status"]);
                         obj.set("token", record["token"]);
                         obj.set("visitorDetails", {
@@ -619,114 +617,138 @@ export class HRService {
                         obj.set("customFields", record["customFields"]);
                         objects.push(obj);
                     }
-                    // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-                    let d = {
-                        AccessRules: [],
-                        ApbWorkgroupId: a,
-                        Attributes: {},
-                        Credentials: [],
-                        EmployeeNumber: record["SupporterNo"] ? record["SupporterNo"] : "",
-                        EndDate: this.getDate(record["OffDate"]) || "2100-12-31T23:59:59",
-                        FirstName: record["EngName"] || "_",
-                        GeneralInformation: "",
-                        LastName: record["SupporterName"] || "_",
-                        NonPartitionWorkGroups: [],
-                        PersonalDetails: {
-                            Address: "",
-                            ContactDetails: {
-                                Email: record["EMail"] || "",
-                                MobileNumber: record["Cellular"] || "",
-                                MobileServiceProviderId: "0",
-                                PagerNumber: "",
-                                PagerServiceProviderId: "0",
-                                PhoneNumber: ""
-                            },
-                            DateOfBirth: this.getDate(record["BirthDate"], "T"),
-                            PayrollNumber: "",
-                            Title: "",
-                            UserDetails: {
-                                UserName: "",
-                                Password: ""
-                            }
-                        },
-                        Potrait: "",
-                        PrimaryWorkgroupId: a,
-                        PrimaryWorkgroupName: b,
-                        SmartCardProfileId: "0",
-                        StartDate: this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0],
-                        Status: 61,
-                        Token: "-1",
-                        TraceDetails: {},
-                        Vehicle1: {},
-                        Vehicle2: {},
-                        VisitorDetails: {
-                            VisitorCardStatus: 0,
-                            VisitorCustomValues: {}
-                        },
-                        CustomFields: [
-                            {
-                                FiledName: "CustomDateControl4__CF",
-                                FieldValue: this.getDate(record["UpdDate"]) 
-                            },
-                            {
-                                FiledName: "CustomDropdownControl1__CF",
-                                FieldValue: a+""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl1__CF",
-                                FieldValue: record["EmpNo"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl3__CF",
-                                FieldValue: record["AddUser"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl6__CF",
-                                FieldValue: record["CompName"] || ""
-                            },
-                            {
-                                FiledName: "CustomDropdownControl2__CF_CF",
-                                FieldValue: record["Sex"] ? (record["Sex"] =="M" ? "男" :"女"): ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF",
-                                FieldValue: record["MVPN"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                                FieldValue: record["DeptChiName"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                FieldValue: record["CostCenter"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                FieldValue: record["LocationName"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                FieldValue: record["RegionName"] || ""
-                            },
-                            {
-                                FiledName: "CustomDateControl1__CF_CF",
-                                FieldValue: this.getDate(record["BirthDate"]) 
-                            },
-                            {
-                                FiledName: "CustomDateControl1__CF_CF_CF",
-                                FieldValue: this.getDate(record["EntDate"] ) 
-                            },
-                            {
-                                FiledName: "CustomDateControl1__CF",
-                                FieldValue: this.getDate(record["OffDate"] )
-                            }
-                        ],
-                        token:"-1",
-                        "_links": []
-                    };
+                    
+        let member = members.find(x => x.get("EmployeeNumber") == supporterNo);
+        let memberJson = member ? ParseObject.toOutputJSON(member) : {};
+        
+
+        // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
+        let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
+        let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
+        let personalDetails:any;
+        
+        if(memberJson.PersonalDetails){
+            personalDetails = memberJson.PersonalDetails;
+            personalDetails.ContactDetails.Email = record["EMail"] ? record["EMail"] : "";
+            personalDetails.ContactDetails.MobileNumber=record["Cellular"] ? record["Cellular"] : "";
+            personalDetails.DateOfBirth=this.getDate(record["BirthDate"], "T");
+        }else{
+            personalDetails = {
+                Address: "",
+                ContactDetails: {
+                    Email: record["EMail"] ? record["EMail"] : "",
+                    MobileNumber: record["Cellular"] ? record["Cellular"] : "",
+                    MobileServiceProviderId: "0",
+                    PagerNumber: "",
+                    PagerServiceProviderId: "0",
+                    PhoneNumber: ""
+                },
+                DateOfBirth: this.getDate(record["BirthDate"], "T"),
+                PayrollNumber: "",
+                Title: "",
+                UserDetails: {
+                    UserName: "",
+                    Password: ""
+                }
+            }
+        }
+        let customFields= [
+            {
+                FiledName: "CustomDateControl4__CF",
+                FieldValue: this.getDate(record["UpdDate"]) 
+            },
+            {
+                FiledName: "CustomDropdownControl1__CF",
+                FieldValue: workgroupId+""
+            },
+            {
+                FiledName: "CustomTextBoxControl1__CF",
+                FieldValue: record["EmpNo"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl3__CF",
+                FieldValue: record["AddUser"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl6__CF",
+                FieldValue: record["CompName"] || ""
+            },
+            {
+                FiledName: "CustomDropdownControl2__CF_CF",
+                FieldValue: record["Sex"] ? (record["Sex"] =="M" ? "男" :"女"): ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF",
+                FieldValue: record["MVPN"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF",
+                FieldValue: record["DeptChiName"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                FieldValue: record["CostCenter"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                FieldValue: record["LocationName"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                FieldValue: record["RegionName"] || ""
+            },
+            {
+                FiledName: "CustomDateControl1__CF_CF",
+                FieldValue: this.getDate(record["BirthDate"]) 
+            },
+            {
+                FiledName: "CustomDateControl1__CF_CF_CF",
+                FieldValue: this.getDate(record["EntDate"] ) 
+            },
+            {
+                FiledName: "CustomDateControl1__CF",
+                FieldValue: this.getDate(record["OffDate"] )
+            }
+        ];
+        //update cf from existing data
+        if(memberJson.CustomFields){
+            for(let cf of memberJson.CustomFields){
+                let exist = customFields.find(x=>x.FieldValue == cf.FieldValue);
+                if(!exist) customFields.push(cf);
+            }
+        }
+        let d = {
+            AccessRules: memberJson.accessRules || [this.defaultAccessRule],
+            ApbWorkgroupId: workgroupId,
+            Attributes: {},
+            Credentials: memberJson.Credentials || [],
+            EmployeeNumber: (memberJson.EmployeeNumber || record["SupporterNo"]) || "" ,
+            EndDate: endDate,
+            FirstName: (record["EngName"] || memberJson.FirstName) || "-",
+            GeneralInformation: "",
+            LastName: (record["SupporterName"] || memberJson.FirstName) || "_",
+            NonPartitionWorkGroups: [],
+            PersonalDetails: personalDetails,
+            Potrait: memberJson.Potrait || "",
+            PrimaryWorkgroupId: workgroupId,
+            PrimaryWorkgroupName: workgroupName,
+            SmartCardProfileId: memberJson.SmartCardProfileId || "0",
+            StartDate: startDate,
+            Status: memberJson.Status || 61,
+            Token: memberJson.Token || "-1",
+            TraceDetails: memberJson.TraceDetails || {},
+            Vehicle1: memberJson.Vehicle1 || {},
+            Vehicle2: memberJson.Vehicle2 || {},
+            VisitorDetails: memberJson.VisitorDetails || {VisitorCardStatus: 0, VisitorCustomValues: {}},
+            CustomFields:customFields,
+            token:"-1",
+            _links: []
+        };
+
+                    
                     try{
                         console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields, "NH-Employee");                   
+                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields);           
                     
                         // 5.1 write data to SiPass database
                         
@@ -737,7 +759,7 @@ export class HRService {
                         }
                         
                         console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                        delete d["_links"];
+                        delete (d._links);
                         //d["_id"] = new mongo.ObjectID().toHexString();
                         //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
                         let member = members.find(x => x.get("EmployeeNumber") == record["SupporterNo"]);
