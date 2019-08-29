@@ -43,10 +43,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         item.at_id_end = item2.at_id;
         let timeStart = moment(item.date_time_occurred);
         let timeEnd = moment(item.date_time_occurred_end);
-        item.startTime = timeStart.format("HH:mm");
+        item.startTime = timeStart.format("HH:mm:ss");
         item.dateOccurred = timeStart.format("YYYY-MM-DD");
-        item.endTime = timeEnd.format("HH:mm");
-        item.workTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m]");
+        item.endTime = timeEnd.format("HH:mm:ss");
+        item.workTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m ]s[s]");
         results.push(item);
         
     }
