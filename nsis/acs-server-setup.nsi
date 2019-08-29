@@ -161,6 +161,7 @@ uninst:
   !insertmacro BackupFile "$R1\workspace\custom\services\acs\mdb" "ccure800.mdb" "${TEMP_FOLDER}\server"
   !insertmacro BackupFile "$R1\workspace\custom\services\acs\mdb" "ccure8002.mdb" "${TEMP_FOLDER}\server"
   !insertmacro BackupFile "$R1\workspace\custom\modules\acs\CCURE" "ReportQueryTimeSavedFile.tmp" "${TEMP_FOLDER}\server"
+  !insertmacro BackupFile "$R1\workspace\custom\services" "hr_last_update.tmp" "${TEMP_FOLDER}\server"
 
   ClearErrors
   Call DoUninstall
@@ -268,7 +269,8 @@ Section
   !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccure800.mdb" "$INSTDIR\workspace\custom\services\acs\mdb"
   !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ccure8002.mdb" "$INSTDIR\workspace\custom\services\acs\mdb"
   !insertmacro RestoreFile "${TEMP_FOLDER}\server" "ReportQueryTimeSavedFile.tmp" "$INSTDIR\workspace\custom\modules\acs\CCURE"
-   
+  !insertmacro RestoreFile "${TEMP_FOLDER}\server" "hr_last_update.tmp" "$INSTDIR\workspace\custom\services"
+  
 
 
 	# install service
