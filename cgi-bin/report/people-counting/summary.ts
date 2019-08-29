@@ -177,29 +177,29 @@ export class ReportPeopleCounting extends Report {
 
             reportsSiteDateDateDictionary = null;
 
-            let datas: number[] = [].concat(
-                ...peakHours.map((value, index, array) => {
-                    return value.peakHourDatas.map((value1, index1, array1) => {
-                        return value1.level;
-                    });
-                }),
-            );
+            // let datas: number[] = [].concat(
+            //     ...peakHours.map((value, index, array) => {
+            //         return value.peakHourDatas.map((value1, index1, array1) => {
+            //             return value1.level;
+            //         });
+            //     }),
+            // );
 
-            let levels: number[] = [Utility.Percentile(datas, 0), Utility.Percentile(datas, 0.2), Utility.Percentile(datas, 0.4), Utility.Percentile(datas, 0.6), Utility.Percentile(datas, 0.8), Utility.Percentile(datas, 1)];
+            // let levels: number[] = [Utility.Percentile(datas, 0), Utility.Percentile(datas, 0.2), Utility.Percentile(datas, 0.4), Utility.Percentile(datas, 0.6), Utility.Percentile(datas, 0.8), Utility.Percentile(datas, 1)];
 
-            datas.length = 0;
+            // datas.length = 0;
 
-            peakHours = peakHours.map((value, index, array) => {
-                value.peakHourDatas = value.peakHourDatas.map((value1, index1, array1) => {
-                    value1.level = levels.findIndex((value2, index2, array2) => {
-                        return value2 >= value1.level;
-                    });
+            // peakHours = peakHours.map((value, index, array) => {
+            //     value.peakHourDatas = value.peakHourDatas.map((value1, index1, array1) => {
+            //         value1.level = levels.findIndex((value2, index2, array2) => {
+            //             return value2 >= value1.level;
+            //         });
 
-                    return value1;
-                });
+            //         return value1;
+            //     });
 
-                return value;
-            });
+            //     return value;
+            // });
 
             return peakHours;
         } catch (e) {
