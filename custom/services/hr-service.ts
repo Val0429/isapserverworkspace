@@ -484,7 +484,7 @@ export class HRService {
         };
         try{
             console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);            
-            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields);
+            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x=>x.ObjectName), d.CustomFields);
             // console.log(`======================= ${sessionId}`);
             // if (sessionId != "") {
             // 5.1 write data to SiPass database
@@ -506,6 +506,7 @@ export class HRService {
                 member.set("Token", holder["Token"] || "-1");                
             }
             else {
+                d.token = memberJson.Token;
                 if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
                     await siPassAdapter.putCardHolder(d);
                 }                
@@ -718,7 +719,7 @@ export class HRService {
             }
         }
         let d = {
-            AccessRules: memberJson.accessRules || [this.defaultAccessRule],
+            AccessRules: memberJson.accessRules || [],
             ApbWorkgroupId: workgroupId,
             Attributes: {},
             Credentials: memberJson.Credentials || [],
@@ -748,7 +749,7 @@ export class HRService {
                     
                     try{
                         console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules, d.CustomFields);           
+                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x=>x.ObjectName), d.CustomFields);           
                     
                         // 5.1 write data to SiPass database
                         
@@ -770,7 +771,7 @@ export class HRService {
                             member.set("Token", holder["Token"] || "-1");
                         }
                         else {
-                            d.token = member.get("Token");
+                            d.token = memberJson.Token;;
                             if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
                                 await siPassAdapter.putCardHolder(d);
                             }
