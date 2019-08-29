@@ -777,10 +777,13 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `Effect date ${effectDate}`);
             try {
                 let res = await this.humanResource.getViewChangeMemberLog(new Date(this.LastUpdate.vieChangeMemberLog),effectDate);
+                console.log("getVieChangeMember result", res.length);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
+                    console.log("record effectDate", record["EffectDate"], effectDate);
+                    if(record["EffectDate"] > effectDate)continue; 
                     let lastUpdate = record["AddDate"]+" "+record["AddTime"];
                     console.log("lastUpdate",lastUpdate);
                     memChange.push(record);
@@ -805,12 +808,15 @@ export class HRService {
             try {
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
                 let res = await this.humanResource.getViewREMemberLog(new Date(this.LastUpdate.vieREMemberLog),effectDate);
+                console.log("getVieMemberLog result", res.length);
                 // { recordsets: [ [ [Object], [Object], [Object] ] ],
                 //     recordset:
                 //      [ { SeqNo: 1,
                 //          CompCode: '01',
                 
                 for (let record of res) {
+                    console.log("record effectDate", record["EffectDate"], effectDate);
+                    if(record["EffectDate"] > effectDate)continue; 
                     let lastUpdate = record["AddDate"]+" "+record["AddTime"];
                     console.log("lastUpdate",lastUpdate);
                     this.LastUpdate.vieREMemberLog =  moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
@@ -844,6 +850,7 @@ export class HRService {
             
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
                 let res = await this.humanResource.getViewHQMemberLog(d, effectDate);
+                console.log("getVieHq result", res.length);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
@@ -855,8 +862,10 @@ export class HRService {
                 let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog").containedIn("SeqNo", res.map(x => x["SeqNo"])).find();
                 let objects = [];
                 
-                    for (let record of res) {                       
-
+                    for (let record of res) {               
+                        console.log("record effectDate", record["EffectDate"], effectDate);        
+                        if(record["EffectDate"] > effectDate)  continue; 
+                        
                         newSeqNoList.push(record["SeqNo"]);
                         let log = vieHQMemberLogs.find(x => x.get("SeqNo") == record["SeqNo"]);
                         if (!log) {
@@ -866,14 +875,13 @@ export class HRService {
                             objects.push(log);
                             Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
                         }
-                        else {
-                            if (record["AddDate"] != log.get("AddDate")) {
+                        else if (record["AddDate"] != log.get("AddDate")) {
                                 EmpNo.push(record["UserNo"]);
                                 log.set("AddDate", record["AddDate"]);
                                 objects.push(log);
                                 Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
                             }
-                        }
+                        
                         //important to avoid out of memory
                         if (objects.length >= 1000) {
                             await ParseObject.saveAll(objects);
