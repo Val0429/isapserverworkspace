@@ -10,12 +10,12 @@ export interface IOutput {
 }
 
 export interface Config {
-    frequencyRange: string;
+    bufferCount: number;
     output: IOutput;
 }
 
 let config: Config = {
-    frequencyRange: '1-1-1-1-1',
+    bufferCount: 10,
     output: {
         image: {
             width: 150,

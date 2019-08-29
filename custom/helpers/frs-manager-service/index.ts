@@ -372,11 +372,15 @@ export class FRSManagerService {
                         let frsId: string = result.currentSource.frsId;
                         let camera: string = result.currentSource.channel;
                         let snapshot: Buffer = await this.GetSnapshot(result.currentUrl);
+                        let name: string = 'unknown';
+                        let groups = [];
+
                         let relation = result.relations.find((value, index, array) => {
                             return value.frsId === frsId;
                         });
-                        let groups = [];
                         if (relation) {
+                            name = relation.person_info.fullname;
+
                             groups = (relation.person_info.group_list || []).map<FRSManagerService.IObject>((value, index, array) => {
                                 return {
                                     objectId: value.id,
@@ -390,6 +394,7 @@ export class FRSManagerService {
                             frsId: frsId,
                             camera: camera,
                             date: date,
+                            name: name,
                             groups: groups,
                             image: snapshot,
                         });
@@ -442,6 +447,7 @@ export namespace FRSManagerService {
         frsId: string;
         camera: string;
         date: Date;
+        name: string;
         groups: IObject[];
         image: Buffer;
     }

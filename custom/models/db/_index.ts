@@ -127,6 +127,7 @@ export * from './report-heatmap-summary';
 export * from './report-heatmap';
 export * from './report-human-detection-summary';
 export * from './report-human-detection';
+export * from './report-identity-person';
 export * from './report-people-counting-summary';
 export * from './report-people-counting';
 export * from './report-repeat-visitor';

@@ -243,6 +243,14 @@ class Service {
                                                     break;
                                                 case Enum.EDeviceMode.visitor:
                                                     if (groups && groups.length > 0) {
+                                                        Action.AnalysisIdentityPerson.action$.next({
+                                                            device: value1,
+                                                            date: x.date,
+                                                            imagePath: temp,
+                                                            faceId: x.objectId,
+                                                            groups: groups,
+                                                            name: x.name,
+                                                        });
                                                     } else {
                                                         Action.AnalysisDemographic.action$.next({
                                                             type: 'repeatVisitor',
