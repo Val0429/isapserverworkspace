@@ -882,63 +882,30 @@ export class HRService {
         if (this.checkCycleTime != 5) {
             try {
                 Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
-                let d = new Date();
-                d.setDate(d.getDate() - 90);
-                
-                // Log.Info(`${this.constructor.name}`, `4.2.0 remove vieHQMemberLog before ${d.toISOString()}`);
-                // let logs = await new Parse.Query("vieHQMemberLog")
-                // .lessThan("AddDate", moment(d).format("YYYY/MM/DD"))
-                // .lessThan("AddTime", moment(d).format("HH:mm:ss")).find();
-                // await ParseObject.destroyAll(logs);
-                    
-            
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
-                let res = await this.humanResource.getViewHQMemberLog(effectDate);
+                let res = await this.humanResource.getViewHQMemberLog(new Date(this.LastUpdate.vieHQMemberLog),effectDate);
                 console.log("getVieHq result", res.length);
-                // recordset:
-                //     [ { SeqNo: 1,
-                //         CompCode: '01',
-            
-            
-                // 4.2.1 record not in the previous log list
-                Log.Info(`${this.constructor.name}`, `4.2.1 record not in the previous log list`);
-                let newSeqNoList = [];
-                let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog")
-                            .limit(res.length)
-                            .containedIn("SeqNo", res.map(x => x["SeqNo"]))
-                            .find();
-                let objects = [];
                 
-                    for (let record of res) {               
-                        console.log("record effectDate", record["EffectDate"], effectDate);        
-                        if(record["EffectDate"] > effectDate)  continue; 
-                        
-                        newSeqNoList.push(record["SeqNo"]);
-                        let log = vieHQMemberLogs.find(x => x.get("SeqNo") == record["SeqNo"]);
-                        if (!log) {
-                            EmpNo.push(record["UserNo"]);
-                            log = new Parse.Object("vieHQMemberLog");
-                            log.set(record);
-                            objects.push(log);
-                            Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
-                        }
-                        else if (record["AddDate"] != log.get("AddDate")) {
-                                EmpNo.push(record["UserNo"]);
-                                log.set("AddDate", record["AddDate"]);
-                                objects.push(log);
-                                Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
-                            }
-                        
-                        //important to avoid out of memory
-                        if (objects.length >= 1000) {
-                            await ParseObject.saveAll(objects);
-                            objects = [];
-                        }
+                for (let record of res) {               
+                    console.log("record effectDate", record["EffectDate"], effectDate);        
+                    if(record["EffectDate"] > effectDate)  continue; 
+                    let lastUpdate = record["AddDate"]+" "+record["AddTime"];
+                    console.log("lastUpdate",lastUpdate);
+                    this.LastUpdate.vieHQMemberLog = moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
+                    if (record["DataType"] == "H") {
+                        memNew.push(record);
                     }
-                    await ParseObject.saveAll(objects);
-                
-                // 4.2.2 record not in the new log list
-                await this.checkRecordNotInTheNewLog(d, newSeqNoList, EmpNo, memNew, memOff, memChange);
+                    else if (record["DataType"] == "Q") {
+                        memOff.push(record);
+                    }
+                    else {
+                        memChange.push(record);
+                    }                    
+                    EmpNo.push(record["UserNo"]);
+                }
+                var fs = require('fs');
+                fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
+                    
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -947,34 +914,7 @@ export class HRService {
         }
     }
 
-    private async checkRecordNotInTheNewLog(dt: Date, newSeqNoList: any[], EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
-        Log.Info(`${this.constructor.name}`, `4.2.2 record not in the new log list`);
-        try {
-            let vieHQMemberLogs = await new Parse.Query("vieHQMemberLog")
-                                            .greaterThanOrEqualTo("AddDate", moment(dt).format("YYYY/MM/DD"))
-                                            .greaterThanOrEqualTo("AddTime", moment(dt).format("HH:mm:ss"))
-                                            .find();
-            for (let record of vieHQMemberLogs) {
-                if (newSeqNoList.indexOf(record.get("SeqNo")) < 0) {
-                    EmpNo.push(record.get("UserNo"));
-                    Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record.get("UserNo")}`);
-                    if (record.get("DataType") == "H") {
-                        memNew.push(record);
-                    }
-                    else if (record.get("DataType") == "Q") {
-                        memOff.push(record);
-                    }
-                    else {
-                        memChange.push(record);
-                    }
-                }
-            }
-        }
-        catch (ex) {
-            this.checkCycleTime = 5;
-            Log.Info(`${this.constructor.name}`, ex);
-        }
-    }
+    
 }
 
 //export default new HRService();
