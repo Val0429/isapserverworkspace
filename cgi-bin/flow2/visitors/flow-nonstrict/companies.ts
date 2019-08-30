@@ -38,12 +38,14 @@ type OutputR = Restful.OutputR<ICompanies>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let kiosk: UserType<RoleList.Kiosk> = data.user.attributes;
-    let buildingId = kiosk.data.building.id;
+    let buildingId = ((kiosk.data.building||{}) as any).objectId;
 
     /// V1) Make Query
     var query = new Parse.Query(Companies)
+	.limit(Number.MAX_SAFE_INTEGER)
         .include("floor")
-        .include("floor.building");
+        .include("floor.building")
+        ;
     /// 2) With Extra Filters
     query = Restful.Filter(query, data.inputType);
 
