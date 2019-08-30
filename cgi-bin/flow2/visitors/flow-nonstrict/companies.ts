@@ -38,7 +38,8 @@ type OutputR = Restful.OutputR<ICompanies>;
 
 action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let kiosk: UserType<RoleList.Kiosk> = data.user.attributes;
-    let buildingId = ((kiosk.data.building||{}) as any).objectId;
+    let kioskBuilding = (((kiosk.data as any).building||{}) as any);
+    let buildingId = kioskBuilding.id || kioskBuilding.objectId;
 
     /// V1) Make Query
     var query = new Parse.Query(Companies)
