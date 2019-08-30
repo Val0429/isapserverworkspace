@@ -1,6 +1,10 @@
 import { IDate, IDay } from '../base/_index';
+import { IReportDemographicSummaryData } from '../db/_index';
 import { IObject } from './_index';
 
+/**
+ * Sales Record
+ */
 export interface ISalesRecordR {
     objectId: string;
     site: IObject;
@@ -9,6 +13,56 @@ export interface ISalesRecordR {
     transaction: number;
 }
 
+/**
+ * Summary Common
+ */
+export interface ISummaryWeather {
+    site: IObject;
+    date: Date;
+    icon: string;
+    temperatureMin: number;
+    temperatureMax: number;
+}
+
+export interface ISummaryOfficeHour {
+    objectId: string;
+    name: string;
+    dayRanges: IDay.IRange[];
+    sites: IObject[];
+}
+
+export interface ISalesRecordSummaryData {
+    site: IObject;
+    date: Date;
+    revenue: number;
+    transaction: number;
+    traffic: number;
+}
+
+export interface ISummaryDataBase {
+    site: IObject;
+    area: IObject;
+    deviceGroups: IObject[];
+    device: IObject;
+    date: Date;
+    type: string;
+}
+
+/**
+ * Index Common
+ */
+export interface IIndexBase {
+    site: IObject;
+    area: IObject;
+    deviceGroups: IObject[];
+    device: IObject;
+    date: Date;
+    imageSrc: string;
+}
+
+/**
+ * Complex
+ */
 export interface IComplex_Data {
     value: number;
     variety: number;
@@ -53,29 +107,9 @@ export interface IComplex {
     weather?: ISummaryWeather;
 }
 
-export interface ISummaryWeather {
-    site: IObject;
-    date: Date;
-    icon: string;
-    temperatureMin: number;
-    temperatureMax: number;
-}
-
-export interface ISummaryOfficeHour {
-    objectId: string;
-    name: string;
-    dayRanges: IDay.IRange[];
-    sites: IObject[];
-}
-
-export interface ISalesRecordSummaryData {
-    site: IObject;
-    date: Date;
-    revenue: number;
-    transaction: number;
-    traffic: number;
-}
-
+/**
+ * People Counting
+ */
 export interface IPeakHourData {
     date: Date;
     level: number;
@@ -85,15 +119,6 @@ export interface IPeakHour {
     site: IObject;
     date: Date;
     peakHourDatas: IPeakHourData[];
-}
-
-export interface ISummaryDataBase {
-    site: IObject;
-    area: IObject;
-    deviceGroups: IObject[];
-    device: IObject;
-    date: Date;
-    type: string;
 }
 
 export interface IPeopleCountingSummaryData extends ISummaryDataBase {
@@ -115,6 +140,14 @@ export interface IPeopleCountingSummary {
     summaryDatas: IPeopleCountingSummaryData[];
 }
 
+export interface IPeopleCountingIndex extends IIndexBase {
+    isIn: boolean;
+    isEmployee: boolean;
+}
+
+/**
+ * Demographic
+ */
 export interface IGenderRange {
     totalRanges: number[];
     maleRanges: number[];
@@ -150,6 +183,15 @@ export interface IDemographicSummary {
     summaryDatas: IDemographicSummaryData[];
 }
 
+export interface IDemographicIndex extends IIndexBase {
+    isEmployee: boolean;
+    age: number;
+    gender: string;
+}
+
+/**
+ * Human Detection
+ */
 export interface IHumanDetectionSummaryTableData {
     site: IObject;
     area: IObject;
@@ -186,6 +228,9 @@ export interface IHumanDetectionThreshold {
     imageSrcs: string[];
 }
 
+/**
+ * Repeat Visitor
+ */
 export interface IRepeatVisitorSummaryChartData {
     total: number;
     totalRanges: number[];
@@ -204,6 +249,15 @@ export interface IRepeatVisitorSummary {
     summaryTableDatas: IRepeatVisitorSummaryTableData[];
 }
 
+export interface IRepeatVisitorIndex {
+    faceId: string;
+    count: string;
+    datas: IIndexBase[];
+}
+
+/**
+ * Campaign
+ */
 export interface ICampaignMultiCampaignSummaryData extends IDate.IRange {
     campaign: IObject;
     traffic: number;
@@ -234,6 +288,17 @@ export interface ICampaignSingleCampaignSummary {
     summaryDatas: ICampaignSingleCampaignSummaryData[];
 }
 
+export interface ICampaignConditionObject extends IObject {
+    sites: IObject[];
+}
+
+export interface ICampaignCondition {
+    [key: string]: ICampaignConditionObject[];
+}
+
+/**
+ * Heatmap
+ */
 export interface IHeatmapSummaryData extends ISummaryDataBase {
     imageSrc: string;
     gridUnit: number;
@@ -247,32 +312,29 @@ export interface IHeatmapSummary {
     summaryDatas: IHeatmapSummaryData[];
 }
 
-export interface IIndexBase {
-    site: IObject;
-    area: IObject;
-    deviceGroups: IObject[];
-    device: IObject;
-    date: Date;
-    imageSrc: string;
+/**
+ * Dwell Time
+ */
+export interface IDwellTimeSummaryRangeData extends IReportDemographicSummaryData {}
+
+export interface IDwellTimeSummaryTableData extends ISummaryDataBase {
+    total: number;
+    prevTotal?: number;
+    count: number;
+    prevCount?: number;
 }
 
-export interface IPeopleCountingIndex extends IIndexBase {
-    isIn: boolean;
-    isEmployee: boolean;
+export interface IDwellTimeSummary {
+    weathers: ISummaryWeather[];
+    officeHours: ISummaryOfficeHour[];
+    salesRecords: ISalesRecordSummaryData[];
+    summaryRangeDatas: IDwellTimeSummaryRangeData[];
+    summaryTableDatas: IDwellTimeSummaryTableData[];
 }
 
-export interface IDemographicIndex extends IIndexBase {
-    isEmployee: boolean;
-    age: number;
-    gender: string;
-}
-
-export interface IRepeatVisitorIndex {
-    faceId: string;
-    count: string;
-    datas: IIndexBase[];
-}
-
+/**
+ * Template
+ */
 export interface ISendUser extends IObject {
     email: string;
 }
@@ -288,12 +350,4 @@ export interface ITemplateR {
     endDate: Date;
     sendDates: IDay.ISingle[];
     sendUsers: IObject[];
-}
-
-export interface ICampaignConditionObject extends IObject {
-    sites: IObject[];
-}
-
-export interface ICampaignCondition {
-    [key: string]: ICampaignConditionObject[];
 }

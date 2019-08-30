@@ -333,4 +333,30 @@ export namespace Utility {
             throw e;
         }
     }
+
+    /**
+     * Merage array
+     * @param array1
+     * @param array2
+     */
+    export function MerageArray(array1: number[], array2: number[]): number[] {
+        try {
+            array1 = JSON.parse(JSON.stringify(array1 || []));
+            array2 = JSON.parse(JSON.stringify(array2 || []));
+
+            if (array1.length > array2.length) {
+                array2.push(...Array.from({ length: array1.length - array2.length }, () => 0));
+            } else {
+                array1.push(...Array.from({ length: array2.length - array1.length }, () => 0));
+            }
+
+            let array: number[] = array1.map((value, index, array) => {
+                return (value || 0) + (array2[index] || 0);
+            });
+
+            return array;
+        } catch (e) {
+            throw e;
+        }
+    }
 }

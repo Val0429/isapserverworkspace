@@ -1,6 +1,9 @@
 import { IDate, IDay } from '../base/_index';
 import * as Enum from '../../enums';
 
+/**
+ * Sales Record
+ */
 export interface ISalesRecordC {
     customId: string;
     date: Date;
@@ -19,18 +22,52 @@ export interface ISalesRecordU {
     transaction?: number;
 }
 
+/**
+ * Summary Common
+ */
 export interface ISummaryBase extends IDate.IRange {
     type: Enum.ESummaryType;
     siteIds: string[];
     tagIds: string[];
 }
 
+/**
+ * Index Common
+ */
+export interface IIndexBase extends IDate.IRange {
+    siteId: string;
+    areaId?: string;
+    deviceGroupId?: string;
+    deviceId?: string;
+}
+
+/**
+ * Complex
+ */
 export interface IComplex extends ISummaryBase {}
 
+/**
+ * People Counting
+ */
 export interface IPeopleCountingSummary extends ISummaryBase {}
 
+export interface IPeopleCountingIndex extends IIndexBase {
+    isIn?: boolean;
+    isEmployee?: boolean;
+}
+
+/**
+ * Demographic
+ */
 export interface IDemographicSummary extends ISummaryBase {}
 
+export interface IDemographicIndex extends IIndexBase {
+    isEmployee?: boolean;
+}
+
+/**
+ * Human Detection
+ */
 export interface IHumanDetectionSummary extends ISummaryBase {}
 
 export interface IHumanDetectionThreshold extends IDate.IRange {
@@ -38,8 +75,18 @@ export interface IHumanDetectionThreshold extends IDate.IRange {
     type: 'medium' | 'high';
 }
 
+/**
+ * Repeat Visitor
+ */
 export interface IRepeatVisitorSummary extends ISummaryBase {}
 
+export interface IRepeatVisitorIndex extends IDate.IRange {
+    siteIds: string | string[];
+}
+
+/**
+ * Campaign
+ */
 export interface ICampaignMultiCampaignSummary {
     campaignIds: string[];
 }
@@ -49,31 +96,22 @@ export interface ICampaignSingleCampaignSummary {
     siteIds: string[];
 }
 
+/**
+ * Heatmap
+ */
 export interface IHeatmapSummary extends IDate.IRange {
     type: Enum.ESummaryType;
     siteId: string;
 }
 
-export interface IIndexBase extends IDate.IRange {
-    siteId: string;
-    areaId?: string;
-    deviceGroupId?: string;
-    deviceId?: string;
-}
+/**
+ * Dwell Time
+ */
+export interface IDwellTimeSummary extends ISummaryBase {}
 
-export interface IPeopleCountingIndex extends IIndexBase {
-    isIn?: boolean;
-    isEmployee?: boolean;
-}
-
-export interface IDemographicIndex extends IIndexBase {
-    isEmployee?: boolean;
-}
-
-export interface IRepeatVisitorIndex extends IDate.IRange {
-    siteIds: string | string[];
-}
-
+/**
+ * Template
+ */
 export interface ITemplateC_Base {
     name: string;
     mode: Enum.EDeviceMode;
