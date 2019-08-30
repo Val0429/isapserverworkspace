@@ -180,6 +180,7 @@ export interface IDemographicSummary {
     weathers: ISummaryWeather[];
     officeHours: ISummaryOfficeHour[];
     genderRange: IGenderRange;
+    summaryDwellTimeRangeDatas: IDwellTimeSummaryRangeData[];
     summaryDatas: IDemographicSummaryData[];
 }
 

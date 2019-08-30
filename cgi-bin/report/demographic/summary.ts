@@ -41,6 +41,8 @@ action.post(
 
             let genderRange = report.GetGenderRange();
 
+            let summaryDwellTimeRangeDatas = await report.GetDwellTimeSummaryRangeDatas();
+
             let summaryDatas = report.GetSummaryDatas();
 
             report.Dispose();
@@ -50,6 +52,7 @@ action.post(
                 weathers: weathers,
                 officeHours: officeHours,
                 genderRange: genderRange,
+                summaryDwellTimeRangeDatas: summaryDwellTimeRangeDatas,
                 summaryDatas: summaryDatas,
             };
         } catch (e) {
