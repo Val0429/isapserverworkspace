@@ -42,9 +42,7 @@ action.post(
 
             let salesRecords = await report.GetSalesRecordSummarys();
 
-            let summaryRangeDatas = await report.GetSummaryRangeDatas();
-
-            let summaryTableDatas = report.GetSummaryTableDatas();
+            let summaryDatas = report.GetSummaryDatas();
 
             report.Dispose();
             report = null;
@@ -53,8 +51,7 @@ action.post(
                 weathers: weathers,
                 officeHours: officeHours,
                 salesRecords: salesRecords,
-                summaryRangeDatas: summaryRangeDatas,
-                summaryTableDatas: summaryTableDatas,
+                summaryDatas: summaryDatas,
             };
         } catch (e) {
             Print.Log(e, new Error(), 'error');
@@ -120,7 +117,7 @@ export class ReportDwellTime extends Report {
      * Summary table datas
      * @param reports
      */
-    public SummaryTableDatas(reports: IDB.ReportDwellTimeSummary[]): IResponse.IReport.IDwellTimeSummaryTableData[] {
+    public SummaryDatas(reports: IDB.ReportDwellTimeSummary[]): IResponse.IReport.IDwellTimeSummaryData[] {
         try {
             let reportsDateDeviceDictionary: object = {};
             reports.forEach((value, index, array) => {
@@ -137,14 +134,14 @@ export class ReportDwellTime extends Report {
                 reportsDateDeviceDictionary[key][key1].push(value);
             });
 
-            let summarys: IResponse.IReport.IDwellTimeSummaryTableData[] = [];
+            let summarys: IResponse.IReport.IDwellTimeSummaryData[] = [];
             Object.keys(reportsDateDeviceDictionary).forEach((value, index, array) => {
                 let date = reportsDateDeviceDictionary[value];
 
                 Object.keys(date).forEach((value1, index1, array1) => {
                     let devices = date[value1];
 
-                    let summary: IResponse.IReport.IDwellTimeSummaryTableData = undefined;
+                    let summary: IResponse.IReport.IDwellTimeSummaryData = undefined;
 
                     devices.forEach((value2, index2, array2) => {
                         if (index2 === 0) {
@@ -154,11 +151,32 @@ export class ReportDwellTime extends Report {
                                 ...base,
                                 total: 0,
                                 count: 0,
+                                dwellTimeRanges: undefined,
                             };
                         }
 
                         summary.total += value2.getValue('total');
                         summary.count += value2.getValue('count');
+
+                        let dwellTimeRanges = value2.getValue('dwellTimeRanges');
+
+                        if (!summary.dwellTimeRanges) {
+                            summary.dwellTimeRanges = dwellTimeRanges;
+                        } else {
+                            summary.dwellTimeRanges.forEach((value3, index3, array3) => {
+                                let dwellTimeRange = dwellTimeRanges[index3];
+
+                                value3.total += dwellTimeRange.total;
+                                value3.maleTotal += dwellTimeRange.maleTotal;
+                                value3.maleEmployeeTotal += dwellTimeRange.maleEmployeeTotal;
+                                value3.maleRanges = Utility.MerageArray(value3.maleRanges, dwellTimeRange.maleRanges);
+                                value3.maleEmployeeRanges = Utility.MerageArray(value3.maleEmployeeRanges, dwellTimeRange.maleEmployeeRanges);
+                                value3.femaleTotal += dwellTimeRange.femaleTotal;
+                                value3.femaleEmployeeTotal += dwellTimeRange.femaleEmployeeTotal;
+                                value3.femaleRanges = Utility.MerageArray(value3.femaleRanges, dwellTimeRange.femaleRanges);
+                                value3.femaleEmployeeRanges = Utility.MerageArray(value3.femaleEmployeeRanges, dwellTimeRange.femaleEmployeeRanges);
+                            });
+                        }
                     });
 
                     summarys.push(summary);
@@ -176,26 +194,13 @@ export class ReportDwellTime extends Report {
     /**
      * Get summary
      */
-    public async GetSummaryRangeDatas(): Promise<IResponse.IReport.IDwellTimeSummaryRangeData[]> {
+    public GetSummaryDatas(): IResponse.IReport.IDwellTimeSummaryData[] {
         try {
-            let currSummarys = await this.GetDwellTimeSummaryRangeDatas(this._currReports);
+            let currSummarys = this.SummaryDatas(this._currReports);
 
-            return currSummarys;
-        } catch (e) {
-            throw e;
-        }
-    }
+            let prevSummarys = this.SummaryDatas(this._prevReports);
 
-    /**
-     * Get summary
-     */
-    public GetSummaryTableDatas(): IResponse.IReport.IDwellTimeSummaryTableData[] {
-        try {
-            let currSummarys = this.SummaryTableDatas(this._currReports);
-
-            let prevSummarys = this.SummaryTableDatas(this._prevReports);
-
-            let summarys = currSummarys.map<IResponse.IReport.IDwellTimeSummaryTableData>((value, index, array) => {
+            let summarys = currSummarys.map<IResponse.IReport.IDwellTimeSummaryData>((value, index, array) => {
                 let prevSummary = prevSummarys.find((value1, index1, array1) => {
                     return value1.device.objectId === value.device.objectId && value1.date.getTime() === value.date.getTime() - this.dateGap;
                 });
@@ -214,6 +219,7 @@ export class ReportDwellTime extends Report {
                     prevTotal: prevTotal,
                     count: value.count,
                     prevCount: prevCount,
+                    dwellTimeRanges: value.dwellTimeRanges,
                 };
             }, []);
 

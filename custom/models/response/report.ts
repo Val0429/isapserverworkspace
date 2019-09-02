@@ -316,21 +316,21 @@ export interface IHeatmapSummary {
 /**
  * Dwell Time
  */
-export interface IDwellTimeSummaryRangeData extends IReportDemographicSummaryData {}
-
-export interface IDwellTimeSummaryTableData extends ISummaryDataBase {
+export interface IDwellTimeSummaryData extends ISummaryDataBase {
     total: number;
     prevTotal?: number;
     count: number;
     prevCount?: number;
+    dwellTimeRanges: IReportDemographicSummaryData[];
 }
 
 export interface IDwellTimeSummary {
     weathers: ISummaryWeather[];
     officeHours: ISummaryOfficeHour[];
     salesRecords: ISalesRecordSummaryData[];
-    summaryRangeDatas: IDwellTimeSummaryRangeData[];
-    summaryTableDatas: IDwellTimeSummaryTableData[];
+    summaryDatas: IDwellTimeSummaryData[];
+}
+
 }
 
 /**

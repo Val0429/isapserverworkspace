@@ -595,47 +595,6 @@ export class Report {
     }
 
     /**
-     * Get Dwell Time Summary range datas
-     * @param reports
-     */
-    public async GetDwellTimeSummaryRangeDatas(): Promise<IResponse.IReport.IDwellTimeSummaryRangeData[]>;
-    public async GetDwellTimeSummaryRangeDatas(reports: IDB.ReportDwellTimeSummary[]): Promise<IResponse.IReport.IDwellTimeSummaryRangeData[]>;
-    public async GetDwellTimeSummaryRangeDatas(reports?: IDB.ReportDwellTimeSummary[]): Promise<IResponse.IReport.IDwellTimeSummaryRangeData[]> {
-        try {
-            if (!reports) {
-                reports = await this.GetReports(IDB.ReportDwellTimeSummary, []);
-            }
-
-            let summarys: IResponse.IReport.IDwellTimeSummaryRangeData[] = undefined;
-            reports.forEach((value, index, array) => {
-                let dwellTimeRanges = value.getValue('dwellTimeRanges');
-
-                if (!summarys) {
-                    summarys = dwellTimeRanges;
-                } else {
-                    summarys.forEach((value1, index1, array1) => {
-                        let dwellTimeRange = dwellTimeRanges[index1];
-
-                        value1.total += dwellTimeRange.total;
-                        value1.maleTotal += dwellTimeRange.maleTotal;
-                        value1.maleEmployeeTotal += dwellTimeRange.maleEmployeeTotal;
-                        value1.maleRanges = Utility.MerageArray(value1.maleRanges, dwellTimeRange.maleRanges);
-                        value1.maleEmployeeRanges = Utility.MerageArray(value1.maleEmployeeRanges, dwellTimeRange.maleEmployeeRanges);
-                        value1.femaleTotal += dwellTimeRange.femaleTotal;
-                        value1.femaleEmployeeTotal += dwellTimeRange.femaleEmployeeTotal;
-                        value1.femaleRanges = Utility.MerageArray(value1.femaleRanges, dwellTimeRange.femaleRanges);
-                        value1.femaleEmployeeRanges = Utility.MerageArray(value1.femaleEmployeeRanges, dwellTimeRange.femaleEmployeeRanges);
-                    });
-                }
-            });
-
-            return summarys;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Office hour filter
      * @param datas
      */
