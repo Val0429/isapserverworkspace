@@ -50,6 +50,7 @@ export interface IDemographicC_FRSManager extends IC_Base {
     model: Enum.EDeviceModelIsap.frsManager;
     config: ICameraFRSManager;
     demoServerId: string;
+    direction: Enum.EDeviceDirection;
 }
 
 export interface IDwellTimeC_FRSManager extends IC_Base {
@@ -129,6 +130,7 @@ export interface IDemographicU_FRSManager extends IU_Base {
     model: Enum.EDeviceModelIsap.frsManager;
     config?: ICameraFRSManager;
     demoServerId?: string;
+    direction?: Enum.EDeviceDirection;
 }
 
 export interface IDwellTimeU_FRSManager extends IU_Base {
