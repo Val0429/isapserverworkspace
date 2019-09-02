@@ -195,7 +195,7 @@ class Action {
                 });
 
             let currLevel: number = report.getValue('dwellTimeLevel');
-            let ranges: number[] = reportSummary ? reportSummary.getValue('totalRanges') : new Array(this._ageRanges.length).fill(0);
+            let ranges: number[] = reportSummary ? reportSummary.getValue('totalRanges') : new Array(this._timeRanges.length).fill(0);
             ranges[currLevel] += 1;
 
             if (reportSummary) {
