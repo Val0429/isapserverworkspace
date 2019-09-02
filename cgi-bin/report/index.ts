@@ -657,10 +657,12 @@ export class Report {
                         !!value1.getValue('dayRanges').find((value2, index2, array2) => {
                             let startDay: number = parseInt(value2.startDay);
                             let endDay: number = value2.endDay === '0' ? 7 : parseInt(value2.endDay);
+                            let days = Array.from({ length: endDay - startDay + 1 }, (i, j) => (j + startDay === 7 ? 0 : j + startDay));
+
                             let startDate: number = value2.startDate.getTime();
                             let endDate: number = value2.endDate.getTime();
 
-                            return startDay <= day && day <= endDay && startDate <= hour && hour < endDate;
+                            return days.indexOf(day) > -1 && startDate <= hour && hour < endDate;
                         })
                     );
                 });
