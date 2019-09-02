@@ -17,7 +17,7 @@ type MultiData = IRequest.IMultiData;
 /**
  * Action Create
  */
-type InputC = (IRequest.IDevice.IDemographicC_FRS | IRequest.IDevice.IDemographicC_FRSManager)[];
+type InputC = IRequest.IDevice.IDemographicC_FRSManager[];
 
 type OutputC = IResponse.IMultiData;
 
@@ -61,7 +61,7 @@ action.post(
 /**
  * Action update
  */
-type InputU = (IRequest.IDevice.IDemographicU_FRS | IRequest.IDevice.IDemographicU_FRSManager)[];
+type InputU = IRequest.IDevice.IDemographicU_FRSManager[];
 
 type OutputU = IResponse.IMultiData;
 
