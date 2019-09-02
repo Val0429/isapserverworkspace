@@ -105,9 +105,9 @@ class Action {
      * @param reportSummary
      * @param prevReport
      */
-    private GenerateDwellTimeRanges(report: IDB.ReportDwellTime, reportSummary: IDB.ReportDwellTimeSummary, prevReport: Partial<IDB.IReportDwellTime>): IDB.IReportDemographicSummaryData[] {
+    private GenerateDwellTimeRanges(report: IDB.ReportDwellTime, reportSummary: IDB.ReportDwellTimeSummary, prevReport: Partial<IDB.IReportDwellTime>): IDB.IReportDwellTimeRange[] {
         try {
-            let dwellTimeRanges: IDB.IReportDemographicSummaryData[] =
+            let dwellTimeRanges: IDB.IReportDwellTimeRange[] =
                 reportSummary.getValue('dwellTimeRanges') ||
                 Array.from({ length: this._timeRanges.length }, () => {
                     return {

@@ -1,5 +1,5 @@
 import { IDate, IDay } from '../base/_index';
-import { IReportDemographicSummaryData } from '../db/_index';
+import { IReportDwellTimeRange } from '../db/_index';
 import { IObject } from './_index';
 
 /**
@@ -321,7 +321,7 @@ export interface IDwellTimeSummaryData extends ISummaryDataBase {
     prevTotal?: number;
     count: number;
     prevCount?: number;
-    dwellTimeRanges: IReportDemographicSummaryData[];
+    dwellTimeRanges: IReportDwellTimeRange[];
 }
 
 export interface IDwellTimeSummary {
