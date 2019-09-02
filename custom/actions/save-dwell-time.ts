@@ -194,20 +194,14 @@ class Action {
                     throw e;
                 });
 
-            let currLevel: number = report.getValue('dwellTimeLevel');
-            let ranges: number[] = reportSummary ? reportSummary.getValue('totalRanges') : new Array(this._timeRanges.length).fill(0);
-            ranges[currLevel] += 1;
-
             if (reportSummary) {
                 if (!!prevReport) {
-                    ranges[prevReport.dwellTimeLevel] -= 1;
                     reportSummary.setValue('total', reportSummary.getValue('total') - prevReport.dwellTimeSecond);
                 } else {
                     reportSummary.setValue('count', reportSummary.getValue('count') + 1);
                 }
 
                 reportSummary.setValue('total', reportSummary.getValue('total') + report.getValue('dwellTimeSecond'));
-                reportSummary.setValue('totalRanges', ranges);
                 reportSummary.setValue('dwellTimeRanges', this.GenerateDwellTimeRanges(report, reportSummary, prevReport));
             } else {
                 reportSummary = new IDB.ReportDwellTimeSummary();
@@ -219,7 +213,6 @@ class Action {
                 reportSummary.setValue('date', date);
                 reportSummary.setValue('total', report.getValue('dwellTimeSecond'));
                 reportSummary.setValue('count', 1);
-                reportSummary.setValue('totalRanges', ranges);
                 reportSummary.setValue('dwellTimeRanges', this.GenerateDwellTimeRanges(report, reportSummary, prevReport));
             }
 

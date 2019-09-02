@@ -74,11 +74,6 @@ export interface IReportDwellTimeSummary extends IReportBase {
     /**
      *
      */
-    totalRanges: number[];
-
-    /**
-     *
-     */
     dwellTimeRanges: IReportDwellTimeRange[];
 }
 
