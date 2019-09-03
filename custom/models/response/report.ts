@@ -303,6 +303,10 @@ export interface IDwellTimeSummaryData extends ISummaryDataBase {
     prevTotal?: number;
     count: number;
     prevCount?: number;
+    maleTotal: number;
+    maleEmployeeTotal: number;
+    femaleTotal: number;
+    femaleEmployeeTotal: number;
     dwellTimeRanges: IReportDwellTimeRange[];
 }
 

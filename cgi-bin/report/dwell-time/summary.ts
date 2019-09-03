@@ -151,14 +151,22 @@ export class ReportDwellTime extends Report {
                                 ...base,
                                 total: 0,
                                 count: 0,
+                                maleTotal: 0,
+                                maleEmployeeTotal: 0,
+                                femaleTotal: 0,
+                                femaleEmployeeTotal: 0,
                                 dwellTimeRanges: undefined,
                             };
                         }
 
+                        let dwellTimeRanges = value2.getValue('dwellTimeRanges');
+
                         summary.total += value2.getValue('total');
                         summary.count += value2.getValue('count');
-
-                        let dwellTimeRanges = value2.getValue('dwellTimeRanges');
+                        summary.maleTotal += Utility.Sum(dwellTimeRanges, 'maleTotal');
+                        summary.maleEmployeeTotal += Utility.Sum(dwellTimeRanges, 'maleEmployeeTotal');
+                        summary.femaleTotal += Utility.Sum(dwellTimeRanges, 'femaleTotal');
+                        summary.femaleEmployeeTotal += Utility.Sum(dwellTimeRanges, 'femaleEmployeeTotal');
 
                         if (!summary.dwellTimeRanges) {
                             summary.dwellTimeRanges = dwellTimeRanges;
@@ -219,6 +227,10 @@ export class ReportDwellTime extends Report {
                     prevTotal: prevTotal,
                     count: value.count,
                     prevCount: prevCount,
+                    maleTotal: value.maleTotal,
+                    maleEmployeeTotal: value.maleEmployeeTotal,
+                    femaleTotal: value.femaleTotal,
+                    femaleEmployeeTotal: value.femaleEmployeeTotal,
                     dwellTimeRanges: value.dwellTimeRanges,
                 };
             }, []);
