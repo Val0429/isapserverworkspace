@@ -53,7 +53,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     setTimeout(async ()=>{
     let reportService = new ReportService();
     let {results, total} = await reportService.getMemberRecord(filter, Number.MAX_SAFE_INTEGER, 0);
-        console.log("results",results.length);
+        console.log("results",total);
         doExport(filename, results, fieldSelected,storedPermissionOptions,extraHeader);
     }, 1000);
     

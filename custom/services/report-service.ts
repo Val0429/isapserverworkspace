@@ -2,8 +2,6 @@ import { Member, IMember, AttendanceRecords, Door, PermissionTable, TimeSchedule
 
 import moment = require("moment");
 import { ParseObject } from "helpers/parse-server/parse-helper";
-import { data } from "jquery";
-import { Restful, Reader } from "core/cgi-package";
 
 export const memberFields =["system",
                             "Attributes",
@@ -18,21 +16,20 @@ export const memberFields =["system",
                             "PrimaryWorkgroupId",
                             "ApbWorkgroupId",
                             "PrimaryWorkgroupName",
-                            "NonPartitionWorkGroups" ,
-                            "SmartCardProfileId" ,
-                            "StartDate" ,
-                            "Status" ,
-                            "Token" ,
-                            "TraceDetails" ,
-                            "Vehicle1" ,
-                            "Vehicle2" ,
-                            "Potrait" ,
-                            "PrimaryWorkGroupAccessRule" ,
-                            "NonPartitionWorkgroupAccessRules" ,
+                            "NonPartitionWorkGroups",
+                            "SmartCardProfileId",
+                            "StartDate",
+                            "Status",
+                            "Token",
+                            "TraceDetails",
+                            "Vehicle1",
+                            "Vehicle2",
+                            "Potrait",
+                            "PrimaryWorkGroupAccessRule",
+                            "NonPartitionWorkgroupAccessRules",
                             "VisitorDetails",
                             "CustomFields",
-                            "FingerPrints",
-                            "CardholderPortrait"];
+                            "FingerPrints"];
 
 const fieldNames = {
     DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
@@ -101,7 +98,7 @@ export const CustomFields = [
 
 
 export class ReportService{
-    async getPermissionRecord(filter:any, limit:number=1000, skip:number=0){
+    async getPermissionRecord(filter:any, limit:number=10000, skip:number=0){
         /// 1) Make Query
         var query = new Parse.Query(PermissionTable)
             .equalTo("system", 0)
@@ -138,7 +135,7 @@ export class ReportService{
         let total = await query.count();
         return {results, total};
     }
-    async getAttendanceRecord(filter:any, limit:number=1000, skip:number=0){
+    async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
         .include("member")
         .include("door")
@@ -200,7 +197,7 @@ export class ReportService{
         
         return {results, total};
     }
-    async getMemberRecord(filter:any, limit:number=1000, skip:number=0){
+    async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
         /// 1) Make Query
         var query = new Parse.Query(Member)
                     .select(...memberFields)
@@ -240,10 +237,15 @@ export class ReportService{
         if(filter.expired && filter.expired=="true"){
             query.lessThanOrEqualTo(fieldNames.CardEndDate, (new Date()).toISOString());
         }
+        //console.log("beep1")
         let o = await query.skip(skip).limit(limit).find();
+        //console.log("beep2")
         let total = await query.count();
+        //console.log("beep3")
         let members = o.map(x=>ParseObject.toOutputJSON(x));
+        //console.log("beep4")
         let results = this.constructData(members);
+        //console.log("beep5")
         return {results, total};
     }
     
