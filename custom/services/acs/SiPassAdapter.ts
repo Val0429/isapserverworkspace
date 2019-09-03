@@ -11,6 +11,7 @@ import { Errors } from 'core/cgi-package';
 var moment = require("moment");
 
 export class SiPassAdapter {
+    
     // SiPass
     private siPassHrParam: siPassClient.SiPassHrApiGlobalParameter;
     private siPassDbConnectInfo: siPassClient.SiPassDbConnectInfo;
@@ -733,7 +734,12 @@ export class SiPassAdapter {
 
         return JSON.parse(a);
     }
-
+    async delCardHolder(cardHolderToken:string) {
+        Log.Info(`info`, `delCardHolder`);
+        
+        let token:string = await this.Login();
+        await this.siPassPersion.DeletePerson(this.siPassHrParam, token, cardHolderToken);
+    }
     async postCardHolder(cardholeder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `postCardHolder`);
         

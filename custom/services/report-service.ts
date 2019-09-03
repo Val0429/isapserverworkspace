@@ -200,6 +200,7 @@ export class ReportService{
     async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
         /// 1) Make Query
         var query = new Parse.Query(Member)
+                    .notEqualTo("Status", 1)
                     .select(...memberFields)
                     .ascending("LastName");      
         console.log("filter member", filter);

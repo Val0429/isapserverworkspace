@@ -2,8 +2,9 @@ import { ClientRequest } from "http";
 import { elementAt } from "rxjs/operator/elementAt";
 import * as HttpClient from "request"
 import * as SiPassDataStructure from "./siPass_define";
-
+import * as request from "request-promise"
 export class SiPassPersonService {
+    
 
     constructor() {
 
@@ -169,6 +170,37 @@ export class SiPassPersonService {
         // console.log('\n.........................................');
         return JSON.stringify(result);
 
+    }
+    async DeletePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId: string, cardHolderToken: string) {
+        // console.log(data.sessionId);
+        // console.log(data.uniqueId);
+
+        // create the request Body
+
+        // prepare the header
+        var requestHeader = {
+            'Content-Type': 'application/json',
+            'Language': 'English',
+            'Authorization': sessionId,
+            'clientUniqueId': data.uniqueId
+        };
+
+        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Cardholders/${cardHolderToken}`;
+        let options={
+            method:"DELETE",
+            rejectUnauthorized: false,
+            uri:url,
+            timeout:0,
+            headers:requestHeader
+        };
+        // console.info(`url = ${url}`);
+        // console.log(`requestHeader =` + JSON.stringify(requestHeader));
+        // console.log(`requestBody =` + JSON.stringify(requestBody));
+        // console.log(`requestHeader = ${requestHeader}`);
+        // console.log(`requestBody = ${requestBody}`);
+        // console.dir(requestHeader, {depth: null})
+
+        return await request(options);
     }
     public async UpdatePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.ICardholderObject, sessionId:string) {
 

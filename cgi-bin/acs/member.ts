@@ -56,7 +56,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
     /// 2) Create Object
     var obj = new Member(data.inputType);
-
+    obj.set("Status", 2);
     // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
         .containedIn("tableid", obj.get("AccessRules").map(x=>parseInt(x)))
@@ -305,9 +305,17 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
 
     await  Log.Info(`delete`, `${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false, "Member");
-
-    /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+    try{
+        
+        await siPassAdapter.delCardHolder(obj.get("Token"));
+        obj.set("Status", 1);
+        /// 2) Delete
+        await obj.save();
+    }catch(err){
+        console.log("Delete member failed", JSON.stringify(err));
+        throw Errors.throw(Errors.CustomNotExists, [`Delete member failed`]);
+    }
+    
     /// 3) Output
     return ParseObject.toOutputJSON(obj);
 });
