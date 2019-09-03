@@ -54,17 +54,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
 
     // 2.0 Modify Access Group
     
-    let al = [];
-    if (data.inputType.accesslevels) {
-        let accesslevels= await new Parse.Query(AccessLevel)
-            .containedIn("objectId", ParseObject.toOutputJSON(data.inputType).accesslevels.map(x=>x.objectId))
-            .include("timeschedule").find();
-        for (let levelGroup of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
-            console.log("levelGroup", levelGroup);
-            let levelInSipass= await getAccessLevelInSipass(levelGroup);
-            al.push(...levelInSipass);                        
-        }
-    }
+    let al = await checkSipassAccessLevel(ParseObject.toOutputJSON(data.inputType));
     console.log("access levels", al);
     if ( al.length <= 0) {
         throw Errors.throw(Errors.CustomNotExists, [`accessLevelIsNotInSipass`]);
@@ -140,17 +130,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
     
     // 2.0 Modify Access Group
-    let al = [];
-    if (data.inputType.accesslevels) { 
-        let accesslevels= await new Parse.Query(AccessLevel)
-            .containedIn("objectId", ParseObject.toOutputJSON(data.inputType).accesslevels.map(x=>x.objectId))
-            .include("timeschedule").find();
-        for (let levelGroup of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
-            console.log("levelGroup", levelGroup);
-            let levelInSipass= await getAccessLevelInSipass(levelGroup);
-            al.push(...levelInSipass);                        
-        }
-    }
+    let al = await checkSipassAccessLevel(ParseObject.toOutputJSON(data.inputType));
     if ( al.length <= 0) {
         throw Errors.throw(Errors.CustomNotExists, [`accessLevelIsNotInSipass`]);
     }
@@ -199,6 +179,21 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 
 export default action;
 
+
+async function checkSipassAccessLevel(data:any) {
+    let al = [];
+    if (data.accesslevels) {
+        let accesslevels = await new Parse.Query(AccessLevel)
+            .containedIn("objectId", data.accesslevels.map(x => x.objectId))
+            .include("timeschedule").find();
+        for (let levelGroup of accesslevels.map(x => ParseObject.toOutputJSON(x))) {
+            console.log("levelGroup", levelGroup);
+            let levelInSipass = await getAccessLevelInSipass(levelGroup);
+            al.push(...levelInSipass);
+        }
+    }
+    return al;
+}
 
 async function checkCCureDevices(tablename:string, accessLevels:any[]){
     let errors:any[]=[];
