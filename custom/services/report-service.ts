@@ -249,6 +249,7 @@ export class ReportService{
         newMember.chineseName = member.LastName;
         newMember.englishName = member.FirstName;
         newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
+        newMember.primaryWorkgroupId=member.PrimaryWorkgroupId;
         let credential = member.Credentials && member.Credentials.length>0 ?  member.Credentials[0]: {};
           
         newMember.cardNumber = credential.CardNumber || "";
