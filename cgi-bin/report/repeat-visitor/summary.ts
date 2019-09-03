@@ -4,7 +4,7 @@ import { IRequest, IResponse, IDB } from '../../../custom/models';
 import { Print, Db, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
-import { Report } from '../';
+import { ReportSummary } from '../';
 
 let action = new Action({
     loginRequired: true,
@@ -54,7 +54,7 @@ action.post(
     },
 );
 
-export class ReportRepeatVisitor extends Report {
+export class ReportRepeatVisitor extends ReportSummary {
     /**
      *
      */

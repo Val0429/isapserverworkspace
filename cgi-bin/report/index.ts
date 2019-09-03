@@ -9,7 +9,7 @@ let action = new Action({
 
 export default action;
 
-export class Report {
+export class ReportSummary {
     /**
      *
      */
@@ -18,7 +18,7 @@ export class Report {
     /**
      *
      */
-    private _siteIds: Report.IPublicData<string[]> = undefined;
+    private _siteIds: ReportSummary.IPublicData<string[]> = undefined;
     public get siteIds(): string[] {
         if (!this._siteIds || this._siteIds.initTime < this._initTime) {
             let data = this._sites.map((value, index, array) => {
@@ -37,7 +37,7 @@ export class Report {
     /**
      *
      */
-    private _sitesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValueObject> = undefined;
+    private _sitesIdDictionary: ReportSummary.IPublicData<IBase.IObject.IKeyValueObject> = undefined;
     public get sitesIdDictionary(): IBase.IObject.IKeyValueObject {
         if (!this._sitesIdDictionary || this._sitesIdDictionary.initTime < this._initTime) {
             let data = {};
@@ -122,7 +122,7 @@ export class Report {
     /**
      *
      */
-    private _summaryOfficeHours: Report.IPublicData<IResponse.IReport.ISummaryOfficeHour[]> = undefined;
+    private _summaryOfficeHours: ReportSummary.IPublicData<IResponse.IReport.ISummaryOfficeHour[]> = undefined;
     public get summaryOfficeHours(): IResponse.IReport.ISummaryOfficeHour[] {
         if (!this._summaryOfficeHours || this._summaryOfficeHours.initTime < this._initTime) {
             let data = this._officeHours.map<IResponse.IReport.ISummaryOfficeHour>((value, index, array) => {
@@ -155,7 +155,7 @@ export class Report {
     /**
      *
      */
-    private _summaryWeathers: Report.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
+    private _summaryWeathers: ReportSummary.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
     public get summaryWeathers(): IResponse.IReport.ISummaryWeather[] {
         if (!this._summaryWeathers || this._summaryWeathers.initTime < this._initTime) {
             let data = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
@@ -187,7 +187,7 @@ export class Report {
     /**
      *
      */
-    private _devicesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
+    private _devicesIdDictionary: ReportSummary.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
     public get devicesIdDictionary(): IBase.IObject.IKeyValue<IDB.Device> {
         if (!this._devicesIdDictionary || this._devicesIdDictionary.initTime < this._initTime) {
             let data = {};
@@ -219,7 +219,7 @@ export class Report {
      * @param input
      * @param userSiteIds
      */
-    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[], option?: Report.IInitOption): Promise<void> {
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[], option?: ReportSummary.IInitOption): Promise<void> {
         try {
             option = {
                 ...{
@@ -707,7 +707,7 @@ export class Report {
     }
 }
 
-export namespace Report {
+export namespace ReportSummary {
     /**
      *
      */
