@@ -2,7 +2,7 @@ import { ClientRequest } from "http";
 import { elementAt } from "rxjs/operator/elementAt";
 import * as HttpClient from "request";
 import * as SiPassDataStructure from "./siPass_define";
-
+import * as request from 'request-promise';
 
 export class SiPassPermissionService {
 
@@ -230,59 +230,44 @@ export class SiPassPermissionService {
 
 
     //-----------------------------Permission-------------------------------//
-    public async GetAllPermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
-        // console.log(data.sessionId);
-        // console.log(data.uniqueId);
+    
+    public async GetAllAccessLevels(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string){
+       
 
-        // create the request Body
-        var requestBody;// = { "Name": data2.name, "Token": data2.token, "TimeScheduleToken": data2.timeScheduleToken, "IsFavourite": false, "AccessRule": data2.accessRule };
-
-        // prepare the header
-        var requestHeader = {
-            'Content-Type': 'application/json',
-            'Language': 'English',
-            'Authorization': sessionId,
-            'clientUniqueId': data.uniqueId
-        };
-
-        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/AccessLevels`;
-
-        // console.info(`\n`);
-        // console.info(`url = ${url}`);
-        // console.log(`requestHeader =` + JSON.stringify(requestHeader));
-
-        let result: any = await new Promise<any>((resolve, reject) => {
-            try {
-                HttpClient.get(
-                    {
-                        url: url,
-                        json: true,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            return reject(
-                                `{"status" : "error"}`,
-                            );
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-
-            return JSON.stringify(e);
-
-        });
-
-        return JSON.stringify(result);
+            // console.log(data.userName);
+            // console.log(data.password);
+            // console.log(data.uniqueId);
+    
+    
+            // prepare the header
+            var requestHeader = {
+                'Content-Type': 'application/json',
+                'Language': 'English',
+                'Authorization': sessionId,
+                'clientUniqueId': data.uniqueId
+            };
+    
+            let url: string = `https://${data.domain}:${data.port}/api/V1/hr/AccessLevels`;
+    
+            // console.info(`url = ${url}`);
+            // console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
+            // console.log(`requestBody =` + JSON.stringify(requestBody)); 
+            // console.log(`requestHeader = ${requestHeader}`);
+            //console.log(`requestBody = ${requestBody}`);
+            //console.dir(requestHeader, {depth: null})
+            const options = {
+                uri: url,
+                timeout: 0, 
+                method: 'GET',
+                headers: requestHeader,
+                rejectUnauthorized: false
+            };
+    
+        
+            return await request(options);
+           
+        
     }
-
     public async GetPermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject,sessionId:string) {
 
         // console.log(data.sessionId);

@@ -268,7 +268,11 @@ export class SiPassAdapter {
 
         return JSON.parse(a);
     }
-
+    async getAccessLevels(){
+        let token = await this.Login();
+        let a = await this.siPassPermission.GetAllAccessLevels(this.siPassHrParam,  token);
+        return JSON.parse(a)["Records"];
+    }
     async getAccessLevel(accessToken: string) {
         Log.Info(`info`, `getAccessLevel ${accessToken}`);
         

@@ -21,6 +21,7 @@ action.get<any, any>({}, async () => {
     //await Promise.all([
         await  syncService.syncCcureDoor();
         await  syncService.syncSipassReader();
+        await syncService.syncSipassAcessLevels();
         await  syncService.syncCcureDoorReader();
     //])
     

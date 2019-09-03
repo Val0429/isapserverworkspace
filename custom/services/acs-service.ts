@@ -52,6 +52,7 @@ export class ACSService {
             await this.syncService.syncSipassDoorReader();
             await this.syncService.syncSipassFloor();
             //await this.syncService.syncSipassAcessGroup();
+            await this.syncService.syncSipassAcessLevels();
             await this.syncService.syncSipassWorkgroup();
             await this.syncService.syncSipassCredentialProfile();
 

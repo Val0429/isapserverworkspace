@@ -53,7 +53,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 console.log("bop2", readername);
                 let r = {
                     token: "-1",
-                    name: readername + "-" + data.inputType.timeschedule.get("timename"),
+                    name: readername + "_" + data.inputType.timeschedule.get("timename"),
                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
                     accessRule: [
                         {
@@ -87,15 +87,14 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     }
 
     if (data.inputType.floor && data.inputType.floor.length > 0) {
-        for (let idx = 0; idx < data.inputType.floor.length; idx++) {
-            let e = data.inputType.floor[idx];
+        for (let e of data.inputType.floor) {      
 
             if (e.get("system") == 1) {
                 let readername = e.get("floorname");
                 if(readername.substring(0, 2)=="A_") readername = readername.substring(2, readername.length);
                 let r = {
                     token: "-1",
-                    name: readername + "-" + data.inputType.timeschedule.get("timename"),
+                    name: readername + "_" + data.inputType.timeschedule.get("timename"),
                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
                     accessRule: [
                         {

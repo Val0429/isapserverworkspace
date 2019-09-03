@@ -1,11 +1,47 @@
 import { Log } from './log';
 import * as delay from 'delay';
 
-import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles, PermissionTableDoor } from '../../custom/models'
+import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles, PermissionTableDoor, AccessLevelinSiPass } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 
 export class SyncService{
+    async syncSipassAcessLevels() {
+        Log.Info(`${this.constructor.name}`, `SiPass 2.9 Access Level List`);
+
+        let readers = await new Parse.Query(Reader).find();
+
+        let records = await siPassAdapter.getAccessLevels();
+        //console.log("Access Group List", records);
+
+        if(!records || records.length<=0)return;
+        let objects = await new Parse.Query(AccessLevelinSiPass)
+                    .limit(Number.MAX_SAFE_INTEGER)
+                    .containedIn("token", records.map(r=> r["Token"]))
+                    .find();
+        let parseObjects=[];
+        for (const r of records) {
+            if (!r["Name"] || !r["Token"]) continue;
+            Log.Info(`${this.constructor.name}`, `Import data Sipass Access Level ${r["Name"]}-${r["Token"]}`);
+            let obj = objects.find(x=>x.get("token")== r["Token"]);
+            if (!obj) {
+                let d = {
+                    token: r["Token"],
+                    name: r["Name"],
+                    status: 1
+                };
+                let o = new AccessLevelinSiPass(d);
+                parseObjects.push(o);
+            }
+            else {
+                obj.set("name", r["Name"]);
+                parseObjects.push(obj);
+            }
+            
+        }
+        await ParseObject.saveAll(parseObjects);
+        
+    }
      async syncCcurePermissionTable() {
         Log.Info(`${this.constructor.name}`, `CCure 2.8 PermissionTables`);
         let records = await cCureAdapter.getPermissionTables();
