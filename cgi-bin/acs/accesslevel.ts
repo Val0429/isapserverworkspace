@@ -21,8 +21,8 @@ type OutputC = Restful.OutputC<IAccessLevel>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
-    
-    let { readers, floors } = await getAccessLevelReaders(ParseObject.toOutputJSON(data));
+    console.log("bop0");
+    let { readers, floors } = await getAccessLevelReaders(ParseObject.toOutputJSON(data.inputType));
     // if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
     //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);

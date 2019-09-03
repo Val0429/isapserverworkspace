@@ -56,13 +56,13 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     
     let al = [];
     if (data.inputType.accesslevels) {
-        for (let levelGroup of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
+        let accesslevels= await new Parse.Query(AccessLevel)
+            .containedIn("objectId", ParseObject.toOutputJSON(data.inputType).accesslevels.map(x=>x.objectId))
+            .include("timeschedule").find();
+        for (let levelGroup of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
             console.log("levelGroup", levelGroup);
-            let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", levelGroup.timeschedule.objectId).first();
-            levelGroup.timeschedule = ParseObject.toOutputJSON(timeschedule);
             let levelInSipass= await getAccessLevelInSipass(levelGroup);
-            al.push(...levelInSipass);
-                   
+            al.push(...levelInSipass);                        
         }
     }
     console.log("access levels", al);
@@ -141,11 +141,12 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     
     // 2.0 Modify Access Group
     let al = [];
-    if (data.inputType.accesslevels) {
-        for (let levelGroup of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
+    if (data.inputType.accesslevels) { 
+        let accesslevels= await new Parse.Query(AccessLevel)
+            .containedIn("objectId", ParseObject.toOutputJSON(data.inputType).accesslevels.map(x=>x.objectId))
+            .include("timeschedule").find();
+        for (let levelGroup of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
             console.log("levelGroup", levelGroup);
-            let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", levelGroup.timeschedule.objectId).first();
-            levelGroup.timeschedule = ParseObject.toOutputJSON(timeschedule);
             let levelInSipass= await getAccessLevelInSipass(levelGroup);
             al.push(...levelInSipass);                        
         }
@@ -372,12 +373,12 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
 async function getAccessLevelInSipass(accessLevel:any){
     let { readers, floors } = await getAccessLevelReaders(accessLevel);
     let results:any[]=[];
-    if(accessLevel.type=="door" || accessLevel.type=="doorGroup" && accessLevel.reader){
+    if(accessLevel.type=="door" || accessLevel.type=="doorGroup" && readers.length>0){
         let sipassReaders = readers.map(x=>(x.get("readername").substring(0, 2)=="A_" ? x.get("readername").substring(2, x.get("readername").length) : x.get("readername"))+"_"+accessLevel.timeschedule.timename);
         console.log("readers in sipass", sipassReaders);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassReaders).find();
     }
-    if(accessLevel.type=="elevator" || accessLevel.type=="floorGroup" && accessLevel.floor){
+    if(accessLevel.type=="elevator" || accessLevel.type=="floorGroup" && floors.length>0){
         let sipassFloors = floors.map(x=>(x.get("floorname").substring(0, 2)=="A_" ? x.get("floorname").substring(2, x.get("floorname").length) : x.get("floorname"))+"_"+accessLevel.timeschedule.timename);
         console.log("floors in sipass", sipassFloors);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassFloors).find();
