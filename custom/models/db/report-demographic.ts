@@ -30,6 +30,31 @@ export interface IReportDemographic extends IReportBase {
      * FRS user group
      */
     userGroups: Enum.EPeopleType[];
+
+    /**
+     * Face id
+     */
+    faceId: string;
+
+    /**
+     * 進入時間
+     */
+    inDate: Date;
+
+    /**
+     * 出去時間
+     */
+    outDate: Date;
+
+    /**
+     * 停留時間
+     */
+    dwellTimeSecond: number;
+
+    /**
+     * 停留時間等級
+     */
+    dwellTimeLevel: number;
 }
 
 @registerSubclass()

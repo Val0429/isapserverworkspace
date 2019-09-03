@@ -359,4 +359,29 @@ export namespace Utility {
             throw e;
         }
     }
+
+    /**
+     * Sum
+     * @param objs
+     * @param key
+     */
+    export function Sum(datas: number[]): number;
+    export function Sum(datas: object[], key: string): number;
+    export function Sum(datas: any[], key?: string): number {
+        try {
+            let sum: number = 0;
+
+            datas.forEach((value, index, array) => {
+                if (key) {
+                    sum += parseInt(value[key]);
+                } else {
+                    sum += value;
+                }
+            });
+
+            return sum;
+        } catch (e) {
+            throw e;
+        }
+    }
 }

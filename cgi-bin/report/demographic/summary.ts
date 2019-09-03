@@ -39,10 +39,6 @@ action.post(
 
             let officeHours = report.summaryOfficeHours;
 
-            let genderRange = report.GetGenderRange();
-
-            let summaryDwellTimeRangeDatas = await report.GetDwellTimeSummaryRangeDatas();
-
             let summaryDatas = report.GetSummaryDatas();
 
             report.Dispose();
@@ -51,8 +47,6 @@ action.post(
             return {
                 weathers: weathers,
                 officeHours: officeHours,
-                genderRange: genderRange,
-                summaryDwellTimeRangeDatas: summaryDwellTimeRangeDatas,
                 summaryDatas: summaryDatas,
             };
         } catch (e) {
@@ -116,35 +110,6 @@ export class ReportDemographic extends Report {
     }
 
     /**
-     * Get gender range
-     */
-    public GetGenderRange(): IResponse.IReport.IGenderRange {
-        try {
-            let genderRange: IResponse.IReport.IGenderRange = {
-                totalRanges: [],
-                maleRanges: [],
-                femaleRanges: [],
-                totalEmployeeRanges: [],
-                maleEmployeeRanges: [],
-                femaleEmployeeRanges: [],
-            };
-            this._currReports.forEach((value, index, array) => {
-                genderRange.maleRanges = this.MerageArray(value.getValue('maleRanges'), genderRange.maleRanges);
-                genderRange.femaleRanges = this.MerageArray(value.getValue('femaleRanges'), genderRange.femaleRanges);
-                genderRange.totalRanges = this.MerageArray(genderRange.maleRanges, genderRange.femaleRanges);
-
-                genderRange.maleEmployeeRanges = this.MerageArray(value.getValue('maleEmployeeRanges'), genderRange.maleEmployeeRanges);
-                genderRange.femaleEmployeeRanges = this.MerageArray(value.getValue('femaleEmployeeRanges'), genderRange.femaleEmployeeRanges);
-                genderRange.totalEmployeeRanges = this.MerageArray(genderRange.maleEmployeeRanges, genderRange.femaleEmployeeRanges);
-            });
-
-            return genderRange;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Summary datas
      * @param reports
      */
@@ -181,24 +146,35 @@ export class ReportDemographic extends Report {
                             summary = {
                                 ...base,
                                 maleTotal: 0,
-                                maleRanges: new Array(ageRanges.length).fill(0),
                                 femaleTotal: 0,
-                                femaleRanges: new Array(ageRanges.length).fill(0),
                                 maleEmployeeTotal: 0,
-                                maleEmployeeRanges: new Array(ageRanges.length).fill(0),
                                 femaleEmployeeTotal: 0,
-                                femaleEmployeeRanges: new Array(ageRanges.length).fill(0),
+                                ageRanges: undefined,
                             };
                         }
 
-                        summary.maleTotal += value2.getValue('maleTotal');
-                        summary.maleRanges = this.MerageArray(summary.maleRanges, value2.getValue('maleRanges'));
-                        summary.femaleTotal += value2.getValue('femaleTotal');
-                        summary.femaleRanges = this.MerageArray(summary.femaleRanges, value2.getValue('femaleRanges'));
-                        summary.maleEmployeeTotal += value2.getValue('maleEmployeeTotal');
-                        summary.maleEmployeeRanges = this.MerageArray(summary.maleEmployeeRanges, value2.getValue('maleEmployeeRanges'));
-                        summary.femaleEmployeeTotal += value2.getValue('femaleEmployeeTotal');
-                        summary.femaleEmployeeRanges = this.MerageArray(summary.femaleEmployeeRanges, value2.getValue('femaleEmployeeRanges'));
+                        let ageRanges = value2.getValue('ageRanges');
+
+                        summary.maleTotal += Utility.Sum(ageRanges, 'male');
+                        summary.femaleTotal += Utility.Sum(ageRanges, 'female');
+                        summary.maleEmployeeTotal += Utility.Sum(ageRanges, 'maleEmployee');
+                        summary.femaleEmployeeTotal += Utility.Sum(ageRanges, 'femaleEmployee');
+
+                        if (!summary.ageRanges) {
+                            summary.ageRanges = ageRanges;
+                        } else {
+                            summary.ageRanges.forEach((value3, index3, array3) => {
+                                let ageRange = ageRanges[index3];
+
+                                value3.total += ageRange.total;
+                                value3.male += ageRange.male;
+                                value3.maleEmployee += ageRange.maleEmployee;
+                                value3.female += ageRange.female;
+                                value3.femaleEmployee += ageRange.femaleEmployee;
+                                value3.dwellTimeRanges = Utility.MerageArray(value3.dwellTimeRanges, ageRange.dwellTimeRanges);
+                                value3.dwellTimeEmployeeRanges = Utility.MerageArray(value3.dwellTimeEmployeeRanges, ageRange.dwellTimeEmployeeRanges);
+                            });
+                        }
                     });
 
                     summarys.push(summary);
@@ -228,14 +204,10 @@ export class ReportDemographic extends Report {
                 });
 
                 let prevMaleTotal: number = prevSummary ? prevSummary.maleTotal : NaN;
-                let prevMaleRanges: number[] = prevSummary ? prevSummary.maleRanges : new Array(ageRanges.length).fill(NaN);
                 let prevFemaleTotal: number = prevSummary ? prevSummary.femaleTotal : NaN;
-                let prevFemaleRanges: number[] = prevSummary ? prevSummary.femaleRanges : new Array(ageRanges.length).fill(NaN);
 
                 let prevMaleEmployeeTotal: number = prevSummary ? prevSummary.maleEmployeeTotal : NaN;
-                let prevMaleEmployeeRanges: number[] = prevSummary ? prevSummary.maleEmployeeRanges : new Array(ageRanges.length).fill(NaN);
                 let prevFemaleEmployeeTotal: number = prevSummary ? prevSummary.femaleEmployeeTotal : NaN;
-                let prevFemaleEmployeeRanges: number[] = prevSummary ? prevSummary.femaleEmployeeRanges : new Array(ageRanges.length).fill(NaN);
 
                 return {
                     site: value.site,
@@ -245,21 +217,14 @@ export class ReportDemographic extends Report {
                     date: value.date,
                     type: value.type,
                     maleTotal: value.maleTotal,
-                    maleRanges: value.maleRanges,
                     prevMaleTotal: prevMaleTotal,
-                    prevMaleRanges: prevMaleRanges,
                     femaleTotal: value.femaleTotal,
-                    femaleRanges: value.femaleRanges,
                     prevFemaleTotal: prevFemaleTotal,
-                    prevFemaleRanges: prevFemaleRanges,
                     maleEmployeeTotal: value.maleEmployeeTotal,
-                    maleEmployeeRanges: value.maleEmployeeRanges,
                     prevMaleEmployeeTotal: prevMaleEmployeeTotal,
-                    prevMaleEmployeeRanges: prevMaleEmployeeRanges,
                     femaleEmployeeTotal: value.femaleEmployeeTotal,
-                    femaleEmployeeRanges: value.femaleEmployeeRanges,
                     prevFemaleEmployeeTotal: prevFemaleEmployeeTotal,
-                    prevFemaleEmployeeRanges: prevFemaleEmployeeRanges,
+                    ageRanges: value.ageRanges,
                 };
             }, []);
 
@@ -267,26 +232,6 @@ export class ReportDemographic extends Report {
             prevSummarys.length = 0;
 
             return summarys;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Merage array
-     * @param array1
-     * @param array2
-     */
-    private MerageArray(array1: number[], array2: number[]): number[] {
-        try {
-            array1 = array1 && array1.length === ageRanges.length ? array1 : new Array(ageRanges.length).fill(0);
-            array2 = array2 && array2.length === ageRanges.length ? array2 : new Array(ageRanges.length).fill(0);
-
-            let array: number[] = array1.map((value, index, array) => {
-                return (value || 0) + (array2[index] || 0);
-            });
-
-            return array;
         } catch (e) {
             throw e;
         }

@@ -3,63 +3,58 @@ import { ParseObjectNotice, IReportBase } from './_index';
 import * as Enum from '../../enums';
 
 /**
- * 
+ *
  */
-export interface IReportDemographicSummaryData {
+export interface IReportAgeRange {
     /**
      * 總和
      */
     total: number;
 
     /**
-     * 男性總和
+     * 男性
      */
-    maleTotal: number;
+    male: number;
 
     /**
      * Employee
      */
-    maleEmployeeTotal: number;
+    maleEmployee: number;
 
     /**
-     * 男性分區
+     * 女性
      */
-    maleRanges: number[];
-
-    /**
-     * Employee
-     */
-    maleEmployeeRanges: number[];
-
-    /**
-     * 女性總和
-     */
-    femaleTotal: number;
+    female: number;
 
     /**
      * Employee
      */
-    femaleEmployeeTotal: number;
+    femaleEmployee: number;
 
     /**
-     * 女性分區
+     * 停留時間
      */
-    femaleRanges: number[];
+    dwellTimeRanges: number[];
 
     /**
      * Employee
      */
-    femaleEmployeeRanges: number[];
+    dwellTimeEmployeeRanges: number[];
 }
 
 /**
  * 報告
  */
-export interface IReportDemographicSummary extends IReportBase, IReportDemographicSummaryData {
+export interface IReportDemographicSummary extends IReportBase {
     /**
      * 累計模式
      */
     type: Enum.ESummaryType;
+
+    /**
+     *
+     */
+    ageRanges: IReportAgeRange[];
 }
 
 @registerSubclass()

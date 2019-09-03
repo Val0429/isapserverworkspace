@@ -1,5 +1,5 @@
 import { IDate, IDay } from '../base/_index';
-import { IReportDwellTimeRange } from '../db/_index';
+import { IReportDwellTimeRange, IReportAgeRange } from '../db/_index';
 import { IObject } from './_index';
 
 /**
@@ -148,39 +148,21 @@ export interface IPeopleCountingIndex extends IIndexBase {
 /**
  * Demographic
  */
-export interface IGenderRange {
-    totalRanges: number[];
-    maleRanges: number[];
-    femaleRanges: number[];
-    totalEmployeeRanges: number[];
-    maleEmployeeRanges: number[];
-    femaleEmployeeRanges: number[];
-}
-
 export interface IDemographicSummaryData extends ISummaryDataBase {
     maleTotal: number;
-    maleRanges: number[];
     prevMaleTotal?: number;
-    prevMaleRanges?: number[];
     femaleTotal: number;
-    femaleRanges: number[];
     prevFemaleTotal?: number;
-    prevFemaleRanges?: number[];
     maleEmployeeTotal: number;
-    maleEmployeeRanges: number[];
     prevMaleEmployeeTotal?: number;
-    prevMaleEmployeeRanges?: number[];
     femaleEmployeeTotal: number;
-    femaleEmployeeRanges: number[];
     prevFemaleEmployeeTotal?: number;
-    prevFemaleEmployeeRanges?: number[];
+    ageRanges: IReportAgeRange[];
 }
 
 export interface IDemographicSummary {
     weathers: ISummaryWeather[];
     officeHours: ISummaryOfficeHour[];
-    genderRange: IGenderRange;
-    summaryDwellTimeRangeDatas: IDwellTimeSummaryRangeData[];
     summaryDatas: IDemographicSummaryData[];
 }
 

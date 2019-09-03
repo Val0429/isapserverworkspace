@@ -222,15 +222,6 @@ class Service {
                                                         groups: groups,
                                                     });
                                                     break;
-                                                case Enum.EDeviceMode.demographic:
-                                                    Action.AnalysisDemographic.action$.next({
-                                                        type: 'demographic',
-                                                        device: value1,
-                                                        date: x.date,
-                                                        imagePath: temp,
-                                                        groups: groups,
-                                                    });
-                                                    break;
                                                 default:
                                                     Action.DeleteFile.action$.next(temp);
                                             }
