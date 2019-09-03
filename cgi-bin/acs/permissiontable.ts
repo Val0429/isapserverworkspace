@@ -259,10 +259,10 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
         }
 
         if(accesslevel.type=="elevator"){
-            if(!accesslevel.elevator || !(accesslevel.floor && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
+            if(!accesslevel.elevator || !accesslevel.floor || !accesslevel.timeschedule)continue;
             
             //compare content with ccure floor name and timename            
-            let { floorIsInCCure, floor } = getCCureFloor(accesslevel.floor[0]);            
+            let { floorIsInCCure, floor } = getCCureFloor(accesslevel.floor);            
             if(!floorIsInCCure) continue;
             acsAcessLevels.push(accesslevel);
             if (!ccureClearance) {
@@ -277,10 +277,10 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             
         }
         if(accesslevel.type=="floorGroup"){
-            if(!accesslevel.elevator || !(accesslevel.floorgroup && accesslevel.floor.length>0) || !accesslevel.timeschedule)continue;
+            if(!accesslevel.elevator || !(accesslevel.floorgroup && accesslevel.floorgroup.floors.length>0) || !accesslevel.timeschedule)continue;
             
             //compare content with ccure floor name and timename 
-            for(let alFloor of accesslevel.floor){
+            for(let alFloor of accesslevel.floorgroup.floors){
                 let { floorIsInCCure, floor } = getCCureFloor(alFloor);            
                 if(!floorIsInCCure) continue;
                 acsAcessLevels.push(accesslevel);
