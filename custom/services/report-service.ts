@@ -5,6 +5,35 @@ import { ParseObject } from "helpers/parse-server/parse-helper";
 import { data } from "jquery";
 import { Restful, Reader } from "core/cgi-package";
 
+export const memberFields =["system",
+                            "Attributes",
+                            "Credentials",
+                            "AccessRules",
+                            "EmployeeNumber",
+                            "EndDate",
+                            "FirstName",
+                            "GeneralInformation",
+                            "LastName",
+                            "PersonalDetails",
+                            "PrimaryWorkgroupId",
+                            "ApbWorkgroupId",
+                            "PrimaryWorkgroupName",
+                            "NonPartitionWorkGroups" ,
+                            "SmartCardProfileId" ,
+                            "StartDate" ,
+                            "Status" ,
+                            "Token" ,
+                            "TraceDetails" ,
+                            "Vehicle1" ,
+                            "Vehicle2" ,
+                            "Potrait" ,
+                            "PrimaryWorkGroupAccessRule" ,
+                            "NonPartitionWorkgroupAccessRules" ,
+                            "VisitorDetails",
+                            "CustomFields",
+                            "FingerPrints",
+                            "CardholderPortrait"];
+
 const fieldNames = {
     DepartmentName:"CustomTextBoxControl5__CF_CF_CF",
     CostCenterName:"CustomTextBoxControl5__CF_CF_CF_CF",
@@ -72,7 +101,7 @@ export const CustomFields = [
 
 
 export class ReportService{
-    async getPermissionRecord(filter:any, limit:number=10000, skip:number=0){
+    async getPermissionRecord(filter:any, limit:number=1000, skip:number=0){
         /// 1) Make Query
         var query = new Parse.Query(PermissionTable)
             .equalTo("system", 0)
@@ -109,7 +138,7 @@ export class ReportService{
         let total = await query.count();
         return {results, total};
     }
-    async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
+    async getAttendanceRecord(filter:any, limit:number=1000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
         .include("member")
         .include("door")
@@ -171,9 +200,11 @@ export class ReportService{
         
         return {results, total};
     }
-    async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
+    async getMemberRecord(filter:any, limit:number=1000, skip:number=0){
         /// 1) Make Query
-        var query = new Parse.Query(Member).ascending("LastName");      
+        var query = new Parse.Query(Member)
+                    .select(...memberFields)
+                    .ascending("LastName");      
         console.log("filter member", filter);
         // looking for duplication
         if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
