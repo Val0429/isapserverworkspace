@@ -9,8 +9,6 @@ export class SyncService{
     async syncSipassAcessLevels() {
         Log.Info(`${this.constructor.name}`, `SiPass 2.9 Access Level List`);
 
-        let readers = await new Parse.Query(Reader).find();
-
         let records = await siPassAdapter.getAccessLevels();
         //console.log("Access Group List", records);
 
@@ -33,7 +31,7 @@ export class SyncService{
                 let o = new AccessLevelinSiPass(d);
                 parseObjects.push(o);
             }
-            else {
+            else if( obj.get("name")!= r["Name"]) {
                 obj.set("name", r["Name"]);
                 parseObjects.push(obj);
             }
@@ -68,7 +66,7 @@ export class SyncService{
                 if (!d.tableid || isNaN(d.tableid)) continue;
                 parseObjects.push(o);
             }
-            else {
+            else if(obj.get("tablename") != r["permissionTableName"]){
                 obj.set("system", 800);
                 obj.set("tableid", +r["permissionTableId"]);
                 obj.set("tablename", r["permissionTableName"]);
@@ -170,7 +168,8 @@ export class SyncService{
                 obj.set("system", 800);
                 obj.set("floorid", +r["floorId"]);
                 obj.set("floorname", r["floorName"]);
-                obj.set("status", 1)
+                obj.set("status", 1);
+                objects.push(obj);
             }
         }
         await ParseObject.saveAll(objects);
@@ -286,6 +285,7 @@ export class SyncService{
                 obj.set("doorid", +r["doorId"]);
                 obj.set("doorname", r["doorName"]);
                 obj.set("status", 1);
+                objects.push(obj);
             }
         }
         await ParseObject.saveAll(objects);      
@@ -316,7 +316,7 @@ export class SyncService{
                 let o = new TimeSchedule(d);
                 parseObjects.push(o);
             }
-            else {
+            else if( obj.get("timename")!= r["timespecName"]){
                 obj.set("system", 800);
                 obj.set("timeid", +r["timespecId"]);
                 obj.set("timename", r["timespecName"]);
@@ -353,11 +353,12 @@ export class SyncService{
                 let o = new Reader(d);
                 objects.push(o);
             }
-            else {
+            else if(obj.get("readername")!= r["Name"]) {
                 obj.set("system", 1);
                 obj.set("readerid", parseInt(r["Token"]));
                 obj.set("readername", r["Name"]);
-                obj.set("status", 1)
+                obj.set("status", 1);
+                objects.push(obj);
             }
         }
         
@@ -562,6 +563,7 @@ export class SyncService{
                 obj.set("floorid", +r["Token"]);
                 obj.set("floorname", r["Name"]);
                 obj.set("status", 1);
+                objects.push(obj);
             }
             
         }
@@ -592,7 +594,7 @@ export class SyncService{
                     let o = new Reader(d);
                     parseObjects.push(o);
                 }
-                else {
+                else if( obj.get("readername")!= r["Name"]) {
                     obj.set("system", 1);
                     obj.set("readerid", +r["Token"]);
                     obj.set("readername", r["Name"]);
@@ -628,7 +630,7 @@ export class SyncService{
                 let o = new TimeSchedule(d);
                 parseObjects.push(o);
             }
-            else {
+            else if(obj.get("timename")!= r["Name"]) {
                 obj.set("system", 1);
                 obj.set("timeid", +r["Token"]);
                 obj.set("timename", r["Name"]);
