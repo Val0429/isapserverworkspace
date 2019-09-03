@@ -62,23 +62,13 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         .containedIn("tableid", obj.get("AccessRules").map(x=>parseInt(x)))
         .limit(Number.MAX_SAFE_INTEGER).find();
 
-    
-    let ccurePermissionTables = await new Parse.Query(PermissionTable)
-                        .equalTo("system", 800)
-                        .containedIn("tablename", permissionTables.map(x=>x.get("tablename")))
-                        .limit(Number.MAX_SAFE_INTEGER).find();
-
     let rules=[];
-    let ccureAccessRules:string[] = [];
     for (const rid of obj.get("AccessRules")) {            
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);
         console.log("permission", permission, rid);
         //not in sipass or ccure
         if(!permission)continue;
-        //check if permission is in ccure
-        if(ccurePermissionTables.find(x=> x.get("tablename")== permission.get("tablename"))){
-            ccureAccessRules.push(permission.get("tablename"));
-        }
+        
         let newRule = {
             ObjectName: permission.get("tablename"),
             ObjectToken:  permission.get("tableid").toString(),
@@ -111,7 +101,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         obj.set("Token", holder["Token"]);
         
         let cCure800SqlAdapter = new CCure800SqlAdapter();
-        await cCure800SqlAdapter.writeMember(ret, ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index), inputs);
+        await cCure800SqlAdapter.writeMember(ret, ret.AccessRules.map(x=>x.ObjectName), inputs);
         await obj.save(null, { useMasterKey: true });
         await Log.Info(`create`, `${data.inputType.EmployeeNumber} ${data.inputType.FirstName}`, data.user, false, "Member");
 
@@ -211,11 +201,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
      let permissionTables = await new Parse.Query(PermissionTable)
                             .containedIn("tableid", update.get("AccessRules").map(x=>parseInt(x)))
                             .limit(Number.MAX_SAFE_INTEGER).find();
-    let ccurePermissionTables = await new Parse.Query(PermissionTable)
-                            .equalTo("system", 800)
-                            .containedIn("tablename", permissionTables.map(x=>x.get("tablename")))
-                            .limit(Number.MAX_SAFE_INTEGER).find();
-    let ccureAccessRules:string[] = [];
+    
         
     let rules=[];
     for (const rid of update.get("AccessRules").map(x=>+x)) {
@@ -223,10 +209,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         let permission = permissionTables.find(x=>x.get("tableid")== +rid);        
         //not in sipass or ccure
         if(!permission)continue;
-        //check if permission is in ccure
-        if(ccurePermissionTables.find(x=> x.get("tablename")== permission.get("tablename"))){
-            ccureAccessRules.push(permission.get("tablename"));
-        }
+        
         let newRule = {
                 ObjectName: permission.get("tablename"),
                 ObjectToken: permission.get("tableid").toString(),
@@ -276,7 +259,7 @@ console.log(update);
         let cCure800SqlAdapter = new CCure800SqlAdapter();
         
         //await cCure800SqlAdapter.connect(config);
-        await cCure800SqlAdapter.writeMember(ret,ccureAccessRules.filter((value, index, self)=>self.indexOf(value)===index),inputs);
+        await cCure800SqlAdapter.writeMember(ret,ret.AccessRules.map(x=>x.ObjectName),inputs);
         
         /// 5) to Monogo
         //await obj.save({ ...ret, objectId: undefined });
@@ -301,13 +284,17 @@ type OutputD = Restful.OutputD<IMember>;
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Member).get(objectId);
+    var obj = await new Parse.Query(Member).equalTo("objectId", objectId).first();
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
 
     await  Log.Info(`delete`, `${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false, "Member");
     try{
         
         await siPassAdapter.delCardHolder(obj.get("Token"));
+        let ret = ParseObject.toOutputJSON(obj);
+        let cCure800SqlAdapter = new CCure800SqlAdapter();
+        await cCure800SqlAdapter.writeMember(ret, ret.AccessRules.map(x=>x.ObjectName), ret.CustomFields);
+
         obj.set("Status", 1);
         /// 2) Delete
         await obj.save();

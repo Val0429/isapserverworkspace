@@ -5,6 +5,7 @@ import { Log } from 'helpers/utility';
 import * as adodb from 'node-adodb';
 import * as p from 'path';
 import moment = require('moment');
+import { PermissionTable } from 'core/cgi-package';
 
 export class CCure800SqlAdapter {
     private waitTimer = null;
@@ -64,7 +65,19 @@ export class CCure800SqlAdapter {
     
             return null;
     }
-    async writeMember(data, ccureAccessRules:string[], customFields:any[], permission = "") {
+    async writeMember(data, accessRules:string[], customFields:any[], permission = "") {
+        let ccurePermissionTables = await new Parse.Query(PermissionTable)
+                            .equalTo("system", 800)
+                            .containedIn("tablename", accessRules)
+                            .limit(Number.MAX_SAFE_INTEGER).find();
+        let ccureAccessRules:string[] = [];
+        //check if permission is in ccure
+        for(let accessRule of accessRules){
+            if(ccurePermissionTables.find(x=> x.get("tablename") == accessRule && ccureAccessRules.indexOf(accessRule)<0)){
+                ccureAccessRules.push(accessRule);
+            }
+        }
+        
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
         await this.writeToMdb(data, ccureAccessRules, customFields, permission);        
     }
@@ -198,7 +211,7 @@ export class CCure800SqlAdapter {
         ,CustomDateControl3__CF  ,CustomDateControl3__CF2  ,CustomDateControl3__CF6
         ,CustomDateControl3__CF7 ,CustomDateControl3__CF5  ,CustomDateControl3__CF3
         ,CustomDateControl3__CF4 ,CustomDateControl3__CF8  ,CustomDateControl3__CF9 
-        ,CustomDateControl3__CF10 
+        ,CustomDateControl3__CF10, Deleted
         ) VALUES ( 
          '${data["EmployeeNumber"]}'     
         , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + moment(data["PersonalDetails"]["DateOfBirth"]).format("YYYY-MM-DD")+ "'" : "NULL"}
@@ -212,7 +225,7 @@ export class CCure800SqlAdapter {
         ,'${CustomDropdownControl1__CF == '' ? '無' : CustomDropdownControl1__CF}'
         ,'${data["FirstName"]}'
         ,'${ moment(data["StartDate"]).format("YYYY-MM-DD")}'
-        ,'${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}'
+        ,'${data["PersonalDetails"]["ContactDetails"]["PhoneNumber"]}'
         ,'${CustomTextBoxControl5__CF6}'
         ,'${CustomTextBoxControl5__CF2}'
         ,'${CustomDropdownControl2__CF2 == '' ? '無' : CustomDropdownControl2__CF2}'
@@ -302,6 +315,7 @@ export class CCure800SqlAdapter {
         ,${CustomDateControl3__CF8 ? "'"+moment(CustomDateControl3__CF8).format("YYYY-MM-DD") + "'" : "NULL" }
         ,${CustomDateControl3__CF9 ? "'"+moment(CustomDateControl3__CF9).format("YYYY-MM-DD") + "'" : "NULL" }
         ,${CustomDateControl3__CF10 ? "'"+moment(CustomDateControl3__CF10).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${data.Status == "1"? -1 : 0}
         )`;
         
         //console.log(insert);
