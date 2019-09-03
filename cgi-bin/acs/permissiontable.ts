@@ -7,6 +7,7 @@ import { siPassAdapter, cCureAdapter } from '../../custom/services/acsAdapter-Ma
 
 import { Log } from 'workspace/custom/services/log';
 import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
+import { getAccessLevelReaders } from './accesslevel';
 
 var action = new Action({
     loginRequired: true,
@@ -57,13 +58,11 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     if (data.inputType.accesslevels) {
         for (let levelGroup of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
             console.log("levelGroup", levelGroup);
-            if(levelGroup.levelinSiPass && levelGroup.levelinSiPass.length>0){
-                al.push(...levelGroup.levelinSiPass.map(x=>{return {Token:x.token, Name:x.name}}));  
-            }               
-            else{
-                let levelInSipass= await getAccessLevelInSipass(levelGroup);
-                al.push(...levelInSipass);
-            }          
+            let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", levelGroup.timeschedule.objectId).first();
+            levelGroup.timeschedule = ParseObject.toOutputJSON(timeschedule);
+            let levelInSipass= await getAccessLevelInSipass(levelGroup);
+            al.push(...levelInSipass);
+                   
         }
     }
     console.log("access levels", al);
@@ -145,12 +144,10 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     if (data.inputType.accesslevels) {
         for (let levelGroup of data.inputType.accesslevels.map(x=>ParseObject.toOutputJSON(x))) {
             console.log("levelGroup", levelGroup);
-            if(levelGroup.levelinSiPass && levelGroup.levelinSiPass.length>0)
-                al.push(...levelGroup.levelinSiPass.map(x=>{return {Token:x.token, Name:x.name}}));
-            else{
-                let levelInSipass= await getAccessLevelInSipass(levelGroup);
-                al.push(...levelInSipass);
-            }            
+            let timeschedule = await new Parse.Query(TimeSchedule).equalTo("objectId", levelGroup.timeschedule.objectId).first();
+            levelGroup.timeschedule = ParseObject.toOutputJSON(timeschedule);
+            let levelInSipass= await getAccessLevelInSipass(levelGroup);
+            al.push(...levelInSipass);                        
         }
     }
     if ( al.length <= 0) {
@@ -372,24 +369,18 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
     
 }
 
-async function getAccessLevelInSipass(accessLevelInput:any){
-    let accesslevelObject = await new Parse.Query(AccessLevel).equalTo("objectId", accessLevelInput.objectId)
-            .include("reader")
-            .include("floor")
-            .include("timeschedule")
-            .first();
-    let accessLevel = ParseObject.toOutputJSON(accesslevelObject);
-    console.log("getAccessLevelInSipass", accessLevel);
+async function getAccessLevelInSipass(accessLevel:any){
+    let { readers, floors } = await getAccessLevelReaders(accessLevel);
     let results:any[]=[];
     if(accessLevel.type=="door" || accessLevel.type=="doorGroup" && accessLevel.reader){
-        let readers = accessLevel.reader.map(x=>(x.readername.substring(0, 2)=="A_" ? x.readername.substring(2, x.readername.length) : x.readername)+"-"+accessLevel.timeschedule.timename);
-        console.log("readers in sipass", readers);
-        results = await new Parse.Query(AccessLevelinSiPass).containedIn("levelname", readers).find();
+        let sipassReaders = readers.map(x=>(x.get("readername").substring(0, 2)=="A_" ? x.get("readername").substring(2, x.get("readername").length) : x.get("readername"))+"_"+accessLevel.timeschedule.timename);
+        console.log("readers in sipass", sipassReaders);
+        results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassReaders).find();
     }
     if(accessLevel.type=="elevator" || accessLevel.type=="floorGroup" && accessLevel.floor){
-        let floors = accessLevel.floor.map(x=>(x.floorname.substring(0, 2)=="A_" ? x.floorname.substring(2, x.floorname.length) : x.floorname)+"-"+accessLevel.timeschedule.timename);
-        console.log("floors in sipass", floors);
-        results = await new Parse.Query(AccessLevelinSiPass).containedIn("levelname", floors).find();
+        let sipassFloors = floors.map(x=>(x.get("floorname").substring(0, 2)=="A_" ? x.get("floorname").substring(2, x.get("floorname").length) : x.get("floorname"))+"_"+accessLevel.timeschedule.timename);
+        console.log("floors in sipass", sipassFloors);
+        results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassFloors).find();
     }
     return results.map(x=>ParseObject.toOutputJSON(x)).map(x=>{return{Token:x.token, Name:x.name}});
 }

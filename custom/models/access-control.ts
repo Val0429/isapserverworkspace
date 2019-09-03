@@ -196,10 +196,8 @@ export interface IAccessLevel {     // CRUD  V
     doorgroup?: DoorGroup,
     elevator?: Elevator,
     elevatorgroup?: ElevatorGroup,
-    floor?: Floor[],
+    floor?: Floor,
     floorgroup?:FloorGroup,
-    reader?: Reader[],
-    levelinSiPass?: AccessLevelinSiPass[],
     timeschedule?: TimeSchedule
 }
 @registerSubclass()

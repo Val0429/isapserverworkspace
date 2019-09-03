@@ -3,7 +3,7 @@ import {
 } from 'core/cgi-package';
 
 import { Log } from 'workspace/custom/services/log';
-import { IAccessLevel, AccessLevel } from '../../custom/models'
+import { IAccessLevel, AccessLevel, DoorGroup, Floor, FloorGroup } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 var action = new Action({
@@ -21,8 +21,8 @@ type OutputC = Restful.OutputC<IAccessLevel>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
-    let levelinSiPass = [];
-
+    
+    let { readers, floors } = await getAccessLevelReaders(ParseObject.toOutputJSON(data));
     // if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
     //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
@@ -43,9 +43,9 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // OfflineAccessGroup = 11
     // VenueBooking = 12
     console.log("bop1");
-    if (data.inputType.reader && data.inputType.reader.length > 0) {
+    if (readers.length > 0) {
         console.log("bop2");
-        for (let e of data.inputType.reader) {            
+        for (let e of readers) {            
 
             if (e.get("system") == 1) {
                 let readername = e.get("readername");
@@ -73,21 +73,17 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
                         var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
                         await obj1.save(null, { useMasterKey: true });
-
-                        levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
                     }
                     else {
                         throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
                     }
-                }else{
-                    levelinSiPass.push({ token: exists.get("token"), name: exists.get("name") });
                 }
             }
         }
     }
 
-    if (data.inputType.floor && data.inputType.floor.length > 0) {
-        for (let e of data.inputType.floor) {      
+    if (floors.length > 0) {
+        for (let e of floors) {      
 
             if (e.get("system") == 1) {
                 let readername = e.get("floorname");
@@ -113,17 +109,11 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 
                         var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
                         await obj1.save(null, { useMasterKey: true });
-
-                        levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
                     }
                     else {
                         throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
                     }
                 }
-                else{
-                    levelinSiPass.push({ token: exists.get("token"), name: exists.get("name") });
-                }
-
             }
         }
     }
@@ -140,7 +130,6 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     data.inputType.levelid = max + "";
     data.inputType.levelidNumber=max;
     data.inputType.levelname = "name " + data.inputType.levelidNumber;
-    data.inputType.levelinSiPass = levelinSiPass ;
 
     var obj = new AccessLevel(data.inputType);
     await obj.save(null, { useMasterKey: true });
@@ -175,94 +164,6 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 });
 
 /********************************
- * U: update object
- ********************************/
-// type InputU = Restful.InputU<IAccessLevel>;
-// type OutputU = Restful.OutputU<IAccessLevel>;
-
-// action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
-//     /// 1) Get Object
-//     var { objectId } = data.inputType;
-//     var obj = await new Parse.Query(AccessLevel).get(objectId);
-//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`AccessLevel <${objectId}> not exists.`]);
-
-//     /// 2) Sync to ACS Services
-//     let levelinSiPass = [];
-//     if (data.inputType.reader && data.inputType.reader.length > 0) {
-//         for (let idx = 0; idx < data.inputType.reader.length; idx++) {
-//             let e = data.inputType.reader[idx];
-
-//             let r = {
-//                 token: "-1",
-//                 name: e.get("readername") + "-" + data.inputType.timeschedule.get("timename"),
-//                 timeScheduleToken: data.inputType.timeschedule.get("timeid"),
-//                 accessRule: [
-//                     {
-//                         objectName: e.get("readername"),
-//                         objectToken: e.get("readerid"),
-//                         ruleToken: e.get("readerid"),
-//                         ruleType: 2
-//                     }
-//                 ]
-//             }
-
-//             let r1 = await siPassAdapter.postAccessLevel(r, 10000);
-//             if (r1["Token"] != undefined) {
-//                 Log.Info(`info`, `postAccessLevel reader ${r1["Token"]} ${r1["Name"]}`);
-
-//                 var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
-//                 await obj1.save(null, { useMasterKey: true });
-
-//                 levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
-//             }
-//         }
-//     }
-
-//     if (data.inputType.floor && data.inputType.floor.length > 0) {
-//         for (let idx = 0; idx < data.inputType.floor.length; idx++) {
-//             let e = data.inputType.floor[idx];
-
-//             if (e.get("system") == '1') {
-//                 let r = {
-//                     token: "-1",
-//                     name: e.get("floorname") + "-" + data.inputType.timeschedule.get("timename"),
-//                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
-//                     accessRule: [
-//                         {
-//                             objectName: e.get("floorname"),
-//                             objectToken: e.get("floorid"),
-//                             ruleToken: e.get("floorid"),
-//                             ruleType: 8
-//                         }
-//                     ]
-//                 }
-
-//                 let r1 = await siPassAdapter.postAccessLevel(r, 10000);
-//                 if (r1["Token"] != undefined) {
-//                     Log.Info(`info`, `postAccessLevel floor ${r1["Token"]} ${r1["Name"]}`);
-
-//                     var obj1 = new AccessLevelinSiPass({ token: r1["Token"], name: r1["Name"] });
-//                     await obj1.save(null, { useMasterKey: true });
-
-//                     levelinSiPass.push({ token: r1["Token"], name: r1["Name"] });
-//                 }
-//             }
-//         }
-//     }
-
-//     data.inputType.levelinSiPass = levelinSiPass ;
-    
-//     /// 3) Modify
-//     await obj.save({ ...data.inputType, objectId: undefined });
-
-//     Log.Info(`info`, `putAccessLevel ${obj.get("levelid")} ${obj.get("levelname")}`);
-
-        
-//     /// 4) Output
-//     return ParseObject.toOutputJSON(obj);
-// });
-
-/********************************
  * D: delete object
  ********************************/
 type InputD = Restful.InputD<IAccessLevel>;
@@ -284,3 +185,47 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+export async function getAccessLevelReaders(accessLevel:any) {
+    console.log("access level", accessLevel);
+    let readers = [];
+    let floors = [];
+    if (accessLevel.type == "door") {
+        let door = await new Parse.Query(Door)
+            .equalTo("objectId", accessLevel.door.objectId)
+            .include("readerout")
+            .include("readerin")
+            .first();
+        if (door.get("readerin"))
+            readers.push(...door.get("readerin"));
+        if (door.get("readerout"))
+            readers.push(...door.get("readerout"));
+    }
+    else if (accessLevel.type == "doorGroup") {
+        let doorGroup = await new Parse.Query(DoorGroup)
+            .equalTo("objectId", accessLevel.doorgroup.objectId)
+            .include("doors.readerin")
+            .include("doors.readerout")
+            .first();
+        for (let door of doorGroup.get("doors")) {
+            if (door.get("readerin"))
+                readers.push(...door.get("readerin"));
+            if (door.get("readerout"))
+                readers.push(...door.get("readerout"));
+        }
+    }
+    else if (accessLevel.type == "elevator") {
+        let floor = await new Parse.Query(Floor)
+            .equalTo("objectId", accessLevel.floor.objectId)
+            .first();
+        floors.push(floor);
+    }
+    else if (accessLevel.type == "floorGroup") {
+        let floorGroup = await new Parse.Query(FloorGroup)
+            .equalTo("objectId", accessLevel.floorgroup.objectId)
+            .include("floors")
+            .first();
+        floors.push(...floorGroup.get("floors"));
+    }
+    return { readers, floors };
+}
+
