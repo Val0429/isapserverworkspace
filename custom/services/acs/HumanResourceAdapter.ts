@@ -48,7 +48,7 @@ export class HumanResourceAdapter {
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
             .input('EffectDate', msSQL.VarChar(10),effectDate)
-            .query(`select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR
+            .query(`select * from vieChangeMemberLog where (AddDate >= @AddDate AND AddTime > @AddTime) OR
              EffectDate = @EffectDate  order by AddDate, AddTime`);
 
         return res["recordset"];
@@ -61,7 +61,7 @@ export class HumanResourceAdapter {
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
             .input('EffectDate', msSQL.VarChar(10),effectDate)
-            .query('select * from vieHQMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime) OR EffectDate = @EffectDate  order by SeqNo');
+            .query('select * from vieHQMemberLog where (AddDate >= @AddDate AND AddTime > @AddTime) OR EffectDate = @EffectDate  order by SeqNo');
 
         return res["recordset"];
     }
@@ -72,7 +72,7 @@ export class HumanResourceAdapter {
             .input('AddDate', msSQL.VarChar(10), moment(lastDate).format("YYYY/MM/DD"))
             .input('AddTime', msSQL.VarChar(10), moment(lastDate).format("HH:mm:ss"))
             .input('EffectDate', msSQL.VarChar(10),effectDate)
-            .query(`select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime >= @AddTime)
+            .query(`select * from vieREMemberLog where (AddDate >= @AddDate AND AddTime > @AddTime)
                         OR EffectDate = @EffectDate  order by AddDate,AddTime`);
 
         return res["recordset"];

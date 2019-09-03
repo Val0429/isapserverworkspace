@@ -453,11 +453,14 @@ export class HRService {
             for(let cf of memberJson.CustomFields){
                 let exist = customFields.find(x=>x.FieldValue == cf.FieldValue);
                 if(!exist) customFields.push(cf);
+                else{
+                    exist.FieldValue = exist.FieldValue || cf.FieldValue;
+                }
             }
         }
         let d = {
-            AccessRules: memberJson.accessRules || [this.defaultAccessRule],
-            ApbWorkgroupId: workgroupId,
+            AccessRules: memberJson.AccessRules || [this.defaultAccessRule],
+            ApbWorkgroupId: memberJson.ApbWorkgroupId || workgroupId,
             Attributes: {},
             Credentials: memberJson.Credentials || [],
             EmployeeNumber: memberJson.EmployeeNumber || empNo,
@@ -468,8 +471,8 @@ export class HRService {
             NonPartitionWorkGroups: [],
             PersonalDetails: personalDetails,
             Potrait: memberJson.Potrait || "",
-            PrimaryWorkgroupId: workgroupId,
-            PrimaryWorkgroupName: workgroupName,
+            PrimaryWorkgroupId: memberJson.PrimaryWorkgroupId || workgroupId,
+            PrimaryWorkgroupName: memberJson.PrimaryWorkgroupName|| workgroupName,
             SmartCardProfileId: memberJson.SmartCardProfileId || "0",
             StartDate: startDate,
             Status: memberJson.Status || 61,
@@ -716,11 +719,14 @@ export class HRService {
             for(let cf of memberJson.CustomFields){
                 let exist = customFields.find(x=>x.FieldValue == cf.FieldValue);
                 if(!exist) customFields.push(cf);
+                else{
+                    exist.FieldValue = exist.FieldValue || cf.FieldValue;
+                }
             }
         }
         let d = {
-            AccessRules: memberJson.accessRules || [],
-            ApbWorkgroupId: workgroupId,
+            AccessRules: memberJson.AccessRules || [],
+            ApbWorkgroupId: memberJson.ApbWorkgroupId || workgroupId,
             Attributes: {},
             Credentials: memberJson.Credentials || [],
             EmployeeNumber: (memberJson.EmployeeNumber || record["SupporterNo"]) || "" ,
@@ -731,8 +737,8 @@ export class HRService {
             NonPartitionWorkGroups: [],
             PersonalDetails: personalDetails,
             Potrait: memberJson.Potrait || "",
-            PrimaryWorkgroupId: workgroupId,
-            PrimaryWorkgroupName: workgroupName,
+            PrimaryWorkgroupId: memberJson.PrimaryWorkgroupId||workgroupId,
+            PrimaryWorkgroupName: memberJson.PrimaryWorkgroupName||workgroupName,
             SmartCardProfileId: memberJson.SmartCardProfileId || "0",
             StartDate: startDate,
             Status: memberJson.Status || 61,
@@ -820,7 +826,8 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `4.1 Get Import data getViewChangeMemberLog`);
             Log.Info(`${this.constructor.name}`, `Effect date ${effectDate}`);
             try {
-                let res = await this.humanResource.getViewChangeMemberLog(new Date(this.LastUpdate.vieChangeMemberLog),effectDate);
+                let savedLastDate=new Date(this.LastUpdate.vieChangeMemberLog);
+                let res = await this.humanResource.getViewChangeMemberLog(savedLastDate,effectDate);
                 console.log("getVieChangeMember result", res.length);
                 // recordset:
                 //     [ { SeqNo: 1,
@@ -828,10 +835,10 @@ export class HRService {
                 for (let record of res) {
                     //console.log("record effectDate", record["EffectDate"], effectDate);
                     if(record["EffectDate"] > effectDate)continue; 
-                    let lastUpdate = record["AddDate"]+" "+record["AddTime"];
+                    let lastUpdate = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
                     //console.log("lastUpdate",lastUpdate);
                     memChange.push(record);
-                    this.LastUpdate.vieChangeMemberLog = moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
+                    this.LastUpdate.vieChangeMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString(): savedLastDate.toISOString();
                     EmpNo.push(record["EmpNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
                     
@@ -851,7 +858,8 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieREMemberLog`);
             try {
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
-                let res = await this.humanResource.getViewREMemberLog(new Date(this.LastUpdate.vieREMemberLog),effectDate);
+                let savedLastDate = new Date(this.LastUpdate.vieREMemberLog);
+                let res = await this.humanResource.getViewREMemberLog(savedLastDate,effectDate);
                 console.log("getVieMemberLog result", res.length);
                 // { recordsets: [ [ [Object], [Object], [Object] ] ],
                 //     recordset:
@@ -861,9 +869,9 @@ export class HRService {
                 for (let record of res) {
                     //console.log("record effectDate", record["EffectDate"], effectDate);
                     if(record["EffectDate"] > effectDate)continue; 
-                    let lastUpdate = record["AddDate"]+" "+record["AddTime"];
+                    let lastUpdate = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
                     //console.log("lastUpdate",lastUpdate);
-                    this.LastUpdate.vieREMemberLog =  moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
+                    this.LastUpdate.vieREMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString(): savedLastDate.toISOString();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
@@ -883,15 +891,17 @@ export class HRService {
             try {
                 Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
-                let res = await this.humanResource.getViewHQMemberLog(new Date(this.LastUpdate.vieHQMemberLog),effectDate);
+                let savedLastDate=new Date(this.LastUpdate.vieHQMemberLog);
+                let res = await this.humanResource.getViewHQMemberLog(savedLastDate,effectDate);
                 console.log("getVieHq result", res.length);
                 
                 for (let record of res) {               
                     //console.log("record effectDate", record["EffectDate"], effectDate);        
                     if(record["EffectDate"] > effectDate)  continue; 
-                    let lastUpdate = record["AddDate"]+" "+record["AddTime"];
+                    let lastUpdate = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
                     //console.log("lastUpdate",lastUpdate);
-                    this.LastUpdate.vieHQMemberLog = moment(lastUpdate,"YYYY/MM/DD HH:mm:ss").toDate().toISOString();
+                    this.LastUpdate.vieHQMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString(): savedLastDate.toISOString();
+                    
                     if (record["DataType"] == "H") {
                         memNew.push(record);
                     }
