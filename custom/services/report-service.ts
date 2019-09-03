@@ -323,7 +323,11 @@ export class ReportService{
         }
         //custom fields      
         for(let field of CustomFields){
-            newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields, field.date);
+            if(field.name=="lastEditTime"){
+                newMember[field.name] = moment(newMember[field.name] ).format("YYYY-MM-DD HH:mm:ss");
+            }else{
+                newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields, field.date);
+            }
         }
         return newMember;
       }
