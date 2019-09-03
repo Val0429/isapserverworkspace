@@ -30,6 +30,7 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let report = new Campaign();
+            report.mode = Enum.EDeviceMode.peopleCounting;
 
             let inputBase: IRequest.IReport.ISummaryBase = {
                 type: Enum.ESummaryType.day,

@@ -32,6 +32,7 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let report = new ReportDemographic();
+            report.mode = Enum.EDeviceMode.demographic;
 
             await report.Initialization(_input, _userInfo.siteIds);
 

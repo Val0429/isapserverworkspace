@@ -32,6 +32,7 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let report = new ReportHeatmap();
+            report.mode = Enum.EDeviceMode.heatmap;
 
             let inputBase: IRequest.IReport.ISummaryBase = {
                 type: _input.type,

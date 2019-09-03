@@ -33,6 +33,7 @@ action.post(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             let report = new ReportDwellTime();
+            report.mode = Enum.EDeviceMode.dwellTime;
 
             await report.Initialization(_input, _userInfo.siteIds);
 

@@ -70,6 +70,17 @@ export class Report {
     /**
      *
      */
+    private _mode: Enum.EDeviceMode = undefined;
+    public get mode(): Enum.EDeviceMode {
+        return this._mode;
+    }
+    public set mode(value: Enum.EDeviceMode) {
+        this._mode = value;
+    }
+
+    /**
+     *
+     */
     private _currDateRange: IBase.IDate.IRange = {
         startDate: new Date(),
         endDate: new Date(),
@@ -176,19 +187,23 @@ export class Report {
     /**
      *
      */
-    private _devicesIdDictionary: IBase.IObject.IKeyValue<IDB.Device> = undefined;
+    private _devicesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
     public get devicesIdDictionary(): IBase.IObject.IKeyValue<IDB.Device> {
-        if (!this._devicesIdDictionary) {
-            this._devicesIdDictionary = {};
-
+        if (!this._devicesIdDictionary || this._devicesIdDictionary.initTime < this._initTime) {
+            let data = {};
             this._devices.forEach((value, index, array) => {
                 let key: string = value.id;
 
-                this._devicesIdDictionary[key] = value;
+                data[key] = value;
             });
+
+            this._devicesIdDictionary = {
+                initTime: new Date().getTime(),
+                data: data,
+            };
         }
 
-        return this._devicesIdDictionary;
+        return this._devicesIdDictionary.data;
     }
 
     /**
@@ -231,6 +246,12 @@ export class Report {
             this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
 
             let tasks = [];
+
+            tasks.push(
+                (async () => {
+                    this._devices = await this.GetDevices();
+                })(),
+            );
 
             if (option.useOfficeHour) {
                 tasks.push(
@@ -319,6 +340,30 @@ export class Report {
     }
 
     /**
+     * Get Deivces
+     */
+    public async GetDevices(): Promise<IDB.Device[]> {
+        try {
+            let query: Parse.Query<IDB.Device> = new Parse.Query(IDB.Device).containedIn('site', this._sites);
+
+            if (!!this._mode) {
+                query.equalTo('mode', this._mode);
+            }
+
+            let devices: IDB.Device[] = await query
+                .include(['site', 'area', 'groups'])
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            return devices;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Get type date
      * @param date
      * @param type
@@ -351,7 +396,7 @@ export class Report {
 
             let reportQuery: Parse.Query = new Parse.Query(collection)
                 // .equalTo('type', Enum.ESummaryType.hour)
-                .containedIn('site', this._sites)
+                .containedIn('device', this._devices)
                 .greaterThanOrEqualTo('date', startDate)
                 .lessThan('date', endDate);
 
@@ -367,25 +412,6 @@ export class Report {
                 });
 
             reports = this.OfficeHourFilter(reports);
-
-            let deviceIds: string[] = reports
-                .map((value, index, array) => {
-                    return value.get('device').id;
-                })
-                .filter((value, index, array) => {
-                    return array.indexOf(value) === index;
-                });
-
-            let devices: IDB.Device[] = await new Parse.Query(IDB.Device)
-                .containedIn('objectId', deviceIds)
-                .include(['site', 'area', 'groups'])
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
-
-            this._devices.push(...devices);
-            this._devicesIdDictionary = undefined;
 
             return reports as T[];
         } catch (e) {
