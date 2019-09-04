@@ -127,6 +127,7 @@ import {
         dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 1, name: "35 bit" });
         dropItem = new DropDownList(); await dropItem.save({ type: "ProfileId", key: 2, name: "mifare32" });
 
+        dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 0, name: "" });
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 1, name: "正職" });
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 2, name: "ASR臨時卡" });
         dropItem = new DropDownList(); await dropItem.save({ type: "Certification", key: 3, name: "DOC臨時卡" });

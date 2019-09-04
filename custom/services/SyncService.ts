@@ -599,6 +599,7 @@ export class SyncService{
                     obj.set("system", 1);
                     obj.set("readerid", +r["Token"]);
                     obj.set("readername", r["Name"]);
+                    obj.set("status", 1);
                     parseObjects.push(obj);
                 }
             }

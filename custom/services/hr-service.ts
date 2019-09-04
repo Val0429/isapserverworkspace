@@ -39,30 +39,30 @@ export class HRService {
 
         this.humanResource = new HumanResourceAdapter();
         this.CCure800SqlAdapter = new CCure800SqlAdapter();
-        
+
         this.LastUpdate = JSON.parse(this.readFile('hr_last_update.tmp'));
-    
+
 
         console.log("hr last update", this.LastUpdate);
 
-        
+
     }
-    
- readFile(filePath:string){
-    let bom="\ufeff";
-    let result = fs.readFileSync(path.join(__dirname, filePath), "utf8").toString();
-    if(result.indexOf(bom)>-1)result=result.substr(bom.length);
-    return result;
-}
-    getDate(date, splitter="."){
-        try{    
-         let dt = new Date(date);
-         return dt.toISOString().split(splitter)[0];
-      }catch (err){
-          return "";
-      }
+
+    readFile(filePath: string) {
+        let bom = "\ufeff";
+        let result = fs.readFileSync(path.join(__dirname, filePath), "utf8").toString();
+        if (result.indexOf(bom) > -1) result = result.substr(bom.length);
+        return result;
     }
-    async doHumanResourcesSync(hour:number=3,minute:number=0) {
+    getDate(date, splitter = ".") {
+        try {
+            let dt = new Date(new Date(date).getTime() + 28800000);
+            return dt.toISOString().split(splitter)[0];
+        } catch (err) {
+            return "";
+        }
+    }
+    async doHumanResourcesSync(hour: number = 3, minute: number = 0) {
         Log.Info(`${this.constructor.name}`, `0.0 Timer Check`);
 
         let now: Date = new Date();
@@ -85,148 +85,148 @@ export class HRService {
         }, (this.checkCycleTime - s) * 1000);
     }
 
-    async doSync(){
+    async doSync() {
         let permission = await new Parse.Query(PermissionTable)
-                    .equalTo("tablename","NH-Employee")        
-                    .equalTo("system",0)
-                    .first();
-        this.defaultAccessRule =  {
+            .equalTo("tablename", "NH-Employee")
+            .equalTo("system", 0)
+            .first();
+        this.defaultAccessRule = {
             ObjectName: permission.get("tablename"),
-            ObjectToken:  permission.get("tableid").toString(),
+            ObjectToken: permission.get("tableid").toString(),
             RuleToken: permission.get("tableid").toString(),
             RuleType: 4,
             Side: 0,
             TimeScheduleToken: "0"
         };
         await this.CCure800SqlAdapter.clearMember();
-            let memChange = [];
-            let memNew = [];
-            let memOff = [];
+        let memChange = [];
+        let memNew = [];
+        let memOff = [];
 
-            // let a = { OffDate : "1234/12/34T01:02:03" } ;
-            // console.log( JSON.stringify(a["OffDate"]).replace(/\//g, "-"));
-
-
+        // let a = { OffDate : "1234/12/34T01:02:03" } ;
+        // console.log( JSON.stringify(a["OffDate"]).replace(/\//g, "-"));
 
 
 
-            // 1.0 create database connection
-            Log.Info(`${this.constructor.name}`, `1.0 create mongo database connection`);
-            // (async () => {
+
+
+        // 1.0 create database connection
+        Log.Info(`${this.constructor.name}`, `1.0 create mongo database connection`);
+        // (async () => {
+        try {
+            // const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
+            const url = mongoDBUrl();
+            this.mongoClient = await mongo.MongoClient.connect(url);
+            this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
+        }
+        catch (ex) {
+            this.checkCycleTime = 5;
+            Log.Info(`${this.constructor.name}`, ex);
+        }
+        // })();
+
+        // 2.0 initial MSSQL Connection
+        if (this.checkCycleTime != 5) {
+            Log.Info(`${this.constructor.name}`, `2.0 initial MSSQL Connection`);
+            let config = {
+                server: Config.humanresource.server,
+                port: Config.humanresource.port,
+                user: Config.humanresource.user,
+                password: Config.humanresource.password,
+                database: Config.humanresource.database,
+                requestTimeout: 300000,
+                connectionTimeout: 300000, //ms
+                options: {
+                    tdsVersion: '7_1' //for sql server 2000
+                }
+            }
+
             try {
-                // const url = `mongodb://${Config.mongodb.ip}:${Config.mongodb.port}`;
-                const url = mongoDBUrl();
-                this.mongoClient = await mongo.MongoClient.connect(url);
-                this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
+                //await this.CCure800SqlAdapter.connect(Config.ccureconnect);
+                await this.humanResource.connect(config);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
+
                 Log.Info(`${this.constructor.name}`, ex);
             }
-            // })();
 
-            // 2.0 initial MSSQL Connection
-            if (this.checkCycleTime != 5) {
-                Log.Info(`${this.constructor.name}`, `2.0 initial MSSQL Connection`);
-                let config = {
-                    server: Config.humanresource.server,
-                    port: Config.humanresource.port,
-                    user: Config.humanresource.user,
-                    password: Config.humanresource.password,
-                    database: Config.humanresource.database,
-                    requestTimeout: 300000,
-                    connectionTimeout: 300000, //ms
-                    options: {
-                        tdsVersion: '7_1' //for sql server 2000
-                    }
-                }
-
-                try {
-                    //await this.CCure800SqlAdapter.connect(Config.ccureconnect);
-                    await this.humanResource.connect(config);
-                }
-                catch (ex) {
-                    this.checkCycleTime = 5;
-
-                    Log.Info(`${this.constructor.name}`, ex);
-                }
-
-                // config = {
-                //     server: Config.ccuresqlserver.server,
-                //     port: Config.ccuresqlserver.port,
-                //     user: Config.ccuresqlserver.user,
-                //     password: Config.ccuresqlserver.password,
-                //     database: Config.ccuresqlserver.database,
-                //     requestTimeout: 300000,
-                //     connectionTimeout: 300000 //ms
-                // }
-
-                // try {
-                //     await this.CCure800SqlAdapter.connect(config);
-                // }
-                // catch (ex) {
-                //     this.checkCycleTime = 5;
-
-                //     Log.Info(`${this.constructor.name}`, ex);
-                // }
-            }
-
-            // 3.0 SiPass Connection
-            //let sessionId = "" ;
-            // let sessionId = await siPassAdapter.sessionToken;
-
-            // if (!sessionId) {
-            //     this.checkCycleTime = 5;
-            //     Log.Info(`${this.constructor.name}`, `SiPass Connect Fail`);
+            // config = {
+            //     server: Config.ccuresqlserver.server,
+            //     port: Config.ccuresqlserver.port,
+            //     user: Config.ccuresqlserver.user,
+            //     password: Config.ccuresqlserver.password,
+            //     database: Config.ccuresqlserver.database,
+            //     requestTimeout: 300000,
+            //     connectionTimeout: 300000 //ms
             // }
 
-            // 3.0 Cleae Temp Data
-            let EmpNo: string[] = [];
-            await this.cleanTempData();
-            // 4.0 Get Import data
-            await this.getVieChangeMemberLog(memChange, EmpNo);
-            // 4.2 vieChangeMemberLog
-            await this.getVieHQMemberLog(EmpNo, memNew, memOff, memChange);
-            // 4.3 vieREMemberLog
-            await this.getVieREMemberLog(memChange, EmpNo);
+            // try {
+            //     await this.CCure800SqlAdapter.connect(config);
+            // }
+            // catch (ex) {
+            //     this.checkCycleTime = 5;
 
-            // 4.4 request human information
-            if (this.checkCycleTime != 5) {          
-                let newMsg: string="";
-                let chgMsg: string="";
-                let offMsg: string="";     
-                Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
-                //batch request by 100 because of lib limitation
-                while(EmpNo.length>100){
-                    let newEmpNo = EmpNo.splice(0,100);
-                     await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg );
-                     await this.getViewSupporter(newEmpNo);                     
-                }
-                await this.requestHumanInfo(EmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg );
-                await this.getViewSupporter(EmpNo);
-                // 6.0 report log and send smtp 
-                await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
+            //     Log.Info(`${this.constructor.name}`, ex);
+            // }
+        }
 
+        // 3.0 SiPass Connection
+        //let sessionId = "" ;
+        // let sessionId = await siPassAdapter.sessionToken;
+
+        // if (!sessionId) {
+        //     this.checkCycleTime = 5;
+        //     Log.Info(`${this.constructor.name}`, `SiPass Connect Fail`);
+        // }
+
+        // 3.0 Cleae Temp Data
+        let EmpNo: string[] = [];
+        await this.cleanTempData();
+        // 4.0 Get Import data
+        await this.getVieChangeMemberLog(memChange, EmpNo);
+        // 4.2 vieChangeMemberLog
+        await this.getVieHQMemberLog(EmpNo, memNew, memOff, memChange);
+        // 4.3 vieREMemberLog
+        await this.getVieREMemberLog(memChange, EmpNo);
+
+        // 4.4 request human information
+        if (this.checkCycleTime != 5) {
+            let newMsg: string = "";
+            let chgMsg: string = "";
+            let offMsg: string = "";
+            Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
+            //batch request by 100 because of lib limitation
+            while (EmpNo.length > 100) {
+                let newEmpNo = EmpNo.splice(0, 100);
+                await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
+                await this.getViewSupporter(newEmpNo);
             }
-            
+            await this.requestHumanInfo(EmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
+            await this.getViewSupporter(EmpNo);
+            // 6.0 report log and send smtp 
+            await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
+
+        }
 
 
-          
-            // 7.0 Database disconnect
-            Log.Info(`${this.constructor.name}`, `7.0 Database disconnect`);
-            try {
-                this.mongoClient.close();
-                this.humanResource.disconnect();
-                //this.CCure800SqlAdapter.disconnect();
-            }
-            catch (ex) {
-                Log.Info(`${this.constructor.name}`, ex);
-            }
+
+
+        // 7.0 Database disconnect
+        Log.Info(`${this.constructor.name}`, `7.0 Database disconnect`);
+        try {
+            this.mongoClient.close();
+            this.humanResource.disconnect();
+            //this.CCure800SqlAdapter.disconnect();
+        }
+        catch (ex) {
+            Log.Info(`${this.constructor.name}`, ex);
+        }
     }
 
-    private async requestHumanInfo(EmpNo: string[], memNew: any[],  memOff: any[], memChange: any[], newMsg:string, offMsg:string, chgMsg:string) {
-        
-        if (EmpNo.length <=0) return;
+    private async requestHumanInfo(EmpNo: string[], memNew: any[], memOff: any[], memChange: any[], newMsg: string, offMsg: string, chgMsg: string) {
+
+        if (EmpNo.length <= 0) return;
 
         try {
             let objects = [];
@@ -234,9 +234,9 @@ export class HRService {
             let vieMembers = await new Parse.Query(vieMember).limit(res.length).containedIn("EmpNo", res.map(x => x["EmpNo"])).find();
             let members = await new Parse.Query(Member).limit(res.length).containedIn("EmployeeNumber", res.map(x => x["EmpNo"])).find();
             for (let record of res) {
-                
+
                 await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, objects, members);
-                    
+
                 //important to avoid out of memory
                 if (objects.length >= 1000) {
                     await ParseObject.saveAll(objects);
@@ -249,30 +249,37 @@ export class HRService {
             this.checkCycleTime = 5;
             Log.Info(`${this.constructor.name}`, ex);
         }
-        
-        
+
+
     }
 
     private async impotFromViewMember(record: any, memNew: any[], newMsg: string, memOff: any[], offMsg: string, memChange: any[], vieMembers: vieMember[], chgMsg: string, objects: any[], members: Member[]) {
+        let english = /^[A-Za-z]*$/;
         let empNo = record["EmpNo"];
         Log.Info(`${this.constructor.name}`, `Import data vieMember ${empNo}`);
         // 5.0 write data to SQL database
         let workgroupId = 0;
         let workgroupName = "";
         if (record["EmpNo"].length == 10) {
-            workgroupId = 2000000007;
+            workgroupId = 2000000006;
             workgroupName = "契約商";
         }
-        else if ((record["EmpNo"].substr(0, 1) == "5") || (record["EmpNo"].substr(0, 1) == "9")) {
-            workgroupId = 2000000009;
+        else if ((record["EmpNo"].substr(0, 1) == "5") || (record["EmpNo"].substr(0, 1) == "9")
+            || (english.test(record["EmpNo"]))) {
+            workgroupId = 2000000008;
             workgroupName = "約聘";
         }
-        else {
-            workgroupId = 2000000006;
+        else if ((record["EmpNo"].substr(0, 1) == "2") || (record["EmpNo"].substr(0, 1) == "6")
+            || (record["EmpNo"].substr(0, 1) == "7") || (record["EmpNo"].substr(0, 1) == "8")) {
+            workgroupId = 2000000005;
             workgroupName = "正職";
         }
+        else {
+            workgroupId = 1;
+            workgroupName = "<無>";
+        }
         if (memNew.indexOf(record["EmpNo"] >= 0)) {
-             //DeptChiName value is from vieDept deptMark2
+            //DeptChiName value is from vieDept deptMark2
             newMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${workgroupName}</td><td>${record["DeptChiName"]}</td><td>${record["EngName"]}</td></tr>`;
         }
         if (memOff.indexOf(record["EmpNo"] >= 0)) {
@@ -358,19 +365,21 @@ export class HRService {
 
         let member = members.find(x => x.get("EmployeeNumber") == record["EmpNo"]);
         let memberJson = member ? ParseObject.toOutputJSON(member) : {};
-        
+
 
         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
         let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
         let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
-        let personalDetails:any;
-        
-        if(memberJson.PersonalDetails){
+        let personalDetails: any;
+
+        if (memberJson.PersonalDetails) {
             personalDetails = memberJson.PersonalDetails;
             personalDetails.ContactDetails.Email = record["EMail"] ? record["EMail"] : "";
-            personalDetails.ContactDetails.MobileNumber=record["Cellular"] ? record["Cellular"] : "";
-            personalDetails.DateOfBirth=this.getDate(record["BirthDate"], "T");
-        }else{
+            personalDetails.ContactDetails.MobileNumber = record["Cellular"] ? record["Cellular"] : "";
+            personalDetails.ContactDetails.PhoneNumber = record["Extension"] ? record["Extension"] : "";
+            personalDetails.DateOfBirth = this.getDate(record["BirthDate"], "T");
+
+        } else {
             personalDetails = {
                 Address: "",
                 ContactDetails: {
@@ -379,7 +388,7 @@ export class HRService {
                     MobileServiceProviderId: "0",
                     PagerNumber: "",
                     PagerServiceProviderId: "0",
-                    PhoneNumber: ""
+                    PhoneNumber: record["Extension"] ? record["Extension"] : ""
                 },
                 DateOfBirth: this.getDate(record["BirthDate"], "T"),
                 PayrollNumber: "",
@@ -390,78 +399,83 @@ export class HRService {
                 }
             }
         }
-        let customFields= [
-                            {
-                                FiledName: "CustomDateControl4__CF",
-                                FieldValue: this.getDate(record["UpdDate"])
-                            },
-                            {
-                                FiledName: "CustomDropdownControl1__CF",
-                                FieldValue: workgroupId+""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl1__CF",
-                                FieldValue: record["EmpNo"] ? record["EmpNo"] : ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl3__CF",
-                                FieldValue: record["AddUser"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl6__CF",
-                                FieldValue: record["CompName"] || ""
-                            },
-                            {
-                                FiledName: "CustomDropdownControl2__CF_CF",
-                                FieldValue: record["Sex"] ? (record["Sex"] =="M" ? "男" :"女"): ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF",
-                                FieldValue: record["MVPN"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                                FieldValue: record["DeptChiName"] || "" //value is from vieDept deptMark2
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                                FieldValue: record["CostCenter"] || ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                                FieldValue: ""
-                            },
-                            {
-                                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                                FieldValue: record["LocationName"] || ""
-                            },
-                            {
-                                FiledName: "CustomDateControl1__CF_CF",
-                                FieldValue: this.getDate(record["BirthDate"])
-                            },
-                            {
-                                FiledName: "CustomDateControl1__CF_CF_CF",
-                                FieldValue: this.getDate(record["EntDate"])
-                            },
-                            {
-                                FiledName: "CustomDateControl1__CF",
-                                FieldValue: this.getDate(record["OffDate"])
-                            }
-                        ];
+        let customFields = [
+            {
+                FiledName: "CustomDateControl4__CF",
+                FieldValue: this.getDate(record["UpdDate"])
+            },
+            {
+                FiledName: "CustomDropdownControl1__CF",
+                FieldValue: ""
+            },
+            {
+                FiledName: "CustomTextBoxControl1__CF",
+                FieldValue: ""
+            },
+            {
+                FiledName: "CustomTextBoxControl3__CF",
+                FieldValue: record["AddUser"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl6__CF",
+                FieldValue: record["CompName"] || ""
+            },
+            {
+                FiledName: "CustomDropdownControl2__CF_CF",
+                FieldValue: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF",
+                FieldValue: record["MVPN"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF",
+                FieldValue: record["DeptChiName"] || "" //value is from vieDept deptMark2
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                FieldValue: record["CostCenter"] || ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                FieldValue: ""
+            },
+            {
+                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                FieldValue: record["LocationName"] || ""
+            },
+            {
+                FiledName: "CustomDateControl1__CF_CF",
+                FieldValue: this.getDate(record["BirthDate"])
+            },
+            {
+                FiledName: "CustomDateControl1__CF_CF_CF",
+                FieldValue: this.getDate(record["EntDate"])
+            },
+            {
+                FiledName: "CustomDateControl1__CF",
+                FieldValue: this.getDate(record["OffDate"])
+            }
+        ];
+
+
         //update cf from existing data
-        if(memberJson.CustomFields){
-            for(let cf of memberJson.CustomFields){
-                let exist = customFields.find(x=>x.FiledName == cf.FiledName);
-                if(!exist) customFields.push(cf);
-                else{
-                    exist.FieldValue = exist.FieldValue || cf.FieldValue;
+        if (memberJson.CustomFields) {
+            for (let cf of memberJson.CustomFields) {
+                let exist = customFields.find(x => x.FiledName == cf.FiledName);
+                if (!exist) customFields.push(cf);
+                else {
+                    exist.FieldValue = exist.FieldValue || cf.FieldValue ;
                 }
             }
         }
+
+        // console.log(customFields);
+
         let d = {
             AccessRules: memberJson.AccessRules || [this.defaultAccessRule],
-            ApbWorkgroupId: memberJson.ApbWorkgroupId || workgroupId,
-            Attributes: {},
+            ApbWorkgroupId: workgroupId || memberJson.ApbWorkgroupId,
+            Attributes: memberJson.Attributes || {Void:false},
             Credentials: memberJson.Credentials || [],
             EmployeeNumber: memberJson.EmployeeNumber || empNo,
             EndDate: endDate,
@@ -471,23 +485,23 @@ export class HRService {
             NonPartitionWorkGroups: [],
             PersonalDetails: personalDetails,
             Potrait: memberJson.Potrait || "",
-            PrimaryWorkgroupId: memberJson.PrimaryWorkgroupId || workgroupId,
-            PrimaryWorkgroupName: memberJson.PrimaryWorkgroupName|| workgroupName,
+            PrimaryWorkgroupId:  workgroupId || memberJson.PrimaryWorkgroupId,
+            PrimaryWorkgroupName:  workgroupName || memberJson.PrimaryWorkgroupName,
             SmartCardProfileId: memberJson.SmartCardProfileId || "0",
             StartDate: startDate,
             Status: memberJson.Status || 61,
             Token: memberJson.Token || "-1",
             TraceDetails: memberJson.TraceDetails || {},
-            Vehicle1: memberJson.Vehicle1 || {},
-            Vehicle2: memberJson.Vehicle2 || {},
-            VisitorDetails: memberJson.VisitorDetails || {VisitorCardStatus: 0, VisitorCustomValues: {}},
-            CustomFields:customFields,
-            token:"-1",
+            Vehicle1: { CarColor: '', CarModelNumber: '', CarRegistrationNumber: '' },
+            Vehicle2: { CarColor: '', CarModelNumber: '', CarRegistrationNumber: '' },
+            VisitorDetails: memberJson.VisitorDetails || { VisitorCardStatus: 0, VisitorCustomValues: {} },
+            CustomFields: customFields,
+            token: "-1",
             _links: []
         };
-        try{
-            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);            
-            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x=>x.ObjectName), d.CustomFields);
+        try {
+            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x => x.ObjectName), d.CustomFields);
             // console.log(`======================= ${sessionId}`);
             // if (sessionId != "") {
             // 5.1 write data to SiPass database
@@ -497,36 +511,40 @@ export class HRService {
             for (let field of d.CustomFields) {
                 field.FieldValue = field.FieldValue || null;
             }
-           
+
             //}
             console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
             delete (d._links);
-            
+
             if (!member) {
-                delete(d.token);
+                delete (d.token);
                 member = new Member(d);
                 let holder = await siPassAdapter.postCardHolder(d);
-                member.set("Token", holder["Token"] || "-1");                
+
+                // console.log("post", d) ;
+                member.set("Token", holder["Token"] || "-1");
             }
             else {
                 d.token = memberJson.Token;
-                if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
-                    await siPassAdapter.putCardHolder(d);
-                }                
-                delete(d.token);
+                // if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
+                await siPassAdapter.putCardHolder(d);
+
+                // console.log("pusst", d) ;
+                // }                
+                delete (d.token);
                 member.set(d);
             }
-            
+
             objects.push(member);
-            
-        }catch(err){
+
+        } catch (err) {
             console.log("err", JSON.stringify(err));
             console.log("err data", JSON.stringify(d));
         }
         return { newMsg, offMsg, chgMsg };
     }
 
-    private async reportLogAndMail(memNew: any[], newMsg: string, memChange: any[], chgMsg: string, memOff: any[], offMsg:string) {
+    private async reportLogAndMail(memNew: any[], newMsg: string, memChange: any[], chgMsg: string, memOff: any[], offMsg: string) {
         let rec = [];
         if (this.checkCycleTime != 5) {
             Log.Info(`${this.constructor.name}`, `6.0 report log and send smtp`);
@@ -575,12 +593,12 @@ export class HRService {
                 Log.Info(`${this.constructor.name}`, ex);
             }
         }
-        return { newMsg, chgMsg, offMsg}
+        return { newMsg, chgMsg, offMsg }
     }
 
     private async getViewSupporter(EmpNo: string[]) {
         {
-            if(EmpNo.length<=0)return;
+            if (EmpNo.length <= 0) return;
             try {
                 let res = await this.humanResource.getViewSupporter(EmpNo);
                 let objects = [];
@@ -607,7 +625,7 @@ export class HRService {
                                 Email: record["Email"],
                                 MobileNumber: record["Cellular"]
                             },
-                            DateOfBirth: this.getDate(record["BirthDate"], "T") 
+                            DateOfBirth: this.getDate(record["BirthDate"], "T")
                         });
                         obj.set("primaryWorkgroupId", workgroupId);
                         obj.set("apbWorkgroupId", workgroupId);
@@ -621,167 +639,167 @@ export class HRService {
                         obj.set("customFields", record["customFields"]);
                         objects.push(obj);
                     }
-                    
-        let member = members.find(x => x.get("EmployeeNumber") == supporterNo);
-        let memberJson = member ? ParseObject.toOutputJSON(member) : {};
-        
 
-        // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-        let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
-        let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
-        let personalDetails:any;
-        
-        if(memberJson.PersonalDetails){
-            personalDetails = memberJson.PersonalDetails;
-            personalDetails.ContactDetails.Email = record["EMail"] ? record["EMail"] : "";
-            personalDetails.ContactDetails.MobileNumber=record["Cellular"] ? record["Cellular"] : "";
-            personalDetails.DateOfBirth=this.getDate(record["BirthDate"], "T");
-        }else{
-            personalDetails = {
-                Address: "",
-                ContactDetails: {
-                    Email: record["EMail"] ? record["EMail"] : "",
-                    MobileNumber: record["Cellular"] ? record["Cellular"] : "",
-                    MobileServiceProviderId: "0",
-                    PagerNumber: "",
-                    PagerServiceProviderId: "0",
-                    PhoneNumber: ""
-                },
-                DateOfBirth: this.getDate(record["BirthDate"], "T"),
-                PayrollNumber: "",
-                Title: "",
-                UserDetails: {
-                    UserName: "",
-                    Password: ""
-                }
-            }
-        }
-        let customFields= [
-            {
-                FiledName: "CustomDateControl4__CF",
-                FieldValue: this.getDate(record["UpdDate"]) 
-            },
-            {
-                FiledName: "CustomDropdownControl1__CF",
-                FieldValue: workgroupId+""
-            },
-            {
-                FiledName: "CustomTextBoxControl1__CF",
-                FieldValue: record["EmpNo"] || ""
-            },
-            {
-                FiledName: "CustomTextBoxControl3__CF",
-                FieldValue: record["AddUser"] || ""
-            },
-            {
-                FiledName: "CustomTextBoxControl6__CF",
-                FieldValue: record["CompName"] || ""
-            },
-            {
-                FiledName: "CustomDropdownControl2__CF_CF",
-                FieldValue: record["Sex"] ? (record["Sex"] =="M" ? "男" :"女"): ""
-            },
-            {
-                FiledName: "CustomTextBoxControl5__CF_CF",
-                FieldValue: record["MVPN"] || ""
-            },
-            {
-                FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                FieldValue: record["DeptChiName"] || ""
-            },
-            {
-                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                FieldValue: record["CostCenter"] || ""
-            },
-            {
-                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                FieldValue: record["LocationName"] || ""
-            },
-            {
-                FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                FieldValue: record["RegionName"] || ""
-            },
-            {
-                FiledName: "CustomDateControl1__CF_CF",
-                FieldValue: this.getDate(record["BirthDate"]) 
-            },
-            {
-                FiledName: "CustomDateControl1__CF_CF_CF",
-                FieldValue: this.getDate(record["EntDate"] ) 
-            },
-            {
-                FiledName: "CustomDateControl1__CF",
-                FieldValue: this.getDate(record["OffDate"] )
-            }
-        ];
-        //update cf from existing data
-        if(memberJson.CustomFields){
-            for(let cf of memberJson.CustomFields){
-                let exist = customFields.find(x=>x.FiledName == cf.FiledName);
-                if(!exist) customFields.push(cf);
-                else{
-                    exist.FieldValue = exist.FieldValue || cf.FieldValue;
-                }
-            }
-        }
-        let d = {
-            AccessRules: memberJson.AccessRules || [],
-            ApbWorkgroupId: memberJson.ApbWorkgroupId || workgroupId,
-            Attributes: {},
-            Credentials: memberJson.Credentials || [],
-            EmployeeNumber: (memberJson.EmployeeNumber || record["SupporterNo"]) || "" ,
-            EndDate: endDate,
-            FirstName: (record["EngName"] || memberJson.FirstName) || "-",
-            GeneralInformation: "",
-            LastName: (record["SupporterName"] || memberJson.FirstName) || "_",
-            NonPartitionWorkGroups: [],
-            PersonalDetails: personalDetails,
-            Potrait: memberJson.Potrait || "",
-            PrimaryWorkgroupId: memberJson.PrimaryWorkgroupId||workgroupId,
-            PrimaryWorkgroupName: memberJson.PrimaryWorkgroupName||workgroupName,
-            SmartCardProfileId: memberJson.SmartCardProfileId || "0",
-            StartDate: startDate,
-            Status: memberJson.Status || 61,
-            Token: memberJson.Token || "-1",
-            TraceDetails: memberJson.TraceDetails || {},
-            Vehicle1: memberJson.Vehicle1 || {},
-            Vehicle2: memberJson.Vehicle2 || {},
-            VisitorDetails: memberJson.VisitorDetails || {VisitorCardStatus: 0, VisitorCustomValues: {}},
-            CustomFields:customFields,
-            token:"-1",
-            _links: []
-        };
+                    let member = members.find(x => x.get("EmployeeNumber") == supporterNo);
+                    let memberJson = member ? ParseObject.toOutputJSON(member) : {};
 
-                    
-                    try{
+
+                    // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
+                    let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
+                    let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
+                    let personalDetails: any;
+
+                    if (memberJson.PersonalDetails) {
+                        personalDetails = memberJson.PersonalDetails;
+                        personalDetails.ContactDetails.Email = record["EMail"] ? record["EMail"] : "";
+                        personalDetails.ContactDetails.MobileNumber = record["Cellular"] ? record["Cellular"] : "";
+                        personalDetails.DateOfBirth = this.getDate(record["BirthDate"], "T");
+                    } else {
+                        personalDetails = {
+                            Address: "",
+                            ContactDetails: {
+                                Email: record["EMail"] ? record["EMail"] : "",
+                                MobileNumber: record["Cellular"] ? record["Cellular"] : "",
+                                MobileServiceProviderId: "0",
+                                PagerNumber: "",
+                                PagerServiceProviderId: "0",
+                                PhoneNumber: ""
+                            },
+                            DateOfBirth: this.getDate(record["BirthDate"], "T"),
+                            PayrollNumber: "",
+                            Title: "",
+                            UserDetails: {
+                                UserName: "",
+                                Password: ""
+                            }
+                        }
+                    }
+                    let customFields = [
+                        {
+                            FiledName: "CustomDateControl4__CF",
+                            FieldValue: this.getDate(record["UpdDate"])
+                        },
+                        {
+                            FiledName: "CustomDropdownControl1__CF",
+                            FieldValue: workgroupId + ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl1__CF",
+                            FieldValue: record["EmpNo"] || ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl3__CF",
+                            FieldValue: record["AddUser"] || ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl6__CF",
+                            FieldValue: record["CompName"] || ""
+                        },
+                        {
+                            FiledName: "CustomDropdownControl2__CF_CF",
+                            FieldValue: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl5__CF_CF",
+                            FieldValue: record["MVPN"] || ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl5__CF_CF_CF",
+                            FieldValue: record["DeptChiName"] || ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
+                            FieldValue: record["CostCenter"] || ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
+                            FieldValue: record["LocationName"] || ""
+                        },
+                        {
+                            FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
+                            FieldValue: record["RegionName"] || ""
+                        },
+                        {
+                            FiledName: "CustomDateControl1__CF_CF",
+                            FieldValue: this.getDate(record["BirthDate"])
+                        },
+                        {
+                            FiledName: "CustomDateControl1__CF_CF_CF",
+                            FieldValue: this.getDate(record["EntDate"])
+                        },
+                        {
+                            FiledName: "CustomDateControl1__CF",
+                            FieldValue: this.getDate(record["OffDate"])
+                        }
+                    ];
+                    //update cf from existing data
+                    if (memberJson.CustomFields) {
+                        for (let cf of memberJson.CustomFields) {
+                            let exist = customFields.find(x => x.FieldValue == cf.FieldValue);
+                            if (!exist) customFields.push(cf);
+                            else {
+                                exist.FieldValue = cf.FieldValue || exist.FieldValue ;
+                            }
+                        }
+                    }
+                    let d = {
+                        AccessRules: memberJson.AccessRules || [],
+                        ApbWorkgroupId: memberJson.ApbWorkgroupId || workgroupId,
+                        Attributes: memberJson.Attributes || {Void:false},
+                        Credentials: memberJson.Credentials || [],
+                        EmployeeNumber: (memberJson.EmployeeNumber || record["SupporterNo"]) || "",
+                        EndDate: endDate,
+                        FirstName: (record["EngName"] || memberJson.FirstName) || "-",
+                        GeneralInformation: "",
+                        LastName: (record["SupporterName"] || memberJson.FirstName) || "_",
+                        NonPartitionWorkGroups: [],
+                        PersonalDetails: personalDetails,
+                        Potrait: memberJson.Potrait || "",
+                        PrimaryWorkgroupId: memberJson.PrimaryWorkgroupId || workgroupId,
+                        PrimaryWorkgroupName: memberJson.PrimaryWorkgroupName || workgroupName,
+                        SmartCardProfileId: memberJson.SmartCardProfileId || "0",
+                        StartDate: startDate,
+                        Status: memberJson.Status || 61,
+                        Token: memberJson.Token || "-1",
+                        TraceDetails: memberJson.TraceDetails || {},
+                        Vehicle1: memberJson.Vehicle1 || {},
+                        Vehicle2: memberJson.Vehicle2 || {},
+                        VisitorDetails: memberJson.VisitorDetails || { VisitorCardStatus: 0, VisitorCustomValues: {} },
+                        CustomFields: customFields,
+                        token: "-1",
+                        _links: []
+                    };
+
+
+                    try {
                         console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x=>x.ObjectName), d.CustomFields);           
-                    
+                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x => x.ObjectName), d.CustomFields);
+
                         // 5.1 write data to SiPass database
-                        
+
                         Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["SupporterNo"]} ${record["SupporterName"]}`);
                         //sipass requires null
-                        for(let field of d.CustomFields){
-                            field.FieldValue=field.FieldValue || null;
+                        for (let field of d.CustomFields) {
+                            field.FieldValue = field.FieldValue || null;
                         }
-                        
+
                         console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
                         delete (d._links);
                         //d["_id"] = new mongo.ObjectID().toHexString();
                         //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
                         let member = members.find(x => x.get("EmployeeNumber") == record["SupporterNo"]);
                         if (!member) {
-                            delete(d.token);
+                            delete (d.token);
                             member = new Member(d);
                             let holder = await siPassAdapter.postCardHolder(d);
                             member.set("Token", holder["Token"] || "-1");
                         }
                         else {
                             d.token = memberJson.Token;;
-                            if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
+                            if (d.Credentials && d.Credentials.length > 0 && d.Credentials[0].CardNumber) {
                                 await siPassAdapter.putCardHolder(d);
                             }
-                            delete(d.token);
+                            delete (d.token);
                             member.set(d);
                         }
                         objects.push(member);
@@ -790,7 +808,7 @@ export class HRService {
                             await ParseObject.saveAll(objects);
                             objects = [];
                         }
-                    }catch(err){
+                    } catch (err) {
                         console.log("err", JSON.stringify(err));
                         console.log("err data", JSON.stringify(d));
                     }
@@ -826,25 +844,25 @@ export class HRService {
             Log.Info(`${this.constructor.name}`, `4.1 Get Import data getViewChangeMemberLog`);
             Log.Info(`${this.constructor.name}`, `Effect date ${effectDate}`);
             try {
-                let savedLastDate=new Date(this.LastUpdate.vieChangeMemberLog);
-                let res = await this.humanResource.getViewChangeMemberLog(savedLastDate,effectDate);
+                let savedLastDate = new Date(this.LastUpdate.vieChangeMemberLog);
+                let res = await this.humanResource.getViewChangeMemberLog(savedLastDate, effectDate);
                 console.log("getVieChangeMember result", res.length);
                 // recordset:
                 //     [ { SeqNo: 1,
                 //         CompCode: '01',
                 for (let record of res) {
                     //console.log("record effectDate", record["EffectDate"], effectDate);
-                    if(record["EffectDate"] > effectDate)continue; 
-                    let lastUpdate = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
+                    if (record["EffectDate"] > effectDate) continue;
+                    let lastUpdate = moment(record["AddDate"] + " " + record["AddTime"], "YYYY/MM/DD HH:mm:ss").toDate();
                     //console.log("lastUpdate",lastUpdate);
                     memChange.push(record);
-                    this.LastUpdate.vieChangeMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString(): savedLastDate.toISOString();
+                    this.LastUpdate.vieChangeMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString() : savedLastDate.toISOString();
                     EmpNo.push(record["EmpNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieChangeMemberLog ${record["EmpNo"]}`);
-                    
+
                 }
                 var fs = require('fs');
-                fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
+                fs.writeFile(__dirname + '\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -853,31 +871,31 @@ export class HRService {
         }
     }
 
-    private async getVieREMemberLog( memChange: any[], EmpNo: string[]) {
+    private async getVieREMemberLog(memChange: any[], EmpNo: string[]) {
         if (this.checkCycleTime != 5) {
             Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieREMemberLog`);
             try {
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
                 let savedLastDate = new Date(this.LastUpdate.vieREMemberLog);
-                let res = await this.humanResource.getViewREMemberLog(savedLastDate,effectDate);
+                let res = await this.humanResource.getViewREMemberLog(savedLastDate, effectDate);
                 console.log("getVieMemberLog result", res.length);
                 // { recordsets: [ [ [Object], [Object], [Object] ] ],
                 //     recordset:
                 //      [ { SeqNo: 1,
                 //          CompCode: '01',
-                
+
                 for (let record of res) {
                     //console.log("record effectDate", record["EffectDate"], effectDate);
-                    if(record["EffectDate"] > effectDate)continue; 
-                    let lastUpdate = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
+                    if (record["EffectDate"] > effectDate) continue;
+                    let lastUpdate = moment(record["AddDate"] + " " + record["AddTime"], "YYYY/MM/DD HH:mm:ss").toDate();
                     //console.log("lastUpdate",lastUpdate);
-                    this.LastUpdate.vieREMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString(): savedLastDate.toISOString();
+                    this.LastUpdate.vieREMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString() : savedLastDate.toISOString();
                     memChange.push(record);
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieREMemberLog ${record["UserNo"]}`);
                 }
                 var fs = require('fs');
-                fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
+                fs.writeFile(__dirname + '\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -891,17 +909,17 @@ export class HRService {
             try {
                 Log.Info(`${this.constructor.name}`, `4.2 Get Import data vieHQMemberLog`);
                 let effectDate = moment(new Date()).format("YYYY/MM/DD");
-                let savedLastDate=new Date(this.LastUpdate.vieHQMemberLog);
-                let res = await this.humanResource.getViewHQMemberLog(savedLastDate,effectDate);
+                let savedLastDate = new Date(this.LastUpdate.vieHQMemberLog);
+                let res = await this.humanResource.getViewHQMemberLog(savedLastDate, effectDate);
                 console.log("getVieHq result", res.length);
-                
-                for (let record of res) {               
+
+                for (let record of res) {
                     //console.log("record effectDate", record["EffectDate"], effectDate);        
-                    if(record["EffectDate"] > effectDate)  continue; 
-                    let lastUpdate = moment(record["AddDate"]+" "+record["AddTime"],"YYYY/MM/DD HH:mm:ss").toDate();
+                    if (record["EffectDate"] > effectDate) continue;
+                    let lastUpdate = moment(record["AddDate"] + " " + record["AddTime"], "YYYY/MM/DD HH:mm:ss").toDate();
                     //console.log("lastUpdate",lastUpdate);
-                    this.LastUpdate.vieHQMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString(): savedLastDate.toISOString();
-                    
+                    this.LastUpdate.vieHQMemberLog = lastUpdate > savedLastDate ? lastUpdate.toISOString() : savedLastDate.toISOString();
+
                     if (record["DataType"] == "H") {
                         memNew.push(record);
                     }
@@ -910,13 +928,13 @@ export class HRService {
                     }
                     else {
                         memChange.push(record);
-                    }                    
+                    }
                     EmpNo.push(record["UserNo"]);
                     Log.Info(`${this.constructor.name}`, `Import data vieHQMemberLog ${record["UserNo"]}`);
                 }
                 var fs = require('fs');
-                fs.writeFile(__dirname+'\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
-                    
+                fs.writeFile(__dirname + '\\hr_last_update.tmp', JSON.stringify(this.LastUpdate), 'utf8', null);
+
             }
             catch (ex) {
                 this.checkCycleTime = 5;
@@ -925,7 +943,7 @@ export class HRService {
         }
     }
 
-    
+
 }
 
 //export default new HRService();

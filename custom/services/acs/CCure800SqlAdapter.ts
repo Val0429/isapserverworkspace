@@ -54,16 +54,8 @@ export class CCure800SqlAdapter {
     
             //console.log(insert);
     
-            this.adodbConn
-                .execute(delData)
-                .then(data => {
-                    console.log(JSON.stringify(data, null, 2));
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-    
-            return null;
+            await this.adodbConn
+                .execute(delData);
     }
     async writeMember(data, accessRules:string[], customFields:any[], permission = "") {
         let ccurePermissionTables = await new Parse.Query(PermissionTable)
@@ -77,7 +69,9 @@ export class CCure800SqlAdapter {
                 ccureAccessRules.push(accessRule);
             }
         }
-        
+        for(let cf of customFields){
+            cf.FieldValue = cf.FieldValue || "";
+        }
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
         await this.writeToMdb(data, ccureAccessRules, customFields, permission);        
     }
