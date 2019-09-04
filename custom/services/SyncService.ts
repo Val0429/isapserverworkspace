@@ -302,10 +302,11 @@ export class SyncService{
                     .equalTo("system", 800)
                     .find();
         let parseObjects = [];
-        for (let idx = 0; idx < records.length; idx++) {
-            const r = records[idx];
+        for (const r of records) {
+            if(!r["timespecName"] || !r["timespecId"])continue;
+            
             Log.Info(`${this.constructor.name}`, `Import data CCURE800 TimeSchedule ${r["timespecName"]}-${r["timespecId"]}`);
-            let obj = objects.find(x=>x.get("timeid") == r["timespecId"]);
+            let obj = objects.find(x=>x.get("timeid") == +r["timespecId"]);
             if (!obj) {
                 let d = {
                     system: 800,
@@ -353,7 +354,7 @@ export class SyncService{
                 let o = new Reader(d);
                 objects.push(o);
             }
-            else if(obj.get("readername")!= r["Name"]) {
+            else {
                 obj.set("system", 1);
                 obj.set("readerid", parseInt(r["Token"]));
                 obj.set("readername", r["Name"]);
