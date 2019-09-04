@@ -249,9 +249,9 @@ console.log(update);
     /// 4) to SiPass
     let ret = ParseObject.toOutputJSON(update);
     try{
-        if(ret.Credentials && ret.Credentials.length>0 && ret.Credentials[0].CardNumber){
+        //if(ret.Credentials && ret.Credentials.length>0 && ret.Credentials[0].CardNumber){
             await siPassAdapter.putCardHolder(ret);
-        }
+        //}
         
         ret["Token"] = ret["Token"] + "" ;
         delete ret["token"] ;

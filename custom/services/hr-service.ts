@@ -796,9 +796,9 @@ export class HRService {
                         }
                         else {
                             d.token = memberJson.Token;;
-                            if (d.Credentials && d.Credentials.length > 0 && d.Credentials[0].CardNumber) {
+                            //if (d.Credentials && d.Credentials.length > 0 && d.Credentials[0].CardNumber) {
                                 await siPassAdapter.putCardHolder(d);
-                            }
+                            //}
                             delete (d.token);
                             member.set(d);
                         }
