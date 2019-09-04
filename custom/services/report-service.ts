@@ -44,6 +44,7 @@ const fieldNames = {
     CardEndDate:"Credentials.EndDate"
 }
 export const CustomFields = [
+    { fieldName:"CustomTextBoxControl1__CF", name:"allCardNumber", date:false},
     { fieldName:"CustomTextBoxControl6__CF", name:"companyName", date:false},
     { fieldName:"CustomTextBoxControl2__CF",name:"cardCustodian", date:false},
     { fieldName:"CustomTextBoxControl3__CF", name:"lastEditPerson", date:false},
@@ -273,7 +274,7 @@ export class ReportService{
         let newMember:any = {};
           
         newMember.objectId = member.objectId;      
-
+        newMember.void = member.Attributes && member.Attributes.Void? member.Attributes.Void:false;
         newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
                                     member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
                                     .map(x=>parseInt(x.RuleToken)) : [];
