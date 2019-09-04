@@ -90,7 +90,7 @@ export class ElevatorGroup extends ParseObject<IElevatorGroup> { }
 
 export interface IMember {      // CRUD
     system?: number,            // 0: iSap 4: FET
-    Attributes: {},
+    Attributes?: {Void?:boolean},
     Credentials?: {
         CardNumber: string,
         EndDate: string,
