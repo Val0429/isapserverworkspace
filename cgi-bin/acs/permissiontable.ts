@@ -213,13 +213,13 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             .include("door.readerin")
             .include("door.readerout")
             .include("floor")
-            .include("elevator.floors")
+            .include("elevatorgroup.elevators.reader")
+            .include("elevator.reader")
             .include("floorgroup.floors")
             .include("timeschedule")
             .first();
         let accesslevel = ParseObject.toOutputJSON(accesslevelObject);
         console.log("accesslevel", accesslevel)
-        
         
         if(accesslevel.type=="door"){
             if(!accesslevel.door || !accesslevel.timeschedule)continue;
@@ -259,7 +259,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             }            
         }
 
-        if(accesslevel.type=="elevator"){
+        if(accesslevel.type=="floor"){
             if(!accesslevel.elevator || !accesslevel.floor || !accesslevel.timeschedule)continue;
             
             //compare content with ccure floor name and timename            
@@ -321,7 +321,7 @@ function getCCureFloor(floor: any) {
     return { floorIsInCCure, floor };
 }
 function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors:any[]){
-    let accessLevelIsNotInAcs="accessLevelIsNotInAcs"
+    let accessLevelIsNotInAcs="accessLevelIsNotInAcs";
     for(let accessRule of ccureClearance){
         if(accessRule.type=="door" ){
             let isActive = accessRule.devices && accessRule.devices.length>0 && accessRule.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
@@ -346,7 +346,7 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
                 let isActive = accessRule.elevator.device && accessRule.elevator.device.length>0 && accessRule.elevator.device.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
                 if(!isActive) continue;
 
-                let exists = acsAccessLevels.find(x => x.type == "elevator" && x.elevator.elevatorname == accessRule.elevator.name &&
+                let exists = acsAccessLevels.find(x => x.type == "floor" && x.elevator.elevatorname == accessRule.elevator.name &&
                             accessRule.timespec == x.timeschedule.timename && x.floor.length > 0 && x.floor[0].floorname == accessRule.floor.name);
                 if (!exists)
                     errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${accessRule.floor.name}`, timename: accessRule.timespec });
@@ -369,12 +369,12 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
 async function getAccessLevelInSipass(accessLevel:any){
     let { readers, floors } = await getAccessLevelReaders(accessLevel);
     let results:any[]=[];
-    if(accessLevel.type=="door" || accessLevel.type=="doorGroup" && readers.length>0){
+    if((accessLevel.type=="door" || accessLevel.type=="doorGroup") && readers.length>0){
         let sipassReaders = readers.map(x=>(x.get("readername").substring(0, 2)=="A_" ? x.get("readername").substring(2, x.get("readername").length) : x.get("readername"))+"_"+accessLevel.timeschedule.timename);
         console.log("readers in sipass", sipassReaders);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassReaders).find();
     }
-    if(accessLevel.type=="elevator" || accessLevel.type=="floorGroup" && floors.length>0){
+    else if((accessLevel.type=="floor" || accessLevel.type=="floorGroup" || accessLevel.type=="elevator" || accessLevel.type=="elevatorGroup") && floors.length>0){
         let sipassFloors = floors.map(x=>(x.get("floorname").substring(0, 2)=="A_" ? x.get("floorname").substring(2, x.get("floorname").length) : x.get("floorname"))+"_"+accessLevel.timeschedule.timename);
         console.log("floors in sipass", sipassFloors);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassFloors).find();

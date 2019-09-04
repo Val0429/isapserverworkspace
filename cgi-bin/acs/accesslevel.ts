@@ -3,7 +3,7 @@ import {
 } from 'core/cgi-package';
 
 import { Log } from 'workspace/custom/services/log';
-import { IAccessLevel, AccessLevel, DoorGroup, Floor, FloorGroup } from '../../custom/models'
+import { IAccessLevel, AccessLevel, DoorGroup, Floor, FloorGroup, Elevator, ElevatorGroup } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 var action = new Action({
@@ -212,8 +212,8 @@ export async function getAccessLevelReaders(accessLevel:any) {
             if (door.get("readerout"))
                 readers.push(...door.get("readerout"));
         }
-    }
-    else if (accessLevel.type == "elevator") {
+    }    
+    else if (accessLevel.type == "floor" || accessLevel.type == "elevatorGroup") {
         let floor = await new Parse.Query(Floor)
             .equalTo("objectId", accessLevel.floor.objectId)
             .first();
