@@ -451,7 +451,7 @@ export class HRService {
         //update cf from existing data
         if(memberJson.CustomFields){
             for(let cf of memberJson.CustomFields){
-                let exist = customFields.find(x=>x.FieldValue == cf.FieldValue);
+                let exist = customFields.find(x=>x.FiledName == cf.FiledName);
                 if(!exist) customFields.push(cf);
                 else{
                     exist.FieldValue = exist.FieldValue || cf.FieldValue;
@@ -717,7 +717,7 @@ export class HRService {
         //update cf from existing data
         if(memberJson.CustomFields){
             for(let cf of memberJson.CustomFields){
-                let exist = customFields.find(x=>x.FieldValue == cf.FieldValue);
+                let exist = customFields.find(x=>x.FiledName == cf.FiledName);
                 if(!exist) customFields.push(cf);
                 else{
                     exist.FieldValue = exist.FieldValue || cf.FieldValue;
