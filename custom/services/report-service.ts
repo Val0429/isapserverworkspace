@@ -48,7 +48,7 @@ export const CustomFields = [
     { fieldName:"CustomTextBoxControl6__CF", name:"companyName", date:false},
     { fieldName:"CustomTextBoxControl2__CF",name:"cardCustodian", date:false},
     { fieldName:"CustomTextBoxControl3__CF", name:"lastEditPerson", date:false},
-    { fieldName:"CustomDateControl2__CF", name:"lastEditTime", date:false},
+    { fieldName:"CustomDateControl4__CF", name:"lastEditTime", date:false},
     { fieldName:"CustomDropdownControl1__CF", name:"cardType", date:false},    
     { fieldName:"CustomTextBoxControl5__CF_CF", name:"MVPN", date:false},
     { fieldName:"CustomDropdownControl2__CF_CF", name:"gender", date:false},
