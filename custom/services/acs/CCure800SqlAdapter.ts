@@ -205,7 +205,7 @@ export class CCure800SqlAdapter {
         ,CustomDateControl3__CF  ,CustomDateControl3__CF2  ,CustomDateControl3__CF6
         ,CustomDateControl3__CF7 ,CustomDateControl3__CF5  ,CustomDateControl3__CF3
         ,CustomDateControl3__CF4 ,CustomDateControl3__CF8  ,CustomDateControl3__CF9 
-        ,CustomDateControl3__CF10, Deleted
+        ,CustomDateControl3__CF10, Deleted, Disabled
         ) VALUES ( 
          '${data["EmployeeNumber"]}'     
         , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + moment(data["PersonalDetails"]["DateOfBirth"]).format("YYYY-MM-DD")+ "'" : "NULL"}
@@ -309,7 +309,7 @@ export class CCure800SqlAdapter {
         ,${CustomDateControl3__CF8 ? "'"+moment(CustomDateControl3__CF8).format("YYYY-MM-DD") + "'" : "NULL" }
         ,${CustomDateControl3__CF9 ? "'"+moment(CustomDateControl3__CF9).format("YYYY-MM-DD") + "'" : "NULL" }
         ,${CustomDateControl3__CF10 ? "'"+moment(CustomDateControl3__CF10).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${data.Status == "1"? -1 : 0}
+        ,${data.Status == "1"? -1 : 0}, ${data.Attributes && data.Attributes.Void ? data.Attributes.Void : 0}
         )`;
         
         //console.log(insert);
