@@ -184,8 +184,30 @@ export async function GetMigrationDataPermissionTable() {
             let elevatorOrGroupId = permIdjsonArr[i]["elevatorOrGroupId"];
             let elevatorJson;
 
+            WriteJsonFile("E://testttt.txt",elevatorsGroupby);
+            // All elevators
+            if (elevatorOrGroupId == 1669){
+                    let tempJson = [];
+                    Object.keys(elevatorsGroupby).forEach(key=>{
+                        let deviceId = elevatorsGroupby[key][0]["deviceId"];
+                        tempJson.push
+                        (
+                            {
+                                "type": "elevator",
+                                "name": elevatorsGroupby[key][0]["elevatorName"],
+                                "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
+                            }
+                        );
+                    });
+                    elevatorJson =
+                        {
+                            "type": "elevatorGroup",
+                            "name": "$全部電梯",
+                            "elevators": tempJson
+                        };
+            }
             // 4.1.1 Check Elevator
-            if (isNullOrUndefined(elevatorsGroupby[elevatorOrGroupId]) == false) {
+            else if (isNullOrUndefined(elevatorsGroupby[elevatorOrGroupId]) == false) {
                 let elevatorId = elevatorOrGroupId;
                 let deviceId = elevatorsGroupby[elevatorId][0]["deviceId"];
                 elevatorJson =
@@ -202,12 +224,12 @@ export async function GetMigrationDataPermissionTable() {
                     let tempJson = [];
                     for (var j = 0; j < groupMemberGroupby[groupId].length; j++) {
                         let elevatorId = groupMemberGroupby[groupId][j]["objectId"];
-                        let deviceId = elevatorsGroupby[elevatorId]["deviceId"];
+                        let deviceId = elevatorsGroupby[elevatorId][0]["deviceId"];
                         tempJson.push
                             (
                                 {
                                     "type": "elevator",
-                                    "name": elevatorsGroupby[elevatorId]["elevatorName"],
+                                    "name": elevatorsGroupby[elevatorId][0]["elevatorName"],
                                     "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
                                 }
                             );
