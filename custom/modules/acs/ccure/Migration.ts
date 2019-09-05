@@ -184,7 +184,7 @@ export async function GetMigrationDataPermissionTable() {
             let elevatorOrGroupId = permIdjsonArr[i]["elevatorOrGroupId"];
             let elevatorJson;
 
-            WriteJsonFile("E://testttt.txt",elevatorsGroupby);
+            //WriteJsonFile("E://testttt.txt",elevatorsGroupby);
             // All elevators
             if (elevatorOrGroupId == 1669){
                     let tempJson = [];
