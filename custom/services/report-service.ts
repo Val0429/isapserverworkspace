@@ -210,6 +210,9 @@ export class ReportService{
                     .ascending("LastName");      
         console.log("filter member", filter);
         // looking for duplication
+        if (filter.objectId) {
+            query.equalTo("objectId", filter.objectId);
+        }
         if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
         if (filter.eCardNumber) query.equalTo("Credentials.CardNumber", filter.eCardNumber);
         if (filter.start2 && filter.end2) {
