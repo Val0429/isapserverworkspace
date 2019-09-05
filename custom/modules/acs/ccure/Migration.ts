@@ -184,7 +184,6 @@ export async function GetMigrationDataPermissionTable() {
             let elevatorOrGroupId = permIdjsonArr[i]["elevatorOrGroupId"];
             let elevatorJson;
 
-            WriteJsonFile("E://testttt.txt",elevatorsGroupby);
             // All elevators
             if (elevatorOrGroupId == 1669){
                     let tempJson = [];
@@ -202,7 +201,7 @@ export async function GetMigrationDataPermissionTable() {
                     elevatorJson =
                         {
                             "type": "elevatorGroup",
-                            "name": "$全部電梯",
+                            "name": elevatorGroupsKeyMap[1669],
                             "elevators": tempJson
                         };
             }
