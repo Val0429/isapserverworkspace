@@ -74,7 +74,8 @@ export class ReportHeatmap extends ReportSummary {
      */
     public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
         try {
-            await super.Initialization(input, userSiteIds, { useWeather: false });
+            this._isEnableWeather = false;
+            await super.Initialization(input, userSiteIds);
 
             let tasks = [];
 

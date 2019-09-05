@@ -171,7 +171,8 @@ export class Campaign extends ReportSummary {
 
             this._campaignBudget = this._campaign.getValue('budget');
 
-            await super.Initialization(input, userSiteIds, { useWeather: false });
+            this._isEnableWeather = false;
+            await super.Initialization(input, userSiteIds);
 
             let tasks = [];
 

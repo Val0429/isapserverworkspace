@@ -137,7 +137,8 @@ export class Campaign extends ReportSummary {
 
             input.siteIds = siteIds;
 
-            await super.Initialization(input, userSiteIds, { useWeather: false });
+            this._isEnableWeather = false;
+            await super.Initialization(input, userSiteIds);
 
             let tasks = [];
 

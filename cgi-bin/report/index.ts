@@ -9,16 +9,19 @@ let action = new Action({
 
 export default action;
 
-export class ReportSummary {
+/**
+ * Report Summary
+ */
+export class Report {
     /**
      *
      */
-    private _sites: IDB.LocationSite[] = [];
+    protected _sites: IDB.LocationSite[] = [];
 
     /**
      *
      */
-    private _siteIds: ReportSummary.IPublicData<string[]> = undefined;
+    protected _siteIds: Report.IPublicData<string[]> = undefined;
     public get siteIds(): string[] {
         if (!this._siteIds || this._siteIds.initTime < this._initTime) {
             let data = this._sites.map((value, index, array) => {
@@ -37,7 +40,7 @@ export class ReportSummary {
     /**
      *
      */
-    private _sitesIdDictionary: ReportSummary.IPublicData<IBase.IObject.IKeyValueObject> = undefined;
+    protected _sitesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValueObject> = undefined;
     public get sitesIdDictionary(): IBase.IObject.IKeyValueObject {
         if (!this._sitesIdDictionary || this._sitesIdDictionary.initTime < this._initTime) {
             let data = {};
@@ -62,15 +65,7 @@ export class ReportSummary {
     /**
      *
      */
-    private _type: Enum.ESummaryType = Enum.ESummaryType.hour;
-    public get type(): Enum.ESummaryType {
-        return this._type;
-    }
-
-    /**
-     *
-     */
-    private _mode: Enum.EDeviceMode = undefined;
+    protected _mode: Enum.EDeviceMode = undefined;
     public get mode(): Enum.EDeviceMode {
         return this._mode;
     }
@@ -81,48 +76,23 @@ export class ReportSummary {
     /**
      *
      */
-    private _currDateRange: IBase.IDate.IRange = {
-        startDate: new Date(),
-        endDate: new Date(),
-    };
-    public get currDateRange(): IBase.IDate.IRange {
-        return {
-            startDate: new Date(this._currDateRange.startDate),
-            endDate: new Date(this._currDateRange.endDate),
-        };
+    protected _officeHours: IDB.OfficeHour[] = [];
+
+    /**
+     *
+     */
+    protected _isEnableOfficeHour: boolean = true;
+    public get isEnableOfficeHour(): boolean {
+        return this._isEnableOfficeHour;
+    }
+    public set isEnableOfficeHour(value: boolean) {
+        this._isEnableOfficeHour = value;
     }
 
     /**
      *
      */
-    private _prevDateRange: IBase.IDate.IRange = {
-        startDate: new Date(),
-        endDate: new Date(),
-    };
-    public get prevDateRange(): IBase.IDate.IRange {
-        return {
-            startDate: new Date(this._prevDateRange.startDate),
-            endDate: new Date(this._prevDateRange.endDate),
-        };
-    }
-
-    /**
-     *
-     */
-    private _dateGap: number = 0;
-    public get dateGap(): number {
-        return this._dateGap;
-    }
-
-    /**
-     *
-     */
-    private _officeHours: IDB.OfficeHour[] = [];
-
-    /**
-     *
-     */
-    private _summaryOfficeHours: ReportSummary.IPublicData<IResponse.IReport.ISummaryOfficeHour[]> = undefined;
+    protected _summaryOfficeHours: Report.IPublicData<IResponse.IReport.ISummaryOfficeHour[]> = undefined;
     public get summaryOfficeHours(): IResponse.IReport.ISummaryOfficeHour[] {
         if (!this._summaryOfficeHours || this._summaryOfficeHours.initTime < this._initTime) {
             let data = this._officeHours.map<IResponse.IReport.ISummaryOfficeHour>((value, index, array) => {
@@ -150,44 +120,12 @@ export class ReportSummary {
     /**
      *
      */
-    private _weathers: IDB.Weather[] = [];
+    protected _devices: IDB.Device[] = [];
 
     /**
      *
      */
-    private _summaryWeathers: ReportSummary.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
-    public get summaryWeathers(): IResponse.IReport.ISummaryWeather[] {
-        if (!this._summaryWeathers || this._summaryWeathers.initTime < this._initTime) {
-            let data = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
-                let site: IResponse.IObject = this.sitesIdDictionary[value.getValue('site').id];
-
-                return {
-                    site: site,
-                    date: value.getValue('date'),
-                    icon: value.getValue('icon'),
-                    temperatureMin: value.getValue('temperatureMin'),
-                    temperatureMax: value.getValue('temperatureMax'),
-                };
-            });
-
-            this._summaryWeathers = {
-                initTime: new Date().getTime(),
-                data: data,
-            };
-        }
-
-        return JSON.parse(JSON.stringify(this._summaryWeathers.data));
-    }
-
-    /**
-     *
-     */
-    private _devices: IDB.Device[] = [];
-
-    /**
-     *
-     */
-    private _devicesIdDictionary: ReportSummary.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
+    protected _devicesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
     public get devicesIdDictionary(): IBase.IObject.IKeyValue<IDB.Device> {
         if (!this._devicesIdDictionary || this._devicesIdDictionary.initTime < this._initTime) {
             let data = {};
@@ -209,7 +147,7 @@ export class ReportSummary {
     /**
      *
      */
-    private _initTime: number = 0;
+    protected _initTime: number = 0;
     protected get initTime(): number {
         return this._initTime;
     }
@@ -219,30 +157,8 @@ export class ReportSummary {
      * @param input
      * @param userSiteIds
      */
-    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[], option?: ReportSummary.IInitOption): Promise<void> {
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
         try {
-            option = {
-                ...{
-                    useOfficeHour: true,
-                    useWeather: true,
-                },
-                ...option,
-            };
-
-            this._type = input.type;
-
-            this._currDateRange = {
-                startDate: new Date(input.startDate),
-                endDate: new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)),
-            };
-
-            this._dateGap = this.currDateRange.endDate.getTime() - this.currDateRange.startDate.getTime();
-
-            this._prevDateRange = {
-                startDate: new Date(this.currDateRange.startDate.getTime() - this._dateGap),
-                endDate: new Date(this.currDateRange.startDate),
-            };
-
             this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
 
             let tasks = [];
@@ -253,18 +169,10 @@ export class ReportSummary {
                 })(),
             );
 
-            if (option.useOfficeHour) {
+            if (this._isEnableOfficeHour) {
                 tasks.push(
                     (async () => {
                         this._officeHours = await this.GetOfficeHours();
-                    })(),
-                );
-            }
-
-            if (option.useWeather) {
-                tasks.push(
-                    (async () => {
-                        this._weathers = await this.GetWeathers();
                     })(),
                 );
             }
@@ -285,13 +193,11 @@ export class ReportSummary {
             this._devices.length = 0;
             this._officeHours.length = 0;
             this._sites.length = 0;
-            this._weathers.length = 0;
 
             this._devicesIdDictionary = null;
             this._siteIds = null;
             this._sitesIdDictionary = null;
             this._summaryOfficeHours = null;
-            this._summaryWeathers = null;
         } catch (e) {
             throw e;
         }
@@ -364,36 +270,14 @@ export class ReportSummary {
     }
 
     /**
-     * Get type date
-     * @param date
-     * @param type
-     */
-    public GetTypeDate(date: Date): Date;
-    public GetTypeDate(date: Date, type: Enum.ESummaryType): Date;
-    public GetTypeDate(date: Date, type?: Enum.ESummaryType): Date {
-        try {
-            type = type || this._type;
-
-            return DateTime.Type2Date(date, type);
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get report
      * @param collection
      * @param includes
      * @param startDate
      * @param endDate
      */
-    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[]): Promise<T[]>;
-    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<T[]>;
-    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate?: Date, endDate?: Date): Promise<T[]> {
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<T[]> {
         try {
-            startDate = startDate || this.currDateRange.startDate;
-            endDate = endDate || this.currDateRange.endDate;
-
             let reportQuery: Parse.Query = new Parse.Query(collection)
                 // .equalTo('type', Enum.ESummaryType.hour)
                 .containedIn('device', this._devices)
@@ -440,6 +324,248 @@ export class ReportSummary {
             });
 
             return officeHours;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Office hour filter
+     * @param datas
+     */
+    public OfficeHourFilter<T extends Parse.Object>(datas: T[]): T[] {
+        try {
+            if (this._isEnableOfficeHour) {
+                datas = datas.filter((value, index, array) => {
+                    let date: Date = value.get('date');
+                    let day: number = date.getDay();
+                    let hour: number = new Date(date).setFullYear(2000, 0, 1);
+                    let site: IDB.LocationSite = value.get('site');
+
+                    return !!this._officeHours.find((value1, index1, array1) => {
+                        let siteIds: string[] = value1.getValue('sites').map((value2, index2, array2) => {
+                            return value2.id;
+                        });
+
+                        return (
+                            siteIds.indexOf(site.id) > -1 &&
+                            !!value1.getValue('dayRanges').find((value2, index2, array2) => {
+                                let startDay: number = parseInt(value2.startDay);
+                                let endDay: number = value2.endDay === '0' ? 7 : parseInt(value2.endDay);
+                                let days = Array.from({ length: endDay - startDay + 1 }, (i, j) => (j + startDay === 7 ? 0 : j + startDay));
+
+                                let startDate: number = value2.startDate.getTime();
+                                let endDate: number = value2.endDate.getTime();
+
+                                return days.indexOf(day) > -1 && startDate <= hour && hour < endDate;
+                            })
+                        );
+                    });
+                });
+            }
+
+            return datas;
+        } catch (e) {
+            throw e;
+        }
+    }
+}
+
+/**
+ * Report Summary
+ */
+export class ReportSummary extends Report {
+    /**
+     *
+     */
+    protected _type: Enum.ESummaryType = Enum.ESummaryType.hour;
+    public get type(): Enum.ESummaryType {
+        return this._type;
+    }
+
+    /**
+     *
+     */
+    protected _currDateRange: IBase.IDate.IRange = {
+        startDate: new Date(),
+        endDate: new Date(),
+    };
+    public get currDateRange(): IBase.IDate.IRange {
+        return {
+            startDate: new Date(this._currDateRange.startDate),
+            endDate: new Date(this._currDateRange.endDate),
+        };
+    }
+
+    /**
+     *
+     */
+    protected _prevDateRange: IBase.IDate.IRange = {
+        startDate: new Date(),
+        endDate: new Date(),
+    };
+    public get prevDateRange(): IBase.IDate.IRange {
+        return {
+            startDate: new Date(this._prevDateRange.startDate),
+            endDate: new Date(this._prevDateRange.endDate),
+        };
+    }
+
+    /**
+     *
+     */
+    protected _dateGap: number = 0;
+    public get dateGap(): number {
+        return this._dateGap;
+    }
+
+    /**
+     *
+     */
+    protected _weathers: IDB.Weather[] = [];
+
+    /**
+     *
+     */
+    protected _isEnableWeather: boolean = true;
+    public get isEnableWeather(): boolean {
+        return this._isEnableWeather;
+    }
+    public set isEnableWeather(value: boolean) {
+        this._isEnableWeather = value;
+    }
+
+    /**
+     *
+     */
+    protected _summaryWeathers: ReportSummary.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
+    public get summaryWeathers(): IResponse.IReport.ISummaryWeather[] {
+        if (!this._summaryWeathers || this._summaryWeathers.initTime < this._initTime) {
+            let data = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
+                let site: IResponse.IObject = this.sitesIdDictionary[value.getValue('site').id];
+
+                return {
+                    site: site,
+                    date: value.getValue('date'),
+                    icon: value.getValue('icon'),
+                    temperatureMin: value.getValue('temperatureMin'),
+                    temperatureMax: value.getValue('temperatureMax'),
+                };
+            });
+
+            this._summaryWeathers = {
+                initTime: new Date().getTime(),
+                data: data,
+            };
+        }
+
+        return JSON.parse(JSON.stringify(this._summaryWeathers.data));
+    }
+
+    /**
+     * Initialization
+     * @param input
+     * @param userSiteIds
+     */
+    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
+        try {
+            this._type = input.type;
+
+            this._currDateRange = {
+                startDate: new Date(input.startDate),
+                endDate: new Date(new Date(input.endDate).setDate(input.endDate.getDate() + 1)),
+            };
+
+            this._dateGap = this.currDateRange.endDate.getTime() - this.currDateRange.startDate.getTime();
+
+            this._prevDateRange = {
+                startDate: new Date(this.currDateRange.startDate.getTime() - this._dateGap),
+                endDate: new Date(this.currDateRange.startDate),
+            };
+
+            this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
+
+            let tasks = [];
+
+            tasks.push(
+                (async () => {
+                    this._devices = await this.GetDevices();
+                })(),
+            );
+
+            if (this._isEnableOfficeHour) {
+                tasks.push(
+                    (async () => {
+                        this._officeHours = await this.GetOfficeHours();
+                    })(),
+                );
+            }
+
+            if (this._isEnableWeather) {
+                tasks.push(
+                    (async () => {
+                        this._weathers = await this.GetWeathers();
+                    })(),
+                );
+            }
+
+            await Promise.all(tasks);
+
+            this._initTime = new Date().getTime();
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Dispose class
+     */
+    public Dispose(): void {
+        try {
+            this._weathers.length = 0;
+
+            this._summaryWeathers = null;
+
+            super.Dispose();
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get type date
+     * @param date
+     * @param type
+     */
+    public GetTypeDate(date: Date): Date;
+    public GetTypeDate(date: Date, type: Enum.ESummaryType): Date;
+    public GetTypeDate(date: Date, type?: Enum.ESummaryType): Date {
+        try {
+            type = type || this._type;
+
+            return DateTime.Type2Date(date, type);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Get report
+     * @param collection
+     * @param includes
+     * @param startDate
+     * @param endDate
+     */
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[]): Promise<T[]>;
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<T[]>;
+    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate?: Date, endDate?: Date): Promise<T[]> {
+        try {
+            startDate = startDate || this.currDateRange.startDate;
+            endDate = endDate || this.currDateRange.endDate;
+
+            let reports = await super.GetReports(collection, includes, startDate, endDate);
+
+            return reports;
         } catch (e) {
             throw e;
         }
@@ -621,45 +747,6 @@ export class ReportSummary {
     }
 
     /**
-     * Office hour filter
-     * @param datas
-     */
-    public OfficeHourFilter<T extends Parse.Object>(datas: T[]): T[] {
-        try {
-            datas = datas.filter((value, index, array) => {
-                let date: Date = value.get('date');
-                let day: number = date.getDay();
-                let hour: number = new Date(date).setFullYear(2000, 0, 1);
-                let site: IDB.LocationSite = value.get('site');
-
-                return !!this._officeHours.find((value1, index1, array1) => {
-                    let siteIds: string[] = value1.getValue('sites').map((value2, index2, array2) => {
-                        return value2.id;
-                    });
-
-                    return (
-                        siteIds.indexOf(site.id) > -1 &&
-                        !!value1.getValue('dayRanges').find((value2, index2, array2) => {
-                            let startDay: number = parseInt(value2.startDay);
-                            let endDay: number = value2.endDay === '0' ? 7 : parseInt(value2.endDay);
-                            let days = Array.from({ length: endDay - startDay + 1 }, (i, j) => (j + startDay === 7 ? 0 : j + startDay));
-
-                            let startDate: number = value2.startDate.getTime();
-                            let endDate: number = value2.endDate.getTime();
-
-                            return days.indexOf(day) > -1 && startDate <= hour && hour < endDate;
-                        })
-                    );
-                });
-            });
-
-            return datas;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get base summary data attr
      * @param data
      */
@@ -707,7 +794,7 @@ export class ReportSummary {
     }
 }
 
-export namespace ReportSummary {
+export namespace Report {
     /**
      *
      */
@@ -715,12 +802,14 @@ export namespace ReportSummary {
         initTime: number;
         data: T;
     }
+}
 
+export namespace ReportSummary {
     /**
      *
      */
-    export interface IInitOption {
-        useOfficeHour?: boolean;
-        useWeather?: boolean;
+    export interface IPublicData<T> {
+        initTime: number;
+        data: T;
     }
 }
