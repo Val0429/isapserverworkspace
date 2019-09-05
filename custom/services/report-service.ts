@@ -199,10 +199,14 @@ export class ReportService{
         return {results, total};
     }
     async getMemberRecord(filter:any, limit:number=10000, skip:number=0){
+        let defaultMemberFields = Object.assign([], memberFields);
+        if(filter.showImage=="true"){
+            defaultMemberFields.push("CardholderPortrait");
+        }
         /// 1) Make Query
         var query = new Parse.Query(Member)
                     .notEqualTo("Status", 1)
-                    .select(...memberFields)
+                    .select(...defaultMemberFields)
                     .ascending("LastName");      
         console.log("filter member", filter);
         // looking for duplication
@@ -298,7 +302,7 @@ export class ReportService{
         newMember.pin = credential.Pin || "0";
         newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
         newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
-        
+        newMember.cardholderPortrait = member.CardholderPortrait? ("data:image/png;base64,"+member.CardholderPortrait) : "";
 
         // tab2
         if (member.PersonalDetails) {
