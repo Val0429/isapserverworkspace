@@ -74,7 +74,7 @@ export class SiPassPersonService {
             'clientUniqueId': data.uniqueId
         };
           
-        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Cardholders/${data2.token}`;
+        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Cardholders/${data2.Token}`;
         
         // console.info(`url = ${url}`);
         // console.log(`requestHeader =` + JSON.stringify(requestHeader)); 
@@ -131,44 +131,22 @@ export class SiPassPersonService {
 
         let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Cardholders`;
 
+        let options={
+            method:"POST",
+            rejectUnauthorized: false,
+            uri:url,
+            timeout:0,
+            headers:requestHeader,
+            body:JSON.stringify(requestBody)
+        };
         // console.info(`url = ${url}`);
         // console.log(`requestHeader =` + JSON.stringify(requestHeader));
         // console.log(`requestBody =` + JSON.stringify(requestBody));
+        // console.log(`requestHeader = ${requestHeader}`);
+        // console.log(`requestBody = ${requestBody}`);
+        // console.dir(requestHeader, {depth: null})
 
-        let result: any = await new Promise<any>((resolve, reject) => {
-            try {
-                HttpClient.post(
-                    {
-                        url: url,
-                        json: true,
-                        body: requestBody,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 201) {
-                            //console.log(`statusCode = ${response.statusCode}`);
-                            return reject(body);
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
-            }
-        })
-        // .catch((e) => {
-        //     //console.log(`catch error ${e}`);
-        //     return JSON.stringify(e);
-
-        // });
-
-        // console.log('\n.........................................');
-        // console.info(`result = ` + JSON.stringify(result));
-        // console.log('\n.........................................');
-        return JSON.stringify(result);
+        return await request(options);
 
     }
     async DeletePerson(data: SiPassDataStructure.SiPassHrApiGlobalParameter, sessionId: string, cardHolderToken: string) {
@@ -218,8 +196,16 @@ export class SiPassPersonService {
             'clientUniqueId': data.uniqueId
         };
 
-        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Cardholders/${data2.token}`;
+        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/Cardholders/${data2.Token}`;
 
+        let options={
+            method:"PUT",
+            rejectUnauthorized: false,
+            uri:url,
+            timeout:0,
+            headers:requestHeader,
+            body:JSON.stringify(requestBody)
+        };
         // console.info(`url = ${url}`);
         // console.log(`requestHeader =` + JSON.stringify(requestHeader));
         // console.log(`requestBody =` + JSON.stringify(requestBody));
@@ -227,38 +213,7 @@ export class SiPassPersonService {
         // console.log(`requestBody = ${requestBody}`);
         // console.dir(requestHeader, {depth: null})
 
-        let result: any = await new Promise<any>((resolve, reject) => {
-            try {
-                HttpClient.put(
-                    {
-                        url: url,
-                        json: true,
-                        body: requestBody,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 200) {
-                            console.log(`statusCode = ${response.statusCode}`);
-                            return reject(body);
-                        }
-
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
-            }
-        // }).catch((e) => {
-        //     console.log(e);
-        //     return JSON.stringify(e);
-        });
-
-        // console.log('\n.........................................');
-        // console.info(`result = ` + JSON.stringify(result));
-        // console.log('\n.........................................');
-        return JSON.stringify(result);
+        return await request(options);
     }
 
     public async GetAllCredentialProfiles(data: SiPassDataStructure.SiPassHrApiGlobalParameter,sessionId:string) {
