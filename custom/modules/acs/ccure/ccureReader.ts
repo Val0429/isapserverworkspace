@@ -60,8 +60,8 @@ export class CCUREReader {
      */
     public async connectAsync(config): Promise<void> {
         if (this._isConnected) return;
-        if (isNullOrUndefined(config) === true) throw `Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`;
-        if (config.database === "") throw `Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`;
+        if (isNullOrUndefined(config) === true) throw new Error(`Internal Error: <CCUREReader::connectAsync> config is equal null or undefined.`);
+        if (config.database === "") throw new Error(`Internal Error: <CCUREReader::connectAsync> config.odbcDSN cannot be empty`);
         this.verifyIP(config.server);
         this.verifyPort(config.port);
 
@@ -115,8 +115,8 @@ export class CCUREReader {
                                     condition?: String,
                                     isOpenquery ?: boolean): Promise<void> {
 
-        if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
-        if (isNullOrUndefined(OnDatareceived) === true) throw `Internal Error: <CCUREReader::queryStream> OnDatareceived cannot be null`;
+        if (this._isConnected === false) throw new Error(`Internal Error: <CCUREReader::queryStream> No connection with SQL server`);
+        if (isNullOrUndefined(OnDatareceived) === true) throw new Error(`Internal Error: <CCUREReader::queryStream> OnDatareceived cannot be null`);
 
         let queryParam: IQueryParam = queryMap[queryContent];
 
@@ -185,7 +185,7 @@ export class CCUREReader {
      */
     public async queryAllAsync(queryContent: QueryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<any>> {
 
-        if (this._isConnected === false) throw `Internal Error: <CCUREReader::queryStream> No connection with SQL server`;
+        if (this._isConnected === false) throw new Error(`Internal Error: <CCUREReader::queryStream> No connection with SQL server`);
 
         let queryParam: IQueryParam = queryMap[queryContent];
 
@@ -338,7 +338,7 @@ export class CCUREReader {
      * @param err error message
      */
     protected defaultErrCalback(err, queryContent: QueryContent) {
-        throw (`defaultErrCalback : happened\n Message: ${err}`);
+        throw new Error(`defaultErrCalback : happened\n Message: ${err}`);
     }
 
     /**
@@ -353,7 +353,7 @@ export class CCUREReader {
         for (let i: number = 0; i < 4; i++) {
             var num = Number(strArr[i]);
             if (isNaN(num) || num < 0 || num > 255) {
-                throw `Internal Error: <CCUREReader::verifyIP> address format error, address ip:<${address}>`;
+                throw new Error(`Internal Error: <CCUREReader::verifyIP> address format error, address ip:<${address}>`);
             }
         }
     }
@@ -364,6 +364,6 @@ export class CCUREReader {
      */
     protected verifyPort(p: number): void {
         if (isNaN(p) || p < 0 || p >= 65535)
-            throw `Internal Error: <CCUREReader::verifyPort> ip format error, port:<${p}>`;
+            throw new Error(`Internal Error: <CCUREReader::verifyPort> ip format error, port:<${p}>`);
     }
 };
