@@ -134,8 +134,9 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
         /// 4) to SiPass
         let ret = ParseObject.toOutputJSON(update);
         //console.log("ret", ret);
-        await siPassAdapter.putCardHolder(ret);
-        ret["Token"] = ret["Token"] + "" ;
+        let sipassUpdate= await siPassAdapter.putCardHolder(ret);
+        //console.log("sipassUpdate", JSON.stringify(sipassUpdate));
+        //ret["Token"] = ret["Token"] + "" ;
     
         let cCure800SqlAdapter = new CCure800SqlAdapter();     
         await cCure800SqlAdapter.writeMember(ret ,ret.AccessRules.map(x=>x.ObjectName));
@@ -168,10 +169,10 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     await  Log.Info(`delete`, `${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false, "Member");
     try{
         
-        await siPassAdapter.delCardHolder(obj.get("Token"));
+        if(obj.get("Token")&&obj.get("Token")!="-1")await siPassAdapter.delCardHolder(obj.get("Token"));
         let ret = ParseObject.toOutputJSON(obj);
         let cCure800SqlAdapter = new CCure800SqlAdapter();
-        await cCure800SqlAdapter.writeMember(ret, ret.AccessRules.map(x=>x.ObjectName), ret.CustomFields);
+        await cCure800SqlAdapter.writeMember(ret, ret.AccessRules.map(x=>x.ObjectName));
 
         obj.set("Status", 1);
         /// 2) Delete
