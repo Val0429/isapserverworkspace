@@ -138,7 +138,7 @@ export class ReportService{
     }
     async getAttendanceRecord(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)
-        .include("member")
+        //.include("member")
         .include("door")
         .equalTo("type", 21)
         .equalTo("state_id", 2)
@@ -162,24 +162,30 @@ export class ReportService{
         
         let results = [];
         let records = await query.skip(skip).limit(limit).find();
-        let total = await query.count();
-
-        for(let record of records.map(x=>ParseObject.toOutputJSON(x))){
-            if (!record.date_occurred || !record.date_time_occurred) continue;
+        let attendances = records.map(x=>ParseObject.toOutputJSON(x));
+        console.log("attendances.length", attendances.length);
+        let memberIds = attendances.map(x=>x.member ? x.member.objectId : "").filter(x=>x);
+        console.log("memberIds.length", memberIds.length);
+        let total = await query.count();        
+        filter.objectIds = memberIds;
+        let normalizedMembers = await this.getMemberRecord(filter, limit, skip);
+        console.log("normalizedMembers.length", normalizedMembers.results.length);
+        for(let record of attendances){
+            if (!record.date_occurred || !record.date_time_occurred ||!record.member || !record.door) continue;
             //normalize member
-            if(record.member){
-                let newMember = this.normalizeMember(record.member);
-                record.memberObjectId = newMember.objectId;
-                delete(newMember.objectId);
-                delete(record.member);
-                //merge field
-                Object.assign(record, newMember);
-            }   
-            if(record.door){
-                //todo we can change this field later                
-                record.at_id = record.door.doorname;
-                delete(record.door);
-            }
+            
+            let newMember = normalizedMembers.results.find(x=>x.objectId==record.member.objectId);
+            if(!newMember)continue;                
+            record.memberObjectId = newMember.objectId;
+            delete(newMember.objectId);
+            delete(record.member);
+            //merge field
+            Object.assign(record, newMember);
+        
+            //todo we can change this field later                
+            record.at_id = record.door.doorname;
+            delete(record.door);
+            
             let thisDayRecords = results.filter(x=>x.date_occurred == record.date_occurred && x.card_no == record.card_no);           
             
             //start, assume in and out at the same time
@@ -203,15 +209,19 @@ export class ReportService{
         if(filter.showImage=="true"){
             defaultMemberFields.push("CardholderPortrait");
         }
+        //console.log("defaultMemberFields", defaultMemberFields)
         /// 1) Make Query
         var query = new Parse.Query(Member)
                     .notEqualTo("Status", 1)
                     .select(...defaultMemberFields)
                     .ascending("LastName");      
-        console.log("filter member", filter);
+        //console.log("filter member", filter);
         
         if (filter.objectId) {
             query.equalTo("objectId", filter.objectId);
+        }
+        if(filter.objectIds && Array.isArray(filter.objectIds)){
+            query.containedIn("objectId", filter.objectIds);
         }
         // looking for duplication
         if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
