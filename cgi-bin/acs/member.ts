@@ -32,28 +32,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
     }
     if (member.Credentials[0]) {
-        let cardno = member.Credentials[0].CardNumber;;
-
-        if (cardno != "") {
-            let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
-            if (cnt != null) {
-                throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
-            }
-
-            let hStart = member.StartDate;
-            let hEnd = member.EndDate;
-            let cStart = member.Credentials[0].StartDate;
-            let cEnd = member.Credentials[0].EndDate;
-
-            if (cEnd <= cStart)
-                throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-            if (hStart > cStart)
-                throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-            if (hEnd < cStart)
-                throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-        }
+        //await checkCardNumber(member);
     }
 
     
@@ -136,28 +115,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     let update = new Member(member);
 
     if (member.Credentials[0]) {
-        let cardno = member.Credentials[0].CardNumber;;
-
-        if (cardno != "") {
-            let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).notEqualTo("objectId", objectId).first();
-            if (cnt != null) {
-                throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
-            }
-
-            let hStart = member.StartDate;
-            let hEnd = member.EndDate;
-            let cStart = member.Credentials[0].StartDate;
-            let cEnd = member.Credentials[0].EndDate;
-
-            if (cEnd <= cStart)
-                throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-            if (hStart > cStart)
-                throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-
-            if (hEnd < cStart)
-                throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
-        }
+        //await checkCardNumber(member);
     }
 
 	update.set("Vehicle1", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
@@ -229,4 +187,25 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+
+async function checkCardNumber(member: any) {
+    let cardno = member.Credentials[0].CardNumber;    
+    if (cardno != "") {
+        let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
+        if (cnt != null) {
+            throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
+        }
+        let hStart = member.StartDate;
+        let hEnd = member.EndDate;
+        let cStart = member.Credentials[0].StartDate;
+        let cEnd = member.Credentials[0].EndDate;
+        if (cEnd <= cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+        if (hStart > cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+        if (hEnd < cStart)
+            throw Errors.throw(Errors.CustomNotExists, [`Credential Start and End Date should be within the Cardholder Start and End Date`]);
+    }
+}
+
 
