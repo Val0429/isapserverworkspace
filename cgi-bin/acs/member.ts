@@ -165,7 +165,10 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 	
 	update.set("GeneralInformation", obj.get("GeneralInformation"));
 	update.set("Status", obj.get("Status"));
-	update.set("Token", obj.get("Token"));
+    update.set("Token", obj.get("Token"));
+    if(!data.parameters.isImageChanged){
+        update.set("CardholderPortrait", obj.get("CardholderPortrait"));
+    }
     update.set("GeneralInformation", obj.get("GeneralInformation"));
     
     
