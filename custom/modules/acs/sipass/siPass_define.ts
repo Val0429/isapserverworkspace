@@ -125,9 +125,9 @@ export interface ICardholderAttributes {
 }
 
 export interface ICardholderVehicle {
-    carColor?: string,
-    carModelNumber?: string,
-    carRegistrationNumber?: string
+    CarColor?: string,
+    CarModelNumber?: string,
+    CarRegistrationNumber?: string
 }
 
 export interface ICardholderWorkGroupAccessRule {
@@ -137,8 +137,8 @@ export interface ICardholderWorkGroupAccessRule {
 }
 
 export interface ICustomFields {
-    filedName?: string,
-    fieldValue?: object,
+    FiledName?: string,
+    FieldValue?: object,
     behaviour?: string
 }
 
@@ -285,46 +285,46 @@ export interface IWorkGroupObject {
 }
 
 export interface ICardholderObject {
-    attributes?: ICardholderAttributes,
-    credentials?: ICardholderCredential[],
-    baseCardNumber?: string,
-    accessRules?: ICardholderAccessRule[],
-    employeeNumber?: string,
-    endDate?: string,
-    firstName?: string,
-    generalInformation?: string,
-    lastName?: string,
-    employeeName?: string,
-    personalDetails?: ICardholderPersonal,
-    primaryWorkgroupId?: number,
-    apbWorkgroupId?: number,
-    primaryWorkgroupName?: string,
-    nonPartitionWorkGroups?: IAccessGroupObject[],
-    smartCardProfileId ?: string,
-    smartCardProfileName ?: string,
-    startDate?: string,
-    status?: ECardholderStatus,
-    token?: string,
-    traceDetails?: ICardholderTrace,
-    vehicle1?: ICardholderVehicle,
-    vehicle2?: ICardholderVehicle,
-    potrait?: string,
-    primaryWorkGroupAccessRule?: ICardholderAccessRule[],
-    nonPartitionWorkgroupAccessRules?: ICardholderWorkGroupAccessRule[],
-    visitorDetails?: IVisitor,
-    customFields?: ICustomFields[],
-    fingerPrints?: IBiometricStatus[],
-    cardholderPortrait?: string,
-    isImageChanged?: boolean,
-    isSignatureChanged?: boolean,
-    cardholderSignature?: string,
-    elevatorRole?: EElevatorRole,
-    elevatorLight?: number,
-    elevatorLanguage?: number,
-    startDateWithoutTime?: string,
-    endDateWithoutTime?: string,
-    lastUpdatedDateTime?: string,
-    reference?: number,
+    Attributes?: ICardholderAttributes,
+    Credentials?: ICardholderCredential[],
+    BaseCardNumber?: string,
+    AccessRules?: ICardholderAccessRule[],
+    EmployeeNumber?: string,
+    EndDate?: string,
+    FirstName?: string,
+    GeneralInformation?: string,
+    LastName?: string,
+    EmployeeName?: string,
+    PersonalDetails?: ICardholderPersonal,
+    PrimaryWorkgroupId?: number,
+    ApbWorkgroupId?: number,
+    PrimaryWorkgroupName?: string,
+    NonPartitionWorkGroups?: IAccessGroupObject[],
+    SmartCardProfileId ?: string,
+    SmartCardProfileName ?: string,
+    StartDate?: string,
+    Status?: ECardholderStatus,
+    Token?: string,
+    TraceDetails?: ICardholderTrace,
+    Vehicle1?: ICardholderVehicle,
+    Vehicle2?: ICardholderVehicle,
+    Potrait?: string,
+    PrimaryWorkGroupAccessRule?: ICardholderAccessRule[],
+    PonPartitionWorkgroupAccessRules?: ICardholderWorkGroupAccessRule[],
+    VisitorDetails?: IVisitor,
+    CustomFields?: ICustomFields[],
+    FingerPrints?: IBiometricStatus[],
+    CardholderPortrait?: string,
+    IsImageChanged?: boolean,
+    IsSignatureChanged?: boolean,
+    CardholderSignature?: string,
+    ElevatorRole?: EElevatorRole,
+    ElevatorLight?: number,
+    ElevatorLanguage?: number,
+    EtartDateWithoutTime?: string,
+    EndDateWithoutTime?: string,
+    LastUpdatedDateTime?: string,
+    Reference?: number,
     _links?: ILink[],
     _embedded?: IEmbeddedResource[]
 }
