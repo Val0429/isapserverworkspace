@@ -30,18 +30,11 @@ export class MemberService {
         //let resizedBase64 = `data:${mimType};base64,${resizedImageData}`;
         
     }
-testDate(date:string, splitter:string="."){
-        try{    
-         let dt = new Date(date);
-         return dt.toISOString().split(splitter)[0];
-      }catch (err){
-          return null;
-      }
-    }
+
 async createMember (inputFormData:any, user:User) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
-        let dob= this.testDate(inputFormData.birthday, "T");
+        let dob= testDate(inputFormData.birthday, "T");
           // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
                         .containedIn("tableid", inputFormData.permissionTable.map(x=>parseInt(x)))
@@ -93,8 +86,8 @@ async createMember (inputFormData:any, user:User) {
                 CardTechnologyCode : inputFormData.technologyCode || 10,
                 PinMode: inputFormData.pinMode || 1,          
                 PinDigit:inputFormData.pinDigit || 0,
-                EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59").toDate().toISOString(),
-                StartDate:moment(inputFormData.startDate || new Date()).toDate().toISOString()
+                EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59").format(),
+                StartDate:moment(inputFormData.startDate || new Date()).format()
               };
               
           let tempCredentials:any[] = credential.CardNumber && credential.CardNumber.trim()!="" ? [credential] : [];
@@ -105,10 +98,10 @@ async createMember (inputFormData:any, user:User) {
                 tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: user.getUsername()});
             }
             else if(field.name=="lastEditTime"){
-                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: moment(new Date()).format("YYYY-MM-DDTHH:mm:ss")}); 
+                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: moment().format()}); 
             }
             else if(field.date) {
-                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: this.testDate(inputFormData[field.name])});      
+                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: testDate(inputFormData[field.name])});
             }
             else tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue:inputFormData[field.name] || null});
           }
@@ -155,3 +148,12 @@ async createMember (inputFormData:any, user:User) {
         
 }
 export default MemberService;
+export function testDate(date:string, splitter?:string){
+    try{    
+        if(!date)return null;
+        let dt = moment(date).format();         
+        return splitter ? dt.split(splitter)[0] : dt;         
+  }catch (err){
+      return null;
+  }
+}

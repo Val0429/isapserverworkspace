@@ -7,6 +7,7 @@ import * as siPassClient from '../../modules/acs/sipass';
 import { access } from 'fs';
 import { SipassToken } from 'workspace/custom/models';
 import { Errors } from 'core/cgi-package';
+import { CustomFields } from '../report-service';
 // import { ConstructSignatureDeclaration } from 'ts-simple-ast';
 var moment = require("moment");
 
@@ -742,24 +743,32 @@ export class SiPassAdapter {
     }
     async postCardHolder(cardholeder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `postCardHolder`);
-        this.convertToNull(cardholeder);
+        this.processCustomFields(cardholeder);
         let token = await this.Login();
         let a = await this.siPassPersion.CreatePerson(this.siPassHrParam, cardholeder, token);
 
         return JSON.parse(a);
     }
 
-    private convertToNull(cardholeder: siPassClient.ICardholderObject) {
-        
-        for (let field of cardholeder.CustomFields) {
-            field.FieldValue = field.FieldValue || null;
+    private processCustomFields(cardholeder: siPassClient.ICardholderObject) {
+        let fields=[];
+        for(let cf of CustomFields){
+            let exist = cardholeder.CustomFields.find(x=>x.FiledName == cf.fieldName);
+            if(!exist)continue;
+            exist.FieldValue = exist.FieldValue || null;
+            if(cf.date && exist.FieldValue){
+                //remove timezone
+                exist.FieldValue = moment(exist.FieldValue).format("YYYY-MM-DDTHH:mm:ss");
+                console.log("fieldname", exist.FieldValue);
+            }
+            fields.push(exist);
         }
-        
+        cardholeder.CustomFields = fields;
     }
 
     async putCardHolder(cardholeder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `putCardHolder`);
-        this.convertToNull(cardholeder);
+        this.processCustomFields(cardholeder);
         let token = await this.Login();
         let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder, token);
 

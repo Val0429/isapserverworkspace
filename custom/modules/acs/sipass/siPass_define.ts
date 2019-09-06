@@ -138,7 +138,7 @@ export interface ICardholderWorkGroupAccessRule {
 
 export interface ICustomFields {
     FiledName?: string,
-    FieldValue?: object,
+    FieldValue?: string,
     behaviour?: string
 }
 

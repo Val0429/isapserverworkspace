@@ -4,7 +4,6 @@ import { Log } from 'helpers/utility';
 // import * as msSQL from 'mssql';
 import * as adodb from 'node-adodb';
 import * as p from 'path';
-import moment = require('moment');
 import { PermissionTable } from 'core/cgi-package';
 
 export class CCure800SqlAdapter {
@@ -57,7 +56,7 @@ export class CCure800SqlAdapter {
             await this.adodbConn
                 .execute(delData);
     }
-    async writeMember(data, accessRules:string[], permission = "") {
+    async writeMember(data:any, accessRules:string[]) {
         let ccurePermissionTables = await new Parse.Query(PermissionTable)
                             .equalTo("system", 800)
                             .containedIn("tablename", accessRules)
@@ -73,10 +72,10 @@ export class CCure800SqlAdapter {
             cf.FieldValue = cf.FieldValue || "";
         }
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
-        await this.writeToMdb(data, ccureAccessRules, permission);        
+        await this.writeToMdb(data, ccureAccessRules);        
     }
-    async writeToMdb(data, ccureAccessRules:string[], permission = "", tableName:string="Member"){
-        let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
+    async writeToMdb(data, ccureAccessRules:string[], tableName:string="Member"){
+        let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
         
         for (let i = 0; i < rules.length; i++) {
             if(i>=ccureAccessRules.length)break;
@@ -208,7 +207,7 @@ export class CCure800SqlAdapter {
         ,CustomDateControl3__CF10, Deleted, Disabled
         ) VALUES ( 
          '${data["EmployeeNumber"]}'     
-        , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + moment(data["PersonalDetails"]["DateOfBirth"]).format("YYYY-MM-DD")+ "'" : "NULL"}
+        , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + data["PersonalDetails"]["DateOfBirth"]+ "'" : "NULL"}
         ,'${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}'
         ,'${CustomTextBoxControl6__CF}'
         ,'${CustomTextBoxControl5__CF4}'
@@ -218,16 +217,16 @@ export class CCure800SqlAdapter {
         ,'${data["PrimaryWorkgroupName"]}'
         ,'${CustomDropdownControl1__CF == '' ? '無' : CustomDropdownControl1__CF}'
         ,'${data["FirstName"]}'
-        ,'${ moment(data["StartDate"]).format("YYYY-MM-DD")}'
+        ,'${ data["StartDate"].split("T")[0]}'
         ,'${data["PersonalDetails"]["ContactDetails"]["PhoneNumber"]}'
         ,'${CustomTextBoxControl5__CF6}'
         ,'${CustomTextBoxControl5__CF2}'
         ,'${CustomDropdownControl2__CF2 == '' ? '無' : CustomDropdownControl2__CF2}'
-        ,'${ moment(data["EndDate"]).format("YYYY-MM-DD")}'
-        ,'${ moment(data["EndDate"]).format("YYYY-MM-DD")}'
+        ,'${ data["EndDate"].split("T")[0]}'
+        ,'${data["EndDate"].split("T")[0]}'
         ,'${credential? credential.CardNumber  : ""}'
         ,'${rules[39] == undefined ? '' : rules[39]}'
-        ,'${ moment(data["StartDate"]).format("YYYY-MM-DD")}'
+        ,'${ data["StartDate"].split("T")[0]}'
         ,'${CustomTextBoxControl1__CF ||""}'
         ,'${credential ? credential.Pin:""}'
         ,'${CustomTextBoxControl3__CF}'
@@ -296,19 +295,19 @@ export class CCure800SqlAdapter {
         ,'${rules[36] == undefined ? '' : rules[36]}'
         ,'${rules[37] == undefined ? '' : rules[37]}'
         ,'${rules[38] == undefined ? '' : rules[38]}'
-        ,${CustomDateControl4__CF ? "'"+moment(CustomDateControl4__CF).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF11 ? "'"+moment(CustomDateControl3__CF11).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF12 ? "'"+moment(CustomDateControl3__CF12).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF1 ? "'"+moment(CustomDateControl3__CF1).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF2 ? "'"+moment(CustomDateControl3__CF2).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF6 ? "'"+moment(CustomDateControl3__CF6).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF7 ? "'"+moment(CustomDateControl3__CF7).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF5 ? "'"+moment(CustomDateControl3__CF5).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF3 ? "'"+moment(CustomDateControl3__CF3).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF4 ? "'"+moment(CustomDateControl3__CF4).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF8 ? "'"+moment(CustomDateControl3__CF8).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF9 ? "'"+moment(CustomDateControl3__CF9).format("YYYY-MM-DD") + "'" : "NULL" }
-        ,${CustomDateControl3__CF10 ? "'"+moment(CustomDateControl3__CF10).format("YYYY-MM-DD") + "'" : "NULL" }
+        ,${CustomDateControl4__CF ? "'"+CustomDateControl4__CF.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF11 ? "'"+CustomDateControl3__CF11.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF12 ? "'"+CustomDateControl3__CF12.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF1 ? "'"+CustomDateControl3__CF1.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF2 ? "'"+CustomDateControl3__CF2.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF6 ? "'"+CustomDateControl3__CF6.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF7 ? "'"+CustomDateControl3__CF7.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF5 ? "'"+CustomDateControl3__CF5.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF3 ? "'"+CustomDateControl3__CF3.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF4 ? "'"+CustomDateControl3__CF4.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF8 ? "'"+CustomDateControl3__CF8.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF9 ? "'"+CustomDateControl3__CF9.split("T")[0] + "'" : "NULL" }
+        ,${CustomDateControl3__CF10 ? "'"+CustomDateControl3__CF10.split("T")[0] + "'" : "NULL" }
         ,${data.Status == "1"? -1 : 0}, ${data.Attributes && data.Attributes.Void ? data.Attributes.Void : 0}
         )`;
         
@@ -330,6 +329,6 @@ export class CCure800SqlAdapter {
         // .catch(error => {
         //     console.error(error);
         // });
-        return null;
+        //return null;
     }
 }

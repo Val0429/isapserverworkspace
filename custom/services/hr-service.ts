@@ -19,6 +19,7 @@ import { ParseObject, Member } from 'core/cgi-package';
 import { stringify } from 'querystring';
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import moment = require('moment');
+import { testDate } from './member-service';
 
 
 export class HRService {
@@ -54,14 +55,7 @@ export class HRService {
         if (result.indexOf(bom) > -1) result = result.substr(bom.length);
         return result;
     }
-    getDate(date, splitter = ".") {
-        try {
-            let dt = new Date(new Date(date).getTime() + 28800000);
-            return dt.toISOString().split(splitter)[0];
-        } catch (err) {
-            return "";
-        }
-    }
+    
     async doHumanResourcesSync(hour: number = 3, minute: number = 0) {
         Log.Info(`${this.constructor.name}`, `0.0 Timer Check`);
 
@@ -368,8 +362,8 @@ export class HRService {
 
 
         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-        let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
-        let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
+        let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59").format();
+        let startDate = testDate(record["EntDate"]) || moment().format();
         let personalDetails: any;
 
         if (memberJson.PersonalDetails) {
@@ -377,7 +371,7 @@ export class HRService {
             personalDetails.ContactDetails.Email = record["EMail"] ? record["EMail"] : "";
             personalDetails.ContactDetails.MobileNumber = record["Cellular"] ? record["Cellular"] : "";
             personalDetails.ContactDetails.PhoneNumber = record["Extension"] ? record["Extension"] : "";
-            personalDetails.DateOfBirth = this.getDate(record["BirthDate"], "T");
+            personalDetails.DateOfBirth = testDate(record["BirthDate"], "T") || "";
 
         } else {
             personalDetails = {
@@ -390,7 +384,7 @@ export class HRService {
                     PagerServiceProviderId: "0",
                     PhoneNumber: record["Extension"] ? record["Extension"] : ""
                 },
-                DateOfBirth: this.getDate(record["BirthDate"], "T"),
+                DateOfBirth: testDate(record["BirthDate"], "T")|| "",
                 PayrollNumber: "",
                 Title: "",
                 UserDetails: {
@@ -402,23 +396,23 @@ export class HRService {
         let customFields = [
             {
                 FiledName: "CustomDateControl4__CF",
-                FieldValue: this.getDate(record["UpdDate"])
+                FieldValue: testDate(record["UpdDate"])
             },
             {
                 FiledName: "CustomDropdownControl1__CF",
-                FieldValue: ""
+                FieldValue: null
             },
             {
                 FiledName: "CustomTextBoxControl1__CF",
-                FieldValue: ""
+                FieldValue: null
             },
             {
                 FiledName: "CustomTextBoxControl3__CF",
-                FieldValue: record["AddUser"] || ""
+                FieldValue: record["AddUser"] || null
             },
             {
                 FiledName: "CustomTextBoxControl6__CF",
-                FieldValue: record["CompName"] || ""
+                FieldValue: record["CompName"] || null
             },
             {
                 FiledName: "CustomDropdownControl2__CF_CF",
@@ -426,35 +420,35 @@ export class HRService {
             },
             {
                 FiledName: "CustomTextBoxControl5__CF_CF",
-                FieldValue: record["MVPN"] || ""
+                FieldValue: record["MVPN"] || null
             },
             {
                 FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                FieldValue: record["DeptChiName"] || "" //value is from vieDept deptMark2
+                FieldValue: record["DeptChiName"] || null //value is from vieDept deptMark2
             },
             {
                 FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                FieldValue: record["CostCenter"] || ""
+                FieldValue: record["CostCenter"] || null
             },
             {
                 FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                FieldValue: ""
+                FieldValue: null
             },
             {
                 FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                FieldValue: record["LocationName"] || ""
+                FieldValue: record["LocationName"] || null
             },
             {
                 FiledName: "CustomDateControl1__CF_CF",
-                FieldValue: this.getDate(record["BirthDate"])
+                FieldValue: testDate(record["BirthDate"])
             },
             {
                 FiledName: "CustomDateControl1__CF_CF_CF",
-                FieldValue: this.getDate(record["EntDate"])
+                FieldValue: testDate(record["EntDate"])
             },
             {
                 FiledName: "CustomDateControl1__CF",
-                FieldValue: this.getDate(record["OffDate"])
+                FieldValue: testDate(record["OffDate"])
             }
         ];
 
@@ -610,7 +604,7 @@ export class HRService {
                                 Email: record["Email"],
                                 MobileNumber: record["Cellular"]
                             },
-                            DateOfBirth: this.getDate(record["BirthDate"], "T")
+                            DateOfBirth: testDate(record["BirthDate"], "T")
                         });
                         obj.set("primaryWorkgroupId", workgroupId);
                         obj.set("apbWorkgroupId", workgroupId);
@@ -630,15 +624,15 @@ export class HRService {
 
 
                     // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-                    let endDate = this.getDate(record["OffDate"]) || "2100-12-31T23:59:59";
-                    let startDate = this.getDate(record["EntDate"]) || (new Date()).toISOString().split(".")[0];
+                    let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59").format();
+                    let startDate = testDate(record["EntDate"]) || moment().format();
                     let personalDetails: any;
 
                     if (memberJson.PersonalDetails) {
                         personalDetails = memberJson.PersonalDetails;
                         personalDetails.ContactDetails.Email = record["EMail"] ? record["EMail"] : "";
                         personalDetails.ContactDetails.MobileNumber = record["Cellular"] ? record["Cellular"] : "";
-                        personalDetails.DateOfBirth = this.getDate(record["BirthDate"], "T");
+                        personalDetails.DateOfBirth = testDate(record["BirthDate"], "T")||"";
                     } else {
                         personalDetails = {
                             Address: "",
@@ -650,7 +644,7 @@ export class HRService {
                                 PagerServiceProviderId: "0",
                                 PhoneNumber: ""
                             },
-                            DateOfBirth: this.getDate(record["BirthDate"], "T"),
+                            DateOfBirth: testDate(record["BirthDate"], "T")||"",
                             PayrollNumber: "",
                             Title: "",
                             UserDetails: {
@@ -662,7 +656,7 @@ export class HRService {
                     let customFields = [
                         {
                             FiledName: "CustomDateControl4__CF",
-                            FieldValue: this.getDate(record["UpdDate"])
+                            FieldValue: testDate(record["UpdDate"])
                         },
                         {
                             FiledName: "CustomDropdownControl1__CF",
@@ -670,51 +664,51 @@ export class HRService {
                         },
                         {
                             FiledName: "CustomTextBoxControl1__CF",
-                            FieldValue: record["EmpNo"] || ""
+                            FieldValue: record["EmpNo"] || null
                         },
                         {
                             FiledName: "CustomTextBoxControl3__CF",
-                            FieldValue: record["AddUser"] || ""
+                            FieldValue: record["AddUser"] || null
                         },
                         {
                             FiledName: "CustomTextBoxControl6__CF",
-                            FieldValue: record["CompName"] || ""
+                            FieldValue: record["CompName"] || null
                         },
                         {
                             FiledName: "CustomDropdownControl2__CF_CF",
-                            FieldValue: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : ""
+                            FieldValue: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : null
                         },
                         {
                             FiledName: "CustomTextBoxControl5__CF_CF",
-                            FieldValue: record["MVPN"] || ""
+                            FieldValue: record["MVPN"] || null
                         },
                         {
                             FiledName: "CustomTextBoxControl5__CF_CF_CF",
-                            FieldValue: record["DeptChiName"] || ""
+                            FieldValue: record["DeptChiName"] || null
                         },
                         {
                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF",
-                            FieldValue: record["CostCenter"] || ""
+                            FieldValue: record["CostCenter"] || null
                         },
                         {
                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF",
-                            FieldValue: record["LocationName"] || ""
+                            FieldValue: record["LocationName"] || null
                         },
                         {
                             FiledName: "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF",
-                            FieldValue: record["RegionName"] || ""
+                            FieldValue: record["RegionName"] || null
                         },
                         {
                             FiledName: "CustomDateControl1__CF_CF",
-                            FieldValue: this.getDate(record["BirthDate"])
+                            FieldValue: testDate(record["BirthDate"])
                         },
                         {
                             FiledName: "CustomDateControl1__CF_CF_CF",
-                            FieldValue: this.getDate(record["EntDate"])
+                            FieldValue: testDate(record["EntDate"])
                         },
                         {
                             FiledName: "CustomDateControl1__CF",
-                            FieldValue: this.getDate(record["OffDate"])
+                            FieldValue: testDate(record["OffDate"])
                         }
                     ];
                     //update cf from existing data
