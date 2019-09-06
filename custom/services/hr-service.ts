@@ -496,45 +496,30 @@ export class HRService {
             Vehicle2: { CarColor: '', CarModelNumber: '', CarRegistrationNumber: '' },
             VisitorDetails: memberJson.VisitorDetails || { VisitorCardStatus: 0, VisitorCustomValues: {} },
             CustomFields: customFields,
-            token: "-1",
             _links: []
         };
         try {
-            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x => x.ObjectName), d.CustomFields);
             // console.log(`======================= ${sessionId}`);
             // if (sessionId != "") {
             // 5.1 write data to SiPass database
             // console.log(JSON.stringify(d));
-            Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
-            //sipass requires null
-            for (let field of d.CustomFields) {
-                field.FieldValue = field.FieldValue || null;
-            }
-
-            //}
+            Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);            
             console.log(`save to Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
             delete (d._links);
 
-            if (!member) {
-                delete (d.token);
-                member = new Member(d);
-                let holder = await siPassAdapter.postCardHolder(d);
-
-                // console.log("post", d) ;
+            if (!member) {                
+                let holder = await siPassAdapter.postCardHolder(d);                
+                member = new Member(d);                
                 member.set("Token", holder["Token"] || "-1");
             }
             else {
-                d.token = memberJson.Token;
-                // if(d.Credentials && d.Credentials.length>0 && d.Credentials[0].CardNumber){
+                d.Token = memberJson.Token;
                 await siPassAdapter.putCardHolder(d);
-
-                // console.log("pusst", d) ;
-                // }                
-                delete (d.token);
                 member.set(d);
             }
-
+            console.log(`save to CCure Sync SQL Member ${record["EmpNo"]} ${record["EngName"]} ${record["EmpName"]}`);
+            await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x => x.ObjectName));
+            
             objects.push(member);
 
         } catch (err) {
@@ -766,42 +751,33 @@ export class HRService {
                         Vehicle2: memberJson.Vehicle2 || {},
                         VisitorDetails: memberJson.VisitorDetails || { VisitorCardStatus: 0, VisitorCustomValues: {} },
                         CustomFields: customFields,
-                        token: "-1",
                         _links: []
                     };
 
 
                     try {
-                        console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x => x.ObjectName), d.CustomFields);
-
                         // 5.1 write data to SiPass database
 
                         Log.Info(`${this.constructor.name}`, `5.1 write data to SiPass database ${record["SupporterNo"]} ${record["SupporterName"]}`);
-                        //sipass requires null
-                        for (let field of d.CustomFields) {
-                            field.FieldValue = field.FieldValue || null;
-                        }
-
+                        
                         console.log(`save to Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
                         delete (d._links);
-                        //d["_id"] = new mongo.ObjectID().toHexString();
-                        //this.mongoDb.collection("Member").findOneAndReplace({ "EmployeeNumber": record["SupporterNo"] }, d, { upsert: true })
+                        
                         let member = members.find(x => x.get("EmployeeNumber") == record["SupporterNo"]);
-                        if (!member) {
-                            delete (d.token);
+                        if (!member) {                            
+                            let holder = await siPassAdapter.postCardHolder(d);                
                             member = new Member(d);
-                            let holder = await siPassAdapter.postCardHolder(d);
                             member.set("Token", holder["Token"] || "-1");
                         }
                         else {
-                            d.token = memberJson.Token;;
-                            //if (d.Credentials && d.Credentials.length > 0 && d.Credentials[0].CardNumber) {
-                                await siPassAdapter.putCardHolder(d);
-                            //}
-                            delete (d.token);
+                            d.Token = memberJson.Token;
+                            await siPassAdapter.putCardHolder(d);                            
                             member.set(d);
                         }
+                        
+                        console.log(`save to CCure Sync SQL Member ${record["SupporterNo"]} ${record["SupporterName"]}`);
+                        await this.CCure800SqlAdapter.writeMember(d, d.AccessRules.map(x => x.ObjectName));
+
                         objects.push(member);
                         //important to avoid out of memory
                         if (objects.length >= 1000) {

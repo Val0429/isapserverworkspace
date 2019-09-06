@@ -57,7 +57,7 @@ export class CCure800SqlAdapter {
             await this.adodbConn
                 .execute(delData);
     }
-    async writeMember(data, accessRules:string[], customFields:any[], permission = "") {
+    async writeMember(data, accessRules:string[], permission = "") {
         let ccurePermissionTables = await new Parse.Query(PermissionTable)
                             .equalTo("system", 800)
                             .containedIn("tablename", accessRules)
@@ -69,13 +69,13 @@ export class CCure800SqlAdapter {
                 ccureAccessRules.push(accessRule);
             }
         }
-        for(let cf of customFields){
+        for(let cf of data.CustomFields){
             cf.FieldValue = cf.FieldValue || "";
         }
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
-        await this.writeToMdb(data, ccureAccessRules, customFields, permission);        
+        await this.writeToMdb(data, ccureAccessRules, permission);        
     }
-    async writeToMdb(data, ccureAccessRules:string[], customFields:any[], permission = "", tableName:string="Member"){
+    async writeToMdb(data, ccureAccessRules:string[], permission = "", tableName:string="Member"){
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", permission];
         
         for (let i = 0; i < rules.length; i++) {
@@ -132,7 +132,7 @@ export class CCure800SqlAdapter {
         let CustomTextBoxControl7__CF11 = "";
         let CustomTextBoxControl7__CF12 = "";
         
-        for (let field of customFields) {
+        for (let field of data.CustomFields) {
             
             switch (field["FiledName"]) {
                 case "CustomDateControl3__CF": CustomDateControl3__CF1 = field["FieldValue"]; break;

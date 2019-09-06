@@ -209,10 +209,11 @@ export class ReportService{
                     .select(...defaultMemberFields)
                     .ascending("LastName");      
         console.log("filter member", filter);
-        // looking for duplication
+        
         if (filter.objectId) {
             query.equalTo("objectId", filter.objectId);
         }
+        // looking for duplication
         if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
         if (filter.eCardNumber) query.equalTo("Credentials.CardNumber", filter.eCardNumber);
         if (filter.start2 && filter.end2) {
