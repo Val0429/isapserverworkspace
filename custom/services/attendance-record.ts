@@ -1,20 +1,16 @@
-import { Config } from 'core/config.gen';
-
 import { Log } from './log';
 
-import { ScheduleActionEmail } from 'core/scheduler-loader';
-import { IAttendanceRecords, AttendanceRecords, Member, Reader, Door } from 'workspace/custom/models/index';
+import { AttendanceRecords, Member, Reader, Door } from 'workspace/custom/models/index';
 
 import * as mongo from 'mongodb';
-import * as msSQL from 'mssql';
 
-import * as delay from 'delay';
 
-import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
+import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 import moment = require('moment');
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import { CCUREService } from '../modules/acs/CCURE';
+import { memberFields } from './report-service';
 
 
 // import { CCUREReader } from './ccureReader'
@@ -27,12 +23,6 @@ export class AttendanceRecord {
     private startDelayTime: number = 1 // sec
     private cycleTime: number = 300; // sec
 
-    private mongoClient: mongo.MongoClient;
-    private mongoDb: mongo.Db;
-
-    // CCure 800
-    // private _reader: CCUREReader = null;
-    // private _signal: SignalObject = null;
 
 
     constructor() {
@@ -40,20 +30,13 @@ export class AttendanceRecord {
 
         // 1.0 Login to Datebase
         Log.Info(`${this.constructor.name}`, `1.0 Login database connection`);
-        (async () => {
-            await me.initialAdapterConnection();
-        })();
+      
 
         this.waitTimer = setTimeout(async () => {
             me.doAccessControlSync();
         }, 1000 * this.startDelayTime);
     }
 
-    async initialAdapterConnection() {
-        const url = mongoDBUrl();
-        this.mongoClient = await mongo.MongoClient.connect(url);
-        this.mongoDb = await this.mongoClient.db(Config.mongodb.collection);
-    }
 
     async doAccessControlSync() {
         Log.Info(`${this.constructor.name}`, `2.0 Timer Check`);
@@ -90,6 +73,7 @@ export class AttendanceRecord {
             let ccureService = new CCUREService();
             await ccureService.Login();
             let records = await ccureService.GetOrganizedNewReport();
+            console.log("getCCureData", records.length);
             //batch by 10.000 to prevent out of memory / stack
             while (records.length > 10000) {
                 await this.saveCCureData(records.splice(0, 10000));
@@ -125,7 +109,11 @@ export class AttendanceRecord {
     }
     private async saveSipassData(records: any[]) {
         let objects = [];
-        let members = await new Parse.Query(Member).limit(records.length).containedIn("Credentials.CardNumber", records.filter(x => x.Credentials && x.Credentials.length > 0).map(x => x.Credentials[0].CardNumber)).find();
+        let members = await new Parse.Query(Member)
+                        .select("Credentials")
+                        .limit(records.length)
+                        .containedIn("Credentials.CardNumber", records.filter(x => x.Credentials && x.Credentials.length > 0).map(x => x.Credentials[0].CardNumber))
+                        .find();
         let readers = await new Parse.Query(Reader).limit(records.length)
             .containedIn("readername", records.map(x => x["point_name"]))
             .find();
@@ -155,15 +143,15 @@ export class AttendanceRecord {
         return objects;
     }
 
-    async saveCCureData(records:any[]){
-        
-        
-        
+    async saveCCureData(records:any[]){        
             let objects=[];
             
-            console.log("getCCureData", records.length);
             
-            let members = await new Parse.Query(Member).limit(records.length).containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber.toString())).find();
+            
+            let members = await new Parse.Query(Member).select("Credentials")
+                                .limit(records.length)
+                                .containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber.toString()))
+                                .find();
 
             console.log("members", members.length);
             let doors = await new Parse.Query(Door).limit(records.length)
