@@ -7,4 +7,4 @@ nsis/Release/
 
 custom/modules/acs/ccure/ReportQueryTimeSavedFile.tmp
 
-custom/files/
+custom/files/*.xlsx
