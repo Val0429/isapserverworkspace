@@ -183,8 +183,8 @@ class Service {
                 currSummary.setValue('date', currDate);
             }
 
-            currSummary.setValue('in', count.in - prevCount.in);
-            currSummary.setValue('out', count.out - prevCount.out);
+            currSummary.setValue('in', prevCount.in > count.in ? count.in : count.in - prevCount.in);
+            currSummary.setValue('out', prevCount.out > count.out ? count.out : count.out - prevCount.out);
             currSummary.setValue('inTotal', count.in.toString());
             currSummary.setValue('outTotal', count.out.toString());
 
