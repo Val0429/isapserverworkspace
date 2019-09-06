@@ -128,7 +128,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.ReportsNewUpdate, OnRaws, OnDone, null, null, true);
             return null;
         }
-        else return this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, 30000);
+        else return this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -172,7 +172,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, null, true);
             return null;
         }
-        else return this._reader.queryAllAsync(QueryContent.Reports, null, true, 30000);
+        else return this._reader.queryAllAsync(QueryContent.Reports, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -197,7 +197,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, true, 5000);
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -224,7 +224,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.EnumFields, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.EnumFields, null, true, 5000);
+        return this._reader.queryAllAsync(QueryContent.EnumFields, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -275,7 +275,7 @@ export class CCUREService {
             await this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Persons, null, true, 1800000);
+        return this._reader.queryAllAsync(QueryContent.Persons, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -306,7 +306,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, true, 1800000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfo, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -333,7 +333,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, true, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -358,7 +358,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.PersonPropList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonPropList, null, true, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonPropList, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -815,7 +815,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.GroupMember, null, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.GroupMember, null, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -875,7 +875,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, null, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ObjectList, null, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.ObjectList, null, true, Config.ccureconnect.connectionTimeout);
     }
 
 
@@ -904,7 +904,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.Reports, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Reports, condition, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.Reports, condition, true, Config.ccureconnect.connectionTimeout);
     }
 
     /**
@@ -919,7 +919,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.BadgeLayout, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.BadgeLayout, condition, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -974,7 +974,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.Persons, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.Persons, condition, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.Persons, condition, true, Config.ccureconnect.connectionTimeout);
     }
 
     /**
@@ -993,7 +993,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.PersonExtendInfo, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        let result = await this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, true, 30000);
+        let result = await this._reader.queryAllAsync(QueryContent.PersonExtendInfo, condition, true, Config.ccureconnect.connectionTimeout);
         return result;
     }
 
@@ -1010,7 +1010,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.PersonExtendInfoEnumList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, true, 5000);
+        return this._reader.queryAllAsync(QueryContent.PersonExtendInfoEnumList, condition, true, Config.ccureconnect.connectionTimeout);
     }
 
     /*
@@ -1303,7 +1303,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.GroupMember, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.GroupMember, condition, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.GroupMember, condition, true, Config.ccureconnect.connectionTimeout);
     }
 
     /**
@@ -1338,7 +1338,7 @@ export class CCUREService {
             this._reader.queryStreamAsync(QueryContent.ObjectList, OnRaws, OnDone, null, condition, true);
             return null;
         }
-        return this._reader.queryAllAsync(QueryContent.ObjectList, condition, true, 30000);
+        return this._reader.queryAllAsync(QueryContent.ObjectList, condition, true, Config.ccureconnect.connectionTimeout);
     }
 
     public async GetAllOrganizedDoorGroup() {

@@ -201,7 +201,7 @@ export class CCUREReader {
         await this._signalRead.wait(10000);
 
         if(queryContent == QueryContent.Reports || queryContent == QueryContent.ReportsLastUpdateTime ||queryContent == QueryContent.ReportsNewUpdate){
-            let idx : number = (await this.queryAllAsync(QueryContent.Jnl_Directory,null,true,5000))[0]["volume"];
+            let idx : number = (await this.queryAllAsync(QueryContent.Jnl_Directory,null,true,Config.ccureconnect.connectionTimeout))[0]["volume"];
             if(idx % 2 == 1){
                 queryParam.dsn = Config.CCUREdsn.Jurnal;
             } 
@@ -248,7 +248,7 @@ export class CCUREReader {
      */
     protected updateReportQueryTime() {
         console.log(`=>Query from  ${this.getLastReportQueryTime()}`);
-        this.queryAllAsync(QueryContent.ReportsLastUpdateTime,null,true,300000).then((resolve) => {
+        this.queryAllAsync(QueryContent.ReportsLastUpdateTime,null,true, Config.ccureconnect.connectionTimeout).then((resolve) => {
             if(resolve[0]["updateTime"] == this.getLastReportQueryTime()){
                 console.log("Newest updateTime is the same as previous, dont changed");
                 return;
