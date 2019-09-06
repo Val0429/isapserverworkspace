@@ -500,7 +500,7 @@ export class SiPassAdapter {
     async getCardHolder(holderToken: string, sessionId: string) {
         Log.Info(`info`, `getCardHolder ${holderToken}`);
 
-        let a = await this.siPassPersion.GetPerson(this.siPassHrParam, { token: holderToken }, sessionId);
+        let a = await this.siPassPersion.GetPerson(this.siPassHrParam, { Token: holderToken }, sessionId);
 
         {
             // {
@@ -742,16 +742,24 @@ export class SiPassAdapter {
     }
     async postCardHolder(cardholeder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `postCardHolder`);
-        
+        this.convertToNull(cardholeder);
         let token = await this.Login();
         let a = await this.siPassPersion.CreatePerson(this.siPassHrParam, cardholeder, token);
 
         return JSON.parse(a);
     }
 
+    private convertToNull(cardholeder: siPassClient.ICardholderObject) {
+        
+        for (let field of cardholeder.CustomFields) {
+            field.FieldValue = field.FieldValue || null;
+        }
+        
+    }
+
     async putCardHolder(cardholeder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `putCardHolder`);
-        
+        this.convertToNull(cardholeder);
         let token = await this.Login();
         let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder, token);
 
