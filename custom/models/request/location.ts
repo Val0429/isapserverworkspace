@@ -31,3 +31,26 @@ export interface IFloorsIndexU {
     buildingId?: string;
     floor?: number;
 }
+
+/**
+ * Company
+ */
+export interface ICompaniesIndexC {
+    floorIds: string[];
+    name: string;
+    contactPerson: string;
+    contactNumber: string[];
+    unitNumber: string;
+}
+
+export interface ICompaniesIndexR {
+    floorId?: string;
+}
+
+export interface ICompaniesIndexU {
+    objectId: string;
+    floorIds?: string[];
+    contactPerson?: string;
+    contactNumber?: string[];
+    unitNumber?: string;
+}

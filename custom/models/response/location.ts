@@ -30,3 +30,21 @@ export interface ICompaniesAll {
     name: string;
     building: IObject;
 }
+
+/**
+ * Company
+ */
+export interface ICompaniesIndexR {
+    objectId: string;
+    floors: IObject[];
+    name: string;
+    contactPerson: string;
+    contactNumber: string[];
+    unitNumber: string;
+}
+
+export interface ICompaniesAll {
+    objectId: string;
+    name: string;
+    floors: IObject[];
+}
