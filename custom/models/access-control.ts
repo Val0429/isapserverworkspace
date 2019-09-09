@@ -168,6 +168,20 @@ export interface IMember{
     dateOfViolation2?: string;
     infoOfViolation3?: string;
     dateOfViolation3?: string;
+
+    //for reporting
+    month1?:number;
+    month2?:number;
+    month3?:number;
+    lastDateOccured?:string;
+    inOutDailyCount?:number;
+    accessObjectId?:string;
+    permissionName?:string
+    timeSchedule?:string;
+    doorGroupName?:string
+    doorGroupObjectId?:string
+    doorName?:string;
+    doorObjectId?:string;
 }
 @registerSubclass()
 export class Member extends ParseObject<ICardholderObject> { }

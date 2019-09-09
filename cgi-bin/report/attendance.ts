@@ -14,10 +14,9 @@ var action = new Action({
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<any>;
-type OutputR = Restful.OutputR<any>;
 
-action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+
+action.get(async (data) => {
     let pageSize = 10000;
 
     let filter = data.parameters as any;
