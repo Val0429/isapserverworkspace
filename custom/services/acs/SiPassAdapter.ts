@@ -751,11 +751,11 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
     processStartEndDate(cardholder: siPassClient.ICardholderObject): any {
-        cardholder.StartDate = moment(cardholder.StartDate).format("YYYY-MM-DDTHH:mm:ss");
-        cardholder.EndDate = moment(cardholder.EndDate).format("YYYY-MM-DDTHH:mm:ss");
+        cardholder.StartDate = moment(cardholder.StartDate).format("YYYY-MM-DDT00:00:00");
+        cardholder.EndDate = moment(cardholder.EndDate).format("YYYY-MM-DDT00:00:00");
         if(cardholder.Credentials.length>0){
-            cardholder.Credentials[0].StartDate = moment( cardholder.Credentials[0].StartDate).format("YYYY-MM-DDTHH:mm:ss");
-            cardholder.Credentials[0].EndDate = moment(cardholder.Credentials[0].EndDate).format("YYYY-MM-DDTHH:mm:ss");
+            cardholder.Credentials[0].StartDate = moment( cardholder.Credentials[0].StartDate).format("YYYY-MM-DDT00:00:00");
+            cardholder.Credentials[0].EndDate = moment(cardholder.Credentials[0].EndDate).format("YYYY-MM-DDT00:00:00");
         }
     }
 
