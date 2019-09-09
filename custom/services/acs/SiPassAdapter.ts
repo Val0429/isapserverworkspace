@@ -741,13 +741,22 @@ export class SiPassAdapter {
         let token:string = await this.Login();
         await this.siPassPersion.DeletePerson(this.siPassHrParam, token, cardHolderToken);
     }
-    async postCardHolder(cardholeder: siPassClient.ICardholderObject) {
+    async postCardHolder(cardholder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `postCardHolder`);
-        this.processCustomFields(cardholeder);
+        this.processStartEndDate(cardholder);
+        this.processCustomFields(cardholder);        
         let token = await this.Login();
-        let a = await this.siPassPersion.CreatePerson(this.siPassHrParam, cardholeder, token);
+        let a = await this.siPassPersion.CreatePerson(this.siPassHrParam, cardholder, token);
 
         return JSON.parse(a);
+    }
+    processStartEndDate(cardholder: siPassClient.ICardholderObject): any {
+        cardholder.StartDate = moment(cardholder.StartDate).format("YYYY-MM-DDTHH:mm:ss");
+        cardholder.EndDate = moment(cardholder.EndDate).format("YYYY-MM-DDTHH:mm:ss");
+        if(cardholder.Credentials.length>0){
+            cardholder.Credentials[0].StartDate = moment( cardholder.Credentials[0].StartDate).format("YYYY-MM-DDTHH:mm:ss");
+            cardholder.Credentials[0].EndDate = moment(cardholder.Credentials[0].EndDate).format("YYYY-MM-DDTHH:mm:ss");
+        }
     }
 
     private processCustomFields(cardholeder: siPassClient.ICardholderObject) {
@@ -766,11 +775,12 @@ export class SiPassAdapter {
         cardholeder.CustomFields = fields;
     }
 
-    async putCardHolder(cardholeder: siPassClient.ICardholderObject) {
+    async putCardHolder(cardholder: siPassClient.ICardholderObject) {
         Log.Info(`info`, `putCardHolder`);
-        this.processCustomFields(cardholeder);
+        this.processStartEndDate(cardholder);
+        this.processCustomFields(cardholder);
         let token = await this.Login();
-        let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholeder, token);
+        let a = await this.siPassPersion.UpdatePerson(this.siPassHrParam, cardholder, token);
 
         return JSON.parse(a);
     }

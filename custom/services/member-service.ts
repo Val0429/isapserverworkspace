@@ -87,8 +87,8 @@ async createMember (inputFormData:any, user:User) {
                 CardTechnologyCode : inputFormData.technologyCode || 10,
                 PinMode: inputFormData.pinMode || 1,          
                 PinDigit:inputFormData.pinDigit || 0,
-                EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59").format(),
-                StartDate:moment(inputFormData.startDate || new Date()).format()
+                EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
+                StartDate:moment(inputFormData.startDate || now).format()
               };
               
           let tempCredentials:any[] = credential.CardNumber && credential.CardNumber.trim()!="" ? [credential] : [];
@@ -118,8 +118,8 @@ async createMember (inputFormData:any, user:User) {
               EmployeeNumber: inputFormData.employeeNumber.toString(),
               LastName: inputFormData.chineseName,
               FirstName: inputFormData.englishName || "-",
-              StartDate: inputFormData.startDate || credential.StartDate,
-              EndDate: inputFormData.endDate || credential.EndDate,
+              EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
+              StartDate:moment(inputFormData.startDate || now).format(),
               SmartCardProfileId:"0",
               Status:2,
               //new addition
