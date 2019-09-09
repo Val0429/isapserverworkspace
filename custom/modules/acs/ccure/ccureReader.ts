@@ -218,7 +218,8 @@ export class CCUREReader {
         request.on('done', result => signal.set(StateCode.Success));
         request.on('error', err => {
             signal.set(StateCode.Error);
-            this.defaultErrCalback(err, queryContent)
+            console.log("error from ccure reader request", err);
+            //this.defaultErrCalback(err, queryContent)
         });
 
         let result: StateCode = await signal.wait(timeout < 1 ? null : timeout, v => (v != StateCode.Wait));

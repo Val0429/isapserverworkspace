@@ -1526,7 +1526,7 @@ export class CCUREService {
                 true);
         }
         else {
-            let records = await this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, -1);
+            let records = await this._reader.queryAllAsync(QueryContent.ReportsNewUpdate, null, true, Config.ccureconnect.requestTimeout);
             let result = [];
             for(let record of records) {
                 result.push({
