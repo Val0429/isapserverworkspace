@@ -24,7 +24,7 @@ action.post(
     {
         inputType: 'MultiData',
         middlewares: [Middleware.MultiDataFromBody],
-        permission: [RoleList.Administrator, RoleList.TenantAdministrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputC> => {
         let _input: InputC = await Ast.requestValidation('InputC', data.parameters.datas);
@@ -89,7 +89,7 @@ action.get(
     {
         inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
-        permission: [RoleList.Administrator, RoleList.TenantAdministrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputR> => {
         try {
@@ -164,7 +164,7 @@ action.put(
     {
         inputType: 'MultiData',
         middlewares: [Middleware.MultiDataFromBody],
-        permission: [RoleList.Administrator, RoleList.TenantAdministrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputU> => {
         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
@@ -222,7 +222,7 @@ action.delete(
     {
         inputType: 'InputD',
         middlewares: [Middleware.MultiDataFromQuery],
-        permission: [RoleList.Administrator, RoleList.TenantAdministrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputD> => {
         try {

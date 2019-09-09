@@ -23,7 +23,7 @@ type OutputC = Date;
 action.post(
     {
         inputType: 'InputC',
-        permission: [RoleList.Administrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputC> => {
         try {
@@ -98,7 +98,7 @@ action.get(
     {
         inputType: 'InputR',
         middlewares: [Middleware.PagingRequestDefaultValue],
-        permission: [RoleList.Administrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputR> => {
         try {

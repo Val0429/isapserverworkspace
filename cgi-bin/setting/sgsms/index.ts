@@ -19,7 +19,7 @@ type OutputR = IResponse.ISetting.ISgsmsR;
 
 action.get(
     {
-        permission: [RoleList.Administrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputR> => {
         try {
@@ -51,7 +51,7 @@ type OutputU = Date;
 action.put(
     {
         inputType: 'InputU',
-        permission: [RoleList.Administrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputU> => {
         try {

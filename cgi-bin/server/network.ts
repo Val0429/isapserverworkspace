@@ -19,7 +19,7 @@ type OutputR = Utility.INetwork[];
 
 action.get(
     {
-        permission: [RoleList.Administrator],
+        permission: [RoleList.SystemAdministrator, RoleList.Administrator],
     },
     async (data): Promise<OutputR> => {
         try {
