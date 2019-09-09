@@ -89,7 +89,86 @@ export interface IElevatorGroup {   // CRUD V
 @registerSubclass()
 export class ElevatorGroup extends ParseObject<IElevatorGroup> { }
 
-
+export interface IMember{
+    objectId? :string;
+    void? :boolean;
+    permissionTable?: number[];        
+    personType?: number;
+    employeeNumber :string;
+    chineseName :string;
+    englishName? :string;
+    primaryWorkgroupName?:string;
+    primaryWorkgroupId?:number;
+    cardNumber? :string;
+    cardAllNumber? :string;
+    cardCertificate? :string;
+    isImageChanged?:boolean;
+    deviceNumber? :string | number;
+    pinDigit? :string | number;
+    profileName? :string;
+    technologyCode? :string | number;
+    pinMode? :string | number;
+    pin? :string;
+    startDate :string;
+    endDate :string;
+    cardholderPortrait? :string;
+    account? :string;
+    password? :string;
+    email? :string;
+    phone? :string;
+    extensionNumber? :string;
+    birthday? :string;
+    allCardNumber?: string;
+    companyName?: string;
+    cardCustodian?: string;
+    lastEditPerson?: string;
+    lastEditTime?: string;
+    cardType?: string;    
+    MVPN?: string;
+    gender?: string;
+    department?: string;
+    costCenter?: string;
+    area?: string;
+    workArea?: string;
+    registrationDate?: string;
+    resignationDate?: string;
+    carLicenseCategory?: string;
+    cardLicense?: string;
+    carLicense?: string;
+    carLicense1?: string;
+    carLicense2?: string;
+    carLicense3?: string;    
+    resignationNote?: string;
+    resignationRecordCardRecord?: string;
+    reasonForCard1?: string;
+    historyForCard1?: string;
+    dateForCard1?: string;
+    reasonForCard2?: string;
+    historyForCard2?: string;
+    dateForCard2?: string;
+    reasonForCard3?: string;
+    historyForCard3?: string;
+    dateForCard3?: string;
+    reasonForApplication1?: string;
+    dateForApplication1?: string;
+    reasonForApplication2?: string;
+    dateForApplication2?: string;
+    reasonForApplication3?: string;
+    dateForApplication3?: string;
+    resignationRecordCarLicense?: string;    
+    censusRecord1?: string;
+    censusDate1?: string;
+    censusRecord2?: string;
+    censusDate2?: string;
+    censusRecord3?: string;
+    censusDate3?: string;
+    infoOfViolation1?: string;
+    dateOfViolation1?: string;
+    infoOfViolation2?: string;
+    dateOfViolation2?: string;
+    infoOfViolation3?: string;
+    dateOfViolation3?: string;
+}
 @registerSubclass()
 export class Member extends ParseObject<ICardholderObject> { }
 

@@ -7,7 +7,7 @@ import * as siPassClient from '../../modules/acs/sipass';
 import { access } from 'fs';
 import { SipassToken } from 'workspace/custom/models';
 import { Errors } from 'core/cgi-package';
-import { CustomFields } from '../report-service';
+import { CustomFields } from '../member-service';
 // import { ConstructSignatureDeclaration } from 'ts-simple-ast';
 var moment = require("moment");
 

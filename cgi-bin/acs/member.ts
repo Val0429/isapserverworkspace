@@ -7,6 +7,7 @@ import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter
 import { ReportService } from 'workspace/custom/services/report-service';
 import { Log } from 'workspace/custom/services/log';
 import MemberService from 'workspace/custom/services/member-service';
+import { ICardholderObject } from 'workspace/custom/modules/acs/sipass';
 
 
 var action = new Action({
@@ -20,8 +21,8 @@ var action = new Action({
 /********************************
  * C: create object
  ********************************/
-type InputC = Restful.InputC<any>;
-type OutputC = Restful.OutputC<IMember>;
+type InputC = Restful.InputC<IMember>;
+type OutputC = Restful.OutputC<ICardholderObject>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
@@ -62,14 +63,12 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<any>;
-type OutputR = Restful.OutputR<IMember>;
 
-action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+action.get(async (data) => {
     /// 1) Make Query
     let page = 1;
     let pageSize = 10;
-    let paging = data.inputType.paging
+    let paging = data.parameters.paging
     if(paging){
         page = paging.page || 1;
         pageSize = pageSize || 10;
@@ -100,8 +99,8 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
 /********************************
  * U: update object
  ********************************/
-type InputU = Restful.InputU<any>;
-type OutputU = Restful.OutputU<IMember>;
+type InputU = Restful.InputU<IMember>;
+type OutputU = Restful.OutputU<ICardholderObject>;
 
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     
@@ -110,7 +109,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     var obj = await new Parse.Query(Member).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
     let memberService = new MemberService();
-    let member = await memberService.createMember(data.parameters, data.user);
+    let member = await memberService.createMember(data.inputType, data.user);
     /// 2) Modify
     let update = new Member(member);
 
@@ -124,7 +123,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 	update.set("GeneralInformation", obj.get("GeneralInformation"));
 	update.set("Status", obj.get("Status"));
     update.set("Token", obj.get("Token"));
-    if(!data.parameters.isImageChanged){
+    if(!data.inputType.isImageChanged){
         update.set("CardholderPortrait", obj.get("CardholderPortrait"));
     }
     update.set("GeneralInformation", obj.get("GeneralInformation"));
@@ -158,7 +157,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
  * D: delete object
  ********************************/
 type InputD = Restful.InputD<IMember>;
-type OutputD = Restful.OutputD<IMember>;
+type OutputD = Restful.OutputD<ICardholderObject>;
 
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
@@ -191,9 +190,10 @@ export default action;
 
 async function checkCardNumber(member: any) {
     let cardno = member.Credentials[0].CardNumber;    
+    console.log("checkCardNumber", cardno);
     if (cardno != "") {
         let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
-        if ((!member.objectId || member.objectId != cnt.get("objectId"))&&cnt != null) {
+        if (cnt && (!member.objectId || member.objectId != ParseObject.toOutputJSON(cnt).objectId)) {            
             throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
         }
         let hStart = member.StartDate;

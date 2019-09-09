@@ -20,7 +20,7 @@ import { stringify } from 'querystring';
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import moment = require('moment');
 import { testDate } from './member-service';
-import { ICardholderObject } from '../modules/acs/sipass/siPass_define';
+import { ICardholderObject, ECardholderStatus } from '../modules/acs/sipass/siPass_define';
 
 
 export class HRService {
@@ -484,7 +484,7 @@ export class HRService {
             PrimaryWorkgroupName:  workgroupName || memberJson.PrimaryWorkgroupName,
             SmartCardProfileId: memberJson.SmartCardProfileId || "0",
             StartDate: startDate,
-            Status: memberJson.Status || 61,
+            Status: memberJson.Status || ECardholderStatus.Void,
             Token: memberJson.Token || "-1",
             TraceDetails: memberJson.TraceDetails || {},
             Vehicle1: { CarColor: '', CarModelNumber: '', CarRegistrationNumber: '' },
@@ -739,7 +739,7 @@ export class HRService {
                         PrimaryWorkgroupName: memberJson.PrimaryWorkgroupName || workgroupName,
                         SmartCardProfileId: memberJson.SmartCardProfileId || "0",
                         StartDate: startDate,
-                        Status: memberJson.Status || 61,
+                        Status: memberJson.Status || ECardholderStatus.Void,
                         Token: memberJson.Token || "-1",
                         TraceDetails: memberJson.TraceDetails || {},
                         Vehicle1: memberJson.Vehicle1 || {},

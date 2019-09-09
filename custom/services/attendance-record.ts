@@ -2,15 +2,10 @@ import { Log } from './log';
 
 import { AttendanceRecords, Member, Reader, Door } from 'workspace/custom/models/index';
 
-import * as mongo from 'mongodb';
-
-
 import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 import moment = require('moment');
-import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import { CCUREService } from '../modules/acs/CCURE';
-import { memberFields } from './report-service';
 
 
 // import { CCUREReader } from './ccureReader'

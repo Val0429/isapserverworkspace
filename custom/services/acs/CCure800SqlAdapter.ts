@@ -5,6 +5,7 @@ import { Log } from 'helpers/utility';
 import * as adodb from 'node-adodb';
 import * as p from 'path';
 import { PermissionTable } from 'core/cgi-package';
+import { ICardholderObject, ECardholderStatus } from 'workspace/custom/modules/acs/sipass';
 
 export class CCure800SqlAdapter {
     private waitTimer = null;
@@ -56,7 +57,7 @@ export class CCure800SqlAdapter {
             await this.adodbConn
                 .execute(delData);
     }
-    async writeMember(data:any, accessRules:string[]) {
+    async writeMember(data:ICardholderObject, accessRules:string[]) {
         let ccurePermissionTables = await new Parse.Query(PermissionTable)
                             .equalTo("system", 800)
                             .containedIn("tablename", accessRules)
@@ -74,7 +75,7 @@ export class CCure800SqlAdapter {
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
         await this.writeToMdb(data, ccureAccessRules);        
     }
-    async writeToMdb(data, ccureAccessRules:string[], tableName:string="Member"){
+    async writeToMdb(data:ICardholderObject, ccureAccessRules:string[], tableName:string="Member"){
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
         
         for (let i = 0; i < rules.length; i++) {
@@ -308,7 +309,7 @@ export class CCure800SqlAdapter {
         ,${CustomDateControl3__CF8 ? "'"+CustomDateControl3__CF8.split("T")[0] + "'" : "NULL" }
         ,${CustomDateControl3__CF9 ? "'"+CustomDateControl3__CF9.split("T")[0] + "'" : "NULL" }
         ,${CustomDateControl3__CF10 ? "'"+CustomDateControl3__CF10.split("T")[0] + "'" : "NULL" }
-        ,${data.Status == "1"? -1 : 0}, ${data.Attributes && data.Attributes.Void ? data.Attributes.Void : 0}
+        ,${data.Status == ECardholderStatus.Deleted ? -1 : 0}, ${data.Attributes && data.Attributes.Void ? data.Attributes.Void : 0}
         )`;
         
         //console.log(insert);

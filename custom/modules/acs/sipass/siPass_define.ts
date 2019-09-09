@@ -54,7 +54,8 @@ export enum EWorkGroupType {
 
 export enum ECardholderStatus {
     None = 0,
-    Vaild = 61,
+    Deleted=1,
+    Valid = 61,
     Void = 62,
     Expired = 63,
     BeforeStartDate = 64,
