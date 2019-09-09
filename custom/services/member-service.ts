@@ -4,6 +4,7 @@ import { User } from "parse";
 import { WorkGroup, PermissionTable } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
+import { ICardholderObject } from "../modules/acs/sipass/siPass_define";
 
 export class MemberService {
     async resizeImage (base64Image:string) {
@@ -76,7 +77,7 @@ async createMember (inputFormData:any, user:User) {
                         UserName: inputFormData.account || ""
                     }
           };
-          
+          let now = new Date();
           let credential = {
                 CardNumber: (inputFormData.cardNumber || "").toString(),
                 Pin: inputFormData.pin || "0",
@@ -107,7 +108,7 @@ async createMember (inputFormData:any, user:User) {
           }
           let imageBase64 = await this.resizeImage(inputFormData.cardholderPortrait);
           let wg= workGroupSelectItems.find(x=>x.get("groupid")==parseInt(inputFormData.personType || "1"));
-          let member = {        
+          let member:ICardholderObject = {        
               // master
               objectId: inputFormData.objectId,
               AccessRules: accessRules,

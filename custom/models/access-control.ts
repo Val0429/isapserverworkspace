@@ -1,5 +1,6 @@
 import { registerSubclass, ParseObject } from 'helpers/parse-server/parse-helper';
 import { User } from 'parse';
+import { ICardholderObject } from '../modules/acs/sipass/siPass_define';
 
 export interface ISystemLog{
     title:string;
@@ -88,74 +89,9 @@ export interface IElevatorGroup {   // CRUD V
 @registerSubclass()
 export class ElevatorGroup extends ParseObject<IElevatorGroup> { }
 
-export interface IMember {      // CRUD
-    system?: number,            // 0: iSap 4: FET
-    Attributes?: {Void?:boolean},
-    Credentials?: {
-        CardNumber: string,
-        EndDate: string,
-        Pin: string,
-        ProfileId: number,
-        ProfileName: string,
-        StartDate: string,
-        FacilityCode: number,
-        CardTechnologyCode: number,
-        PinMode: number,
-        PinDigit?: number
-    }[],
-    AccessRules?: any[],
-    EmployeeNumber: string,
-    EndDate: string,
-    FirstName: string,
-    GeneralInformation: string,
-    LastName: string,
-    PersonalDetails?: {
-        Address: string,
-        ContactDetails: {
-            Email: string,
-            MobileNumber: string,
-            MobileServiceProviderId: string,
-            PagerNumber: string,
-            PagerServiceProviderId: string,
-            PhoneNumber: string
-        },
-        DateOfBirth: string,
-        PayrollNumber: string,
-        Title: string,
-        UserDetails: {
-            Password: string,
-            UserName: string
-        }
-    },
-    PrimaryWorkgroupId: number,
-    ApbWorkgroupId: number,
-    PrimaryWorkgroupName: string,
-    NonPartitionWorkGroups: any[],
-    SmartCardProfileId: string,
-    StartDate: string,
-    Status: number,
-    Token: string,
-    TraceDetails: {},
-    Vehicle1: {},
-    Vehicle2: {},
-    Potrait?: string,
-    PrimaryWorkGroupAccessRule: any[],
-    NonPartitionWorkgroupAccessRules: any[],
-    VisitorDetails?: {
-        VisitorCardStatus: number,
-        VisitorCustomValues : {
-            
-        }
-    },
-    CustomFields?: {
-        FiledName?: string,
-        FieldValue?: any
-    }[],
-    FingerPrints?: any[],
-    CardholderPortrait?: string
-}
+
 @registerSubclass()
-export class Member extends ParseObject<IMember> { }
+export class Member extends ParseObject<ICardholderObject> { }
 
 
 export interface ITimeSchedule {    // R daily V

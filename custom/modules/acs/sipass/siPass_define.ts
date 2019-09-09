@@ -70,8 +70,8 @@ export enum EElevatorRole {
 //------------------parameter interface----------------------------//
 
 export interface ICardholderUserDetails {
-    userName?: string;
-    password?: string;
+    UserName?: string;
+    Password?: string;
 }
 
 export interface ICardTemplate {
@@ -83,45 +83,45 @@ export interface ICardTemplate {
 }
 
 export interface ICardholderCredential {
-    active?: boolean;
-    cardNumber?: string;
-    endDate?: string;
-    pin?: number;
-    revisionNumber?: number;
-    pinErrorDisable?: boolean;
-    profileId?: number;
-    profileName?: string;
-    startDate?: string;
-    facilityCode?: number;
-    cardTechnologyCode?: number;
-    pinMode?: number;
-    pinDigit?: number;
+    Active?: boolean;
+    CardNumber?: string;
+    EndDate?: string;
+    Pin?: number;
+    RevisionNumber?: number;
+    PinErrorDisable?: boolean;
+    ProfileId?: number;
+    ProfileName?: string;
+    StartDate?: string;
+    FacilityCode?: number;
+    CardTechnologyCode?: number;
+    PinMode?: number;
+    PinDigit?: number;
 }
 
 export interface ICardholderAccessRule {
-    objectToken?: string;
-    objectName?: string;
-    ruleToken?: string;
-    ruleType?: EAccessRules;
-    timeScheduleToken?: string;
-    startDate?: string;
-    endDate?: string;
-    armingRightsId?: EArmingRights;
-    controlModeId?: EControlMode;
-    isFavourite?: boolean;
-    side?: number;
+    ObjectToken?: string;
+    ObjectName?: string;
+    RuleToken?: string;
+    RuleType?: EAccessRules;
+    RimeScheduleToken?: string;
+    StartDate?: string;
+    EndDate?: string;
+    ArmingRightsId?: EArmingRights;
+    ControlModeId?: EControlMode;
+    IsFavourite?: boolean;
+    Side?: number;
 }
 
 export interface ICardholderAttributes {
-    accessibility?: boolean;
-    apbExclusion?: boolean;
-    apbReEntryExclusion?: boolean;
-    isolate?: boolean;
-    selfAuthorize?: boolean;
-    supervisor?: boolean;
-    visitor?: boolean;
-    void?: boolean;
-    restrictedVisitor?: boolean;
+    Accessibility?: boolean;
+    ApbExclusion?: boolean;
+    ApbReEntryExclusion?: boolean;
+    Isolate?: boolean;
+    SelfAuthorize?: boolean;
+    Supervisor?: boolean;
+    Visitor?: boolean;
+    Void?: boolean;
+    RestrictedVisitor?: boolean;
 }
 
 export interface ICardholderVehicle {
@@ -131,15 +131,15 @@ export interface ICardholderVehicle {
 }
 
 export interface ICardholderWorkGroupAccessRule {
-    workGroupId?: number,
-    workGroupName?: string,
-    accessPolicyRules?: ICardholderAccessRule[]
+    WorkGroupId?: number,
+    WorkGroupName?: string,
+    AccessPolicyRules?: ICardholderAccessRule[]
 }
 
 export interface ICustomFields {
     FiledName?: string,
     FieldValue?: string,
-    behaviour?: string
+    Behaviour?: string
 }
 
 export interface ICardholderTrace {
@@ -161,25 +161,25 @@ export interface IBiometricStatus {
 }
 
 export interface ICardholderContactDetails {
-    email?: string,
-    mobileNumber?: string,
-    mobileServiceProvider?: string,
-    mobileServiceProviderId?: string,
-    pagerNumber?: string,
-    pagerServiceProvider?: string,
-    pagerServiceProviderId?: string,
-    phoneNumber?: string,
-    useEmailforMessageForward?: boolean
+    Email?: string,
+    MobileNumber?: string,
+    MobileServiceProvider?: string,
+    MobileServiceProviderId?: string,
+    PagerNumber?: string,
+    PagerServiceProvider?: string,
+    PagerServiceProviderId?: string,
+    PhoneNumber?: string,
+    UuseEmailforMessageForward?: boolean
 }
 
 
 export interface ICardholderPersonal {
-    address?: string,
-    contactDetails?: ICardholderContactDetails,
-    dateOfBirth?: string,
-    payrollNumber?: string,
-    title?: string,
-    userDetails?: ICardholderUserDetails
+    Address?: string,
+    ContactDetails?: ICardholderContactDetails,
+    DateOfBirth?: string,
+    PayrollNumber?: string,
+    Title?: string,
+    UserDetails?: ICardholderUserDetails
 }
 
 export interface IVisitorCustomValues {
@@ -204,14 +204,14 @@ export interface IVisitorCustomValues {
 }
 
 export interface IVisitor {
-    visitedEmployeeFirstName?: string,
-    visitedEmployeeId?: number,
-    visitedEmployeeLastName?: string,
-    visitorCardIssueTime?: string,
-    visitorCardReturnTime?: string,
-    visitorCardStatus?: number,
-    visitorCustomValues?: IVisitorCustomValues,
-    isDeleteCardFromList?: boolean
+    VisitedEmployeeFirstName?: string,
+    VisitedEmployeeId?: number,
+    VisitedEmployeeLastName?: string,
+    VisitorCardIssueTime?: string,
+    VisitorCardReturnTime?: string,
+    VisitorCardStatus?: number,
+    VisitorCustomValues?: IVisitorCustomValues,
+    IsDeleteCardFromList?: boolean
 }
 
 export interface ILink {
@@ -285,6 +285,7 @@ export interface IWorkGroupObject {
 }
 
 export interface ICardholderObject {
+    objectId?:string;
     Attributes?: ICardholderAttributes,
     Credentials?: ICardholderCredential[],
     BaseCardNumber?: string,
@@ -310,7 +311,7 @@ export interface ICardholderObject {
     Vehicle2?: ICardholderVehicle,
     Potrait?: string,
     PrimaryWorkGroupAccessRule?: ICardholderAccessRule[],
-    PonPartitionWorkgroupAccessRules?: ICardholderWorkGroupAccessRule[],
+    NonPartitionWorkgroupAccessRules?: ICardholderWorkGroupAccessRule[],
     VisitorDetails?: IVisitor,
     CustomFields?: ICustomFields[],
     FingerPrints?: IBiometricStatus[],

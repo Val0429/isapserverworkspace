@@ -32,7 +32,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
     }
     if (member.Credentials[0]) {
-        //await checkCardNumber(member);
+        await checkCardNumber(member);
     }
 
     
@@ -115,7 +115,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     let update = new Member(member);
 
     if (member.Credentials[0]) {
-        //await checkCardNumber(member);
+        await checkCardNumber(member);
     }
 
 	update.set("Vehicle1", { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""} );
@@ -193,7 +193,7 @@ async function checkCardNumber(member: any) {
     let cardno = member.Credentials[0].CardNumber;    
     if (cardno != "") {
         let cnt = await new Parse.Query(Member).equalTo("Credentials.CardNumber", cardno).first();
-        if (cnt != null) {
+        if ((!member.objectId || member.objectId != cnt.get("objectId"))&&cnt != null) {
             throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
         }
         let hStart = member.StartDate;

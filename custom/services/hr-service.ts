@@ -20,6 +20,7 @@ import { stringify } from 'querystring';
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import moment = require('moment');
 import { testDate } from './member-service';
+import { ICardholderObject } from '../modules/acs/sipass/siPass_define';
 
 
 export class HRService {
@@ -362,7 +363,7 @@ export class HRService {
 
 
         // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-        let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59").format();
+        let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
         let startDate = testDate(record["EntDate"]) || moment().format();
         let personalDetails: any;
 
@@ -624,7 +625,7 @@ export class HRService {
 
 
                     // this.mongoDb.collection("vieMember").findOneAndReplace({ "EmpNo": empNo }, record, { upsert: true })
-                    let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59").format();
+                    let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
                     let startDate = testDate(record["EntDate"]) || moment().format();
                     let personalDetails: any;
 
@@ -721,7 +722,7 @@ export class HRService {
                             }
                         }
                     }
-                    let d = {
+                    let d:ICardholderObject = {
                         AccessRules: memberJson.AccessRules || [],
                         ApbWorkgroupId: memberJson.ApbWorkgroupId || workgroupId,
                         Attributes: memberJson.Attributes || {Void:false},

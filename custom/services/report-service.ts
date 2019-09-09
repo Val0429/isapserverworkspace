@@ -1,7 +1,8 @@
-import { Member, IMember, AttendanceRecords, Door, PermissionTable, TimeSchedule, AccessLevel, DoorGroup } from "../models";
+import { Member, AttendanceRecords, Door, PermissionTable, TimeSchedule, AccessLevel, DoorGroup } from "../models";
 
 import moment = require("moment");
 import { ParseObject } from "helpers/parse-server/parse-helper";
+import { ICardholderObject, ICustomFields } from "../modules/acs/sipass";
 
 export const memberFields =["system",
                             "Attributes",
@@ -262,14 +263,14 @@ export class ReportService{
         //console.log("beep2")
         let total = await query.count();
         //console.log("beep3")
-        let members = o.map(x=>ParseObject.toOutputJSON(x));
+        let members:ICardholderObject[] = o.map(x=>ParseObject.toOutputJSON(x));
         //console.log("beep4")
         let results = this.constructData(members);
         //console.log("beep5")
         return {results, total};
     }
     
-    private constructData(dataMember: IMember[]) {
+    private constructData(dataMember: ICardholderObject[]) {
         let records:any=[];
         for (let item of dataMember) {
             records.push(this.normalizeMember(item));
@@ -277,7 +278,7 @@ export class ReportService{
         
         return records;
     }
-    private getFieldValue(fieldName:string, customFields:any[], isDate:boolean){      
+    private getFieldValue(fieldName:string, customFields:ICustomFields[], isDate:boolean){      
         if(!customFields)return "";
         let exists = customFields.find(x=>x.FiledName == fieldName);
         let value = exists ? (exists.FieldValue || "") : "";
@@ -288,7 +289,7 @@ export class ReportService{
             return "";
           }    
     }
-    private normalizeMember(member:any) { 
+    private normalizeMember(member:ICardholderObject) { 
         let newMember:any = {};
           
         newMember.objectId = member.objectId;      
