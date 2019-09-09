@@ -57,10 +57,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
                     accessRule: [
                         {
-                            objectName: readername,
-                            objectToken: e.get("readerid"),
-                            ruleToken: e.get("readerid"),
-                            ruleType: 2
+                            ObjectName: readername,
+                            ObjectToken: e.get("readerid"),
+                            RuleToken: e.get("readerid"),
+                            RuleType: 2
                         }
                     ]
                 }
@@ -94,10 +94,10 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                     timeScheduleToken: data.inputType.timeschedule.get("timeid"),
                     accessRule: [
                         {
-                            objectName: readername,
-                            objectToken: e.get("floorid"),
-                            ruleToken: e.get("floorid"),
-                            ruleType: 8
+                            ObjectName: readername,
+                            ObjectToken: e.get("floorid"),
+                            RuleToken: e.get("floorid"),
+                            RuleType: 8
                         }
                     ]
                 }
