@@ -334,6 +334,7 @@ export class HRService {
         if (!obj) {
             obj = new vieMember(record);
             objects.push(obj);
+            vieMembers.push(obj);
         }
         else {
             obj.set("attributes", record["attributes"]);
@@ -506,6 +507,7 @@ export class HRService {
                 let holder = await siPassAdapter.postCardHolder(d);                
                 member = new Member(d);                
                 member.set("Token", holder["Token"] || "-1");
+                members.push(member);
             }
             else {
                 d.Token = memberJson.Token;
@@ -594,6 +596,7 @@ export class HRService {
                     let obj = vieMembers.find(x => x.get("EmpNo") == supporterNo);
                     if (!obj) {
                         obj = new vieMember(record);
+                        vieMembers.push(obj);
                         objects.push(obj);
                     }
                     else {
@@ -763,6 +766,7 @@ export class HRService {
                             let holder = await siPassAdapter.postCardHolder(d);                
                             member = new Member(d);
                             member.set("Token", holder["Token"] || "-1");
+                            members.push(member);
                         }
                         else {
                             d.Token = memberJson.Token;
