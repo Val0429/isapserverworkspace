@@ -75,8 +75,8 @@ export class HRService {
         var s = (now.getMinutes() * 60 + now.getSeconds()) % this.checkCycleTime;
         Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.checkCycleTime - s} ] sec`);
 
-        this.waitTimer = setTimeout(() => {
-            this.doHumanResourcesSync();
+        this.waitTimer = setTimeout(async () => {
+           await this.doHumanResourcesSync();
         }, (this.checkCycleTime - s) * 1000);
     }
 

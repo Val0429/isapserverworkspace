@@ -28,7 +28,7 @@ export class AttendanceRecord {
       
 
         this.waitTimer = setTimeout(async () => {
-            me.doAccessControlSync();
+           await me.doAccessControlSync();
         }, 1000 * this.startDelayTime);
     }
 
@@ -58,8 +58,8 @@ export class AttendanceRecord {
         var s = (now.getMinutes() * 60 + now.getSeconds()) % this.cycleTime;
         Log.Info(`${this.constructor.name}`, `Timer Check wait for [ ${this.cycleTime - s} ] sec`);
 
-        this.waitTimer = setTimeout(() => {
-            this.doAccessControlSync();
+        this.waitTimer = setTimeout(async () => {
+           await this.doAccessControlSync();
         }, (this.cycleTime - s) * 1000);
     } 
     private async getCCureData() {
