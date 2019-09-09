@@ -1,3 +1,4 @@
+import { IObject } from './_index';
 import { ILocation } from '../base/_index';
 
 /**
@@ -12,4 +13,20 @@ export interface IBuildingIndexR {
 export interface IBuildingAll {
     objectId: string;
     name: string;
+}
+
+/**
+ * Floor
+ */
+export interface IFloorsIndexR {
+    objectId: string;
+    building: IObject;
+    name: string;
+    floor: number;
+}
+
+export interface ICompaniesAll {
+    objectId: string;
+    name: string;
+    building: IObject;
 }

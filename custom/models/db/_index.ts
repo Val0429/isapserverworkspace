@@ -103,6 +103,8 @@ export abstract class TreeNotice<T> extends Tree<T> {
 }
 
 export * from './location-buildings';
+export * from './location-floors';
+
 export * from './setting-email';
 export * from './setting-push-notification';
 export * from './setting-system';
