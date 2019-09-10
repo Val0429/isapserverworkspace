@@ -39,7 +39,7 @@ async createMember (inputFormData:any, user:User) {
         let dob= testDate(inputFormData.birthday, "T");
           // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
-                        .containedIn("tableid", inputFormData.permissionTable.map(x=>x.get("objectId")))
+                        .containedIn("objectId", inputFormData.permissionTable)
                         .limit(Number.MAX_SAFE_INTEGER).find();
     
     let accessRules=[];
