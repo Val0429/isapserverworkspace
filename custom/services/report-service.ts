@@ -149,11 +149,17 @@ export class ReportService{
         // looking for duplication
         if (filter.eEmployeeNumber) query.equalTo("EmployeeNumber",  filter.eEmployeeNumber);
         if (filter.eCardNumber) query.equalTo("Credentials.CardNumber", filter.eCardNumber);
-        if (filter.start2 && filter.end2) {
-            query.lessThanOrEqualTo("EndDate", filter.end2).greaterThanOrEqualTo("EndDate", filter.start2);
+        if (filter.start2) {
+            query.greaterThanOrEqualTo("EndDate", filter.start2);
         }
-        if (filter.start1 && filter.end1) {
-            query.lessThanOrEqualTo("StartDate", filter.end1).greaterThanOrEqualTo("StartDate", filter.start1);
+        if(filter.end2){
+            query.lessThanOrEqualTo("EndDate", filter.end2)
+        }
+        if (filter.start1) {
+            query.greaterThanOrEqualTo("StartDate", filter.start1);
+        }
+        if(filter.end1){
+            query.lessThanOrEqualTo("StartDate", filter.end1);
         }
         if(filter.LastName) query.matches("LastName", new RegExp(filter.LastName), "i");
         if(filter.FirstName) query.matches("FirstName", new RegExp(filter.FirstName), "i");    
@@ -182,7 +188,7 @@ export class ReportService{
         }
 
         if(filter.PersonType){
-            console.log("personTpye", filter.PersonType);
+            //console.log("personTpye", filter.PersonType);
             query.equalTo("PrimaryWorkgroupId", +filter.PersonType);
         }
         //console.log("beep1")
