@@ -190,8 +190,8 @@ export interface ILinearMember{
         void? :boolean;
         permissionTable?: PermissionTable[];        
         personType?: number;
-        employeeNumber :string;
-        chineseName :string;
+        employeeNumber? :string;
+        chineseName? :string;
         englishName? :string;
         primaryWorkgroupName?:string;
         primaryWorkgroupId?:number;
@@ -205,8 +205,8 @@ export interface ILinearMember{
         technologyCode? :number ;
         pinMode? :number ;
         pin? :string;
-        startDate :string;
-        endDate :string;
+        startDate? :string;
+        endDate? :string;
         cardholderPortrait? :string;
         account? :string;
         password? :string;

@@ -736,7 +736,7 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
     async delCardHolder(cardHolderToken:string) {
-        Log.Info(`info`, `delCardHolder`);
+        Log.Info(`info`, `delCardHolder ${cardHolderToken}`);
         
         let token:string = await this.Login();
         await this.siPassPersion.DeletePerson(this.siPassHrParam, token, cardHolderToken);

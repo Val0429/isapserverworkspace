@@ -33,7 +33,7 @@ export class MemberService {
         
     }
 
-async createMember (inputFormData:any, user:User) {
+async createSipassCardHolder (inputFormData:any, user:User) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
         let dob= testDate(inputFormData.birthday, "T");
@@ -121,16 +121,16 @@ async createMember (inputFormData:any, user:User) {
               EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
               StartDate:moment(inputFormData.startDate || now).format(),
               SmartCardProfileId:"0",
-              Status:ECardholderStatus.Valid,
+              Status:inputFormData.status || ECardholderStatus.Valid,
               //new addition
               GeneralInformation:"",
               Attributes:{Void:inputFormData.void || false},
               NonPartitionWorkGroups:[],
               NonPartitionWorkgroupAccessRules:[],
               PrimaryWorkGroupAccessRule:[],
-              Token: "-1",
-              Vehicle1: {},
-              Vehicle2: {},
+              Token: inputFormData.token || "-1",
+              Vehicle1: { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""},
+              Vehicle2: { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""},              
               VisitorDetails: {
                   VisitorCardStatus: 0,
                   VisitorCustomValues: {}
@@ -149,7 +149,7 @@ async createMember (inputFormData:any, user:User) {
     async createLinearMember (inputFormData:ILinearMember, user:User) {
         let now = new Date();
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
-        let dob= testDate(inputFormData.birthday, "T");
+        let dob= testDate(inputFormData.birthday, "T")||"";
         
         
           let imageBase64 = await this.resizeImage(inputFormData.cardholderPortrait);
