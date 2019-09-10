@@ -35,6 +35,7 @@ export class Suntec {
         {
             method: 'POST',
             url: `${this._connStr}/signup`,
+            json:true,
             headers:
             {
                 'cache-control': 'no-cache',
@@ -49,21 +50,23 @@ export class Suntec {
 
         return await new Promise((resolve, reject) => {
             this._request(options, function (error, response, body) {
-                if (error) return reject(error)
+                if (error) return reject(error);
+                else if(body["StatusCode"] !== "200") reject(body["Message"]);
+
                 return resolve(body)
             });
         });
     }
 
     public async revoke(contect: IRevoke) {
-        let api = `${this._connStr}/revoke`;
         let body = contect;
         body["TimeStamp"] = DateTime.ToString(new Date(),"YYYY-MM-DD HH:mm:ss");
-        console.log(body);
+
         var options = 
         {
             method: 'POST',
             url: `${this._connStr}/revoke`,
+            json:true,
             headers:
             {
                 'cache-control': 'no-cache',
@@ -78,7 +81,9 @@ export class Suntec {
 
         return await new Promise((resolve, reject) => {
             this._request(options, function (error, response, body) {
-                if (error) return reject(error)
+                if (error) return reject(error);
+                else if(body["StatusCode"] !== "200") reject(body["Message"]);
+
                 return resolve(body)
             });
         });
