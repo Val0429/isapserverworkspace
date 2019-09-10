@@ -131,7 +131,7 @@ export interface IU_Base {
     dataWindowY?: number;
 }
 
-export interface IDemographicU_FRS extends IC_Base {
+export interface IDemographicU_FRS extends IU_Base {
     brand: Enum.EDeviceBrand.isap;
     model: Enum.EDeviceModelIsap.frs;
     config?: ICameraFRS;
