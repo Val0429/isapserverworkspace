@@ -64,6 +64,7 @@ export interface IWebIndexU {
     email?: string;
     phone?: string;
     remark?: string;
+    floorIds?: string[];
 }
 
 /**

@@ -282,7 +282,7 @@ action.put(
 
                         let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
                             .equalTo('user', user)
-                            .include(['user', 'user.roles'])
+                            .include(['user', 'user.roles', 'company'])
                             .first()
                             .fail((e) => {
                                 throw e;
@@ -307,6 +307,16 @@ action.put(
                         }
                         if ('remark' in value) {
                             info.setValue('remark', value.remark);
+                        }
+                        if ('floorIds' in value) {
+                            if (!!info.getValue('company')) {
+                                let company: IDB.LocationCompanies = info.getValue('company');
+                                let floors: IDB.LocationFloors[] = company.getValue('floor').filter((value1, index1, array1) => {
+                                    return value.floorIds.indexOf(value1.id) > -1;
+                                });
+
+                                info.setValue('floors', floors);
+                            }
                         }
 
                         await info.save(null, { useMasterKey: true }).fail((e) => {
