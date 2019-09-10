@@ -1,6 +1,7 @@
-import { Action, Restful} from 'core/cgi-package';
+import { Action, Restful, ParseObject} from 'core/cgi-package';
 
 import { ReportService } from 'workspace/custom/services/report-service';
+import MemberService from 'workspace/custom/services/member-service';
 
 
 var action = new Action({
@@ -14,20 +15,33 @@ var action = new Action({
  * R: get object
  ********************************/
 
-action.get(async (data) => {
-    let pageSize = 10000;
+action.post(async (data) => {
+    let memberService = new MemberService();
     let filter = data.parameters as any;
+    let pageSize = filter.paging.pageSize || 10;
+    let page = filter.paging.page || 1;
+    let fields = filter.selectedColumns.map(x=>x.key);
+    fields.push("permissionTable.accesslevels.door.doorname");
+    fields.push("permissionTable.accesslevels.doorgroup.groupname");
+    fields.push("permissionTable.accesslevels.timeschedule.timename");
+    let memberQuery = memberService.getMemberQuery(filter)
+                        .skip((page-1)*pageSize)
+                        .include("permissionTable.accesslevels.door")
+                        .include("permissionTable.accesslevels.timeschedule")
+                        .include("permissionTable.accesslevels.doorgroup")
+                        .limit(pageSize)
+                        .select(...fields);
+    
+    let oMember = await memberQuery.find();
+    let members = oMember.map(x=>ParseObject.toOutputJSON(x));
+    let total = await memberQuery.count();
     let results=[];
-    let reportService = new ReportService();
-    let permissions = await reportService.getPermissionRecord(filter, pageSize);
-    let members = await reportService.getMemberRecord(filter, pageSize);
-    for(let member of members.results){
-        for(let tableid of member.permissionTable){            
-            let newMember = Object.assign({},member);
-            let permission = permissions.results.find(x=>x.tableid==tableid);
-            if(!permission || !permission.accesslevels)continue;
-            for(let access of permission.accesslevels){
-                newMember.permissionName = permission.tablename;
+    
+    for(let member of members){
+        for(let table of member.permissionTable){            
+            let newMember = Object.assign({},member);            
+            for(let access of table.accesslevels){
+                newMember.permissionName = table.tablename;
                 newMember.timeSchedule = access.timeschedule.timename;
                 newMember.doorName = access.door?access.door.doorname:'';
                 newMember.doorGroupName = access.doorgroup?access.doorgroup.groupname:'';
@@ -41,10 +55,10 @@ action.get(async (data) => {
     /// 3) Output
     return {
         paging:{
-            page:1,
+            page,
             pageSize,
-            total:results.length,
-            totalPages:Math.ceil(results.length / pageSize)
+            total,
+            totalPages:Math.ceil(total / pageSize)
         },
         results
     };
