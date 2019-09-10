@@ -3,12 +3,11 @@ import { Config } from 'core/config.gen';
 import { RoleList } from 'core/userRoles.gen';
 import { createIndex } from 'helpers/parse-server/parse-helper';
 
-
 import { APIPermissions, APIRoles, APITokens, IAPIPermissions, IAPIRoles, IAPITokens } from 'models/customRoles';
 
 import {
     Reader, Door, Floor, FloorGroup, Elevator, DoorGroup, ElevatorGroup, Member, TimeSchedule, AccessLevel,
-    PermissionTable, WorkGroup, SyncNotification, AttendanceRecords, DropDownList
+    PermissionTable, WorkGroup, SyncNotification, AttendanceRecords, DropDownList, LinearMember, ILinearMember
 } from '../../custom/models'
 
 (async () => {
@@ -195,7 +194,7 @@ import {
     obj = await new PermissionTable().save(); obj.destroy();
     obj = await new WorkGroup().save(); obj.destroy();
     obj = await new SyncNotification().save(); obj.destroy();
-
+    obj = await new LinearMember().save(); obj.destroy();
     obj = await new Member().save(); obj.destroy();
-    obj = await new AttendanceRecords().save(); obj.destroy();
+    
 })();

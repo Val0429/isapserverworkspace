@@ -3,7 +3,7 @@ import { Member, AttendanceRecords, Door, PermissionTable, TimeSchedule, AccessL
 import moment = require("moment");
 import { ParseObject } from "helpers/parse-server/parse-helper";
 import { ICardholderObject, ICustomFields } from "../modules/acs/sipass";
-import { memberFields, CustomFields } from "./member-service";
+import MemberService, { memberFields, CustomFields } from "./member-service";
 
 
 const fieldNames = {
@@ -205,84 +205,14 @@ export class ReportService{
     
     private constructData(dataMember: ICardholderObject[]) {
         let records:IMember[]=[];
+        let memberService = new MemberService();
         for (let item of dataMember) {
-            records.push(this.normalizeMember(item));
+            records.push(memberService.normalizeMember(item));
         }   
         
         return records;
     }
-    private getFieldValue(fieldName:string, customFields:ICustomFields[], isDate:boolean){      
-        if(!customFields)return "";
-        let exists = customFields.find(x=>x.FiledName == fieldName);
-        let value = exists ? (exists.FieldValue || "") : "";
-        try{        
-            return isDate && value ?  moment(value).format("YYYY-MM-DD"): value;
-          }catch(err){
-            console.error(err);
-            return "";
-          }    
-    }
-    private normalizeMember(member:ICardholderObject):IMember { 
-        let newMember:any = {};
-          
-        newMember.objectId = member.objectId;      
-        newMember.void = member.Attributes && member.Attributes.Void? member.Attributes.Void:false;
-        newMember.permissionTable = member.AccessRules && member.AccessRules.length > 0 ? 
-                                    member.AccessRules.filter(x=>x.RuleType && x.RuleType == 4)
-                                    .map(x=>parseInt(x.RuleToken)) : [];
-        
-        newMember.personType = member.PrimaryWorkgroupId;
-        newMember.employeeNumber = member.EmployeeNumber;      
-        newMember.chineseName = member.LastName;
-        newMember.englishName = member.FirstName;
-        newMember.primaryWorkgroupName=member.PrimaryWorkgroupName;
-        newMember.primaryWorkgroupId=member.PrimaryWorkgroupId;
-        let credential = member.Credentials && member.Credentials.length>0 ?  member.Credentials[0]: {};
-          
-        newMember.cardNumber = credential.CardNumber || "";
-        newMember.cardAllNumber = credential.CardNumber || "";
-        newMember.cardCertificate = (credential.ProfileId || 0).toString();
-        newMember.deviceNumber = credential.FacilityCode || "";
-        newMember.pinDigit = credential.PinDigit|| "";
-        newMember.profileName = credential.ProfileName|| "";
-        newMember.technologyCode = credential.CardTechnologyCode|| "";    
-        newMember.pinMode = credential.PinMode|| "";
-        newMember.pin = credential.Pin || "0";
-        newMember.startDate = moment(member.StartDate).format("YYYY-MM-DD");
-        newMember.endDate =moment(member.EndDate).format("YYYY-MM-DD");;
-        newMember.cardholderPortrait = member.CardholderPortrait? ("data:image/png;base64,"+member.CardholderPortrait) : "";
-
-        // tab2
-        if (member.PersonalDetails) {
-            if(member.PersonalDetails.UserDetails){
-                newMember.account = member.PersonalDetails.UserDetails.UserName;
-                newMember.password = member.PersonalDetails.UserDetails.Password;
-            }
-            if(member.PersonalDetails.ContactDetails){
-                newMember.email = member.PersonalDetails.ContactDetails.Email;
-                newMember.phone = member.PersonalDetails.ContactDetails.PhoneNumber;
-                newMember.extensionNumber = member.PersonalDetails.ContactDetails.MobileNumber;
-            }
-            if (member.PersonalDetails.DateOfBirth) {          
-                newMember.birthday = member.PersonalDetails.DateOfBirth;          
-            }
-        }else{
-            newMember.account = "";
-            newMember.password = "";
-            newMember.email = "";
-            newMember.phone = "";
-            newMember.extensionNumber = "";       
-            newMember.birthday = "";
-        }
-        //custom fields      
-        for(let field of CustomFields){
-            if(field.name=="lastEditTime"){
-                newMember[field.name] = moment(newMember[field.name] ).format("YYYY-MM-DD HH:mm:ss");
-            }else{
-                newMember[field.name] = this.getFieldValue(field.fieldName, member.CustomFields, field.date);
-            }
-        }
-        return newMember;
-      }
+     
+    
     
 }
