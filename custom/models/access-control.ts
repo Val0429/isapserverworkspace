@@ -498,6 +498,17 @@ export interface IAttendanceRecords {
 @registerSubclass()
 export class AttendanceRecords extends ParseObject<IAttendanceRecords> { }
 
+export interface IDailyAttendance {
+    cardNumber:string;
+    dateOccurred:string;
+    attendanceStart?:AttendanceRecords;
+    attendanceEnd?:AttendanceRecords;
+    member?:LinearMember;
+    timeDifferent?:Date;
+}
+@registerSubclass()
+export class DailyAttendance extends ParseObject<IDailyAttendance> { }
+
 export interface IDropDownList {
     type: string,   // ProfileId, Certification, License, CreateReason1 , CreateReason2, CreateReason3, ApplyReason1, ApplyReason2, ApplyReason3
     key?: number,

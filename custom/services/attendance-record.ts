@@ -1,6 +1,6 @@
 import { Log } from './log';
 
-import { AttendanceRecords, Member, Reader, Door, LinearMember } from 'workspace/custom/models/index';
+import { AttendanceRecords, Member, Reader, Door, LinearMember, DailyAttendance } from 'workspace/custom/models/index';
 
 import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
@@ -69,9 +69,9 @@ export class AttendanceRecord {
             await ccureService.Login();
             let records = await ccureService.GetOrganizedNewReport();
             console.log("getCCureData", records.length);
-            //batch by 10.000 to prevent out of memory / stack
-            while (records.length > 10000) {
-                await this.saveCCureData(records.splice(0, 10000));
+            //batch by 100 to prevent out of memory / stack
+            while (records.length > 100) {
+                await this.saveCCureData(records.splice(0, 100));
             }
             await this.saveCCureData(records);
         }
@@ -93,9 +93,9 @@ export class AttendanceRecord {
             
             let records = await siPassAdapter.getRecords(begin, end);
             console.log("sipass records",records.length);
-            //batch by 10.000 to prevent out of memory / stack
-            while (records.length > 10000) {
-                await this.saveSipassData(records.splice(0, 10000));
+            //batch by 100 to prevent out of memory / stack
+            while (records.length > 100) {
+                await this.saveSipassData(records.splice(0, 100));
             }
             await this.saveSipassData(records);
         }catch(err){
@@ -109,6 +109,11 @@ export class AttendanceRecord {
                         .limit(records.length)
                         .containedIn("cardNumber", records.map(x => x.card_no))
                         .find();
+
+        let dailyAttendances = await new Parse.Query(DailyAttendance)
+                        .containedIn("dateOccurred", records.map(r=>r["date_occurred"]))
+                        .containedIn("cardNumber", records.map(r=>r["card_no"]))
+                        .limit(records.length).find();
         let readers = await new Parse.Query(Reader).limit(records.length)
             .containedIn("readername", records.map(x => x["point_name"]))
             .find();
@@ -124,15 +129,30 @@ export class AttendanceRecord {
                 if (!door)
                     door = await new Parse.Query(Door).equalTo("readerout", reader).first();
                 if (door)
-                    o.set("door", door);
+                    o.set("door", door);               
             }
-            o.set("member", members.find(x => x.get("cardNumber") == r.card_no));
+            let member = members.find(x => x.get("cardNumber") == r.card_no);
+            if(!member)continue;
+            o.set("member", member);
             objects.push(o);
-            //important to avoid out of memory
-            if (objects.length >= 1000) {
-                await ParseObject.saveAll(objects);
-                objects = [];
-            }
+             //save or update daily attendance
+             let dailyAttendance = dailyAttendances.find(x=>x.get("dateOccurred")==r["date_occurred"] && x.get("cardNumber")==r["card_no"]);
+             if(!dailyAttendance){
+                 dailyAttendance = new DailyAttendance({
+                            dateOccurred:r["date_occurred"], 
+                            cardNumber:r["card_no"], attendanceEnd:o, 
+                            attendanceStart:o, 
+                            member:o.get("member"),
+                            timeDifferent:moment.utc(moment(o.get("date_time_occurred")).diff(moment(o.get("date_time_occurred")))).toDate()
+                        });
+                 dailyAttendances.push(dailyAttendance);
+                 objects.push(dailyAttendance);
+             }else{
+                 //assume the data has been sorted
+                 dailyAttendance.set("attendanceEnd", o);
+                 dailyAttendance.set("timeDifferent", moment.utc(moment(dailyAttendance.get("attendanceStart")["date_time_occurred"]).diff(moment(o.get("date_time_occurred")))).toDate());
+                 objects.push(dailyAttendance);                    
+             }
         }
         await ParseObject.saveAll(objects);
     }
@@ -146,7 +166,17 @@ export class AttendanceRecord {
                                 .limit(records.length)
                                 .containedIn("cardNumber", records.map(x=>x.cardNumber.toString()))
                                 .find();
+            let updateTimes = records.map(x=>x["cardNumber"] + "");
+            let cardNumbers = records.map(x=>{
+                let dt = new Date(x["updateTime"]*1000);
+                let correctDate = new Date(dt.getFullYear()+20,dt.getMonth(),dt.getDate(),dt.getHours(),dt.getMinutes(),dt.getSeconds())
+                return moment(correctDate).format("YYYYMMDD");
+            })
 
+            let dailyAttendances = await new Parse.Query(DailyAttendance)
+                                    .containedIn("dateOccurred", updateTimes)
+                                    .containedIn("cardNumber", cardNumbers)
+                                    .limit(records.length).find();
             console.log("members", members.length);
             let doors = await new Parse.Query(Door).limit(records.length)
                         .containedIn("doorname", records.map(x=>x["door"]))
@@ -168,14 +198,38 @@ export class AttendanceRecord {
                 newData["system"] = 800;
                 //make it similar to sipass
                 newData["state_id"] = 2;
-                newData["type"]=21;                   
-    
-                let o = new AttendanceRecords(newData);
-                o.set("member", members.find(x=>x.get("cardNumber") == r.cardNumber));
-                o.set("door", doors.find(x=>x.get("doorname") == r.door));
+                newData["type"]=21;  
+
+                let o = new AttendanceRecords(newData);            
+                let member = members.find(x => x.get("cardNumber") == newData["card_no"]);
+                if(!member)continue;                
+                o.set("member", member);
+
+                let door=doors.find(x=>x.get("doorname") == r.door);               
+                if(!door)continue;
+                o.set("door", door);
+                
                 objects.push(o);
-                
-                
+
+                //save or update daily attendance
+                let dailyAttendance = dailyAttendances.find(x=>x.get("dateOccurred")==newData["date_occurred"] && x.get("cardNumber")==newData["card_no"]);
+                if(!dailyAttendance){
+                    dailyAttendance = new DailyAttendance({
+                    dateOccurred:newData["date_occurred"], 
+                    cardNumber:newData["card_no"], 
+                    attendanceEnd:o, 
+                    attendanceStart:o,                    
+                    member:o.get("member"),
+                    timeDifferent:moment.utc(moment(o.get("date_time_occurred")).diff(moment(o.get("date_time_occurred")))).toDate()
+                });
+                    dailyAttendances.push(dailyAttendance);
+                    objects.push(dailyAttendance);
+                }else{
+                    //assume the data has been sorted
+                    dailyAttendance.set("attendanceEnd", o);
+                    dailyAttendance.set("timeDifferent", moment.utc(moment(dailyAttendance.get("attendanceStart")["date_time_occurred"]).diff(moment(o.get("date_time_occurred")))).toDate());
+                    objects.push(dailyAttendance);                      
+                }
             }
             //console.log("objects", objects.map(x=>ParseObject.toOutputJSON(x)))
             await ParseObject.saveAll(objects);
