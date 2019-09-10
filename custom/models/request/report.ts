@@ -82,6 +82,7 @@ export interface IRepeatVisitorSummary extends ISummaryBase {}
 
 export interface IRepeatVisitorIndex extends IDate.IRange {
     siteIds: string | string[];
+    count?: number;
 }
 
 /**

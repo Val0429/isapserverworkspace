@@ -143,6 +143,14 @@ action.get(
                 summarys.push(summary);
             });
 
+            if ('count' in _input) {
+                summarys = summarys.filter((value, index, array) => {
+                    let count: number = value.count === '5+' ? 6 : parseInt(value.count);
+
+                    return count >= _input.count;
+                });
+            }
+
             let total: number = summarys.length;
             let totalPage: number = Math.ceil(total / _paging.pageSize);
 
