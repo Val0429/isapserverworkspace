@@ -189,7 +189,6 @@ class Action {
                                                 buffer: buffer,
                                                 feature: feature,
                                                 groups: value.groups,
-                                                faceId: value.faceId,
                                             });
                                         } else if (value.type === 'dwellTime') {
                                             SaveDwellTime.action$.next({
@@ -251,7 +250,6 @@ namespace Action {
     export interface IAction_Demographic extends IAction_Base {
         type: 'demographic';
         groups: Enum.EPeopleType[];
-        faceId: string;
     }
 
     export interface IAction_RepeatVisitor extends IAction_Base {

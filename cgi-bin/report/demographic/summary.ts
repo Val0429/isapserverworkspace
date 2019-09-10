@@ -147,35 +147,24 @@ export class ReportDemographic extends ReportSummary {
                             summary = {
                                 ...base,
                                 maleTotal: 0,
+                                maleRanges: new Array(ageRanges.length).fill(0),
                                 femaleTotal: 0,
+                                femaleRanges: new Array(ageRanges.length).fill(0),
                                 maleEmployeeTotal: 0,
+                                maleEmployeeRanges: new Array(ageRanges.length).fill(0),
                                 femaleEmployeeTotal: 0,
-                                ageRanges: undefined,
+                                femaleEmployeeRanges: new Array(ageRanges.length).fill(0),
                             };
                         }
 
-                        let ageRanges = value2.getValue('ageRanges');
-
-                        summary.maleTotal += Utility.Sum(ageRanges, 'male');
-                        summary.femaleTotal += Utility.Sum(ageRanges, 'female');
-                        summary.maleEmployeeTotal += Utility.Sum(ageRanges, 'maleEmployee');
-                        summary.femaleEmployeeTotal += Utility.Sum(ageRanges, 'femaleEmployee');
-
-                        if (!summary.ageRanges) {
-                            summary.ageRanges = ageRanges;
-                        } else {
-                            summary.ageRanges.forEach((value3, index3, array3) => {
-                                let ageRange = ageRanges[index3];
-
-                                value3.total += ageRange.total;
-                                value3.male += ageRange.male;
-                                value3.maleEmployee += ageRange.maleEmployee;
-                                value3.female += ageRange.female;
-                                value3.femaleEmployee += ageRange.femaleEmployee;
-                                value3.dwellTimeRanges = Utility.MerageArray(value3.dwellTimeRanges, ageRange.dwellTimeRanges);
-                                value3.dwellTimeEmployeeRanges = Utility.MerageArray(value3.dwellTimeEmployeeRanges, ageRange.dwellTimeEmployeeRanges);
-                            });
-                        }
+                        summary.maleTotal += value2.getValue('maleTotal');
+                        summary.maleRanges = Utility.MerageArray(summary.maleRanges, value2.getValue('maleRanges'));
+                        summary.femaleTotal += value2.getValue('femaleTotal');
+                        summary.femaleRanges = Utility.MerageArray(summary.femaleRanges, value2.getValue('femaleRanges'));
+                        summary.maleEmployeeTotal += value2.getValue('maleEmployeeTotal');
+                        summary.maleEmployeeRanges = Utility.MerageArray(summary.maleEmployeeRanges, value2.getValue('maleEmployeeRanges'));
+                        summary.femaleEmployeeTotal += value2.getValue('femaleEmployeeTotal');
+                        summary.femaleEmployeeRanges = Utility.MerageArray(summary.femaleEmployeeRanges, value2.getValue('femaleEmployeeRanges'));
                     });
 
                     summarys.push(summary);
@@ -205,10 +194,14 @@ export class ReportDemographic extends ReportSummary {
                 });
 
                 let prevMaleTotal: number = prevSummary ? prevSummary.maleTotal : NaN;
+                let prevMaleRanges: number[] = prevSummary ? prevSummary.maleRanges : new Array(ageRanges.length).fill(NaN);
                 let prevFemaleTotal: number = prevSummary ? prevSummary.femaleTotal : NaN;
+                let prevFemaleRanges: number[] = prevSummary ? prevSummary.femaleRanges : new Array(ageRanges.length).fill(NaN);
 
                 let prevMaleEmployeeTotal: number = prevSummary ? prevSummary.maleEmployeeTotal : NaN;
+                let prevMaleEmployeeRanges: number[] = prevSummary ? prevSummary.maleEmployeeRanges : new Array(ageRanges.length).fill(NaN);
                 let prevFemaleEmployeeTotal: number = prevSummary ? prevSummary.femaleEmployeeTotal : NaN;
+                let prevFemaleEmployeeRanges: number[] = prevSummary ? prevSummary.femaleEmployeeRanges : new Array(ageRanges.length).fill(NaN);
 
                 return {
                     site: value.site,
@@ -218,14 +211,21 @@ export class ReportDemographic extends ReportSummary {
                     date: value.date,
                     type: value.type,
                     maleTotal: value.maleTotal,
+                    maleRanges: value.maleRanges,
                     prevMaleTotal: prevMaleTotal,
+                    prevMaleRanges: prevMaleRanges,
                     femaleTotal: value.femaleTotal,
+                    femaleRanges: value.femaleRanges,
                     prevFemaleTotal: prevFemaleTotal,
+                    prevFemaleRanges: prevFemaleRanges,
                     maleEmployeeTotal: value.maleEmployeeTotal,
+                    maleEmployeeRanges: value.maleEmployeeRanges,
                     prevMaleEmployeeTotal: prevMaleEmployeeTotal,
+                    prevMaleEmployeeRanges: prevMaleEmployeeRanges,
                     femaleEmployeeTotal: value.femaleEmployeeTotal,
+                    femaleEmployeeRanges: value.femaleEmployeeRanges,
                     prevFemaleEmployeeTotal: prevFemaleEmployeeTotal,
-                    ageRanges: value.ageRanges,
+                    prevFemaleEmployeeRanges: prevFemaleEmployeeRanges,
                 };
             }, []);
 

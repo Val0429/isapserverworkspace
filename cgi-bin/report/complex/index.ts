@@ -296,8 +296,8 @@ export class ReportComplex extends ReportSummary {
                 femalePercent: 0,
             };
             summarys.forEach((value, index, array) => {
-                summary.malePercent += Utility.Sum(value.getValue('ageRanges'), 'male') - (Utility.Sum(value.getValue('ageRanges'), 'maleEmployee') || 0);
-                summary.femalePercent += Utility.Sum(value.getValue('ageRanges'), 'female') - (Utility.Sum(value.getValue('ageRanges'), 'femaleEmployee') || 0);
+                summary.malePercent += value.getValue('maleTotal') - (value.getValue('maleEmployeeTotal') || 0);
+                summary.femalePercent += value.getValue('femaleTotal') - (value.getValue('femaleEmployeeTotal') || 0);
             });
 
             summarys.length = 0;

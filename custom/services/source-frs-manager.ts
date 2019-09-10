@@ -229,7 +229,6 @@ class Service {
                                                         date: x.date,
                                                         imagePath: temp,
                                                         groups: groups,
-                                                        faceId: x.objectId,
                                                     });
                                                     break;
                                                 case Enum.EDeviceMode.dwellTime:

@@ -5,56 +5,61 @@ import * as Enum from '../../enums';
 /**
  *
  */
-export interface IReportAgeRange {
+export interface IReportDemographicSummaryData {
     /**
      * 總和
      */
     total: number;
 
     /**
-     * 男性
+     * 男性總和
      */
-    male: number;
+    maleTotal: number;
 
     /**
      * Employee
      */
-    maleEmployee: number;
+    maleEmployeeTotal: number;
 
     /**
-     * 女性
+     * 男性分區
      */
-    female: number;
-
-    /**
-     * Employee
-     */
-    femaleEmployee: number;
-
-    /**
-     * 停留時間
-     */
-    dwellTimeRanges: number[];
+    maleRanges: number[];
 
     /**
      * Employee
      */
-    dwellTimeEmployeeRanges: number[];
+    maleEmployeeRanges: number[];
+
+    /**
+     * 女性總和
+     */
+    femaleTotal: number;
+
+    /**
+     * Employee
+     */
+    femaleEmployeeTotal: number;
+
+    /**
+     * 女性分區
+     */
+    femaleRanges: number[];
+
+    /**
+     * Employee
+     */
+    femaleEmployeeRanges: number[];
 }
 
 /**
  * 報告
  */
-export interface IReportDemographicSummary extends IReportBase {
+export interface IReportDemographicSummary extends IReportBase, IReportDemographicSummaryData {
     /**
      * 累計模式
      */
     type: Enum.ESummaryType;
-
-    /**
-     *
-     */
-    ageRanges: IReportAgeRange[];
 }
 
 @registerSubclass()

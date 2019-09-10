@@ -45,12 +45,18 @@ export interface ICameraCMS {
     channelId: number;
 }
 
+export interface IDemographicC_FRS extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frs;
+    config: ICameraFRS;
+    demoServerId: string;
+}
+
 export interface IDemographicC_FRSManager extends IC_Base {
     brand: Enum.EDeviceBrand.isap;
     model: Enum.EDeviceModelIsap.frsManager;
     config: ICameraFRSManager;
     demoServerId: string;
-    direction: Enum.EDeviceDirection;
 }
 
 export interface IDwellTimeC_FRSManager extends IC_Base {
@@ -125,12 +131,18 @@ export interface IU_Base {
     dataWindowY?: number;
 }
 
+export interface IDemographicU_FRS extends IC_Base {
+    brand: Enum.EDeviceBrand.isap;
+    model: Enum.EDeviceModelIsap.frs;
+    config?: ICameraFRS;
+    demoServerId?: string;
+}
+
 export interface IDemographicU_FRSManager extends IU_Base {
     brand: Enum.EDeviceBrand.isap;
     model: Enum.EDeviceModelIsap.frsManager;
     config?: ICameraFRSManager;
     demoServerId?: string;
-    direction?: Enum.EDeviceDirection;
 }
 
 export interface IDwellTimeU_FRSManager extends IU_Base {
