@@ -27,3 +27,16 @@ export interface IHikVisionIndexR {
     account: string;
     password: string;
 }
+
+/**
+ * VMS Index
+ */
+export interface IVMSIndexR {
+    objectId: string;
+    name: string;
+    protocol: 'http' | 'https';
+    ip: string;
+    port: number;
+    account: string;
+    password: string;
+}
