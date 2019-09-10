@@ -12,43 +12,43 @@ export class Hikvision {
     constructor() {
         this._instance = new addon.AcsGateWay();
     }
-    public createInstance(data:AcsDataStructure.I_DeviceInfo) {
+    public createInstance(data:AcsDataStructure.I_DeviceInfo) : AcsDataStructure.I_SdkResponse {
         return this._instance.createInstance(data);
     }
     
-    public disposeInstance() {
+    public disposeInstance() : AcsDataStructure.I_SdkResponse  {
         return this._instance.disposeInstance();
     }
 
-    public createCardItem(data:AcsDataStructure.I_CardParamCfg) {
+    public createCardItem(data:AcsDataStructure.I_CardParamCfg) : AcsDataStructure.I_SdkResponse {
         return this._instance.createCardItem(data);
     }
     
-    public removeCardItem(data:string) {
+    public removeCardItem(data:string): AcsDataStructure.I_SdkResponse  {
         return this._instance.removeCardItem(data);
     }
 
-    public enrollFace(data:AcsDataStructure.I_FaceParamCfg) {
+    public enrollFace(data:AcsDataStructure.I_FaceParamCfg) : AcsDataStructure.I_SdkResponse  {
         return this._instance.enrollFace(data);
     }
     
-    public removeFace(data:string) {
+    public removeFace(data:string): AcsDataStructure.I_SdkResponse  {
         return this._instance.removeFace(data);
     }
 
-    public enableQrCode() {
+    public enableQrCode() : AcsDataStructure.I_SdkResponse  {
         return this._instance.enableQrCode();
     }
 
-    public startArmingAcsEvent(data:EventEmitter) {        
+    public startArmingAcsEvent(data:EventEmitter): AcsDataStructure.I_SdkResponse {        
         return this._instance.startArmingAcsEvent(data.emit.bind(data));
     }
  
-    public stopArmingAcsEvent() {
+    public stopArmingAcsEvent() : AcsDataStructure.I_SdkResponse {
         return this._instance.stopArmingAcsEvent();
     }  
     
-    public checkDeviceStatus() {
+    public checkDeviceStatus(): AcsDataStructure.I_SdkResponse  {
         return this._instance.checkDeviceStatus();
     } 
 }

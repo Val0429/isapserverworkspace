@@ -65,5 +65,8 @@ export interface I_AlarmInfo {
 	picData?:Buffer
 }
 
-
+export interface I_SdkResponse {
+	result : boolean,
+	errorMessage : string
+}
 
