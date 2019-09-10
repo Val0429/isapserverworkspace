@@ -183,7 +183,7 @@ export class CCUREReader {
      *      { clearId: 2205, clearName: 'qqq7' } 
      * ]
      */
-    public async queryAllAsync(queryContent: QueryContent, condition?: String, isOpenquery ?: boolean, timeout: number = 3000): Promise<Array<any>> {
+    public async queryAllAsync(queryContent: QueryContent, condition?: String, isOpenquery ?: boolean, timeout: number = Config.ccureconnect.requestTimeout): Promise<Array<any>> {
 
         if (this._isConnected === false) throw new Error(`Internal Error: <CCUREReader::queryStream> No connection with SQL server`);
 

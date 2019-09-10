@@ -1,6 +1,6 @@
 import { Log } from './log';
 
-import { AttendanceRecords, Member, Reader, Door } from 'workspace/custom/models/index';
+import { AttendanceRecords, Member, Reader, Door, LinearMember } from 'workspace/custom/models/index';
 
 import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
@@ -104,10 +104,10 @@ export class AttendanceRecord {
     }
     private async saveSipassData(records: any[]) {
         let objects = [];
-        let members = await new Parse.Query(Member)
-                        .select("Credentials")
+        let members = await new Parse.Query(LinearMember)
+                        .select("cardNumber")
                         .limit(records.length)
-                        .containedIn("Credentials.CardNumber", records.filter(x => x.Credentials && x.Credentials.length > 0).map(x => x.Credentials[0].CardNumber))
+                        .containedIn("cardNumber", records.map(x => x.card_no))
                         .find();
         let readers = await new Parse.Query(Reader).limit(records.length)
             .containedIn("readername", records.map(x => x["point_name"]))
@@ -126,7 +126,7 @@ export class AttendanceRecord {
                 if (door)
                     o.set("door", door);
             }
-            o.set("member", members.find(x => x.get("Credentials") && x.get("Credentials").length > 0 && x.get("Credentials")[0]["CardNumber"] == r.Credentials[0].CardNumber));
+            o.set("member", members.find(x => x.get("cardNumber") == r.card_no));
             objects.push(o);
             //important to avoid out of memory
             if (objects.length >= 1000) {
@@ -135,7 +135,6 @@ export class AttendanceRecord {
             }
         }
         await ParseObject.saveAll(objects);
-        return objects;
     }
 
     async saveCCureData(records:any[]){        
@@ -143,9 +142,9 @@ export class AttendanceRecord {
             
             
             
-            let members = await new Parse.Query(Member).select("Credentials")
+            let members = await new Parse.Query(LinearMember).select("cardNumber")
                                 .limit(records.length)
-                                .containedIn("Credentials.CardNumber", records.map(x=>x.cardNumber.toString()))
+                                .containedIn("cardNumber", records.map(x=>x.cardNumber.toString()))
                                 .find();
 
             console.log("members", members.length);
@@ -172,7 +171,7 @@ export class AttendanceRecord {
                 newData["type"]=21;                   
     
                 let o = new AttendanceRecords(newData);
-                o.set("member", members.find(x=>x.get("Credentials") && x.get("Credentials").length>0 && x.get("Credentials")[0]["CardNumber"] == r.cardNumber));
+                o.set("member", members.find(x=>x.get("cardNumber") == r.cardNumber));
                 o.set("door", doors.find(x=>x.get("doorname") == r.door));
                 objects.push(o);
                 
