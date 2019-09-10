@@ -4,7 +4,7 @@ import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember } from
 import sharp = require("sharp");
 import sizeOf = require('image-size');
 import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/acs/sipass/siPass_define";
-import { keys } from 'ts-transformer-keys';
+
 import { ParseObject } from "helpers/cgi-helpers";
 
 export class MemberService {
@@ -101,6 +101,9 @@ async createSipassCardHolder (inputFormData:any, user:User) {
             else if(field.name=="lastEditTime"){
                 tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: moment().format()}); 
             }
+            else if(field.name=="birthday"){
+                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: inputFormData[field.name] ? moment(inputFormData[field.name]).format("YYYY-MM-DD") : ""});
+            }
             else if(field.date) {
                 tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: testDate(inputFormData[field.name])});
             }
@@ -164,24 +167,27 @@ async createSipassCardHolder (inputFormData:any, user:User) {
                 englishName: inputFormData.englishName || "-",
                 endDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
                 startDate:moment(inputFormData.startDate || now).format(),
-                status:ECardholderStatus.Valid,
+                status:inputFormData.status || ECardholderStatus.Valid,
                 //new addition
                 void:inputFormData.void || false,
                 token: "-1",
                 cardholderPortrait:imageBase64,
-                isImageChanged: inputFormData.isImageChanged,
-                birthday:dob,
+                isImageChanged: inputFormData.isImageChanged,                
                 deviceNumber : inputFormData.deviceNumber||469,
                 cardCertificate : (inputFormData.cardCertificate || 0).toString(),
                 profileName : inputFormData.profileName || "基礎",
                 technologyCode : inputFormData.technologyCode || 10,
                 pinMode : inputFormData.pinMode || 1,
-                pinDigit : inputFormData.pinDigit || 0,        
-                lastEditPerson : user.getUsername(),
-                lastEditTime : moment().format(),
+                pinDigit : inputFormData.pinDigit || 0,
                 permissionTable:inputFormData.permissionTable,
                 cardNumber:inputFormData.cardNumber||""
             };
+            for(let customField of CustomFields){                
+                member[customField.name]=inputFormData[customField.name] || "";
+            }
+            member.birthday=dob;
+            member.lastEditPerson = user.getUsername();
+            member.lastEditTime = moment().format();
             //console.log("member", JSON.stringify(member));
             return member;
     }
