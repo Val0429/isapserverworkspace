@@ -1,7 +1,7 @@
 import {HRService} from './hr-service';
 let hr = new HRService();
-setTimeout(() => {    
-    hr.doHumanResourcesSync();
+setTimeout(async () => {    
+    await hr.doHumanResourcesSync();
 }, 1000 * this.startDelayTime);
 
 export * from './acs-service';
