@@ -180,6 +180,11 @@ export class ReportService{
         if(filter.expired && filter.expired=="true"){
             query.lessThanOrEqualTo(fieldNames.CardEndDate, (new Date()).toISOString());
         }
+
+        if(filter.PersonType){
+            console.log("personTpye", filter.PersonType);
+            query.equalTo("PrimaryWorkgroupId", +filter.PersonType);
+        }
         //console.log("beep1")
         let o = await query.skip(skip).limit(limit).find();
         //console.log("beep2")
