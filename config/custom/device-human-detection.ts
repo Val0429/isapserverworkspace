@@ -12,6 +12,7 @@ export interface IRectangle {
 }
 
 export interface IOutput {
+    saveSource: boolean;
     image: IImage;
     rectangle: IRectangle;
 }
@@ -26,6 +27,7 @@ let config: Config = {
     productId: '00111',
     bufferCount: 10,
     output: {
+        saveSource: true,
         image: {
             width: 640,
             height: 480,

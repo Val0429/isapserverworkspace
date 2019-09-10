@@ -6,6 +6,7 @@ export interface IImage {
 }
 
 export interface IOutput {
+    saveSource: boolean;
     image: IImage;
 }
 
@@ -21,6 +22,7 @@ let config: Config = {
     bufferCount: 10,
     ageRange: '0-20-10-10-10-10',
     output: {
+        saveSource: true,
         image: {
             width: 150,
             height: 150,

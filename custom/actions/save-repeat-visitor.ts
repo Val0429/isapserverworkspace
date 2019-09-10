@@ -104,8 +104,6 @@ class Action {
                                     throw e;
                                 });
                             if (!report) {
-                                buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
-
                                 report = new IDB.ReportRepeatVisitor();
 
                                 report.setValue('site', x.base.site);
@@ -120,6 +118,12 @@ class Action {
                                 await report.save(null, { useMasterKey: true }).fail((e) => {
                                     throw e;
                                 });
+
+                                if (this._config.output.saveSource) {
+                                    File.WriteFile(`${File.assetsPath}/images_report_source/repeat_visitor/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.bmp`, buffer);
+                                }
+
+                                buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
                                 let imageSrc: string = `images_report/repeat_visitor/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
                                 File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);

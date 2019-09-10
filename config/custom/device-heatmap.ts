@@ -6,6 +6,7 @@ export interface IImage {
 }
 
 export interface IOutput {
+    saveSource: boolean;
     image: IImage;
 }
 
@@ -21,6 +22,7 @@ let config: Config = {
     gridUnit: 10,
     valueZoom: 6,
     output: {
+        saveSource: true,
         image: {
             width: 960,
             height: 540,

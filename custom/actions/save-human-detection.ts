@@ -166,8 +166,6 @@ class Action {
                                 buffer = await Draw.Rectangle(rects, buffer);
                             }
 
-                            buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
-
                             let report: IDB.ReportHumanDetection = new IDB.ReportHumanDetection();
 
                             report.setValue('site', x.base.site);
@@ -180,6 +178,12 @@ class Action {
                             await report.save(null, { useMasterKey: true }).fail((e) => {
                                 throw e;
                             });
+
+                            if (this._config.output.saveSource) {
+                                File.WriteFile(`${File.assetsPath}/images_report_source/human_detection/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.bmp`, buffer);
+                            }
+
+                            buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
                             let imageSrc: string = `images_report/human_detection/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);

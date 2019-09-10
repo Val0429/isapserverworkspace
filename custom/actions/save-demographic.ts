@@ -203,8 +203,6 @@ class Action {
                         let buffer: Buffer = x.buffer;
 
                         try {
-                            buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
-
                             let isEmployee = (x.groups || []).indexOf(Enum.EPeopleType.employee) > -1;
 
                             let report: IDB.ReportDemographic = new IDB.ReportDemographic();
@@ -222,6 +220,12 @@ class Action {
                             await report.save(null, { useMasterKey: true }).fail((e) => {
                                 throw e;
                             });
+
+                            if (this._config.output.saveSource) {
+                                File.WriteFile(`${File.assetsPath}/images_report_source/demographic/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.bmp`, buffer);
+                            }
+
+                            buffer = await Draw.Resize(buffer, this._imageSize, this._imageConfig.isFill, this._imageConfig.isTransparent);
 
                             let imageSrc: string = `images_report/demographic/${DateTime.ToString(report.createdAt, 'YYYYMMDD')}/${report.id}_report_${report.createdAt.getTime()}.${this._imageConfig.isTransparent ? 'png' : 'jpeg'}`;
                             File.WriteFile(`${File.assetsPath}/${imageSrc}`, buffer);

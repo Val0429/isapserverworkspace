@@ -6,6 +6,7 @@ export interface IImage {
 }
 
 export interface IOutput {
+    saveSource: boolean;
     image: IImage;
 }
 
@@ -17,6 +18,7 @@ export interface Config {
 let config: Config = {
     frequencyRange: '1-1-1-1-1',
     output: {
+        saveSource: true,
         image: {
             width: 150,
             height: 150,

@@ -6,6 +6,7 @@ export interface IImage {
 }
 
 export interface IOutput {
+    saveSource: boolean;
     image: IImage;
 }
 
@@ -19,6 +20,7 @@ let config: Config = {
     productId: '',
     timeRange: '0-5-10-15-30-60',
     output: {
+        saveSource: true,
         image: {
             width: 150,
             height: 150,
