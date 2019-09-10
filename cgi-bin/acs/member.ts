@@ -146,24 +146,28 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
 /********************************
  * D: delete object
  ********************************/
-type InputD = Restful.InputD<IMember>;
-type OutputD = Restful.OutputD<ICardholderObject>;
+type InputD = Restful.InputD<ILinearMember>;
+type OutputD = Restful.OutputD<ILinearMember>;
 
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Member).equalTo("objectId", objectId).first();
+    var obj = await new Parse.Query(LinearMember).equalTo("objectId", objectId).first();
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
 
-    await  Log.Info(`delete`, `${obj.get("EmployeeNumber")} ${obj.get("FirstName")}`, data.user, false, "Member");
+    await  Log.Info(`delete`, `${obj.get("employeeNumber")} ${obj.get("chineseName")}`, data.user, false, "Member");
     try{
         
-        if(obj.get("Token")&&obj.get("Token")!="-1")await siPassAdapter.delCardHolder(obj.get("Token"));
+       
+        obj.set("status", 1);
         let ret = ParseObject.toOutputJSON(obj);
+        let memberService = new MemberService();
+        let cardholder = await memberService.createMember(ret,data.user);
+        cardholder.Status=1;
         let cCure800SqlAdapter = new CCure800SqlAdapter();
-        await cCure800SqlAdapter.writeMember(ret, ret.AccessRules.map(x=>x.ObjectName));
+        await cCure800SqlAdapter.writeMember(cardholder, cardholder.AccessRules.map(x=>x.ObjectName));
 
-        obj.set("Status", 1);
+        if(obj.get("token")&&obj.get("token")!="-1")await siPassAdapter.delCardHolder(obj.get("token"));
         /// 2) Delete
         await obj.save();
     }catch(err){

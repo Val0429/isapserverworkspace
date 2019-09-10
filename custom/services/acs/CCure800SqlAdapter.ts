@@ -1,4 +1,4 @@
-﻿import { Config } from 'core/config.gen';
+import { Config } from 'core/config.gen';
 import { Log } from 'helpers/utility';
 
 // import * as msSQL from 'mssql';
@@ -58,6 +58,7 @@ export class CCure800SqlAdapter {
                 .execute(delData);
     }
     async writeMember(data:ICardholderObject, accessRules:string[]) {
+        console.log("write to mdb");
         let ccurePermissionTables = await new Parse.Query(PermissionTable)
                             .equalTo("system", 800)
                             .containedIn("tablename", accessRules)
@@ -309,10 +310,10 @@ export class CCure800SqlAdapter {
         ,${CustomDateControl3__CF8 ? "'"+CustomDateControl3__CF8.split("T")[0] + "'" : "NULL" }
         ,${CustomDateControl3__CF9 ? "'"+CustomDateControl3__CF9.split("T")[0] + "'" : "NULL" }
         ,${CustomDateControl3__CF10 ? "'"+CustomDateControl3__CF10.split("T")[0] + "'" : "NULL" }
-        ,${data.Status == ECardholderStatus.Deleted ? -1 : 0}, ${data.Attributes && data.Attributes.Void ? data.Attributes.Void : 0}
+        ,${data.Status == ECardholderStatus.Deleted ? -1 : 0}, ${data.Attributes && data.Attributes.Void==true ? -1 : 0}
         )`;
         
-        //console.log(insert);
+        console.log(insert);
 
         await this.adodbConn
             .execute(insert)
