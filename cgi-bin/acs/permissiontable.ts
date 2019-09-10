@@ -347,7 +347,8 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
                 if(!isActive) continue;
 
                 let exists = acsAccessLevels.find(x => x.type == "floor" && x.elevator.elevatorname == accessRule.elevator.name &&
-                            accessRule.timespec == x.timeschedule.timename && x.floor.floorname == accessRule.floor.name);
+                            accessRule.timespec == x.timeschedule.timename && 
+                            (x.floor.floorname.substring(0,2)!="A_" ? x.floor.floorname: x.floor.floorname.substring(2, x.floor.floorname.length)) == accessRule.floor.name);
                 if (!exists)
                     errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${accessRule.floor.name}`, timename: accessRule.timespec });
         }
@@ -356,7 +357,7 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
                 let isActive = floor.name.length>2 && floor.name.substring(0,2)!="D_";
                 if(!isActive) continue;
                 let exists = acsAccessLevels.find(x => x.type == "floorGroup" && x.elevator.elevatorname == accessRule.elevator.name &&
-                            accessRule.timespec == x.timeschedule.timename && x.floors.find(y=>floor.name==y.floorname));
+                            accessRule.timespec == x.timeschedule.timename && x.reader.find(y=>floor.name==(y.floorname.substring(0,2)!="A_" ? y.floorname: y.floorname.substring(2, y.floorname.length))));
                 if (!exists)
                     errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${floor.name}`, timename: accessRule.timespec });
             }
