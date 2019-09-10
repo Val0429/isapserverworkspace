@@ -3,17 +3,17 @@ import * as HttpClient from 'request';
 import {} from '../../models';
 import { Regex, Ws } from '../';
 import { Base } from './base';
-import { FRSService as FRS, FRSCore } from './frs-service';
+import { FRSCore } from './frs-service';
 
-export class FRSService {
+export class FRS {
     /**
      * Config
      */
-    private _config: FRSService.IConfig = undefined;
-    public get config(): FRSService.IConfig {
+    private _config: FRS.IConfig = undefined;
+    public get config(): FRS.IConfig {
         return JSON.parse(JSON.stringify(this._config));
     }
-    public set config(value: FRSService.IConfig) {
+    public set config(value: FRS.IConfig) {
         this._config = value;
     }
 
@@ -52,8 +52,8 @@ export class FRSService {
     /**
      * Live stream
      */
-    private _liveStream$: Rx.Subject<FRSService.IResult> = new Rx.Subject();
-    public get liveStream$(): Rx.Subject<FRSService.IResult> {
+    private _liveStream$: Rx.Subject<FRS.IResult> = new Rx.Subject();
+    public get liveStream$(): Rx.Subject<FRS.IResult> {
         return this._liveStream$;
     }
 
@@ -112,7 +112,7 @@ export class FRSService {
         try {
             let url: string = `${this._baseUrl}/users/login`;
 
-            let result: FRSService.ILoginResponse = await new Promise<FRSService.ILoginResponse>((resolve, reject) => {
+            let result: FRS.ILoginResponse = await new Promise<FRS.ILoginResponse>((resolve, reject) => {
                 try {
                     HttpClient.post(
                         {
@@ -152,9 +152,9 @@ export class FRSService {
      * Get device list
      * @param sessionId
      */
-    public async GetDeviceList(): Promise<FRSService.IDevice[]>;
-    public async GetDeviceList(sessionId: string): Promise<FRSService.IDevice[]>;
-    public async GetDeviceList(sessionId?: string): Promise<FRSService.IDevice[]> {
+    public async GetDeviceList(): Promise<FRS.IDevice[]>;
+    public async GetDeviceList(sessionId: string): Promise<FRS.IDevice[]>;
+    public async GetDeviceList(sessionId?: string): Promise<FRS.IDevice[]> {
         try {
             let url: string = `${this._baseUrl}/devices?sessionId=${encodeURIComponent(sessionId || this._sessionId)}`;
 
@@ -184,7 +184,7 @@ export class FRSService {
                 throw e;
             });
 
-            let devices: FRSService.IDevice[] = result.fcs_settings.map((value, index, array) => {
+            let devices: FRS.IDevice[] = result.fcs_settings.map((value, index, array) => {
                 return {
                     sourceid: value.video_source_sourceid,
                     location: value.video_source_location,
@@ -251,9 +251,9 @@ export class FRSService {
      * Get user groups
      * @param sessionId
      */
-    public async GetUserGroups(): Promise<FRSService.IObject[]>;
-    public async GetUserGroups(sessionId: string): Promise<FRSService.IObject[]>;
-    public async GetUserGroups(sessionId?: string): Promise<FRSService.IObject[]> {
+    public async GetUserGroups(): Promise<FRS.IObject[]>;
+    public async GetUserGroups(sessionId: string): Promise<FRS.IObject[]>;
+    public async GetUserGroups(sessionId?: string): Promise<FRS.IObject[]> {
         try {
             let url: string = `${this._baseUrl}/persons/group?sessionId=${encodeURIComponent(sessionId || this.sessionId)}&page_size=1000&skip_pages=0`;
 
@@ -283,7 +283,7 @@ export class FRSService {
                 throw e;
             });
 
-            let groups: FRSService.IObject[] = result.group_list.groups.map((value, index, array) => {
+            let groups: FRS.IObject[] = result.group_list.groups.map((value, index, array) => {
                 return {
                     objectId: value.group_id,
                     name: value.name,
@@ -346,7 +346,7 @@ export class FRSService {
                                 let faceId: string = result.verify_face_id;
                                 let name: string = 'unknown';
                                 let snapshot: Buffer = await this.GetSnapshot(result.snapshot);
-                                let groups: FRSService.IObject[] = [];
+                                let groups: FRS.IObject[] = [];
 
                                 if (result.type === FRSCore.UserType.Recognized) {
                                     name = result.person_info.fullname;
@@ -387,63 +387,9 @@ export class FRSService {
             }),
         );
     }
-
-    // /**
-    //  * Enable Live Subject
-    //  */
-    // public async EnableLiveSubject(): Promise<void> {
-    //     if (!this._isInitialization) {
-    //         throw Base.Message.NotInitialization;
-    //     }
-
-    //     this._liveStreamStop$.subscribe({
-    //         next: () => {
-    //             this._liveStream$.complete();
-    //             this._liveStreamStop$.complete();
-    //             frs.stop();
-    //         },
-    //     });
-
-    //     this._liveStream$ = new Rx.Subject();
-
-    //     let frs: FRS = new FRS({
-    //         frs: this._config,
-    //         debug: process.env.NODE_ENV === 'development',
-    //     });
-
-    //     frs.start();
-
-    //     await frs.enableLiveFaces(true).catch((e) => {
-    //         throw e;
-    //     });
-
-    //     frs.sjLiveStream.subscribe(async (face) => {
-    //         let date: Date = new Date(face.timestamp);
-    //         let camera: string = face.channel;
-    //         let faceId: string = face.verify_face_id;
-    //         let name: string = 'unknown';
-
-    //         let image: string = await frs.snapshot(face).catch((e) => {
-    //             throw e;
-    //         });
-    //         let buffer: Buffer = Buffer.from(image, Parser.Encoding.base64);
-
-    //         if (face.type === FRSCore.UserType.Recognized) {
-    //             name = face.person_info.fullname;
-    //         }
-
-    //         this._liveStream$.next({
-    //             name: name,
-    //             camera: camera,
-    //             faceId: faceId,
-    //             date: date,
-    //             image: buffer,
-    //         });
-    //     });
-    // }
 }
 
-export namespace FRSService {
+export namespace FRS {
     /**
      *
      */

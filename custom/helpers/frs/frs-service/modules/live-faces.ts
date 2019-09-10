@@ -7,14 +7,14 @@ import { client } from 'websocket';
 import { Log } from 'helpers/utility';
 import { filterFace } from '../libs/filter-face';
 
-declare module 'workspace/custom/helpers/frs-service/frs-service/libs/core' {
+declare module 'workspace/custom/helpers/frs/frs-service/libs/core' {
     interface IFRSConfig {
         specialScoreForUnRecognizedFace?: number;
         throttleKeepSameFaceSeconds?: number;
     }
 }
 
-declare module 'workspace/custom/helpers/frs-service/frs-service' {
+declare module 'workspace/custom/helpers/frs/frs-service' {
     interface FRSService {
         /// live recog & unrecog faces without filter
         sjLiveFacesEnabled: BehaviorSubject<boolean>;

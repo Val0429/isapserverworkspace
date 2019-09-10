@@ -2,10 +2,10 @@ import { Response } from '~express/lib/response';
 import { FRSService } from '..';
 import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
-import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/helpers/frs-service/frs-service/libs/core';
+import { RecognizedUser, UnRecognizedUser, RequestLoginReason } from 'workspace/custom/helpers/frs/frs-service/libs/core';
 
 type Base64String = string;
-declare module 'workspace/custom/helpers/frs-service/frs-service' {
+declare module 'workspace/custom/helpers/frs/frs-service' {
     interface FRSService {
         snapshot(user: RecognizedUser | UnRecognizedUser, resp?: Response, times?: number): Promise<string>;
     }

@@ -2,11 +2,11 @@ import { Response } from '~express/lib/response';
 import { FRSService } from '..';
 import * as request from 'request';
 import { retry } from 'helpers/utility/retry';
-import { RecognizedUser, UnRecognizedUser, RequestLoginReason, UserType } from 'workspace/custom/helpers/frs-service/frs-service/libs/core';
+import { RecognizedUser, UnRecognizedUser, RequestLoginReason, UserType } from 'workspace/custom/helpers/frs/frs-service/libs/core';
 import { Subject, Observable, Observer } from 'rxjs';
 
 type Base64String = string;
-declare module 'workspace/custom/helpers/frs-service/frs-service' {
+declare module 'workspace/custom/helpers/frs/frs-service' {
     interface FRSService {
         searchRecords(starttime: Date, endtime: Date, pageSize?: number, times?: number): Subject<RecognizedUser | UnRecognizedUser>;
     }
