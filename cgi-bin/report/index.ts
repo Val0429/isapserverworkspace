@@ -10,9 +10,20 @@ let action = new Action({
 export default action;
 
 /**
- * Report Summary
+ * Base
  */
-export class Report {
+class Base {
+    /**
+     *
+     */
+    protected _mode: Enum.EDeviceMode = undefined;
+    public get mode(): Enum.EDeviceMode {
+        return this._mode;
+    }
+    public set mode(value: Enum.EDeviceMode) {
+        this._mode = value;
+    }
+
     /**
      *
      */
@@ -65,12 +76,28 @@ export class Report {
     /**
      *
      */
-    protected _mode: Enum.EDeviceMode = undefined;
-    public get mode(): Enum.EDeviceMode {
-        return this._mode;
-    }
-    public set mode(value: Enum.EDeviceMode) {
-        this._mode = value;
+    protected _devices: IDB.Device[] = [];
+
+    /**
+     *
+     */
+    protected _devicesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
+    public get devicesIdDictionary(): IBase.IObject.IKeyValue<IDB.Device> {
+        if (!this._devicesIdDictionary || this._devicesIdDictionary.initTime < this._initTime) {
+            let data = {};
+            this._devices.forEach((value, index, array) => {
+                let key: string = value.id;
+
+                data[key] = value;
+            });
+
+            this._devicesIdDictionary = {
+                initTime: new Date().getTime(),
+                data: data,
+            };
+        }
+
+        return this._devicesIdDictionary.data;
     }
 
     /**
@@ -120,28 +147,44 @@ export class Report {
     /**
      *
      */
-    protected _devices: IDB.Device[] = [];
+    protected _weathers: IDB.Weather[] = [];
 
     /**
      *
      */
-    protected _devicesIdDictionary: Report.IPublicData<IBase.IObject.IKeyValue<IDB.Device>> = undefined;
-    public get devicesIdDictionary(): IBase.IObject.IKeyValue<IDB.Device> {
-        if (!this._devicesIdDictionary || this._devicesIdDictionary.initTime < this._initTime) {
-            let data = {};
-            this._devices.forEach((value, index, array) => {
-                let key: string = value.id;
+    protected _isEnableWeather: boolean = true;
+    public get isEnableWeather(): boolean {
+        return this._isEnableWeather;
+    }
+    public set isEnableWeather(value: boolean) {
+        this._isEnableWeather = value;
+    }
 
-                data[key] = value;
+    /**
+     *
+     */
+    protected _summaryWeathers: ReportSummary.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
+    public get summaryWeathers(): IResponse.IReport.ISummaryWeather[] {
+        if (!this._summaryWeathers || this._summaryWeathers.initTime < this._initTime) {
+            let data = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
+                let site: IResponse.IObject = this.sitesIdDictionary[value.getValue('site').id];
+
+                return {
+                    site: site,
+                    date: value.getValue('date'),
+                    icon: value.getValue('icon'),
+                    temperatureMin: value.getValue('temperatureMin'),
+                    temperatureMax: value.getValue('temperatureMax'),
+                };
             });
 
-            this._devicesIdDictionary = {
+            this._summaryWeathers = {
                 initTime: new Date().getTime(),
                 data: data,
             };
         }
 
-        return this._devicesIdDictionary.data;
+        return JSON.parse(JSON.stringify(this._summaryWeathers.data));
     }
 
     /**
@@ -150,39 +193,6 @@ export class Report {
     protected _initTime: number = 0;
     protected get initTime(): number {
         return this._initTime;
-    }
-
-    /**
-     * Initialization
-     * @param input
-     * @param userSiteIds
-     */
-    public async Initialization(input: IRequest.IReport.ISummaryBase, userSiteIds: string[]): Promise<void> {
-        try {
-            this._sites = await this.GetAllowSites(userSiteIds, input.siteIds, input.tagIds);
-
-            let tasks = [];
-
-            tasks.push(
-                (async () => {
-                    this._devices = await this.GetDevices();
-                })(),
-            );
-
-            if (this._isEnableOfficeHour) {
-                tasks.push(
-                    (async () => {
-                        this._officeHours = await this.GetOfficeHours();
-                    })(),
-                );
-            }
-
-            await Promise.all(tasks);
-
-            this._initTime = new Date().getTime();
-        } catch (e) {
-            throw e;
-        }
     }
 
     /**
@@ -209,7 +219,7 @@ export class Report {
      * @param siteIds
      * @param tagIds
      */
-    public async GetAllowSites(userSiteIds: string[], siteIds: string[], tagIds: string[]): Promise<IDB.LocationSite[]> {
+    protected async GetAllowSites(userSiteIds: string[], siteIds: string[], tagIds: string[]): Promise<IDB.LocationSite[]> {
         try {
             let tags: IDB.Tag[] = await new Parse.Query(IDB.Tag)
                 .containedIn('objectId', tagIds)
@@ -246,49 +256,34 @@ export class Report {
     }
 
     /**
-     * Get Deivces
-     */
-    public async GetDevices(): Promise<IDB.Device[]> {
-        try {
-            let query: Parse.Query<IDB.Device> = new Parse.Query(IDB.Device).containedIn('site', this._sites);
-
-            if (!!this._mode) {
-                query.equalTo('mode', this._mode);
-            }
-
-            let devices: IDB.Device[] = await query
-                .include(['site', 'area', 'groups'])
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
-
-            return devices;
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
      * Get report
      * @param collection
      * @param includes
      * @param startDate
      * @param endDate
+     * @param paging
      */
-    public async GetReports<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<T[]> {
+    protected async GetReport<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date): Promise<Report.IReportResponse<T>>;
+    protected async GetReport<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date, paging: IRequest.IPaging): Promise<Report.IReportResponse<T>>;
+    protected async GetReport<T extends Parse.Object>(collection: new () => T, includes: string[], startDate: Date, endDate: Date, paging?: IRequest.IPaging): Promise<Report.IReportResponse<T>> {
         try {
             let reportQuery: Parse.Query = new Parse.Query(collection)
-                // .equalTo('type', Enum.ESummaryType.hour)
                 .containedIn('device', this._devices)
                 .greaterThanOrEqualTo('date', startDate)
                 .lessThan('date', endDate);
 
             let reportTotal: number = await reportQuery.count();
 
+            if (!!paging) {
+                let page: number = paging.page || 1;
+                let pageSize: number = paging.pageSize || 10;
+
+                reportQuery.skip((page - 1) * pageSize).limit(pageSize);
+            } else {
+                reportQuery.limit(reportTotal);
+            }
+
             let reports: Parse.Object[] = await reportQuery
-                .limit(reportTotal)
-                // .ascending(['date'])
                 .include(includes)
                 .find()
                 .fail((e) => {
@@ -297,7 +292,10 @@ export class Report {
 
             reports = this.OfficeHourFilter(reports);
 
-            return reports as T[];
+            return {
+                total: reportTotal,
+                reports: reports as T[],
+            };
         } catch (e) {
             throw e;
         }
@@ -306,7 +304,7 @@ export class Report {
     /**
      * Get office hour
      */
-    public async GetOfficeHours(): Promise<IDB.OfficeHour[]> {
+    protected async GetOfficeHours(): Promise<IDB.OfficeHour[]> {
         try {
             let officeHours: IDB.OfficeHour[] = await new Parse.Query(IDB.OfficeHour)
                 .containedIn('sites', this._sites)
@@ -330,10 +328,37 @@ export class Report {
     }
 
     /**
+     * Get weather
+     * @param startDate
+     * @param endDate
+     */
+    protected async GetWeathers(startDate: Date, endDate: Date): Promise<IDB.Weather[]> {
+        try {
+            let weatherQuery: Parse.Query<IDB.Weather> = new Parse.Query(IDB.Weather)
+                .containedIn('site', this._sites)
+                .greaterThanOrEqualTo('date', startDate)
+                .lessThan('date', endDate);
+
+            let weatherTotal: number = await weatherQuery.count();
+
+            let weatherRecord: IDB.Weather[] = await weatherQuery
+                .limit(weatherTotal)
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            return weatherRecord;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Office hour filter
      * @param datas
      */
-    public OfficeHourFilter<T extends Parse.Object>(datas: T[]): T[] {
+    protected OfficeHourFilter<T extends Parse.Object>(datas: T[]): T[] {
         try {
             if (this._isEnableOfficeHour) {
                 datas = datas.filter((value, index, array) => {
@@ -374,7 +399,95 @@ export class Report {
 /**
  * Report Summary
  */
-export class ReportSummary extends Report {
+export class Report extends Base {
+    /**
+     * Initialization
+     * @param input
+     * @param userSiteIds
+     */
+    public async Initialization(input: IRequest.IReport.IIndexBase, userSiteIds: string[]): Promise<void> {
+        try {
+            this._sites = await this.GetAllowSites(userSiteIds, [input.siteId], []);
+
+            let tasks = [];
+
+            tasks.push(
+                (async () => {
+                    let query: Parse.Query<IDB.Device> = new Parse.Query(IDB.Device).containedIn('site', this._sites);
+
+                    if ('areaId' in input) {
+                        let area: IDB.LocationArea = await new Parse.Query(IDB.LocationArea)
+                            .equalTo('objectId', input.areaId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (!area) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['area not found']);
+                        }
+
+                        query.equalTo('area', area);
+                    }
+                    if ('deviceGroupId' in input) {
+                        let group: IDB.DeviceGroup = await new Parse.Query(IDB.DeviceGroup)
+                            .equalTo('objectId', input.deviceGroupId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (!group) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['device group not found']);
+                        }
+
+                        query.containedIn('groups', [group]);
+                    }
+                    if ('deviceId' in input) {
+                        query.equalTo('objectId', input.deviceId);
+                    }
+
+                    let count: number = await query.count().fail((e) => {
+                        throw e;
+                    });
+
+                    this._devices = await query
+                        .limit(count)
+                        .include(['site', 'area', 'groups'])
+                        .find()
+                        .fail((e) => {
+                            throw e;
+                        });
+                })(),
+            );
+
+            if (this._isEnableOfficeHour) {
+                tasks.push(
+                    (async () => {
+                        this._officeHours = await this.GetOfficeHours();
+                    })(),
+                );
+            }
+
+            if (this._isEnableWeather) {
+                tasks.push(
+                    (async () => {
+                        this._weathers = await this.GetWeathers(input.startDate, input.endDate);
+                    })(),
+                );
+            }
+
+            await Promise.all(tasks);
+
+            this._initTime = new Date().getTime();
+        } catch (e) {
+            throw e;
+        }
+    }
+}
+
+/**
+ * Report Summary
+ */
+export class ReportSummary extends Base {
     /**
      *
      */
@@ -417,49 +530,6 @@ export class ReportSummary extends Report {
     protected _dateGap: number = 0;
     public get dateGap(): number {
         return this._dateGap;
-    }
-
-    /**
-     *
-     */
-    protected _weathers: IDB.Weather[] = [];
-
-    /**
-     *
-     */
-    protected _isEnableWeather: boolean = true;
-    public get isEnableWeather(): boolean {
-        return this._isEnableWeather;
-    }
-    public set isEnableWeather(value: boolean) {
-        this._isEnableWeather = value;
-    }
-
-    /**
-     *
-     */
-    protected _summaryWeathers: ReportSummary.IPublicData<IResponse.IReport.ISummaryWeather[]> = undefined;
-    public get summaryWeathers(): IResponse.IReport.ISummaryWeather[] {
-        if (!this._summaryWeathers || this._summaryWeathers.initTime < this._initTime) {
-            let data = this._weathers.map<IResponse.IReport.ISummaryWeather>((value, index, array) => {
-                let site: IResponse.IObject = this.sitesIdDictionary[value.getValue('site').id];
-
-                return {
-                    site: site,
-                    date: value.getValue('date'),
-                    icon: value.getValue('icon'),
-                    temperatureMin: value.getValue('temperatureMin'),
-                    temperatureMax: value.getValue('temperatureMax'),
-                };
-            });
-
-            this._summaryWeathers = {
-                initTime: new Date().getTime(),
-                data: data,
-            };
-        }
-
-        return JSON.parse(JSON.stringify(this._summaryWeathers.data));
     }
 
     /**
@@ -533,6 +603,30 @@ export class ReportSummary extends Report {
     }
 
     /**
+     * Get Deivces
+     */
+    public async GetDevices(): Promise<IDB.Device[]> {
+        try {
+            let query: Parse.Query<IDB.Device> = new Parse.Query(IDB.Device).containedIn('site', this._sites);
+
+            if (!!this._mode) {
+                query.equalTo('mode', this._mode);
+            }
+
+            let devices: IDB.Device[] = await query
+                .include(['site', 'area', 'groups'])
+                .find()
+                .fail((e) => {
+                    throw e;
+                });
+
+            return devices;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Get type date
      * @param date
      * @param type
@@ -563,7 +657,7 @@ export class ReportSummary extends Report {
             startDate = startDate || this.currDateRange.startDate;
             endDate = endDate || this.currDateRange.endDate;
 
-            let reports = await super.GetReports(collection, includes, startDate, endDate);
+            let { reports } = await super.GetReport(collection, includes, startDate, endDate);
 
             return reports;
         } catch (e) {
@@ -583,21 +677,9 @@ export class ReportSummary extends Report {
             startDate = startDate || this.currDateRange.startDate;
             endDate = endDate || this.currDateRange.endDate;
 
-            let weatherQuery: Parse.Query<IDB.Weather> = new Parse.Query(IDB.Weather)
-                .containedIn('site', this._sites)
-                .greaterThanOrEqualTo('date', startDate)
-                .lessThan('date', endDate);
+            let weathers = await super.GetWeathers(startDate, endDate);
 
-            let weatherTotal: number = await weatherQuery.count();
-
-            let weatherRecord: IDB.Weather[] = await weatherQuery
-                .limit(weatherTotal)
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
-
-            return weatherRecord;
+            return weathers;
         } catch (e) {
             throw e;
         }
@@ -801,6 +883,14 @@ export namespace Report {
     export interface IPublicData<T> {
         initTime: number;
         data: T;
+    }
+
+    /**
+     *
+     */
+    export interface IReportResponse<T> {
+        total: number;
+        reports: T[];
     }
 }
 
