@@ -44,6 +44,24 @@ action.post(
                         let availableRoles: RoleList[] = Permission.GetAvailableRoles(data.role, permissionMapC);
                         Permission.ValidateRoles(availableRoles, [value.role]);
 
+                        let company: IDB.LocationCompanies = undefined;
+                        let floors: IDB.LocationFloors[] = undefined;
+                        if (value.role === RoleList.TenantAdministrator) {
+                            company = await new Parse.Query(IDB.LocationCompanies)
+                                .equalTo('objectId', value.companyId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!company) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['company not found']);
+                            }
+
+                            floors = company.getValue('floor').filter((value1, index1, array1) => {
+                                return value.floorIds.indexOf(value1.id) > -1;
+                            });
+                        }
+
                         let role = roles.find((value1, index1, array1) => {
                             return value1.getName() === value.role;
                         });
@@ -80,6 +98,11 @@ action.post(
                         info.setValue('phone', value.phone || '');
                         info.setValue('mobileType', Enum.EMobileType.none);
                         info.setValue('mobileToken', '');
+
+                        if (value.role === RoleList.TenantAdministrator) {
+                            info.setValue('company', company);
+                            info.setValue('floors', floors);
+                        }
 
                         await info.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -154,7 +177,7 @@ action.get(
             let infos: IDB.UserInfo[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['user', 'user.roles'])
+                .include(['user', 'user.roles', 'company', 'floors'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -170,6 +193,22 @@ action.get(
                         });
                     });
 
+                let _company: IResponse.IObject = !value.getValue('company')
+                    ? undefined
+                    : {
+                          objectId: value.getValue('company').id,
+                          name: value.getValue('company').getValue('name'),
+                      };
+
+                let _floors = !value.getValue('floors')
+                    ? undefined
+                    : value.getValue('floors').map<IResponse.IObject>((value1, index1, array1) => {
+                          return {
+                              objectId: value.getValue('company').id,
+                              name: value.getValue('company').getValue('name'),
+                          };
+                      });
+
                 return {
                     objectId: value.getValue('user').id,
                     username: value.getValue('user').getUsername(),
@@ -178,6 +217,8 @@ action.get(
                     email: value.getValue('email') || '',
                     phone: value.getValue('phone') || '',
                     remark: value.getValue('remark') || '',
+                    company: _company,
+                    floors: _floors,
                     webLestUseDate: value.getValue('webLestUseDate'),
                 };
             });

@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice } from './_index';
+import { ParseObjectNotice, LocationCompanies, LocationFloors } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -40,6 +40,16 @@ export interface IUserInfo {
      * 備註
      */
     remark?: string;
+
+    /**
+     *
+     */
+    company?: LocationCompanies;
+
+    /**
+     *
+     */
+    floors?: LocationFloors[];
 
     /**
      * 手機類型

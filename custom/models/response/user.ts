@@ -15,6 +15,8 @@ export interface IWebIndexR {
     email: string;
     phone: string;
     remark: string;
+    company: IObject;
+    floors: IObject[];
     webLestUseDate: Date;
 }
 

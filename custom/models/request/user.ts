@@ -39,12 +39,23 @@ export interface IBaseRoleU {
 /**
  * Web Index
  */
-export interface IWebIndexC extends ILogin_User {
-    role: RoleList.Administrator | RoleList.TenantAdministrator;
+export type IWebIndexC = IWebIndexC_Administrator | IWebIndexC_TenantAdministrator;
+
+export interface IWebIndexC_Base extends ILogin_User {
     name: string;
     email: string;
     phone?: string;
     remark?: string;
+}
+
+export interface IWebIndexC_Administrator extends IWebIndexC_Base {
+    role: RoleList.Administrator;
+}
+
+export interface IWebIndexC_TenantAdministrator extends IWebIndexC_Base {
+    role: RoleList.TenantAdministrator;
+    companyId: string;
+    floorIds: string[];
 }
 
 export interface IWebIndexU {
