@@ -102,6 +102,8 @@ export abstract class TreeNotice<T> extends Tree<T> {
     }
 }
 
+export * from './client-frs';
+
 export * from './location-buildings';
 export * from './location-companies';
 export * from './location-floors';
