@@ -1,4 +1,4 @@
-import { Member, AttendanceRecords, Door, PermissionTable, TimeSchedule, AccessLevel, DoorGroup, IMember } from "../models";
+import { Member, AttendanceRecords, Door, PermissionTable, TimeSchedule, AccessLevel, DoorGroup, IMember, DailyAttendance } from "../models";
 
 import moment = require("moment");
 import { ParseObject } from "helpers/parse-server/parse-helper";
@@ -58,6 +58,28 @@ export class ReportService{
         let results = o.map(x=> ParseObject.toOutputJSON(x));
         let total = await query.count();
         return {results, total};
+    }
+    getDailyAttendanceQuery(filter:any, limit:number=10000, skip:number=0){
+        let query = new Parse.Query(DailyAttendance)        
+        .include("member")
+        .include("door")
+        .include("attendanceStart.door")
+        .include("attendanceEnd.door")        
+        .limit(limit)
+        .skip(skip);
+        //console.log("filter attendance", filter);
+        if (filter.CardNumber) {
+            query.matches("cardNumber", new RegExp(filter.CardNumber), "i");
+        }
+        if (filter.start) {
+            let start = new Date(filter.start);        
+            query.greaterThanOrEqualTo("dateOccurred", moment(start).format("YYYYMMDD"));
+        }
+        if (filter.end) {
+            let end = new Date(filter.end);
+            query.lessThanOrEqualTo("dateOccurred", moment(end).format("YYYYMMDD"));
+        }
+        return query;
     }
     getAttendanceQuery(filter:any, limit:number=10000, skip:number=0){
         let query = new Parse.Query(AttendanceRecords)        

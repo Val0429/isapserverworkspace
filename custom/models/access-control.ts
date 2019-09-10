@@ -504,7 +504,6 @@ export interface IDailyAttendance {
     attendanceStart?:AttendanceRecords;
     attendanceEnd?:AttendanceRecords;
     member?:LinearMember;
-    timeDifferent?:Date;
 }
 @registerSubclass()
 export class DailyAttendance extends ParseObject<IDailyAttendance> { }

@@ -26,52 +26,44 @@ action.post(async (data) => {
     let pageSize = filter.paging.pageSize || 10;
     let page = filter.paging.page || 1;
     let fields = filter.selectedColumns.map(x=>"member."+x.key);
-    fields.push("door.doorname");
-    let attendanceQuery = reportService.getAttendanceQuery(filter, pageSize, (page-1)*pageSize);
-    console.log("filter", filter);
-    attendanceQuery.include("member");
-    attendanceQuery.include("door");
-    attendanceQuery.select(...fields);
-    // const mongoist = require('mongoist');
-    // const db = mongoist(mongoDBUrl());
-
+    fields.push("attendanceStart.door.doorname");
+    fields.push("attendanceEnd.door.doorname");
+    fields.push("attendanceEnd.date_time_occurred");
+    fields.push("attendanceStart.date_time_occurred");
+    let dailyQuery = reportService.getDailyAttendanceQuery(filter, pageSize, (page-1)*pageSize);
+    console.log("filter", filter);    
+    dailyQuery.select(...fields);
+    
     let memberQuery = memberService.getMemberQuery(filter);
-    attendanceQuery.matchesQuery("member", memberQuery);
-    // console.log("member query",memberQuery.toJSON());
-    // console.log("attendance query", attendanceQuery.toJSON());
-
-    // let records = await db.collection("AttendanceRecord").findAsCursor(attendanceQuery.toJSON().where).skip((page-1)*pageSize).limit(pageSize).toArray();
-    // console.log("records", records);
+    dailyQuery.matchesQuery("member", memberQuery);
 
 
-    let total = await attendanceQuery.count();
-    let oAttendances = await attendanceQuery.find();
+    let total = await dailyQuery.count();
+    let oAttendances = await dailyQuery.find();
     let attendances = oAttendances.map(x=>ParseObject.toOutputJSON(x));
     
     
     for(let item of attendances){        
-        let newDoor = item.door;
+        let start = item.attendanceStart;
+        let end = item.attendanceEnd;
         let newMember = item.member;
         delete(newMember.objectId);
-        delete(newDoor.objectId);
-        delete(item.member);
-        delete(item.door);
+        
         //merge fields
         Object.assign(item, newMember);
-        Object.assign(item, newDoor);
-        //let item2:any = {};        
-        //if(!item2 || item2.card_no != item.card_no)continue;
-        
-        // item.date_time_occurred_end = item2.date_time_occurred;
-        // item.at_id_end = item2.at_id;
-        let timeStart = moment(item.date_time_occurred);
-        let timeEnd = moment(item.date_time_occurred_end);
+        item.at_id = start.door.doorname;
+        item.at_id_end = end.door.doorname;
+
+        let timeStart = moment(start.date_time_occurred);
+        let timeEnd = moment(end.date_time_occurred);
         item.startTime = timeStart.format("HH:mm:ss");
         item.dateOccurred = timeStart.format("YYYY-MM-DD");
         item.endTime = timeEnd.format("HH:mm:ss");
         item.workTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m ]s[s]");
         
-        
+        delete(item.member);
+        delete(item.atendanceStart);
+        delete(item.atendanceEnd);
     }
 
     /// 3) Output

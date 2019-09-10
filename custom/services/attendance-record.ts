@@ -142,15 +142,13 @@ export class AttendanceRecord {
                             dateOccurred:r["date_occurred"], 
                             cardNumber:r["card_no"], attendanceEnd:o, 
                             attendanceStart:o, 
-                            member:o.get("member"),
-                            timeDifferent:moment.utc(moment(o.get("date_time_occurred")).diff(moment(o.get("date_time_occurred")))).toDate()
+                            member:o.get("member")                            
                         });
                  dailyAttendances.push(dailyAttendance);
                  objects.push(dailyAttendance);
              }else{
                  //assume the data has been sorted
-                 dailyAttendance.set("attendanceEnd", o);
-                 dailyAttendance.set("timeDifferent", moment.utc(moment(dailyAttendance.get("attendanceStart")["date_time_occurred"]).diff(moment(o.get("date_time_occurred")))).toDate());
+                 dailyAttendance.set("attendanceEnd", o);                 
                  objects.push(dailyAttendance);                    
              }
         }
@@ -215,19 +213,17 @@ export class AttendanceRecord {
                 let dailyAttendance = dailyAttendances.find(x=>x.get("dateOccurred")==newData["date_occurred"] && x.get("cardNumber")==newData["card_no"]);
                 if(!dailyAttendance){
                     dailyAttendance = new DailyAttendance({
-                    dateOccurred:newData["date_occurred"], 
-                    cardNumber:newData["card_no"], 
-                    attendanceEnd:o, 
-                    attendanceStart:o,                    
-                    member:o.get("member"),
-                    timeDifferent:moment.utc(moment(o.get("date_time_occurred")).diff(moment(o.get("date_time_occurred")))).toDate()
-                });
+                        dateOccurred:newData["date_occurred"], 
+                        cardNumber:newData["card_no"], 
+                        attendanceEnd:o, 
+                        attendanceStart:o,                    
+                        member:o.get("member")
+                    });
                     dailyAttendances.push(dailyAttendance);
                     objects.push(dailyAttendance);
                 }else{
                     //assume the data has been sorted
                     dailyAttendance.set("attendanceEnd", o);
-                    dailyAttendance.set("timeDifferent", moment.utc(moment(dailyAttendance.get("attendanceStart")["date_time_occurred"]).diff(moment(o.get("date_time_occurred")))).toDate());
                     objects.push(dailyAttendance);                      
                 }
             }
