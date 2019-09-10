@@ -1,9 +1,11 @@
 import moment = require("moment");
 import { User } from "parse";
-import { WorkGroup, PermissionTable, IMember, ILinearMember } from "../models/access-control";
+import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
 import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/acs/sipass/siPass_define";
+import { keys } from 'ts-transformer-keys';
+import { ParseObject } from "helpers/cgi-helpers";
 
 export class MemberService {
     async resizeImage (base64Image:string) {
@@ -37,13 +39,12 @@ async createMember (inputFormData:any, user:User) {
         let dob= testDate(inputFormData.birthday, "T");
           // AccessRules
     let permissionTables = await new Parse.Query(PermissionTable)
-                        .containedIn("tableid", inputFormData.permissionTable.map(x=>parseInt(x)))
+                        .containedIn("tableid", inputFormData.permissionTable.map(x=>x.get("objectId")))
                         .limit(Number.MAX_SAFE_INTEGER).find();
     
     let accessRules=[];
-    for (const rid of inputFormData.permissionTable) {            
-        let permission = permissionTables.find(x=>x.get("tableid")== +rid);
-        console.log("permission", permission, rid);
+    for (let permission of permissionTables) {            
+        console.log("permission", ParseObject.toOutputJSON(permission));
         //not in sipass or ccure
         if(!permission)continue;
         
@@ -83,9 +84,9 @@ async createMember (inputFormData:any, user:User) {
                 FacilityCode: parseInt(inputFormData.deviceNumber||"469"),
                 ProfileId: !isNaN(parseInt(inputFormData.cardCertificate)) ? parseInt(inputFormData.cardCertificate) : 0,
                 ProfileName : inputFormData.profileName || "基礎",
-                CardTechnologyCode : inputFormData.technologyCode || 10,
-                PinMode: inputFormData.pinMode || 1,          
-                PinDigit:inputFormData.pinDigit || 0,
+                CardTechnologyCode : parseInt(inputFormData.technologyCode || "10"),
+                PinMode: parseInt(inputFormData.pinMode || "1"),          
+                PinDigit: parseInt(inputFormData.pinDigit || "0"),
                 EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
                 StartDate:moment(inputFormData.startDate || now).format()
               };
@@ -141,6 +142,43 @@ async createMember (inputFormData:any, user:User) {
               CustomFields: tempCustomFieldsList,
               CardholderPortrait:imageBase64,
               IsImageChanged: inputFormData.isImageChanged
+            };
+            //console.log("member", JSON.stringify(member));
+            return member;
+    }
+    async createLinearMember (inputFormData:ILinearMember, user:User) {
+        let now = new Date();
+        let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
+        let dob= testDate(inputFormData.birthday, "T");
+        
+        
+          let imageBase64 = await this.resizeImage(inputFormData.cardholderPortrait);
+          let wg= workGroupSelectItems.find(x=>x.get("groupid")==(inputFormData.personType || 1));
+          let member:ILinearMember = {        
+                // master
+                objectId: inputFormData.objectId,
+                primaryWorkgroupId: wg ? wg.get("groupid") : 1,
+                primaryWorkgroupName: wg? wg.get("groupname"):"正職",
+                employeeNumber: inputFormData.employeeNumber.toString(),
+                chineseName: inputFormData.chineseName,
+                englishName: inputFormData.englishName || "-",
+                endDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
+                startDate:moment(inputFormData.startDate || now).format(),
+                status:ECardholderStatus.Valid,
+                //new addition
+                void:inputFormData.void || false,
+                token: "-1",
+                cardholderPortrait:imageBase64,
+                isImageChanged: inputFormData.isImageChanged,
+                birthday:dob,
+                deviceNumber : inputFormData.deviceNumber||469,
+                cardCertificate : (inputFormData.cardCertificate || 0).toString(),
+                profileName : inputFormData.profileName || "基礎",
+                technologyCode : inputFormData.technologyCode || 10,
+                pinMode : inputFormData.pinMode || 1,
+                pinDigit : inputFormData.pinDigit || 0,        
+                lastEditPerson : user.getUsername(),
+                lastEditTime : moment().format(),
             };
             //console.log("member", JSON.stringify(member));
             return member;
@@ -226,16 +264,17 @@ async createMember (inputFormData:any, user:User) {
         newMember.cardNumber = (credential.CardNumber || "").toString();
         newMember.cardAllNumber = (credential.CardNumber || "").toString();
         newMember.cardCertificate = (credential.ProfileId || 0).toString();
-        newMember.deviceNumber = (credential.FacilityCode || "").toString();
-        newMember.pinDigit = (credential.PinDigit|| "").toString();
+        newMember.deviceNumber = credential.FacilityCode || 0;
+        newMember.pinDigit = credential.PinDigit|| 0;
         newMember.profileName = credential.ProfileName|| "";
-        newMember.technologyCode = (credential.CardTechnologyCode|| "").toString();    
-        newMember.pinMode = (credential.PinMode|| "").toString();
+        newMember.technologyCode = credential.CardTechnologyCode|| 10;    
+        newMember.pinMode = credential.PinMode || 1;
         newMember.pin = (credential.Pin || "0").toString();
         newMember.startDate = member.StartDate;
         newMember.endDate = member.EndDate;
         newMember.cardholderPortrait = member.CardholderPortrait || "";
-
+        newMember.status = member.Status;
+        newMember.token = member.Token;
         // tab2
         if (member.PersonalDetails) {
             if(member.PersonalDetails.UserDetails){
@@ -276,7 +315,65 @@ async createMember (inputFormData:any, user:User) {
             return "";
           }    
     }
-        
+        getQuery(filter:any){
+            let query = new Parse.Query(LinearMember).notEqualTo("status", 1)
+            if (filter.objectId) {
+                query.equalTo("objectId", filter.objectId);
+            }
+            if(filter.objectIds && Array.isArray(filter.objectIds)){
+                query.containedIn("objectId", filter.objectIds);
+            }
+            // looking for duplication
+            if (filter.eEmployeeNumber) query.equalTo("employeeNumber",  filter.eEmployeeNumber);
+            if (filter.eCardNumber) query.equalTo("cardNumber", filter.eCardNumber);
+            if (filter.start2) {
+                query.greaterThanOrEqualTo("endDate", filter.start2);
+            }
+            if(filter.end2){
+                query.lessThanOrEqualTo("endDate", filter.end2)
+            }
+            if (filter.start1) {
+                query.greaterThanOrEqualTo("startDate", filter.start1);
+            }
+            if(filter.end1){
+                query.lessThanOrEqualTo("startDate", filter.end1);
+            }
+            if(filter.LastName) query.matches("chineseName", new RegExp(filter.LastName), "i");
+            if(filter.FirstName) query.matches("englishName", new RegExp(filter.FirstName), "i");    
+            if(filter.EmployeeNumber) query.matches("employeeNumber", new RegExp(filter.EmployeeNumber), "i");  
+    
+            if(filter.DepartmentName) query.matches("department",new RegExp(filter.DepartmentName), "i");
+            if(filter.CostCenterName) query.matches("costCenter",new RegExp(filter.CostCenterName), "i");
+            if(filter.WorkAreaName) query.matches("workArea",new RegExp(filter.WorkAreaName), "i");
+            if(filter.CardCustodian) query.matches("cardCustodian",new RegExp(filter.CardCustodian), "i");
+            if(filter.CardType) query.matches("cardType",new RegExp(filter.CardType), "i");
+            if(filter.CompanyName) query.matches("companyName", new RegExp(filter.CompanyName), "i");
+            
+            if(filter.ResignationDate){
+                let resignDate = moment(filter.ResignationDate).format("YYYY-MM-DD");
+                query.matches("resignationDate", new RegExp(resignDate), "i");
+            } 
+            if(filter.CardNumber) query.matches("cardNumber", new RegExp(filter.CardNumber), "i");    
+            else if(!filter.ShowEmptyCardNumber) query.exists("cardNumber").notEqualTo("cardNumber", "");
+            
+            if(filter.CardNumbers) query.containedIn("cardNumber", filter.CardNumbers.split(","));
+            
+    
+            if(filter.PermissionTable){
+                query.containedIn("permissionTable", filter.PermissionTable.split(",").map(x=>x.toString()));
+            } 
+    
+            if(filter.expired && filter.expired=="true"){
+                query.lessThanOrEqualTo("resignationDate", (new Date()).toISOString());
+            }
+    
+            if(filter.PersonType){
+                //console.log("personTpye", filter.PersonType);
+                query.equalTo("primaryWorkgroupId", +filter.PersonType);
+            }
+            return query;
+        }
+       
 }
 export default MemberService;
 export function testDate(date:string, splitter?:string){
@@ -292,34 +389,88 @@ export function testDate(date:string, splitter?:string){
   }
 }
 
-export const memberFields =[
-    "system",
-    "Attributes",
-    "Credentials",
-    "AccessRules",
-    "EmployeeNumber",
-    "EndDate",
-    "FirstName",
-    "GeneralInformation",
-    "LastName",
-    "PersonalDetails",
-    "PrimaryWorkgroupId",
-    "ApbWorkgroupId",
-    "PrimaryWorkgroupName",
-    "NonPartitionWorkGroups",
-    "SmartCardProfileId",
-    "StartDate",
-    "Status",
-    "Token",
-    "TraceDetails",
-    "Vehicle1",
-    "Vehicle2",
-    "Potrait",
-    "PrimaryWorkGroupAccessRule",
-    "NonPartitionWorkgroupAccessRules",
-    "VisitorDetails",
-    "CustomFields",
-    "FingerPrints"];
+export const memberFields = [ 
+    "objectId",
+    "void",
+    "permissionTable",
+    "personType",
+    "employeeNumber",
+    "chineseName",
+    "englishName",
+    "primaryWorkgroupName",
+    "primaryWorkgroupId",
+    "cardNumber",
+    "cardAllNumber",
+    "cardCertificate",
+    "isImageChanged",
+    "deviceNumber",
+    "pinDigit",
+    "profileName",
+    "technologyCode",
+    "pinMode",
+    "pin",
+    "startDate",
+    "endDate",
+    "account",
+    "password",
+    "email",
+    "phone",
+    "extensionNumber",
+    "birthday",
+    "allCardNumber",
+    "companyName",
+    "cardCustodian",
+    "lastEditPerson",
+    "lastEditTime",
+    "cardType",    
+    "MVPN",
+    "gender",
+    "department",
+    "costCenter",
+    "area",
+    "workArea",
+    "registrationDate",
+    "resignationDate",
+    "carLicenseCategory",
+    "cardLicense",
+    "carLicense",
+    "carLicense1",
+    "carLicense2",
+    "carLicense3",    
+    "resignationNote",
+    "resignationRecordCardRecord",
+    "reasonForCard1",
+    "historyForCard1",
+    "dateForCard1",
+    "reasonForCard2",
+    "historyForCard2",
+    "dateForCard2",
+    "reasonForCard3",
+    "historyForCard3",
+    "dateForCard3",
+    "reasonForApplication1",
+    "dateForApplication1",
+    "reasonForApplication2",
+    "dateForApplication2",
+    "reasonForApplication3",
+    "dateForApplication3",
+    "resignationRecordCarLicense",    
+    "censusRecord1",
+    "censusDate1",
+    "censusRecord2",
+    "censusDate2",
+    "censusRecord3",
+    "censusDate3",
+    "infoOfViolation1",
+    "dateOfViolation1",
+    "infoOfViolation2",
+    "dateOfViolation2",
+    "infoOfViolation3",
+    "dateOfViolation3",
+    "status",
+    "token"
+]
+
 export const CustomFields = [
     { fieldName:"CustomTextBoxControl1__CF", name:"allCardNumber", date:false},
     { fieldName:"CustomTextBoxControl6__CF", name:"companyName", date:false},

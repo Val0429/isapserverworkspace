@@ -1,13 +1,14 @@
 import { Action, Errors, Restful, ParseObject} from 'core/cgi-package';
 
 
-import { IMember, Member, PermissionTable } from '../../custom/models'
+import { IMember, Member, PermissionTable, ILinearMember, LinearMember } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
 import { ReportService } from 'workspace/custom/services/report-service';
 import { Log } from 'workspace/custom/services/log';
-import MemberService from 'workspace/custom/services/member-service';
+import MemberService, { memberFields } from 'workspace/custom/services/member-service';
 import { ICardholderObject } from 'workspace/custom/modules/acs/sipass';
+import moment = require('moment');
 
 
 var action = new Action({
@@ -21,38 +22,41 @@ var action = new Action({
 /********************************
  * C: create object
  ********************************/
-type InputC = Restful.InputC<IMember>;
-type OutputC = Restful.OutputC<ICardholderObject>;
+type InputC = Restful.InputC<ILinearMember>;
+type OutputC = Restful.OutputC<ILinearMember>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    let memberService = new MemberService();
-    let member = await memberService.createMember(data.inputType, data.user);
-    let emp = await new Parse.Query(Member).equalTo("EmployeeNumber", member.EmployeeNumber).first();
+    
+    let emp = await new Parse.Query(LinearMember).equalTo("employeeNumber", data.inputType.employeeNumber).first();
     if (emp){
         throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
     }
-    if (member.Credentials[0]) {
-        await checkCardNumber(member);
-    }
-
+    
     
     try{
-        /// 2) Create Object
-        var obj = new Member(member);
-        let ret = ParseObject.toOutputJSON(obj);
-
-        let holder = await siPassAdapter.postCardHolder(ret);
         
-        obj.set("Token", holder["Token"]);
+        let memberService = new MemberService();
+        /// 2) Create Object
+        
+        
+        //sipass and ccure requires this format
+        let member = await memberService.createMember(data.inputType, data.user);
+        let holder = await siPassAdapter.postCardHolder(member);
+
+        let linearMember = await memberService.createLinearMember(data.inputType, data.user);
+        linearMember.token= holder["Token"];
+        var obj = new LinearMember(linearMember);
         
         let cCure800SqlAdapter = new CCure800SqlAdapter();
-        await cCure800SqlAdapter.writeMember(ret, ret.AccessRules.map(x=>x.ObjectName));
+        //todo: we need to refactor this to accept linear membe instead of sipass object
+        await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x=>x.ObjectName));
+
         await obj.save(null, { useMasterKey: true });
         await Log.Info(`create`, `${member.EmployeeNumber} ${member.FirstName}`, data.user, false, "Member");
 
         /// 2) Output
-        return ret;
+        return obj;
     }catch (err){
         console.log("member save error", JSON.stringify(err));
         throw Errors.throw(Errors.CustomNotExists, ["Error save member, please contact admin"]);
@@ -64,36 +68,22 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
  * R: get object
  ********************************/
 
-action.get(async (data) => {
-    /// 1) Make Query
-    let page = 1;
-    let pageSize = 10;
-    let paging = data.parameters.paging
-    if(paging){
-        page = paging.page || 1;
-        pageSize = pageSize || 10;
 
-        if(paging.all && paging.all=="true"){
-            page=1;
-            pageSize=Number.MAX_SAFE_INTEGER;
-        }
-    }
+type InputR = Restful.InputR<ILinearMember>;
+type OutputR = Restful.OutputR<ILinearMember>;
+
+action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
+    /// 1) Make Query
+    let memberService = new MemberService();
     
     // 2) Filter data
-    let filter = data.parameters;
+    let filter = data.parameters as any;
     filter.ShowEmptyCardNumber="true";
+    let query = memberService.getQuery(filter);
+    query.select(...memberFields);
+    query = Restful.Filter(query, data.inputType);
     /// 3) Output
-    let reportService = new ReportService();
-    let {results, total} = await reportService.getMemberRecord(filter, pageSize, (page-1)*pageSize);
-    return {
-        paging:{
-            page,
-            pageSize,
-            total,
-            totalPages:Math.ceil(total / pageSize)
-        },
-        results
-    };
+    return Restful.Pagination(query, data.parameters);
 });
 
 /********************************

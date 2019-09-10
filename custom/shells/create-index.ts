@@ -25,6 +25,14 @@ import {
     createIndex("Member", "MemberLastName",
         { "LastName": 1 },
     );
+
+     /// Member
+     createIndex("LinearMember", "englishName",
+     { "englishName": 1 },
+    );
+    createIndex("LinearMember", "chineseName",
+        { "chineseName": 1 },
+    );
     ////////////////////////////
 
     /// default ////////////////

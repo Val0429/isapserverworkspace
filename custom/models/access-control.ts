@@ -199,11 +199,11 @@ export interface ILinearMember{
         cardAllNumber? :string;
         cardCertificate? :string;
         isImageChanged?:boolean;
-        deviceNumber? :string ;
-        pinDigit? :string ;
+        deviceNumber? :number ;
+        pinDigit? :number ;
         profileName? :string;
-        technologyCode? :string ;
-        pinMode? :string ;
+        technologyCode? :number ;
+        pinMode? :number ;
         pin? :string;
         startDate :string;
         endDate :string;
@@ -264,6 +264,8 @@ export interface ILinearMember{
         dateOfViolation2?: string;
         infoOfViolation3?: string;
         dateOfViolation3?: string;
+        status?:number;
+        token?:string;
     
 }
 @registerSubclass()
