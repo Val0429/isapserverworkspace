@@ -1,11 +1,14 @@
 import moment = require("moment");
 import { User } from "parse";
-import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember } from "../models/access-control";
+import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
 import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/acs/sipass/siPass_define";
 
 import { ParseObject } from "helpers/cgi-helpers";
+import { CCure800SqlAdapter } from "./acs/CCure800SqlAdapter";
+import { Log } from "./log";
+import { siPassAdapter } from "./acsAdapter-Manager";
 
 export class MemberService {
     async resizeImage (base64Image:string) {
@@ -33,7 +36,7 @@ export class MemberService {
         
     }
 
-async createSipassCardHolder (inputFormData:any, user:User) {
+async createSipassCardHolder (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
         let dob= testDate(inputFormData.birthday, "T");
@@ -81,12 +84,12 @@ async createSipassCardHolder (inputFormData:any, user:User) {
           let credential = {
                 CardNumber: (inputFormData.cardNumber || "").toString(),
                 Pin: inputFormData.pin || "0",
-                FacilityCode: parseInt(inputFormData.deviceNumber||"469"),
+                FacilityCode: inputFormData.deviceNumber||469,
                 ProfileId: !isNaN(parseInt(inputFormData.cardCertificate)) ? parseInt(inputFormData.cardCertificate) : 0,
                 ProfileName : inputFormData.profileName || "基礎",
-                CardTechnologyCode : parseInt(inputFormData.technologyCode || "10"),
-                PinMode: parseInt(inputFormData.pinMode || "1"),          
-                PinDigit: parseInt(inputFormData.pinDigit || "0"),
+                CardTechnologyCode : inputFormData.technologyCode || 10,
+                PinMode: inputFormData.pinMode || 1,          
+                PinDigit: inputFormData.pinDigit || 0,
                 EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
                 StartDate:moment(inputFormData.startDate || now).format()
               };
@@ -95,13 +98,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
           
           let tempCustomFieldsList: any = [];
           for(let field of CustomFields){
-            if(field.name=="lastEditPerson"){
-                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: user.getUsername()});
-            }
-            else if(field.name=="lastEditTime"){
-                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: moment().format()}); 
-            }
-            else if(field.name=="birthday"){
+            if(field.name=="birthday"){
                 tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: inputFormData[field.name] ? moment(inputFormData[field.name]).format("YYYY-MM-DD") : ""});
             }
             else if(field.date) {
@@ -110,7 +107,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
             else tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue:inputFormData[field.name] || null});
           }
           let imageBase64 = await this.resizeImage(inputFormData.cardholderPortrait);
-          let wg= workGroupSelectItems.find(x=>x.get("groupid")==parseInt(inputFormData.personType || "1"));
+          let wg= workGroupSelectItems.find(x=>x.get("groupid")== (inputFormData.personType || 1));
           let member:ICardholderObject = {        
               // master
               objectId: inputFormData.objectId,
@@ -119,7 +116,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
               ApbWorkgroupId: wg ? wg.get("groupid") : 1,
               PrimaryWorkgroupName: wg? wg.get("groupname"):"正職",
               EmployeeNumber: inputFormData.employeeNumber.toString(),
-              LastName: inputFormData.chineseName,
+              LastName: inputFormData.chineseName || "_",
               FirstName: inputFormData.englishName || "-",
               EndDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
               StartDate:moment(inputFormData.startDate || now).format(),
@@ -149,7 +146,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
             //console.log("member", JSON.stringify(member));
             return member;
     }
-    async createLinearMember (inputFormData:ILinearMember, user:User) {
+    async createLinearMember (inputFormData:ILinearMember, user:string) {
         let now = new Date();
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
         let dob= testDate(inputFormData.birthday, "T")||"";
@@ -163,7 +160,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
                 primaryWorkgroupId: wg ? wg.get("groupid") : 1,
                 primaryWorkgroupName: wg? wg.get("groupname"):"正職",
                 employeeNumber: inputFormData.employeeNumber.toString(),
-                chineseName: inputFormData.chineseName,
+                chineseName: inputFormData.chineseName || "_",
                 englishName: inputFormData.englishName || "-",
                 endDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
                 startDate:moment(inputFormData.startDate || now).format(),
@@ -186,7 +183,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
                 member[customField.name]=inputFormData[customField.name] || "";
             }
             member.birthday=dob;
-            member.lastEditPerson = user.getUsername();
+            member.lastEditPerson = inputFormData.lastEditPerson || user;
             member.lastEditTime = moment().format();
             //console.log("member", JSON.stringify(member));
             return member;
@@ -323,7 +320,7 @@ async createSipassCardHolder (inputFormData:any, user:User) {
             return "";
           }    
     }
-        getQuery(filter:any){
+        getMemberQuery(filter:any){
             let query = new Parse.Query(LinearMember).notEqualTo("status", 1)
             if (filter.objectId) {
                 query.equalTo("objectId", filter.objectId);
@@ -381,14 +378,72 @@ async createSipassCardHolder (inputFormData:any, user:User) {
             }
             return query;
         }
-       
+        async updateMember(data: ILinearMember, user:string, checkDuplicate:boolean) {
+            var { objectId } = data;
+            var obj = await new Parse.Query(LinearMember).get(objectId);
+            if (!obj) throw new Error(`Member <${objectId}> not exists.`);
+
+            let linearMember = await this.createLinearMember(data, user);
+            if(checkDuplicate) await this.checkDuplication(linearMember);
+            let member = await this.createSipassCardHolder(linearMember);
+            member.Status = obj.get("status");
+            member.Token, obj.get("token");
+            /// 2) Modify
+            
+            let update = new LinearMember(linearMember);
+            update.set("status", obj.get("status"));
+            update.set("token", obj.get("token"));
+            
+            /// 4) to SiPass
+            let sipassUpdate= await siPassAdapter.putCardHolder(member);
+            let cCure800SqlAdapter = new CCure800SqlAdapter();
+            await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x => x.ObjectName));
+            /// 5) to Monogo        
+            await update.save();            
+            /// 3) Output
+            return update;
+        }
+        async createMember(data:ILinearMember, user:string, checkDuplicate:boolean){
+            let linearMember = await this.createLinearMember(data, user);
+            if(checkDuplicate)await this.checkDuplication(linearMember);
+            //sipass and ccure requires this format
+            let member = await this.createSipassCardHolder(linearMember);
+            let holder = await siPassAdapter.postCardHolder(member);
+            
+            linearMember.token= holder["Token"];
+            var obj = new LinearMember(linearMember);
+            
+            let cCure800SqlAdapter = new CCure800SqlAdapter();
+            //todo: we need to refactor this to accept linear membe instead of sipass object
+            await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x=>x.ObjectName));
+
+            await obj.save(null, { useMasterKey: true });
+            /// 2) Output
+            return obj;
+        }
+        async checkDuplication(member: ILinearMember) {
+            let emp = await new Parse.Query(LinearMember).notEqualTo("status",1).equalTo("employeeNumber", member.employeeNumber).first();
+            if (emp && (!member.objectId || member.objectId != ParseObject.toOutputJSON(emp).objectId)){
+                throw new Error(`EmployeeNumber is duplicate.`);
+            }
+            
+            let cardno = member.cardNumber;    
+            console.log("checkCardNumber", cardno);
+            if (cardno) {
+                let cnt = await new Parse.Query(Member).notEqualTo("status",1).equalTo("cardNumber", cardno).first();
+                if (cnt && (!member.objectId || member.objectId != ParseObject.toOutputJSON(cnt).objectId)) {   
+                    throw new Error(`Credentials.CardNumber is duplicate.`);
+                }
+                
+            }
+        }
 }
 export default MemberService;
 export function testDate(date:string, splitter?:string){
     try{    
         if(!date)return null;
         //we use it because moment doesn't throw error
-        new Date(date);
+        let test = new Date(date);
         //error on date will return 'invalidDate'
         let dt = moment(date).format();         
         return splitter ? dt.split(splitter)[0] : dt;         

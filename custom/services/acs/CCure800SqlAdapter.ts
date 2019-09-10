@@ -313,7 +313,7 @@ export class CCure800SqlAdapter {
         ,${data.Status == ECardholderStatus.Deleted ? -1 : 0}, ${data.Attributes && data.Attributes.Void==true ? -1 : 0}
         )`;
         
-        console.log(insert);
+        //console.log(insert);
 
         await this.adodbConn
             .execute(insert)

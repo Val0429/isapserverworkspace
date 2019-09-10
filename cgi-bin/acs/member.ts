@@ -9,6 +9,7 @@ import { Log } from 'workspace/custom/services/log';
 import MemberService, { memberFields } from 'workspace/custom/services/member-service';
 import { ICardholderObject } from 'workspace/custom/modules/acs/sipass';
 import moment = require('moment');
+import { User } from 'parse';
 
 
 var action = new Action({
@@ -27,33 +28,12 @@ type OutputC = Restful.OutputC<ILinearMember>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Check data.inputType
-    
-    
-    
-    try{
-        
+    try{        
         let memberService = new MemberService();
         /// 2) Create Object
-        
-        
-        //sipass and ccure requires this format
-        let member = await memberService.createSipassCardHolder(data.inputType, data.user);
-        let holder = await siPassAdapter.postCardHolder(member);
-
-        let linearMember = await memberService.createLinearMember(data.inputType, data.user);
-        await checkDuplication(linearMember);
-        linearMember.token= holder["Token"];
-        var obj = new LinearMember(linearMember);
-        
-        let cCure800SqlAdapter = new CCure800SqlAdapter();
-        //todo: we need to refactor this to accept linear membe instead of sipass object
-        await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x=>x.ObjectName));
-
-        await obj.save(null, { useMasterKey: true });
-        await Log.Info(`create`, `${member.EmployeeNumber} ${member.FirstName}`, data.user, false, "Member");
-
-        /// 2) Output
-        return obj;
+        let res = await memberService.createMember(data.inputType, data.user.getUsername(), true);
+        await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, data.user, false, "Member");
+        return res;
     }catch (err){
         console.log("member save error", JSON.stringify(err));
         throw Errors.throw(Errors.CustomNotExists, ["Error save member, please contact admin"]);
@@ -76,7 +56,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     // 2) Filter data
     let filter = data.parameters as any;
     filter.ShowEmptyCardNumber="true";
-    let query = memberService.getQuery(filter);
+    let query = memberService.getMemberQuery(filter);
     query.select(...memberFields);
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
@@ -92,33 +72,10 @@ type OutputU = Restful.OutputU<ILinearMember>;
 action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     
     /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(LinearMember).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
     try{
         let memberService = new MemberService();
-        let member = await memberService.createSipassCardHolder(data.inputType, data.user);
-        member.Status= obj.get("status");
-        member.Token, obj.get("token");
-        /// 2) Modify
-        let linearMember = await memberService.createLinearMember(data.inputType, data.user);
-        let update = new LinearMember(linearMember);
-        update.set("status", obj.get("status"));
-        update.set("token", obj.get("token"));
-        await checkDuplication(linearMember);
-        /// 4) to SiPass
-       
-        let sipassUpdate= await siPassAdapter.putCardHolder(member);
-        
-    
-        let cCure800SqlAdapter = new CCure800SqlAdapter();     
-        await cCure800SqlAdapter.writeMember(member,member.AccessRules.map(x=>x.ObjectName));
-        
-        /// 5) to Monogo        
-        await update.save();
+        let update = await memberService.updateMember(data.inputType, data.user.getUsername(), true);
         await Log.Info(`update`, `${update.get("employeeNumber")} ${update.get("chineseName")}`, data.user, false, "Member");
-    
-        /// 3) Output
         return update;
     }catch (err){
         console.log("member save error", JSON.stringify(err));
@@ -146,9 +103,9 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
         obj.set("status", 1);
         let ret = ParseObject.toOutputJSON(obj);
         let memberService = new MemberService();
-        let cardholder = await memberService.createSipassCardHolder(ret,data.user);
+        let cardholder = await memberService.createSipassCardHolder(ret);
         cardholder.Status=1;
-        let cCure800SqlAdapter = new CCure800SqlAdapter();
+        let cCure800SqlAdapter = new CCure800SqlAdapter();        
         await cCure800SqlAdapter.writeMember(cardholder, cardholder.AccessRules.map(x=>x.ObjectName));
 
         if(obj.get("token")&&obj.get("token")!="-1")await siPassAdapter.delCardHolder(obj.get("token"));
@@ -168,21 +125,6 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 
 export default action;
 
-async function checkDuplication(member: ILinearMember) {
-    let emp = await new Parse.Query(LinearMember).notEqualTo("status",1).equalTo("employeeNumber", member.employeeNumber).first();
-    if (emp && (!member.objectId || member.objectId != ParseObject.toOutputJSON(emp).objectId)){
-        throw Errors.throw(Errors.CustomNotExists, [`EmployeeNumber is duplicate.`]);
-    }
-    
-    let cardno = member.cardNumber;    
-    console.log("checkCardNumber", cardno);
-    if (cardno) {
-        let cnt = await new Parse.Query(Member).notEqualTo("status",1).equalTo("cardNumber", cardno).first();
-        if (cnt && (!member.objectId || member.objectId != ParseObject.toOutputJSON(cnt).objectId)) {            
-            throw Errors.throw(Errors.CustomNotExists, [`Credentials.CardNumber is duplicate.`]);
-        }
-        
-    }
-}
+
 
 
