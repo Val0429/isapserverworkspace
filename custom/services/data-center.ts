@@ -9,6 +9,11 @@ class Service {
     /**
      *
      */
+    public acsSetting$: Rx.BehaviorSubject<IDB.ISettingACS> = new Rx.BehaviorSubject(undefined);
+
+    /**
+     *
+     */
     public emailSetting$: Rx.BehaviorSubject<IDB.ISettingEmail> = new Rx.BehaviorSubject(undefined);
 
     /**
@@ -30,6 +35,14 @@ class Service {
      *
      */
     constructor() {
+        this.acsSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: async (x) => {
+                    await this.UpdateACSSetting();
+                },
+            });
+
         this.emailSetting$
             .filter((x) => !!x)
             .subscribe({
@@ -88,12 +101,43 @@ class Service {
         try {
             let tasks = [];
 
+            tasks.push(this.SearchACSSetting());
             tasks.push(this.SearchEmailSetting());
             tasks.push(this.SearchPushNotificationSetting());
             tasks.push(this.SearchSystemSetting());
             tasks.push(this.SearchTextMessageSetting());
 
             await Promise.all(tasks);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Search ACS Setting
+     */
+    private async SearchACSSetting(): Promise<void> {
+        try {
+            let setting: IDB.SettingACS = await new Parse.Query(IDB.SettingACS).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                this.acsSetting$.next({
+                    staffCardRange: {
+                        min: 2185450001,
+                        max: 2185475000,
+                    },
+                    visitorCardRange: {
+                        min: 2185475001,
+                        max: 2185500000,
+                    },
+                });
+            } else {
+                this.acsSetting$.next({
+                    staffCardRange: setting.getValue('staffCardRange'),
+                    visitorCardRange: setting.getValue('visitorCardRange'),
+                });
+            }
         } catch (e) {
             throw e;
         }
@@ -208,6 +252,31 @@ class Service {
                     sgsms: setting.getValue('sgsms'),
                 });
             }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Update ACS Setting
+     */
+    private async UpdateACSSetting(): Promise<void> {
+        try {
+            let value = this.acsSetting$.value;
+
+            let setting: IDB.SettingACS = await new Parse.Query(IDB.SettingACS).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                setting = new IDB.SettingACS();
+            }
+
+            setting.setValue('staffCardRange', value.staffCardRange);
+            setting.setValue('visitorCardRange', value.visitorCardRange);
+
+            await setting.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
         } catch (e) {
             throw e;
         }

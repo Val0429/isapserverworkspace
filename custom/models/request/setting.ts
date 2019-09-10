@@ -1,4 +1,4 @@
-import { ISettingPushNotification, ISettingSystem } from '../db/_index';
+import { ISettingPushNotification, ISettingSystem, ISettingACS } from '../db/_index';
 
 /**
  * Push Notification
@@ -46,3 +46,8 @@ export interface ISmtpTest {
     config?: ISmtp_Config;
     email: string;
 }
+
+/**
+ * ACS
+ */
+export interface IACSU extends ISettingACS {}
