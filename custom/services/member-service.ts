@@ -179,7 +179,8 @@ async createSipassCardHolder (inputFormData:any, user:User) {
                 pinDigit : inputFormData.pinDigit || 0,        
                 lastEditPerson : user.getUsername(),
                 lastEditTime : moment().format(),
-                permissionTable:inputFormData.permissionTable
+                permissionTable:inputFormData.permissionTable,
+                cardNumber:inputFormData.cardNumber||""
             };
             //console.log("member", JSON.stringify(member));
             return member;
