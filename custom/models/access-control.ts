@@ -491,7 +491,7 @@ export interface IAttendanceRecords {
     emp_id?: number,
     checksum?: string,
     archived?: number,
-    member?:Member,
+    member?:LinearMember,
     system?:number,
     door?:Door
 }
