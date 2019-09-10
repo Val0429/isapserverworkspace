@@ -55,6 +55,19 @@ action.put(
 
             user.set('roles', roles);
 
+            let userInfo: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
+                .equalTo('user', user)
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+
+            userInfo.setValue('roles', roles);
+
+            await userInfo.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+
             await user.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
             });

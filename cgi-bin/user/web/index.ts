@@ -204,8 +204,8 @@ action.get(
                     ? undefined
                     : value.getValue('floors').map<IResponse.IObject>((value1, index1, array1) => {
                           return {
-                              objectId: value.getValue('company').id,
-                              name: value.getValue('company').getValue('name'),
+                              objectId: value1.id,
+                              name: value1.getValue('name'),
                           };
                       });
 
