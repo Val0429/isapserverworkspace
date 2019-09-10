@@ -1,9 +1,10 @@
 import * as Rx from 'rxjs';
 import * as HttpClient from 'request';
 import {} from '../../models';
-import { Regex, Ws } from '../';
+import { Regex, Ws, Utility } from '../';
 import { Base } from './base';
 import { FRSCore } from './frs-service';
+import * as Enum from '../../enums';
 
 export class FRS {
     /**
@@ -297,6 +298,150 @@ export class FRS {
     }
 
     /**
+     * Verify Face
+     * @param buffer
+     * @param scale
+     * @param sessionId
+     */
+    public async VerifyFace(buffer: Buffer, scale: number): Promise<FRS.IVerifyFace>;
+    public async VerifyFace(buffer: Buffer, scale: number, sessionId: string): Promise<FRS.IVerifyFace>;
+    public async VerifyFace(buffer: Buffer, scale: number, sessionId?: string): Promise<FRS.IVerifyFace> {
+        try {
+            let url: string = `${this._baseUrl}/frs/cgi/verifyface`;
+
+            let urls: string[] = [`${this._baseWsUrl}/fcsrecognizedresult`, `${this._baseWsUrl}/fcsnonrecognizedresult`];
+
+            let sourceId: string = Utility.RandomText(20, { symbol: false });
+
+            let wss: Ws[] = [];
+
+            let result: FRS.IVerifyFace = await new Promise<FRS.IVerifyFace>(async (resolve, reject) => {
+                try {
+                    await Promise.all(
+                        urls.map(async (value, index, array) => {
+                            let ws = new Ws();
+                            ws.url = value;
+
+                            ws.message$.subscribe({
+                                next: (data) => {
+                                    try {
+                                        if ('type' in data) {
+                                            let result = data as FRSCore.RecognizedUser | FRSCore.UnRecognizedUser;
+
+                                            let camera: string = result.channel;
+                                            if (camera === sourceId) {
+                                                if (result.type === FRSCore.UserType.Recognized) {
+                                                    let name: string = result.person_info.fullname;
+                                                    let groups: FRS.IObject[] = result.person_info['group_list'].map((value, index, array) => {
+                                                        return {
+                                                            objectId: value.id,
+                                                            name: value.groupname,
+                                                        };
+                                                    });
+
+                                                    resolve({
+                                                        name: name,
+                                                        groups: groups,
+                                                    });
+                                                } else {
+                                                    resolve(undefined);
+                                                }
+                                            }
+                                        }
+                                    } catch (e) {
+                                        return reject(e);
+                                    }
+                                },
+                            });
+                            ws.error$.subscribe({
+                                next: (e) => {
+                                    return reject(e);
+                                },
+                            });
+
+                            await ws.Connect();
+
+                            wss.push(ws);
+                        }),
+                    );
+
+                    HttpClient.post(
+                        {
+                            url: url,
+                            json: true,
+                            body: {
+                                target_score: scale,
+                                request_client: 'test',
+                                action_enable: 0,
+                                source_id: sourceId,
+                                location: 'web',
+                                image: buffer.toString(Enum.EEncoding.base64),
+                            },
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.message.toLowerCase() !== 'ok') {
+                                return reject(body.message);
+                            }
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch(async (e) => {
+                await Promise.all(
+                    wss.map(async (value, index, array) => {
+                        await value.Close();
+                    }),
+                );
+
+                throw e;
+            });
+
+            await Promise.all(
+                wss.map(async (value, index, array) => {
+                    await value.Close();
+                }),
+            );
+
+            return result;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Verify Blacklist
+     * @param buffer
+     * @param scale
+     * @param sessionId
+     */
+    public async VerifyBlacklist(buffer: Buffer, scale: number): Promise<FRS.IVerifyFace>;
+    public async VerifyBlacklist(buffer: Buffer, scale: number, sessionId: string): Promise<FRS.IVerifyFace>;
+    public async VerifyBlacklist(buffer: Buffer, scale: number, sessionId?: string): Promise<FRS.IVerifyFace> {
+        try {
+            let face: FRS.IVerifyFace = await this.VerifyFace(buffer, scale, sessionId);
+            if (!face) {
+                return undefined;
+            }
+
+            let groups: string[] = face.groups.map((value, index, array) => {
+                return value.name.toLocaleLowerCase();
+            });
+            if (groups.indexOf('blacklist') > -1) {
+                return face;
+            }
+
+            return undefined;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Enable Live Subject
      * @param sessionId
      */
@@ -442,5 +587,13 @@ export namespace FRS {
         channelId: number;
         nvrId: number;
         rtspPath: string;
+    }
+
+    /**
+     *
+     */
+    export interface IVerifyFace {
+        name: string;
+        groups: IObject[];
     }
 }
