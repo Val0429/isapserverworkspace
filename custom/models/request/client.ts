@@ -20,3 +20,26 @@ export interface IFRSIndexU {
     account?: string;
     password?: string;
 }
+
+/**
+ * HikVision Index
+ */
+export interface IHikVisionIndexC {
+    floorId: string;
+    name: string;
+    protocol: 'http' | 'https';
+    ip: string;
+    port: number;
+    account: string;
+    password: string;
+}
+
+export interface IHikVisionIndexU {
+    objectId: string;
+    floorId?: string;
+    protocol?: 'http' | 'https';
+    ip?: string;
+    port?: number;
+    account?: string;
+    password?: string;
+}
