@@ -303,7 +303,7 @@ export class CCUREReader {
             }
     
             if (queryContent === QueryContent.ReportsNewUpdate) {
-                queryCmd += ` and Host_DT>''${this.getLastReportQueryTime()}''`;
+                queryCmd += ` and Host_DT>''${this.getLastReportQueryTime()}'' order by Host_DT`;
             }
     
             queryCmd += `')`;
