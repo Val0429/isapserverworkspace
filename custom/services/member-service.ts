@@ -102,14 +102,15 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             else tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue:inputFormData[field.name] || null});
           }
           let imageBase64 = await this.resizeImage(inputFormData.cardholderPortrait);
-          let wg= workGroupSelectItems.find(x=>x.get("groupid")== (inputFormData.personType || 1));
+          let wg= workGroupSelectItems.find(x=>x.get("groupid")== inputFormData.personType);
+          let defaultWg= workGroupSelectItems.find(x=>x.get("groupname")=="正職");
           let member:ICardholderObject = {        
               // master
               objectId: inputFormData.objectId,
               AccessRules: accessRules,
-              PrimaryWorkgroupId: wg ? wg.get("groupid") : 1,
-              ApbWorkgroupId: wg ? wg.get("groupid") : 1,
-              PrimaryWorkgroupName: wg? wg.get("groupname"):"正職",
+              PrimaryWorkgroupId: wg ? wg.get("groupid") : defaultWg.get("groupid"),
+              ApbWorkgroupId: wg ? wg.get("groupid") :  defaultWg.get("groupid"),
+              PrimaryWorkgroupName: wg? wg.get("groupname"): defaultWg.get("groupname"),
               EmployeeNumber: inputFormData.employeeNumber.toString(),
               LastName: inputFormData.chineseName || "_",
               FirstName: inputFormData.englishName || "-",
@@ -146,14 +147,15 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
         let dob= testDate(inputFormData.birthday, "T")||"";
         
-        
+        let defaultWg= workGroupSelectItems.find(x=>x.get("groupname")=="正職");
           let imageBase64 = await this.resizeImage(inputFormData.cardholderPortrait);
-          let wg= workGroupSelectItems.find(x=>x.get("groupid")==(inputFormData.personType || 1));
+          let wg= workGroupSelectItems.find(x=>x.get("groupid")==inputFormData.personType);
           let member:ILinearMember = {        
                 // master
                 objectId: inputFormData.objectId,
-                primaryWorkgroupId: wg ? wg.get("groupid") : 1,
-                primaryWorkgroupName: wg? wg.get("groupname"):"正職",
+                personType: wg ? wg.get("groupid") : defaultWg.get("groupid"),
+                primaryWorkgroupId: wg ? wg.get("groupid") : defaultWg.get("groupid"),
+                primaryWorkgroupName: wg? wg.get("groupname"):defaultWg.get("groupname"),
                 employeeNumber: inputFormData.employeeNumber,
                 chineseName: inputFormData.chineseName || "_",
                 englishName: inputFormData.englishName || "-",
@@ -166,7 +168,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
 
                 //new addition
                 void:inputFormData.void || false,
-                token: "-1",
+                token: inputFormData.token || "-1" ,
                 cardholderPortrait:imageBase64,
                 isImageChanged: inputFormData.isImageChanged,                
                 deviceNumber : inputFormData.deviceNumber||469,
