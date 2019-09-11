@@ -118,6 +118,9 @@ export class AttendanceRecord {
             .containedIn("readername", records.map(x => x["point_name"]))
             .find();
         for (let r of records) {
+            //skip this record
+            if(r["type"]!= 21 || r["state_id"] !=2)continue;
+            
             let dateTime = r["date_occurred"] + r["time_occurred"];
             r["date_time_occurred"] = moment(dateTime, 'YYYYMMDDHHmmss').toDate();
             r["system"] = 1;
