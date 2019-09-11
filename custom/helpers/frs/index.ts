@@ -442,6 +442,105 @@ export class FRS {
     }
 
     /**
+     * Add Person
+     * @param buffer
+     * @param scale
+     * @param sessionId
+     */
+    public async AddPerson(name: string, expired: Date, groups: FRS.IObject[], buffer: Buffer): Promise<string>;
+    public async AddPerson(name: string, expired: Date, groups: FRS.IObject[], buffer: Buffer, sessionId: string): Promise<string>;
+    public async AddPerson(name: string, expired: Date, groups: FRS.IObject[], buffer: Buffer, sessionId?: string): Promise<string> {
+        try {
+            let url: string = `${this._baseUrl}/persons`;
+
+            let result: string = await new Promise<string>((resolve, reject) => {
+                try {
+                    HttpClient.post(
+                        {
+                            url: url,
+                            json: true,
+                            body: {
+                                sessionId: sessionId || this.sessionId,
+                                image: buffer.toString(Enum.EEncoding.base64),
+                                person_info: {
+                                    fullname: name,
+                                    expiration_date: expired,
+                                    group_list: groups.map((n) => {
+                                        return {
+                                            id: n.objectId,
+                                            groupname: n.name,
+                                        };
+                                    }),
+                                },
+                            },
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.message.toLowerCase() !== 'ok') {
+                                return reject(body.message);
+                            }
+
+                            resolve(body['person_id']);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            return result;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Remove Person
+     * @param faceId
+     * @param sessionId
+     */
+    public async RemovePerson(personId: string): Promise<void>;
+    public async RemovePerson(personId: string, sessionId: string): Promise<void>;
+    public async RemovePerson(personId: string, sessionId?: string): Promise<void> {
+        try {
+            let url: string = `${this._baseUrl}/persons?sessionId=${encodeURIComponent(sessionId || this.sessionId)}&objectId=0&person_id=${personId}`;
+
+            let result: any = await new Promise<any>((resolve, reject) => {
+                try {
+                    HttpClient.del(
+                        {
+                            url: url,
+                            json: true,
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.message.toLowerCase() !== 'ok') {
+                                return reject(body.message);
+                            }
+
+                            resolve();
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Enable Live Subject
      * @param sessionId
      */
