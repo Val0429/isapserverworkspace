@@ -110,6 +110,7 @@ export * from './location-buildings';
 export * from './location-companies';
 export * from './location-floors';
 
+export * from './setting-acs-server';
 export * from './setting-acs';
 export * from './setting-email';
 export * from './setting-push-notification';

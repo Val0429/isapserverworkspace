@@ -9,6 +9,11 @@ class Service {
     /**
      *
      */
+    public acsServerSetting$: Rx.BehaviorSubject<IDB.ISettingACSServer> = new Rx.BehaviorSubject(undefined);
+
+    /**
+     *
+     */
     public acsSetting$: Rx.BehaviorSubject<IDB.ISettingACS> = new Rx.BehaviorSubject(undefined);
 
     /**
@@ -40,6 +45,14 @@ class Service {
      *
      */
     constructor() {
+        this.acsServerSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: async (x) => {
+                    await this.UpdateACSServerSetting();
+                },
+            });
+
         this.acsSetting$
             .filter((x) => !!x)
             .subscribe({
@@ -114,6 +127,7 @@ class Service {
         try {
             let tasks = [];
 
+            tasks.push(this.SearchACSServerSetting());
             tasks.push(this.SearchACSSetting());
             tasks.push(this.SearchEmailSetting());
             tasks.push(this.SearchPushNotificationSetting());
@@ -122,6 +136,32 @@ class Service {
             tasks.push(this.SearchTextMessageSetting());
 
             await Promise.all(tasks);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Search ACS Server Setting
+     */
+    private async SearchACSServerSetting(): Promise<void> {
+        try {
+            let setting: IDB.SettingACSServer = await new Parse.Query(IDB.SettingACSServer).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                this.acsServerSetting$.next({
+                    ip: '',
+                    port: 0,
+                    serviceId: '',
+                });
+            } else {
+                this.acsServerSetting$.next({
+                    ip: setting.getValue('ip'),
+                    port: setting.getValue('port'),
+                    serviceId: setting.getValue('serviceId'),
+                });
+            }
         } catch (e) {
             throw e;
         }
@@ -290,6 +330,32 @@ class Service {
                     sgsms: setting.getValue('sgsms'),
                 });
             }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Update ACS Server Setting
+     */
+    private async UpdateACSServerSetting(): Promise<void> {
+        try {
+            let value = this.acsServerSetting$.value;
+
+            let setting: IDB.SettingACSServer = await new Parse.Query(IDB.SettingACSServer).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                setting = new IDB.SettingACSServer();
+            }
+
+            setting.setValue('ip', value.ip);
+            setting.setValue('port', value.port);
+            setting.setValue('serviceId', value.serviceId);
+
+            await setting.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
         } catch (e) {
             throw e;
         }
