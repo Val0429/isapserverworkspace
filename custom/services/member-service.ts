@@ -12,10 +12,11 @@ export class MemberService {
     async resizeImage (base64Image:string) {
        if(!base64Image)return "";
        try{
-            let parts = base64Image.split(';');
-            let imageData = parts[1].split(',')[1];
+           console.log("image", base64Image.substring(0,50))
+            // let parts = base64Image.split(';');
+            // let imageData = parts[1].split(',')[1];
             
-            let img = new Buffer(imageData, 'base64');
+            let img = new Buffer(base64Image.indexOf(",")>-1 ? base64Image.substr(base64Image.indexOf(",")+1, base64Image.length) : base64Image, 'base64');
             let dimensions = sizeOf(img);
             console.log("originial size", dimensions.width, dimensions.height);
             let baseRatio = 300 / (dimensions.width > dimensions.height ? dimensions.width : dimensions.height) ;
@@ -156,12 +157,16 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
                 objectId: inputFormData.objectId,
                 primaryWorkgroupId: wg ? wg.get("groupid") : 1,
                 primaryWorkgroupName: wg? wg.get("groupname"):"正職",
-                employeeNumber: inputFormData.employeeNumber.toString(),
+                employeeNumber: inputFormData.employeeNumber,
                 chineseName: inputFormData.chineseName || "_",
                 englishName: inputFormData.englishName || "-",
                 endDate:moment(inputFormData.endDate || "2100-12-31T23:59:59+08:00").format(),
                 startDate:moment(inputFormData.startDate || now).format(),
                 status:inputFormData.status || ECardholderStatus.Valid,
+                phone:inputFormData.phone || "",
+                email:inputFormData.email || "",
+                extensionNumber:inputFormData.extensionNumber || "",
+
                 //new addition
                 void:inputFormData.void || false,
                 token: "-1",
