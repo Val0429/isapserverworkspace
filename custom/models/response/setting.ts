@@ -1,3 +1,4 @@
+import { IObject } from './_index';
 import { ISettingPushNotification, ISettingSystem, ISettingACS, ISettingSuntecApp, ISettingACSServer, ISettingFRS } from '../db/_index';
 
 /**
@@ -50,3 +51,12 @@ export interface IACSServerR extends ISettingACSServer {}
  * FRS
  */
 export interface IFRSR extends ISettingFRS {}
+
+/**
+ * ACS Group
+ */
+export interface IACSGroupR {
+    objectId: string;
+    building: IObject;
+    group: string;
+}

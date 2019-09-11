@@ -66,3 +66,16 @@ export interface IACSServerU extends ISettingACSServer {}
  * FRS
  */
 export interface IFRSU extends ISettingFRS {}
+
+/**
+ * ACS Group
+ */
+export interface IACSGroupC {
+    buildingId: string;
+    group: string;
+}
+
+export interface IACSGroupU {
+    objectId: string;
+    group?: string;
+}
