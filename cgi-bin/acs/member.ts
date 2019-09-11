@@ -53,7 +53,11 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let filter = data.parameters as any;
     filter.ShowEmptyCardNumber="true";
     let query = memberService.getMemberQuery(filter);
-    query.select(...memberFields);
+    let getMemberFields = Object.assign([],memberFields);
+    if(filter.showImage=="true"){
+        getMemberFields.push("cardholderPortrait");
+    }
+    query.select(...getMemberFields);
     query = Restful.Filter(query, data.inputType);
     /// 3) Output
     return Restful.Pagination(query, data.parameters);
