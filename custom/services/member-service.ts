@@ -203,7 +203,6 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         let credential = member.Credentials && member.Credentials.length>0 ?  member.Credentials[0]: {};
           
         newMember.cardNumber = (credential.CardNumber || "").toString();
-        newMember.cardAllNumber = (credential.CardNumber || "").toString();
         newMember.cardCertificate = (credential.ProfileId || 0).toString();
         newMember.deviceNumber = credential.FacilityCode || 0;
         newMember.pinDigit = credential.PinDigit|| 0;
@@ -395,7 +394,6 @@ export const memberFields = [
     "primaryWorkgroupName",
     "primaryWorkgroupId",
     "cardNumber",
-    "cardAllNumber",
     "cardCertificate",
     "isImageChanged",
     "deviceNumber",

@@ -196,7 +196,6 @@ export interface ILinearMember{
         primaryWorkgroupName?:string;
         primaryWorkgroupId?:number;
         cardNumber? :string;
-        cardAllNumber? :string;
         cardCertificate? :string;
         isImageChanged?:boolean;
         deviceNumber? :number ;
