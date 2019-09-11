@@ -39,16 +39,13 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
         let dob= testDate(inputFormData.birthday, "T");
           // AccessRules
-    let permissionTables = await new Parse.Query(PermissionTable)
-                        .containedIn("objectId", inputFormData.permissionTable)
-                        .limit(Number.MAX_SAFE_INTEGER).find();
     
     let accessRules=[];
-    for (let permission of permissionTables) {            
-        console.log("permission", ParseObject.toOutputJSON(permission));
-        //not in sipass or ccure
-        if(!permission)continue;
-        
+    for (let oPermission of inputFormData.permissionTable) {  
+        let permissionJson = ParseObject.toOutputJSON(oPermission);
+             
+        let permission = await new Parse.Query(PermissionTable).get(permissionJson.objectId)
+              
         let newRule = {
             ObjectName: permission.get("tablename"),
             ObjectToken:  permission.get("tableid").toString(),
@@ -330,6 +327,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             let member = await this.createSipassCardHolder(linearMember);
             member.Status = obj.get("status");
             member.Token, obj.get("token");
+            await siPassAdapter.putCardHolder(member);
             /// 2) Modify
             
             let update = new LinearMember(linearMember);
