@@ -303,7 +303,7 @@ export class CCUREReader {
             }
     
             if (queryContent === QueryContent.ReportsNewUpdate) {
-                queryCmd += ` and Host_DT>''${this.getLastReportQueryTime()}'' order by Host_DT`;
+                queryCmd += ` and Host_DT>''${this.getLastReportQueryTime()}''`;
             }
     
             queryCmd += `')`;
@@ -312,6 +312,11 @@ export class CCUREReader {
                 queryCmd = `select * from (${queryCmd}) temp where ${condition}`;
             }
     
+            if(queryContent == QueryContent.ReportsNewUpdate || queryContent == QueryContent.Reports || queryContent == QueryContent.Persons)
+            {
+                queryCmd = `${queryCmd} order by updateTime`;
+            }
+
             return queryCmd;
         }
         else{

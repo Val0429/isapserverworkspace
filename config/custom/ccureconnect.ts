@@ -5,6 +5,7 @@ let config: Config = {
 	"password": "manager",
 	"database": "master",
 	"connectionTimeout": 300000,
+	"requestTimeout": 300000,
     mdbpath: "",
     mdbpath2: ""
 };
