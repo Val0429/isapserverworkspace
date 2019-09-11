@@ -1,7 +1,6 @@
 import { Log } from './log';
-import * as delay from 'delay';
 
-import { Reader, Door, Floor, Elevator, Member, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, DoorGroup, CredentialProfiles, PermissionTableDoor, AccessLevelinSiPass } from '../../custom/models'
+import { Reader, Door, Floor, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, CredentialProfiles, PermissionTableDoor, AccessLevelinSiPass } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 
@@ -452,7 +451,6 @@ export class SyncService{
                         let obj = await new Parse.Query(TimeSchedule)
                                     .equalTo("timeid", +level["TimeScheduleToken"])
                                     .first();
-                        let tsid = obj.id;
 
                         let rs = [];
                         for (let idx1 = 0; idx1 < level["AccessRule"].length; idx1++) {

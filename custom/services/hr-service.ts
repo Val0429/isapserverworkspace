@@ -1,31 +1,25 @@
 import { Config } from 'core/config.gen';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as delay from 'delay';
 import { Log } from './log';
 
-import { ScheduleActionEmail } from 'core/scheduler-loader';
 
 import * as mongo from 'mongodb';
-import * as msSQL from 'mssql';
 
 import { HumanResourceAdapter } from './acs/HumanResourceAdapter';
 import { CCure800SqlAdapter } from './acs/CCure800SqlAdapter';
 import { SyncNotification, PermissionTable, ILinearMember, LinearMember } from './../models/access-control';
 import { vieMember } from '../../custom/models'
 
-import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
-import { ParseObject, Member } from 'core/cgi-package';
-import { stringify } from 'querystring';
+import { ParseObject } from 'core/cgi-package';
 import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import moment = require('moment');
 import MemberService, { testDate, memberFields } from './member-service';
-import { ICardholderObject, ECardholderStatus } from '../modules/acs/sipass/siPass_define';
+import { ECardholderStatus } from '../modules/acs/sipass/siPass_define';
 
 
 export class HRService {
     private waitTimer = null;
-    private startDelayTime: number = 1 // sec
     private checkCycleTime: number = 1200; // sec
 
     private mongoClient: mongo.MongoClient;
@@ -37,7 +31,6 @@ export class HRService {
     defaultPermission: string;
 
     constructor() {
-        var me = this;
 
         this.humanResource = new HumanResourceAdapter();
         this.CCure800SqlAdapter = new CCure800SqlAdapter();
@@ -390,33 +383,12 @@ export class HRService {
                     Log.Info(`${this.constructor.name}`, `6.1 send to ${rec}`);
                     var today = new Date();
                     let dd = today.toISOString().substring(0, 10);
-                    let msg = `Dear Sir<p>${dd}門禁系統人事資料同步更新通知<p>`;
                     if (memNew.length >= 1) {
-                        msg += `新增人員之資料共${memNew.length}筆，詳細資料如下：<br><br>
-                    <table border="0" width="600">
-                    <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>英文姓名</th></tr>`;
-                        msg += newMsg;
-                        msg += `</table><p>`;
                     }
                     if (memChange.length >= 1) {
-                        msg += `異動人員之資料共${memChange.length}筆，詳細資料如下：<br><br>
-                    <table border="0" width="600">
-                    <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>英文姓名 </th><th>異動項目</th></tr>`;
-                        msg += chgMsg;
-                        msg += `</table><p>`;
                     }
                     if (memOff.length >= 1) {
-                        msg += `離職人員之資料共${memOff.length}筆，詳細資料如下：<br><br>
-                    <table border="0" width="600">
-                    <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>離職日</th><th>英文姓名</th></tr>`;
-                        msg += chgMsg;
-                        msg += `</table>`;
                     }
-                    let result = await new ScheduleActionEmail().do({
-                        to: rec,
-                        subject: dd + " 門禁系統人事資料同步更新通知",
-                        body: msg
-                    });
                 }
             }
             catch (ex) {

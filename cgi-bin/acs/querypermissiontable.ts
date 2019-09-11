@@ -1,12 +1,8 @@
 import {
-    Action, Errors, Restful, ParseObject, TimeSchedule, Door, AccessLevel, Floor
-} from 'core/cgi-package';
+    Action, Restful, ParseObject} from 'core/cgi-package';
 
-import { IPermissionTable, PermissionTable, PermissionTableDoor } from '../../custom/models'
-import { siPassAdapter, cCureAdapter } from '../../custom/services/acsAdapter-Manager';
+import { PermissionTable } from '../../custom/models'
 
-import { Log } from 'workspace/custom/services/log';
-import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
 
 var action = new Action({
     loginRequired: true,

@@ -1,15 +1,11 @@
 import { Action, Errors, Restful, ParseObject} from 'core/cgi-package';
 
 
-import { IMember, Member, PermissionTable, ILinearMember, LinearMember } from '../../custom/models'
+import { ILinearMember, LinearMember } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
-import { ReportService } from 'workspace/custom/services/report-service';
 import { Log } from 'workspace/custom/services/log';
 import MemberService, { memberFields } from 'workspace/custom/services/member-service';
-import { ICardholderObject } from 'workspace/custom/modules/acs/sipass';
-import moment = require('moment');
-import { User } from 'parse';
 
 
 var action = new Action({

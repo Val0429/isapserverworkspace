@@ -1,6 +1,6 @@
 import { Log } from './log';
 
-import { AttendanceRecords, Member, Reader, Door, LinearMember, DailyAttendance } from 'workspace/custom/models/index';
+import { AttendanceRecords, Reader, Door, LinearMember, DailyAttendance } from 'workspace/custom/models/index';
 
 import { siPassAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
