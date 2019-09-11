@@ -43,7 +43,7 @@ interface IEntryPassStaffWorker {
 }
 
 export function CreateInstance(address: string, port: number, serviceID: string): EntryPassWorker {
-    return new EntryPassWorker(address, port , serviceID)
+    return new EntryPassWorker(address, port, serviceID)
 }
 
 class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
@@ -59,9 +59,8 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
 
     public async AddCard(staffInfo: EntryPassStaffInfo, cardInfo: EntryPassCardInfo): Promise<OperationReuslt> {
         let currentTrackID = await this.GetTrackID() as string
-        if (currentTrackID === "") {
-            console.log("Track ID is empty")
-            return { result: false, errorMessage: `Can't get track ID` } as OperationReuslt
+       if (currentTrackID.includes("error: ")) {
+            return { result: false, errorMessage: currentTrackID } as OperationReuslt
         }
 
         let req = request.GetAddCardRequest({
@@ -75,7 +74,6 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
 
         })
         if (req === "") {
-            console.log("Add card request is empty")
             return { result: false, errorMessage: `Can't get add card request string` } as OperationReuslt
         }
 
@@ -86,9 +84,8 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
 
     public async DeleteCard(staffInfo: EntryPassStaffInfo, cardInfo: EntryPassCardInfo): Promise<OperationReuslt> {
         let currentTrackID = await this.GetTrackID() as string
-        if (currentTrackID === "") {
-            console.log("Track ID is empty")
-            return { result: false, errorMessage: `Can't get track ID` } as OperationReuslt
+        if (currentTrackID.includes("error: ")) {
+            return { result: false, errorMessage: currentTrackID } as OperationReuslt
         }
 
         let req = request.GetRemoveCardRequest({
@@ -101,7 +98,6 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
             trackID: currentTrackID,
         })
         if (req === "") {
-            console.log("Remove card request is empty")
             return { result: false, errorMessage: `Can't get delete card request string` } as OperationReuslt
         }
         //console.log("Delete card req=" + req)
@@ -112,9 +108,8 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
 
     public async AddStaff(staffInfo: EntryPassStaffInfo): Promise<OperationReuslt> {
         let currentTrackID = await this.GetTrackID() as string
-        if (currentTrackID === "") {
-            console.log("Track ID is empty")
-            return { result: false, errorMessage: `Can't get track ID` } as OperationReuslt
+        if (currentTrackID.includes("error: ")) {
+            return { result: false, errorMessage: currentTrackID } as OperationReuslt
         }
 
         let req = request.GetAddStaffRequest({
@@ -123,7 +118,6 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
             trackID: currentTrackID
         })
         if (req === "") {
-            console.log("Add staff request is empty")
             return { result: false, errorMessage: `Can't get add staff request string` } as OperationReuslt
         }
 
@@ -138,9 +132,8 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
 
     public async DeleteStaff(staffInfo: EntryPassStaffInfo): Promise<OperationReuslt> {
         let currentTrackID = await this.GetTrackID() as string
-        if (currentTrackID === "") {
-            console.log("Track ID is empty")
-            return { result: false, errorMessage: `Can't get track ID` } as OperationReuslt
+        if (currentTrackID.includes("error: ")) {
+            return { result: false, errorMessage: currentTrackID } as OperationReuslt
         }
 
         let req = request.GetRemoveStaffRequest({
@@ -149,8 +142,26 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
             trackID: currentTrackID,
         })
         if (req === "") {
-            console.log("Remove staff request is empty")
-            return { result: false, errorMessage: `Can't get delete staff` } as OperationReuslt
+            return { result: false, errorMessage: `Can't get delete staff request string` } as OperationReuslt
+        }
+
+        let resp = await sender.SendSingleReqeust(this.address, this.port, req) as string
+        return response.ParseResponse(resp)
+    }
+
+    public async ModifyStaff(staffInfo: EntryPassStaffInfo): Promise<OperationReuslt> {
+        let currentTrackID = await this.GetTrackID() as string
+        if (currentTrackID.includes("error: ")) {
+            return { result: false, errorMessage: currentTrackID } as OperationReuslt
+        }
+
+        let req = request.GetModifyStaffRequest({
+            ...staffInfo,
+            serviceID: this.serviceID,
+            trackID: currentTrackID,
+        })
+        if (req === "") {
+            return { result: false, errorMessage: `Can't get modify staff request string` } as OperationReuslt
         }
 
         //console.log("rm staff req=" + req)
@@ -158,11 +169,23 @@ class EntryPassWorker implements IEntryPassCardWorker, IEntryPassStaffWorker {
         return response.ParseResponse(resp)
     }
 
-    private async GetTrackID() {
+    public async CheckServerStatus(): Promise<OperationReuslt> {
+        let result = await this.GetTrackID()
+        if (result.includes("error: ")) {
+            return { result: false, errorMessage: result } as OperationReuslt
+        } else {
+            return { result: true } as OperationReuslt
+        }
+    }
+
+    private async GetTrackID(): Promise<string> {
         let req = request.GetTrackRequest(this.serviceID)
         let resp = await sender.SendSingleReqeust(this.address, this.port, req) as string
-        let trackID = response.ParseTrackID(resp)
+        // If Connection error
+        if (resp.includes("error: ")) { return resp }
 
+        // Get correct response
+        let trackID = response.ParseTrackID(resp)
         return trackID
     }
 }

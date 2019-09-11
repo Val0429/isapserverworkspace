@@ -195,3 +195,47 @@ export function GetRemoveStaffRequest(staffInfo: EntryPassStaffInfoEx) {
     let xml = xmlbuilder.create(command, { headless: true }).end({ pretty: false })
     return xml + CRLF
 }
+
+export function GetModifyStaffRequest(staffInfo: EntryPassStaffInfoEx) {
+    let command = {
+        SERVICE: {
+            '@ID': staffInfo.serviceID,
+            TRACKID: {
+                '@ID': staffInfo.trackID,
+                COMMAND: {
+                    '@ID': 1,
+                    '@COMCODE': 'STAFF_MOD',
+                    STAFF_NAME: staffInfo.name,
+                    STAFF_NO: staffInfo.serialNumber,
+                    DEPARTMENT: staffInfo.department !== undefined ? staffInfo.department : "",
+                    JOB: staffInfo.job !== undefined ? staffInfo.job : "",
+                    DATE_OF_JOIN: staffInfo.dateOfJoin !== undefined ? staffInfo.dateOfJoin : getDateNow(),
+                    DATE_OF_BIRTH: staffInfo.dateOfBirth !== undefined ? staffInfo.dateOfBirth : "19700101",
+                    SHIFT: "",
+                    GENDER: 0,
+                    IC_NO: "",
+                    UDF_1: "",
+                    UDF_2: "",
+                    UDF_3: "",
+                    UDF_4: "",
+                    UDF_5: "",
+                    UDF_6: "",
+                    UDF_7: "",
+                    UDF_8: "",
+                    UDF_9: "",
+                    UDF_10: "",
+                    SHIFT_TYPE: 0,
+                    TA_LOGIN_NAME: "",
+                    TA_LOGIN_PASSWORD: "",
+                    IS_TA_ADMIN: 0,
+                    IS_SELF_AUTHORIZE: 0,
+                    PHOTO_FILE_NAME: "",
+                    IS_RESIGN: 0,
+                    DATE_OF_RESIGN: ""
+                }
+            }
+        }
+    }
+    let xml = xmlbuilder.create(command, { headless: true }).end({ pretty: false })
+    return xml + CRLF
+}
