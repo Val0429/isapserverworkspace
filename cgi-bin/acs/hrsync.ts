@@ -2,7 +2,6 @@ import {
     Action, Errors
 } from 'core/cgi-package';
 
-import {SyncService} from '../../custom/services/SyncService';
 import { HRService } from 'workspace/custom/services/hr-service';
 
 var action = new Action({
@@ -19,8 +18,6 @@ action.get<any, any>({}, async () => {
     
    try{
         let syncService = new HRService();
-        //await Promise.all([
-            let dt = new Date();
             await syncService.doSync();
         //]);
         

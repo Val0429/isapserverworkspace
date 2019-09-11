@@ -641,5 +641,3 @@ export class SyncService{
         await ParseObject.saveAll(parseObjects);
     }
 }
-
-export default new SyncService();
