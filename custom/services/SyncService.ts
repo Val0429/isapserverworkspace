@@ -617,7 +617,7 @@ export class SyncService{
         //console.log("Time Schedule", records);
         let parseObjects=[];
         for (const r of records) {
-            
+            if(!r["Token"] || !r["Name"])continue;
             Log.Info(`${this.constructor.name}`, `Import data SiPass TimeSchedule ${r["Name"]}-${r["Token"]}`);
             let obj = objects.find(x=>x.get("timeid") == parseInt(r["Token"]));
             if (!obj) {
