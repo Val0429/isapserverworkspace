@@ -300,7 +300,9 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             
     
             if(filter.PermissionTable){
-                query.containedIn("permissionTable", filter.PermissionTable.split(",").map(x=>x.toString()));
+                console.log("filter.permissiontable", filter.PermissionTable)
+                let permissionQuery = new Parse.Query(PermissionTable).containedIn("tablename", filter.PermissionTable.split(","));
+                query.matchesQuery("permissionTable", permissionQuery);
             } 
     
             if(filter.expired && filter.expired=="true"){
