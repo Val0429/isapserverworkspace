@@ -10,9 +10,9 @@ export interface ISignup
     AccessId: String;
     Email: String;
     FirstName: String;
-    LastName: String;
-    MobileNo: String;
-    Country: String;
+    MobileNo?: String;
+    CompanyName : String;
+    OfficeBuilding: String; 
 }
 
 export interface IRevoke
