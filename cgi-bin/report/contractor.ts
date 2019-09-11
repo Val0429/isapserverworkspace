@@ -45,6 +45,8 @@ action.post(async (data) => {
     let attendances = oAttendances.map(x=>ParseObject.toOutputJSON(x));
     
     for(let member of members){
+        if(member.startDate)member.startDate=moment(member.startDate).format("YYYY-MM-DD");
+        if(member.endDate)member.endDate=moment(member.endDate).format("YYYY-MM-DD");
         if(member.month1===undefined)member.month1=0;
         if(member.month2===undefined)member.month2=0;
         if(member.month3===undefined)member.month3=0;

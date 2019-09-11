@@ -47,6 +47,8 @@ action.post(async (data) => {
     for(let member of members){
         if(!member.inOutDailyCount)member.inOutDailyCount=0;
         let attendance = attendances.find(x=>x.member.objectId == member.objectId);
+        if(member.startDate)member.startDate=moment(member.startDate).format("YYYY-MM-DD");
+        if(member.endDate)member.endDate=moment(member.endDate).format("YYYY-MM-DD");
         if(!attendance)continue;        
         if(member.lastDateOccured !== attendance.dateOccurred){
             member.lastDateOccured = attendance.dateOccurred;
