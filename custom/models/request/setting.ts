@@ -1,4 +1,4 @@
-import { ISettingPushNotification, ISettingSystem, ISettingACS } from '../db/_index';
+import { ISettingPushNotification, ISettingSystem, ISettingACS, ISettingSuntecApp } from '../db/_index';
 
 /**
  * Push Notification
@@ -51,3 +51,8 @@ export interface ISmtpTest {
  * ACS
  */
 export interface IACSU extends ISettingACS {}
+
+/**
+ * Suntec App
+ */
+export interface ISuntecAppU extends ISettingSuntecApp {}

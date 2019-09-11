@@ -113,6 +113,7 @@ export * from './location-floors';
 export * from './setting-acs';
 export * from './setting-email';
 export * from './setting-push-notification';
+export * from './setting-suntec-app';
 export * from './setting-system';
 export * from './setting-text-message';
 

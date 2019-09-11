@@ -24,6 +24,11 @@ class Service {
     /**
      *
      */
+    public suntecAppSetting$: Rx.BehaviorSubject<IDB.ISettingSuntecApp> = new Rx.BehaviorSubject(undefined);
+
+    /**
+     *
+     */
     public systemSetting$: Rx.BehaviorSubject<IDB.ISettingSystem> = new Rx.BehaviorSubject(undefined);
 
     /**
@@ -56,6 +61,14 @@ class Service {
             .subscribe({
                 next: async (x) => {
                     await this.UpdatePushNotificationSetting();
+                },
+            });
+
+        this.suntecAppSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: async (x) => {
+                    await this.UpdateSuntecAppSetting();
                 },
             });
 
@@ -104,6 +117,7 @@ class Service {
             tasks.push(this.SearchACSSetting());
             tasks.push(this.SearchEmailSetting());
             tasks.push(this.SearchPushNotificationSetting());
+            tasks.push(this.SearchSuntecAppSetting());
             tasks.push(this.SearchSystemSetting());
             tasks.push(this.SearchTextMessageSetting());
 
@@ -200,6 +214,30 @@ class Service {
                     enable: setting.getValue('enable'),
                     fcm: setting.getValue('fcm'),
                     apn: setting.getValue('apn'),
+                });
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Search Suntec App Setting
+     */
+    private async SearchSuntecAppSetting(): Promise<void> {
+        try {
+            let setting: IDB.SettingSuntecApp = await new Parse.Query(IDB.SettingSuntecApp).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                this.suntecAppSetting$.next({
+                    host: 'staging.sunteccity.com.sg',
+                    token: 'C4556D83B7F96CF7E276F330F4F1FA05',
+                });
+            } else {
+                this.suntecAppSetting$.next({
+                    host: setting.getValue('host'),
+                    token: setting.getValue('token'),
                 });
             }
         } catch (e) {
@@ -327,6 +365,31 @@ class Service {
             setting.setValue('enable', value.enable);
             setting.setValue('fcm', value.fcm);
             setting.setValue('apn', value.apn);
+
+            await setting.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Update Suntec App Setting
+     */
+    private async UpdateSuntecAppSetting(): Promise<void> {
+        try {
+            let value = this.suntecAppSetting$.value;
+
+            let setting: IDB.SettingSuntecApp = await new Parse.Query(IDB.SettingSuntecApp).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                setting = new IDB.SettingSuntecApp();
+            }
+
+            setting.setValue('host', value.host);
+            setting.setValue('token', value.token);
 
             await setting.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
