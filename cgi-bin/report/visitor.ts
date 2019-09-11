@@ -1,4 +1,4 @@
-import { Action, Restful} from 'core/cgi-package';
+import { Action, Restful, ParseObject} from 'core/cgi-package';
 
 import { ReportService } from 'workspace/custom/services/report-service';
 import moment = require('moment');
@@ -14,40 +14,52 @@ var action = new Action({
 /********************************
  * R: get object
  ********************************/
-type InputR = Restful.InputR<any>;
-type OutputR = Restful.OutputR<any>;
-
-action.get(async (data) => {
-    let pageSize = 10000;
-
+action.post(async (data) => {
+    
     let reportService = new ReportService();
-    let attendances = await reportService.getAttendanceRecord(data.parameters as any, pageSize);
-    let results=[];
-    let i=0;
-    while(i<attendances.results.length){            
-        let item = attendances.results[i];
-        let item2 = attendances.results[i+1];
-        i+=2;
-        if(!item2 || !item.card_no)continue;
-        let newItem = Object.assign(item, {cardNumber:item.card_no});
-        newItem.date_time_occurred_end = item2.date_time_occurred;
-        newItem.at_id_end = item2.at_id;
-        let timeStart = moment(newItem.date_time_occurred);
-        let timeEnd = moment(newItem.date_time_occurred_end);
-        newItem.startTime = timeStart.format("HH:mm");
-        newItem.dateOccurred = timeStart.format("YYYY-MM-DD");
-        newItem.endTime = timeEnd.format("HH:mm");
-        newItem.workTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m]");
-        results.push(newItem);
-    }
+    let filter = data.parameters as any;
+    let pageSize = filter.paging.pageSize || 10;
+    let page = filter.paging.page || 1;
+    let fields = filter.selectedColumns.map(x=>"member."+x.key);
+    fields.push("attendanceStart.door.doorname");
+    fields.push("attendanceEnd.door.doorname");
+    fields.push("attendanceEnd.date_time_occurred");
+    fields.push("attendanceStart.date_time_occurred");
+    let dailyQuery = reportService.getDailyAttendanceQuery(filter, pageSize, (page-1)*pageSize);
+    console.log("filter", filter);    
+    dailyQuery.select(...fields);
+    let total = await dailyQuery.count();
+    let oData = await dailyQuery.find();
+    let results = oData.map(x=>ParseObject.toOutputJSON(x));
+    for(let item of results){
+        let start = item.attendanceStart;
+        let end = item.attendanceEnd;
+        let newMember = item.member;
+        delete(newMember.objectId);
+        
+        //merge fields
+        Object.assign(item, newMember);
+        item.at_id = start.door.doorname;
+        item.at_id_end = end.door.doorname;
 
+        let timeStart = moment(start.date_time_occurred);
+        let timeEnd = moment(end.date_time_occurred);
+        item.startTime = timeStart.format("HH:mm:ss");
+        item.dateOccurred = timeStart.format("YYYY-MM-DD");
+        item.endTime = timeEnd.format("HH:mm:ss");
+        item.workTime = moment.utc(timeEnd.diff(timeStart)).format("H[h ]m[m ]s[s]");
+        
+        delete(item.member);
+        delete(item.atendanceStart);
+        delete(item.atendanceEnd);
+    }
     /// 3) Output
     return {
         paging:{
             page:1,
             pageSize,
-            total:results.length,
-            totalPages:Math.ceil(results.length / pageSize)
+            total,
+            totalPages:Math.ceil(total / pageSize)
         },
         results
     };
