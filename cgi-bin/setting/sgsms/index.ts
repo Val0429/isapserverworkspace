@@ -68,7 +68,7 @@ action.put(
             try {
                 sgsms.Initialization();
             } catch (e) {
-                throw Errors.throw(Errors.CustomBadRequest, [e]);
+                throw Errors.throw(Errors.CustomBadRequest, [`sgsms: ${e}`]);
             }
 
             DataCenter.textMessageSetting$.next({

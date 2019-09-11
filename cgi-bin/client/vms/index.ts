@@ -40,13 +40,17 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate vms name']);
                         }
 
-                        await Login({
-                            protocol: value.protocol,
-                            ip: value.ip,
-                            port: value.port,
-                            account: value.account,
-                            password: value.password,
-                        });
+                        try {
+                            await Login({
+                                protocol: value.protocol,
+                                ip: value.ip,
+                                port: value.port,
+                                account: value.account,
+                                password: value.password,
+                            });
+                        } catch (e) {
+                            throw `vms: ${e}`;
+                        }
 
                         let vms: IDB.ClientVMS = await new Parse.Query(IDB.ClientVMS)
                             .equalTo('name', value.name)
@@ -219,13 +223,17 @@ action.put(
                             vms.setValue('password', value.password);
                         }
 
-                        await Login({
-                            protocol: vms.getValue('protocol'),
-                            ip: vms.getValue('ip'),
-                            port: vms.getValue('port'),
-                            account: vms.getValue('account'),
-                            password: vms.getValue('password'),
-                        });
+                        try {
+                            await Login({
+                                protocol: vms.getValue('protocol'),
+                                ip: vms.getValue('ip'),
+                                port: vms.getValue('port'),
+                                account: vms.getValue('account'),
+                                password: vms.getValue('password'),
+                            });
+                        } catch (e) {
+                            throw `vms: ${e}`;
+                        }
 
                         await vms.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -317,6 +325,6 @@ export async function Login(config: VMS.IConfig): Promise<VMS> {
 
         return vms;
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }

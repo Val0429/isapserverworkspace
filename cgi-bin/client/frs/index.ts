@@ -40,14 +40,18 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate frs name']);
                         }
 
-                        await Login({
-                            protocol: value.protocol,
-                            ip: value.ip,
-                            port: value.port,
-                            wsport: value.port,
-                            account: value.account,
-                            password: value.password,
-                        });
+                        try {
+                            await Login({
+                                protocol: value.protocol,
+                                ip: value.ip,
+                                port: value.port,
+                                wsport: value.port,
+                                account: value.account,
+                                password: value.password,
+                            });
+                        } catch (e) {
+                            throw `frs: ${e}`;
+                        }
 
                         let floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
                             .equalTo('objectId', value.floorId)
@@ -250,14 +254,18 @@ action.put(
                             frs.setValue('password', value.password);
                         }
 
-                        await Login({
-                            protocol: frs.getValue('protocol'),
-                            ip: frs.getValue('ip'),
-                            port: frs.getValue('port'),
-                            wsport: frs.getValue('port'),
-                            account: frs.getValue('account'),
-                            password: frs.getValue('password'),
-                        });
+                        try {
+                            await Login({
+                                protocol: frs.getValue('protocol'),
+                                ip: frs.getValue('ip'),
+                                port: frs.getValue('port'),
+                                wsport: frs.getValue('port'),
+                                account: frs.getValue('account'),
+                                password: frs.getValue('password'),
+                            });
+                        } catch (e) {
+                            throw `frs: ${e}`;
+                        }
 
                         await frs.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -349,7 +357,7 @@ export async function Login(config: FRS.IConfig): Promise<FRS> {
 
         return frs;
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }
 
@@ -365,7 +373,7 @@ export async function GetDeviceList(config: FRS.IConfig): Promise<FRS.IDevice[]>
 
         return devices;
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }
 

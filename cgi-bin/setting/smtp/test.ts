@@ -51,11 +51,15 @@ action.post(
                 };
             }
 
-            email.Initialization();
+            try {
+                email.Initialization();
 
-            let result = await email.Send('Test', 'Test message !!', {
-                tos: [_input.email],
-            });
+                let result = await email.Send('Test', 'Test message !!', {
+                    tos: [_input.email],
+                });
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [`smtp: ${e}`]);
+            }
 
             return new Date();
         } catch (e) {

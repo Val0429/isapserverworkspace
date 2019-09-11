@@ -49,9 +49,13 @@ action.post(
                 };
             }
 
-            sgsms.Initialization();
+            try {
+                sgsms.Initialization();
 
-            let result: string = await sgsms.Send('Test', 'Test message !!', _input.phone);
+                let result: string = await sgsms.Send('Test', 'Test message !!', _input.phone);
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [`sgsms: ${e}`]);
+            }
 
             return new Date();
         } catch (e) {

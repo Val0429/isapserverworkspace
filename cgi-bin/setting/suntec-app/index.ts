@@ -58,10 +58,14 @@ action.put(
             let _input: InputU = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            await Check({
-                host: _input.host,
-                token: _input.token,
-            });
+            try {
+                await Check({
+                    host: _input.host,
+                    token: _input.token,
+                });
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [`suntec app: ${e}`]);
+            }
 
             DataCenter.suntecAppSetting$.next({
                 host: _input.host,
@@ -101,6 +105,6 @@ export async function Check(config: { host: string; token: string }): Promise<vo
             }
         }
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }

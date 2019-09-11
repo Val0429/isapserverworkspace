@@ -53,11 +53,15 @@ action.put(
             let _input: InputU = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            await Check({
-                ip: _input.ip,
-                port: _input.port,
-                serviceId: _input.serviceId,
-            });
+            try {
+                await Check({
+                    ip: _input.ip,
+                    port: _input.port,
+                    serviceId: _input.serviceId,
+                });
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [`acs server: ${e}`]);
+            }
 
             DataCenter.acsServerSetting$.next({
                 ip: _input.ip,
@@ -100,6 +104,6 @@ export async function Check(config: { ip: string; port: number; serviceId: strin
             }
         }
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }

@@ -40,12 +40,16 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate hik vision name']);
                         }
 
-                        await GetDeviceStatus({
-                            ipAddress: value.ip,
-                            port: value.port.toString(),
-                            account: value.account,
-                            password: value.password,
-                        });
+                        try {
+                            await GetDeviceStatus({
+                                ipAddress: value.ip,
+                                port: value.port.toString(),
+                                account: value.account,
+                                password: value.password,
+                            });
+                        } catch (e) {
+                            throw `hikvision: ${e}`;
+                        }
 
                         let floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
                             .equalTo('objectId', value.floorId)
@@ -248,12 +252,16 @@ action.put(
                             hikVision.setValue('password', value.password);
                         }
 
-                        await GetDeviceStatus({
-                            ipAddress: hikVision.getValue('ip'),
-                            port: hikVision.getValue('port').toString(),
-                            account: hikVision.getValue('account'),
-                            password: hikVision.getValue('password'),
-                        });
+                        try {
+                            await GetDeviceStatus({
+                                ipAddress: hikVision.getValue('ip'),
+                                port: hikVision.getValue('port').toString(),
+                                account: hikVision.getValue('account'),
+                                password: hikVision.getValue('password'),
+                            });
+                        } catch (e) {
+                            throw `hikvision: ${e}`;
+                        }
 
                         await hikVision.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -347,7 +355,7 @@ export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.H
             throw result.errorMessage;
         }
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }
 
@@ -364,7 +372,7 @@ export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<v
             throw result.errorMessage;
         }
     } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+        throw e;
     }
 }
 
