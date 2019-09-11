@@ -90,8 +90,10 @@ export async function Check(config: { host: string; token: string }): Promise<vo
         });
 
         try {
+            let accessId: string = Utility.RandomText(10, { symbol: false, EN: false, en: false });
+
             await suntec.revoke({
-                AccessId: '9876432101',
+                AccessId: accessId,
             });
         } catch (e) {
             if (e !== 'AccessId is not exist') {
