@@ -46,21 +46,21 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     // 2) Filter data
     let filter = data.inputType.filter;
     filter.ShowEmptyCardNumber="true";
-    let fieldSelected = data.inputType.fieldSelected;
+    let fieldSelected = Object.assign([],data.inputType.fieldSelected);
     let extraHeader = data.inputType.extraHeader;
     let filename = `member_${moment().format("YYYYMMDD_HHmmss")}.xlsx`;
     /// 3) Output
     setTimeout(async ()=>{
     let memberService = new MemberService();
-    fieldSelected.push("permissionTable");
-    fieldSelected.push("permissionTable.tablename");
+    if(fieldSelected.find(x=>x=="permissionTable")) fieldSelected.push("permissionTable.tablename");
+
     let query = memberService.getMemberQuery(filter).limit( Number.MAX_SAFE_INTEGER)
                 .include("permissionTable")
                 .select(...fieldSelected);
     let oResults = await query.find();
     let results = oResults.map(x=>ParseObject.toOutputJSON(x));
         console.log("results",results.length);
-        doExport(filename, results, fieldSelected, extraHeader);
+        doExport(filename, results, data.inputType.fieldSelected, extraHeader);
     }, 1000);
     
     return {file:filename};
@@ -76,24 +76,10 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
         }
         exportList.push(extraHeader);
         for (let member of members){
-          let newMember:any = {};
-          for(let field of  fieldSelected){
-              newMember[field]=member[field];
-              if(field=="permissionTable"){
-                let permissions = [];
-                for(let perm of member.permissionTable){                    
-                    permissions.push(perm.tablename);
-                }
-                newMember.permissionTable = permissions.join(",");
-              }
-          }
-        //   let exist = stringExportList.find(x=>x==JSON.stringify(newMember));
-        //   if(!exist) {
-        //     stringExportList.push(JSON.stringify(newMember));
-            exportList.push(newMember);
-        //  }
-          
-          
+            if(member.permissionTable) member.permissionTable = member.permissionTable.map(x=>x.tablename).join(",");
+            delete(member.createdAt);
+            delete(member.updatedAt);
+            exportList.push(member);
         }
         //console.log("response", response)
         console.log("result2", exportList.length)
