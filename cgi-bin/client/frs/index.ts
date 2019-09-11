@@ -211,15 +211,6 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        await Login({
-                            protocol: value.protocol,
-                            ip: value.ip,
-                            port: value.port,
-                            wsport: value.port,
-                            account: value.account,
-                            password: value.password,
-                        });
-
                         let frs: IDB.ClientFRS = await new Parse.Query(IDB.ClientFRS)
                             .equalTo('objectId', value.objectId)
                             .first()
@@ -258,6 +249,15 @@ action.put(
                         if ('password' in value) {
                             frs.setValue('password', value.password);
                         }
+
+                        await Login({
+                            protocol: frs.getValue('protocol'),
+                            ip: frs.getValue('ip'),
+                            port: frs.getValue('port'),
+                            wsport: frs.getValue('port'),
+                            account: frs.getValue('account'),
+                            password: frs.getValue('password'),
+                        });
 
                         await frs.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;

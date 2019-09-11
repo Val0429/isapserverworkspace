@@ -209,13 +209,6 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        await GetDeviceStatus({
-                            ipAddress: value.ip,
-                            port: value.port.toString(),
-                            account: value.account,
-                            password: value.password,
-                        });
-
                         let hikVision: IDB.ClientHikVision = await new Parse.Query(IDB.ClientHikVision)
                             .equalTo('objectId', value.objectId)
                             .first()
@@ -254,6 +247,13 @@ action.put(
                         if ('password' in value) {
                             hikVision.setValue('password', value.password);
                         }
+
+                        await GetDeviceStatus({
+                            ipAddress: hikVision.getValue('ip'),
+                            port: hikVision.getValue('port').toString(),
+                            account: hikVision.getValue('account'),
+                            password: hikVision.getValue('password'),
+                        });
 
                         await hikVision.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;

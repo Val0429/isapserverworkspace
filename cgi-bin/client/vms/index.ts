@@ -193,14 +193,6 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        await Login({
-                            protocol: value.protocol,
-                            ip: value.ip,
-                            port: value.port,
-                            account: value.account,
-                            password: value.password,
-                        });
-
                         let vms: IDB.ClientVMS = await new Parse.Query(IDB.ClientVMS)
                             .equalTo('objectId', value.objectId)
                             .first()
@@ -226,6 +218,14 @@ action.put(
                         if ('password' in value) {
                             vms.setValue('password', value.password);
                         }
+
+                        await Login({
+                            protocol: vms.getValue('protocol'),
+                            ip: vms.getValue('ip'),
+                            port: vms.getValue('port'),
+                            account: vms.getValue('account'),
+                            password: vms.getValue('password'),
+                        });
 
                         await vms.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
