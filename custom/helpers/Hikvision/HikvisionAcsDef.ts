@@ -39,6 +39,14 @@ export interface I_CardParamCfg {
 	endTime:I_ValidPeriodTime
 }
 
+export interface I_UpdateCardParamCfg {
+	cardNo:string, //card No
+	employeeNo?:string, //employee no(user id)
+	name?:string, //name
+	beginTime?:I_ValidPeriodTime,
+	endTime?:I_ValidPeriodTime
+}
+
 
 export interface I_FaceParamCfg {
 	cardNo?:string, //card No
