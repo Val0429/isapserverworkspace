@@ -1,7 +1,8 @@
-import { Action, Restful} from 'core/cgi-package';
+import { Action, Restful, ParseObject} from 'core/cgi-package';
 
 import { ReportService } from 'workspace/custom/services/report-service';
 import moment = require('moment');
+import MemberService from 'workspace/custom/services/member-service';
 
 
 var action = new Action({
@@ -15,44 +16,60 @@ var action = new Action({
  * R: get object
  ********************************/
 
-action.get(async (data) => {
-    let pageSize = 10000;
-    let filter = data.parameters as any;
+action.post(async (data) => {
     let reportService = new ReportService();
-    let members = await reportService.getMemberRecord(filter, pageSize);
-    let results = members.results;
-    for(let member of results){
-        if(!member.month1)member.month1=0;
-        if(!member.month2)member.month2=0;
-        if(!member.month3)member.month3=0;
-    }      
+    let memberService = new MemberService();
+    let filter = data.parameters as any;
+    let pageSize = filter.paging.pageSize || 10;
+    let page = filter.paging.page || 1;
+    let fields = filter.selectedColumns.map(x=>x.key);
+    fields.push("objectId");
+    fields.push("dateOccurred");
+    fields.push("member.objectId");
+    fields.push("attendanceEnd.date_time_occurred");
+    fields.push("attendanceStart.date_time_occurred");
+    let dailyQuery = reportService.getDailyAttendanceQuery(filter, Number.MAX_SAFE_INTEGER, 0);
+    console.log("filter", filter);    
+    dailyQuery.select(...fields);
     
-    let attendances = await reportService.getAttendanceRecord(filter, pageSize);
-    let i=0;
-    while(i<attendances.results.length){            
-        let item = attendances.results[i];
-        let item2 = attendances.results[i+1];
-        i+=2;
-        let member = results.find(x=>x.objectId == item.memberObjectId);
-        if(!member || !item2)continue;        
-        let monthDifferent =  moment.utc(moment(filter.End).diff(moment(item.date_time_occurred))).month();
-        console.log("monthDifferent",monthDifferent);
-        if(member.lastDateOccured === item.date_occurred)continue;
-        member.lastDateOccured = item.date_occurred;
+    let memberQuery = memberService.getMemberQuery(filter)
+                        .select(...fields)
+                        .limit(pageSize)
+                        .skip((page-1)*pageSize);
+    dailyQuery.matchesQuery("member", memberQuery);
+
+    let oMembers = await memberQuery.find();
+    let total = await memberQuery.count();
+    let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
+    let oAttendances = await dailyQuery.find();
+    let attendances = oAttendances.map(x=>ParseObject.toOutputJSON(x));
+    
+    for(let member of members){
+        if(member.month1===undefined)member.month1=0;
+        if(member.month2===undefined)member.month2=0;
+        if(member.month3===undefined)member.month3=0;
+        let attendance = attendances.find(x=>x.member.objectId == member.objectId);
+        if(!attendance)continue;
+        let monthDifferent =  moment.utc(moment(filter.End).diff(moment(attendance.attendanceStart.date_time_occurred))).month();
+        console.log("monthDifferent",monthDifferent, member.lastDateOccured, attendance.dateOccurred);
+        if(member.lastDateOccured === attendance.dateOccurred)continue;
+        member.lastDateOccured = attendance.dateOccurred;
         if(monthDifferent==0)member.month1 +=1;
         if(monthDifferent==1)member.month2 +=1;
-        if(monthDifferent==2)member.month3 +=1;                
-        
-    }
+        if(monthDifferent==2)member.month3 +=1; 
+    }      
+    
+    
+  
     /// 3) Output
     return {
         paging:{
-            page:1,
+            page,
             pageSize,
-            total:results.length,
-            totalPages:Math.ceil(results.length / pageSize)
+            total,
+            totalPages:Math.ceil(total / pageSize)
         },
-        results
+        results:members
     };
 });
 
