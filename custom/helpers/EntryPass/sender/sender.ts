@@ -5,7 +5,7 @@ function ComposeErrorMessage(errorType: string): string{
 }
 
 export async function SendSingleReqeust(address: string, port: number, request: string): Promise<string> {
-    return await new Promise((resolve) => {
+    return await new Promise<string>((resolve) => {
         let client = new net.Socket()
         client.once("data", (data: string) => {
             //console.log("reiceved data=" + data);
