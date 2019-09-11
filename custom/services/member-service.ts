@@ -1,5 +1,4 @@
 import moment = require("moment");
-import { User } from "parse";
 import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
@@ -7,7 +6,6 @@ import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/
 
 import { ParseObject } from "helpers/cgi-helpers";
 import { CCure800SqlAdapter } from "./acs/CCure800SqlAdapter";
-import { Log } from "./log";
 import { siPassAdapter } from "./acsAdapter-Manager";
 
 export class MemberService {
@@ -15,7 +13,6 @@ export class MemberService {
        if(!base64Image)return "";
        try{
             let parts = base64Image.split(';');
-            let mimType = parts[0].split(':')[1];
             let imageData = parts[1].split(',')[1];
             
             let img = new Buffer(imageData, 'base64');
@@ -394,8 +391,6 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             update.set("status", obj.get("status"));
             update.set("token", obj.get("token"));
             
-            /// 4) to SiPass
-            let sipassUpdate= await siPassAdapter.putCardHolder(member);
             let cCure800SqlAdapter = new CCure800SqlAdapter();
             await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x => x.ObjectName));
             /// 5) to Monogo        
@@ -430,7 +425,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             let cardno = member.cardNumber;    
             console.log("checkCardNumber", cardno);
             if (cardno) {
-                let cnt = await new Parse.Query(Member).notEqualTo("status",1).equalTo("cardNumber", cardno).first();
+                let cnt = await new Parse.Query(LinearMember).notEqualTo("status",1).equalTo("cardNumber", cardno).first();
                 if (cnt && (!member.objectId || member.objectId != ParseObject.toOutputJSON(cnt).objectId)) {   
                     throw new Error(`Credentials.CardNumber is duplicate.`);
                 }
@@ -442,8 +437,6 @@ export default MemberService;
 export function testDate(date:string, splitter?:string){
     try{    
         if(!date)return null;
-        //we use it because moment doesn't throw error
-        let test = new Date(date);
         //error on date will return 'invalidDate'
         let dt = moment(date).format();         
         return splitter ? dt.split(splitter)[0] : dt;         
