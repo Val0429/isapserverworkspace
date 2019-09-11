@@ -66,6 +66,7 @@ action.put(
             DataCenter.acsSetting$.next({
                 staffCardRange: _input.staffCardRange,
                 visitorCardRange: _input.visitorCardRange,
+                isUseACSServer: _input.isUseACSServer,
             });
 
             return new Date();

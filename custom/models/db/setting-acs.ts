@@ -19,6 +19,11 @@ export interface ISettingACS {
      *
      */
     visitorCardRange: IRange;
+
+    /**
+     *
+     */
+    isUseACSServer: boolean;
 }
 
 @registerSubclass()

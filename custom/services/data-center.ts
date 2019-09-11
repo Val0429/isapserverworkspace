@@ -199,11 +199,13 @@ class Service {
                         min: 2185475001,
                         max: 2185500000,
                     },
+                    isUseACSServer: true,
                 });
             } else {
                 this.acsSetting$.next({
                     staffCardRange: setting.getValue('staffCardRange'),
                     visitorCardRange: setting.getValue('visitorCardRange'),
+                    isUseACSServer: setting.getValue('isUseACSServer'),
                 });
             }
         } catch (e) {
@@ -421,6 +423,7 @@ class Service {
 
             setting.setValue('staffCardRange', value.staffCardRange);
             setting.setValue('visitorCardRange', value.visitorCardRange);
+            setting.setValue('isUseACSServer', value.isUseACSServer);
 
             await setting.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
