@@ -19,14 +19,15 @@ export class ReportService{
         if (filter.CardNumber) {
             query.matches("cardNumber", new RegExp(filter.CardNumber), "i");
         }
-        if (filter.start) {
-            let start = new Date(filter.start);        
+        if (filter.Start) {
+            let start = new Date(filter.Start);        
             query.greaterThanOrEqualTo("dateOccurred", moment(start).format("YYYYMMDD"));
         }
-        if (filter.end) {
-            let end = new Date(filter.end);
+        if (filter.End) {
+            let end = new Date(filter.End);
             query.lessThanOrEqualTo("dateOccurred", moment(end).format("YYYYMMDD"));
         }
+        
         return query;
     }
     
