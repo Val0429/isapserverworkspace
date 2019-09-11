@@ -28,7 +28,7 @@ export class HRService {
     private humanResource: HumanResourceAdapter;
     private CCure800SqlAdapter: CCure800SqlAdapter;
     private LastUpdate = null;
-    defaultPermission: string;
+    defaultPermission: PermissionTable;
 
     constructor() {
 
@@ -74,12 +74,10 @@ export class HRService {
     }
 
     async doSync() {
-        let o = await new Parse.Query(PermissionTable)
+        this.defaultPermission = await new Parse.Query(PermissionTable)
             .equalTo("tablename", "NH-Employee")
             .equalTo("system", 0)
             .first();
-        let defaultPermission = ParseObject.toOutputJSON(o);
-        this.defaultPermission = defaultPermission.objectId;
         
         await this.CCure800SqlAdapter.clearMember();
         let memChange = [];
@@ -315,7 +313,7 @@ export class HRService {
         let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
         let startDate = testDate(record["EntDate"]) || moment().format();
         let newMember:ILinearMember = {
-            permissionTable: [this.defaultPermission as any],
+            permissionTable: [this.defaultPermission],
             primaryWorkgroupId:workgroupId,            
             employeeNumber: empNo,
             endDate,
