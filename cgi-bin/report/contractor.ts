@@ -36,9 +36,10 @@ action.post(async (data) => {
                         .select(...fields)
                         .limit(pageSize)
                         .skip((page-1)*pageSize);
-    dailyQuery.matchesQuery("member", memberQuery);
+    
 
     let oMembers = await memberQuery.find();
+    dailyQuery.containedIn("member", oMembers);
     let total = await memberQuery.count();
     let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
     let oAttendances = await dailyQuery.find();
