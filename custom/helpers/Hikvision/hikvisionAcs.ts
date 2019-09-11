@@ -5,6 +5,7 @@ import * as EventEmitter from 'events'
 
 
 let addon = require('./sdk/HikvisionAcsAddon');
+//let addon = require('bindings')('HikvisionAcsAddon');
 
 export class Hikvision {
     private _instance;
@@ -22,6 +23,10 @@ export class Hikvision {
 
     public createCardItem(data:AcsDataStructure.I_CardParamCfg) : AcsDataStructure.I_SdkResponse {
         return this._instance.createCardItem(data);
+    }
+
+    public updateCardItem(data:AcsDataStructure.I_UpdateCardParamCfg) : AcsDataStructure.I_SdkResponse {
+        return this._instance.updateCardItem(data);
     }
     
     public removeCardItem(data:string): AcsDataStructure.I_SdkResponse  {
