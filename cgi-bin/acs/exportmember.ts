@@ -1,9 +1,10 @@
 import { ReportService } from "workspace/custom/services/report-service";
-import { Restful, Action } from "core/cgi-package";
+import { Restful, Action, ParseObject } from "core/cgi-package";
 import { IMember, PermissionTable } from "core/events.gen";
 import * as XLSX from 'xlsx';
 import moment = require("moment");
 import { Log } from "workspace/custom/services/log";
+import MemberService from "workspace/custom/services/member-service";
 
 var action = new Action({
     loginRequired: true,
@@ -46,21 +47,26 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     let filter = data.inputType.filter;
     filter.ShowEmptyCardNumber="true";
     let fieldSelected = data.inputType.fieldSelected;
-    let storedPermissionOptions = data.inputType.storedPermissionOptions;
     let extraHeader = data.inputType.extraHeader;
     let filename = `member_${moment().format("YYYYMMDD_HHmmss")}.xlsx`;
     /// 3) Output
     setTimeout(async ()=>{
-    let reportService = new ReportService();
-    let {results, total} = await reportService.getMemberRecord(filter, Number.MAX_SAFE_INTEGER, 0);
-        console.log("results",total);
-        doExport(filename, results, fieldSelected,storedPermissionOptions,extraHeader);
+    let memberService = new MemberService();
+    fieldSelected.push("permissionTable");
+    fieldSelected.push("permissionTable.tablename");
+    let query = memberService.getMemberQuery(filter).limit( Number.MAX_SAFE_INTEGER)
+                .include("permissionTable")
+                .select(...fieldSelected);
+    let oResults = await query.find();
+    let results = oResults.map(x=>ParseObject.toOutputJSON(x));
+        console.log("results",results.length);
+        doExport(filename, results, fieldSelected, extraHeader);
     }, 1000);
     
     return {file:filename};
 });
 
- function doExport(filename:string, members:any[],fieldSelected:any[],storedPermissionOptions:any[],extraHeader:any){
+ function doExport(filename:string, members:any[],fieldSelected:any[],extraHeader:any){
     let exportList =[];
     //let stringExportList =[];
         let headers=[];
@@ -75,10 +81,8 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
               newMember[field]=member[field];
               if(field=="permissionTable"){
                 let permissions = [];
-                for(let perm of member.permissionTable){
-                    let permissiontable = storedPermissionOptions.find(x=> x.value == perm.toString());
-                    if(!permissiontable)continue;
-                    permissions.push(permissiontable.text);
+                for(let perm of member.permissionTable){                    
+                    permissions.push(perm.tablename);
                 }
                 newMember.permissionTable = permissions.join(",");
               }
