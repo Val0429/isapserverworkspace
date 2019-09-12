@@ -110,7 +110,17 @@ action.get(
             let query: Parse.Query<IDB.SettingACSGroup> = new Parse.Query(IDB.SettingACSGroup);
 
             if ('objectId' in _input) {
-                query.equalTo('objectId', _input.objectId);
+                let building: IDB.LocationBuildings = await new Parse.Query(IDB.LocationBuildings)
+                    .equalTo('objectId', _input.objectId)
+                    .first()
+                    .fail((e) => {
+                        throw e;
+                    });
+                if (!building) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
+                }
+
+                query.equalTo('building', building);
             }
 
             let total: number = await query.count().fail((e) => {
@@ -187,8 +197,18 @@ action.put(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let group: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
+                        let building: IDB.LocationBuildings = await new Parse.Query(IDB.LocationBuildings)
                             .equalTo('objectId', value.objectId)
+                            .first()
+                            .fail((e) => {
+                                throw e;
+                            });
+                        if (!building) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
+                        }
+
+                        let group: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
+                            .equalTo('building', building)
                             .first()
                             .fail((e) => {
                                 throw e;
