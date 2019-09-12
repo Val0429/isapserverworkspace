@@ -112,6 +112,8 @@ export * from './location-buildings';
 export * from './location-companies';
 export * from './location-floors';
 
+export * from './notify-person-blacklist';
+
 export * from './person-staff-blacklist-orignial';
 export * from './person-staff-blacklist';
 
