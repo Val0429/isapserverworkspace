@@ -56,7 +56,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         };
         accessRules.push(newRule);
     }
-          console.log("dob", dob);
+          console.log("accessRules", accessRules);
           let tempPersonalDetails: any = {
                 Address: "",
                 ContactDetails: {
@@ -165,7 +165,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
                 phone:inputFormData.phone || "",
                 email:inputFormData.email || "",
                 extensionNumber:inputFormData.extensionNumber || "",
-
+                pin:inputFormData.pin||"",
                 //new addition
                 void:inputFormData.void || false,
                 token: inputFormData.token || "-1" ,
@@ -301,13 +301,6 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             else if(!filter.ShowEmptyCardNumber) query.exists("cardNumber").notEqualTo("cardNumber", "");
             
             if(filter.CardNumbers) query.containedIn("cardNumber", filter.CardNumbers.split(","));
-            
-    
-            if(filter.PermissionTable){
-                console.log("filter.permissiontable", filter.PermissionTable)
-                let permissionQuery = new Parse.Query(PermissionTable).containedIn("tablename", filter.PermissionTable.split(","));
-                query.matchesQuery("permissionTable", permissionQuery);
-            } 
     
             if(filter.expired && filter.expired=="true"){
                 query.lessThanOrEqualTo("resignationDate", (new Date()).toISOString());
