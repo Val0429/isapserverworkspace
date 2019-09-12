@@ -364,8 +364,10 @@ export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.H
  * @param config
  */
 export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<void> {
+    let hikVision: HikVision.Hikvision = undefined;
+
     try {
-        let hikVision = await Login(config);
+        hikVision = await Login(config);
 
         let result = hikVision.checkDeviceStatus();
         if (!result.result) {
@@ -373,6 +375,10 @@ export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<v
         }
     } catch (e) {
         throw e;
+    } finally {
+        if (!!hikVision) {
+            hikVision.disposeInstance();
+        }
     }
 }
 
