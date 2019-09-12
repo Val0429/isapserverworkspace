@@ -1,7 +1,8 @@
 import {
     Action, Restful, ParseObject} from 'core/cgi-package';
 
-import { PermissionTable } from '../../custom/models'
+import { PermissionTable, PermissionTableDoor, Door } from '../../custom/models'
+import MemberService from 'workspace/custom/services/member-service';
 
 
 var action = new Action({
@@ -22,6 +23,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     let pageSize = +paging.pageSize;
     /// 1) Make Query
     var query = new Parse.Query(PermissionTable)
+                .equalTo("system", 800)
                 .ascending("tablename");
     
     let filter = data.parameters as any;
@@ -30,25 +32,37 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     }
     let total = await query.count();
     let oCcurePermTables = await query.limit(pageSize).skip((page-1)*pageSize).find();
+    let results = oCcurePermTables.map(x=>ParseObject.toOutputJSON(x));
+    let ccureQuery = new Parse.Query(PermissionTable).containedIn("tablename", results.map(x=>x.tablename));
+    let memberService = new MemberService();
+    let oMembers = await memberService.getMemberQuery({})
+                        .include("permissionTable")
+                        .exists("permissionTable")
+                        .select("employeeNumber","department","costCenter", "chineseName", "englishName", "cardNumber","permissionTable.tablename")
+                        .matchesQuery("permissionTable", ccureQuery)
+                        .limit(Number.MAX_SAFE_INTEGER)
+                        .find();
+    let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
+    let oCcureTables = await ccureQuery.find();
+    let ccureTables = oCcureTables.map(x=>ParseObject.toOutputJSON(x));
+    let oTableDoors = await new Parse.Query(PermissionTableDoor).containedIn("permissionTableId", ccureTables.map(x=>x.tableid)).find();
     
-    let oSipassPermTables = await new Parse.Query(PermissionTable)                           
-                .include("accesslevels.door")
-                .include("accesslevels.doorgroup.doors")
-            .equalTo("system", 0)
-            .containedIn("tablename", oCcurePermTables.map(x=>x.get("tablename")) )
-            .find();
-    let sipassPermTables = oSipassPermTables.map(x=>ParseObject.toOutputJSON(x));
-    let results=[];
-    for(let item of oCcurePermTables){
-        let perm = ParseObject.toOutputJSON(item);
-        let sipass = sipassPermTables.find(x=>x.tablename==perm.tablename)
-        if(sipass){
-            perm.tableid = sipass.tableid;
-            perm.accesslevels = sipass.accesslevels;
-        }
-        results.push(perm);
+    let tableDoors = oTableDoors.map(x=>ParseObject.toOutputJSON(x));
+    for(let result of results){
+        result.doors=[];
+        result.members = members.filter(x=>x.permissionTable.find(x=>x.tablename == result.tablename));
+        
+        let ccureTable = ccureTables.find(x=>x.tablename==result.tablename);
+        if(!ccureTable)continue;
+        
+        let tableDoor = tableDoors.find(x=>x.tableid== ccureTable.permissionTableId );
+        if(!tableDoor)continue;
+        
+        let doors = await new Parse.Query(Door).containedIn("doorid", tableDoor.doorId).find();
+        result.doors=doors.map(x=>ParseObject.toOutputJSON(x))
     }
-     
+
+    
     /// 3) Output
     return {
         paging:{
