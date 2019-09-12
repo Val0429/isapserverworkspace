@@ -102,6 +102,8 @@ export abstract class TreeNotice<T> extends Tree<T> {
     }
 }
 
+export * from './acs-card';
+
 export * from './client-frs';
 export * from './client-hikvision';
 export * from './client-vms';
