@@ -6,6 +6,8 @@ import * as Enum from '../enums';
 import * as Main from '../../main';
 
 class Service {
+    public ready$: Rx.Subject<{}> = new Rx.Subject();
+
     /**
      *
      */
@@ -127,8 +129,9 @@ class Service {
     private async Initialization(): Promise<void> {
         try {
             await this.Search();
+
+            this.ready$.next();
         } catch (e) {
-            console.log(e);
             Print.Log(e, new Error(), 'error');
         }
     }
