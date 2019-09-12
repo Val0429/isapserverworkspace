@@ -96,6 +96,7 @@ export namespace Db {
         roleLists: RoleList[];
         roles: IResponse.IObject[];
         info: IDB.UserInfo;
+        company: IDB.LocationCompanies;
     }
 
     /**
@@ -107,6 +108,7 @@ export namespace Db {
         try {
             let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
                 .equalTo('user', user)
+                .include(['company'])
                 .first()
                 .fail((e) => {
                     throw e;
@@ -138,10 +140,13 @@ export namespace Db {
                 throw e;
             });
 
+            let company: IDB.LocationCompanies = roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1 ? undefined : info.getValue('company');
+
             return {
                 roleLists: roleLists,
                 roles: roles,
                 info: info,
+                company: company,
             };
         } catch (e) {
             throw e;

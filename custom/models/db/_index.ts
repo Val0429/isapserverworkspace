@@ -110,6 +110,9 @@ export * from './location-buildings';
 export * from './location-companies';
 export * from './location-floors';
 
+export * from './person-staff-blacklist-orignial';
+export * from './person-staff-blacklist';
+
 export * from './setting-acs-group';
 export * from './setting-acs-server';
 export * from './setting-acs';
