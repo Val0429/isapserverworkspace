@@ -643,8 +643,8 @@ export async function HikVisionLogin(config: HikVision.I_DeviceInfo): Promise<Hi
  */
 export function GetHikVisionDate(date: Date): HikVision.I_ValidPeriodTime {
     try {
-        date = new Date(date || new Date(3000, 0, 1, 0, 0, 0, 0));
-
+        date = new Date(date || new Date(2035, 0, 1, 0, 0, 0, 0));
+        20;
         let hikVisionDate: HikVision.I_ValidPeriodTime = {
             year: DateTime.ToString(date, 'YYYY'),
             month: DateTime.ToString(date, 'MM'),

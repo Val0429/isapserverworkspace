@@ -415,7 +415,7 @@ export async function AddBlacklist(name: string, buffer: Buffer, config: FRS.ICo
             throw 'group blacklist not found';
         }
 
-        let personId: string = await frs.AddPerson(name, new Date(3000, 0, 1, 0, 0, 0, 0), [blacklist], buffer);
+        let personId: string = await frs.AddPerson(name, new Date(2035, 0, 1, 0, 0, 0, 0), [blacklist], buffer);
 
         return personId;
     } catch (e) {
