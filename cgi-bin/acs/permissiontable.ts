@@ -297,6 +297,26 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             }    
             
         }
+        if(accesslevel.type=="elevatorGroup"){
+            
+            if(!accesslevel.elevatorgroup || !accesslevel.floor || !accesslevel.timeschedule)continue;
+            
+            //compare content with ccure floor name and timename            
+            let { floorIsInCCure, floor } = getCCureFloor(accesslevel.floor);            
+            
+            if(!floorIsInCCure) continue;
+            acsAcessLevels.push(accesslevel);
+            if (!ccureClearance) {
+                errors.push({ type: clearanceIsNotInCCure });
+            }
+            else {
+                let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.elevator.name == accesslevel.elevatorgroup.groupname && 
+                                x.timespec == accesslevel.timeschedule.timename && x.floor && x.floor.type=="floor" && x.floor.name == floor.floorname);
+                if (!exists)
+                    errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: accesslevel.timeschedule.timename });
+            } 
+            
+        }
     }
     return {ccureClearance, acsAcessLevels, errors};
 
@@ -342,7 +362,7 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
             }            
         }
 
-        if(accessRule.type=="elevatorFloor" && accessRule.floor.type=="floor"){
+        if(accessRule.type=="elevatorFloor" && accessRule.elevator.type== "elevator" && accessRule.floor.type=="floor"){
                 let isActive = accessRule.floor.name && accessRule.floor.name.length>2 && accessRule.floor.name.substring(0,2) != "D_";
                 if(!isActive) continue;
 
@@ -352,15 +372,27 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
                 if (!exists)
                     errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${accessRule.floor.name}`, timename: accessRule.timespec });
         }
-        if(accessRule.type=="elevatorFloor" && accessRule.floor.type=="floorGroup"){
-            for(let floor of accessRule.floor.floors){
+        if(accessRule.type=="elevatorFloor" && accessRule.elevator.type== "elevator" && accessRule.floor.type=="floorGroup"){
+            
+            for(let floor of accessRule.floor.floors){                
                 let isActive = floor.name.length>2 && floor.name.substring(0,2)!="D_";
-                if(!isActive) continue;
+                if(!isActive) continue;                
                 let exists = acsAccessLevels.find(x => x.type == "floorGroup" && x.elevator.elevatorname == accessRule.elevator.name &&
                             accessRule.timespec == x.timeschedule.timename && x.floorgroup.floors.find(y=>floor.name==(y.floorname.substring(0,2)!="A_" ? y.floorname: y.floorname.substring(2, y.floorname.length))));
+                
+                 if(!exists)  errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${floor.name}`, timename: accessRule.timespec });
+            }            
+        }
+        if(accessRule.type=="elevatorFloor" && accessRule.elevator.type== "elevatorGroup" && accessRule.floor.type=="floor"){
+            
+            let isActive = accessRule.floor.name && accessRule.floor.name.length>2 && accessRule.floor.name.substring(0,2) != "D_";
+                if(!isActive) continue;
+                
+                let exists = acsAccessLevels.find(x => x.type == "elevatorGroup" && x.elevatorgroup.groupname == accessRule.elevator.name &&
+                            accessRule.timespec == x.timeschedule.timename && 
+                            (x.floor.floorname.substring(0,2)!="A_" ? x.floor.floorname: x.floor.floorname.substring(2, x.floor.floorname.length)) == accessRule.floor.name);
                 if (!exists)
-                    errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${floor.name}`, timename: accessRule.timespec });
-            }
+                    errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${accessRule.floor.name}`, timename: accessRule.timespec });          
         }
     }
 
