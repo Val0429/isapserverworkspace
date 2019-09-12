@@ -118,6 +118,8 @@ export * from './notify-person-blacklist';
 
 export * from './person-staff-blacklist-orignial';
 export * from './person-staff-blacklist';
+export * from './person-staff-orignial';
+export * from './person-staff';
 
 export * from './setting-acs-group';
 export * from './setting-acs-server';

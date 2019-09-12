@@ -12,3 +12,25 @@ export interface IStaffBlacklistIndexR {
     nric: string;
     remark: string;
 }
+
+/**
+ * Staff
+ */
+export interface IStaffIndexR {
+    objectId: string;
+    card: number;
+    imageBase64: string;
+    company: IObject;
+    isUseSuntecReward: boolean;
+    permissionFloors: IObject[];
+    permissionCompany: IObject;
+    unitNumber: string;
+    name: string;
+    email: string;
+    nric: string;
+    position: string;
+    phone: string;
+    remark: string;
+    startDate: Date;
+    endDate: Date;
+}
