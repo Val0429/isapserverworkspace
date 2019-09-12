@@ -21,6 +21,10 @@ action.post(async (data) => {
     let pageSize = filter.paging.pageSize || 10;
     let page = filter.paging.page || 1;
     let fields = filter.selectedColumns.map(x=>x.key);
+    if(fields.find(x=>x=="permissionName")){
+        fields.splice(fields.indexOf("permissionName"),1);
+        fields.push("permissionTable.tablename")
+    }
     fields.push("permissionTable.accesslevels.door.doorname");
     fields.push("permissionTable.accesslevels.doorgroup.groupname");
     fields.push("permissionTable.accesslevels.timeschedule.timename");
