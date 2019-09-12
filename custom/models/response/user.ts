@@ -32,6 +32,8 @@ export interface IWebLoginuser {
     phone: string;
     remark: string;
     webLestUseDate: Date;
+    company: IObject;
+    floors: IObject[];
 }
 
 export interface IWebLogin {

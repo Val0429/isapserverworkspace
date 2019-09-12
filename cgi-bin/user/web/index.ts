@@ -76,7 +76,7 @@ action.post(
                         if (!Regex.IsEmail(value.email)) {
                             throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
                         }
-                        if (value.phone && !Regex.IsInternationalPhone(value.phone)) {
+                        if (value.phone && (!Regex.IsNum(value.phone) || Regex.IsInternationalPhone(value.phone))) {
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
