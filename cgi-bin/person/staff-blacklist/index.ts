@@ -60,15 +60,20 @@ action.post(
 
                         let buffer: Buffer = Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64);
 
-                        let frsSetting = DataCenter.frsSetting$.value;
-                        let personId: string = await AddBlacklist(value.name, buffer, {
-                            protocol: frsSetting.protocol,
-                            ip: frsSetting.ip,
-                            port: frsSetting.port,
-                            wsport: frsSetting.port,
-                            account: frsSetting.account,
-                            password: frsSetting.password,
-                        });
+                        let personId: string = '';
+                        try {
+                            let frsSetting = DataCenter.frsSetting$.value;
+                            personId = await AddBlacklist(value.name, buffer, {
+                                protocol: frsSetting.protocol,
+                                ip: frsSetting.ip,
+                                port: frsSetting.port,
+                                wsport: frsSetting.port,
+                                account: frsSetting.account,
+                                password: frsSetting.password,
+                            });
+                        } catch (e) {
+                            throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
+                        }
 
                         let orignal: IDB.PersonStaffBlacklistOrignial = new IDB.PersonStaffBlacklistOrignial();
 
@@ -334,15 +339,19 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['blacklist not found']);
                         }
 
-                        let frsSetting = DataCenter.frsSetting$.value;
-                        await RemoveBlacklist(person.getValue('personId'), {
-                            protocol: frsSetting.protocol,
-                            ip: frsSetting.ip,
-                            port: frsSetting.port,
-                            wsport: frsSetting.port,
-                            account: frsSetting.account,
-                            password: frsSetting.password,
-                        });
+                        try {
+                            let frsSetting = DataCenter.frsSetting$.value;
+                            await RemoveBlacklist(person.getValue('personId'), {
+                                protocol: frsSetting.protocol,
+                                ip: frsSetting.ip,
+                                port: frsSetting.port,
+                                wsport: frsSetting.port,
+                                account: frsSetting.account,
+                                password: frsSetting.password,
+                            });
+                        } catch (e) {
+                            throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
+                        }
 
                         let organization: IDB.PersonStaffBlacklistOrignial = person.getValue('imageOrignial');
 
