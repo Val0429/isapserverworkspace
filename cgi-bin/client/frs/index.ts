@@ -170,7 +170,7 @@ action.get(
 
             if ('objectId' in _input) {
                 if (results.length === 0) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
+                    throw Errors.throw(Errors.CustomBadRequest, ['frs not found']);
                 }
 
                 return results[0];
