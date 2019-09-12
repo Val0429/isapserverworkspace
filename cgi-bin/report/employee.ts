@@ -43,7 +43,8 @@ action.post(async (data) => {
     
     for(let member of members){
         for(let table of member.permissionTable){            
-            let newMember = Object.assign({},member);            
+            let newMember = Object.assign({},member); 
+            delete(newMember.permissionTable);           
             for(let access of table.accesslevels){
                 newMember.permissionName = table.tablename;
                 newMember.timeSchedule = access.timeschedule.timename;
@@ -55,6 +56,7 @@ action.post(async (data) => {
             }
             
         }
+        
     }
     /// 3) Output
     return {

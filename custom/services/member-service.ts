@@ -1,5 +1,5 @@
 import moment = require("moment");
-import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member } from "../models/access-control";
+import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member, Door, AccessLevel, DoorGroup } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
 import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/acs/sipass/siPass_define";
@@ -271,16 +271,16 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             if (filter.eEmployeeNumber) query.equalTo("employeeNumber",  filter.eEmployeeNumber);
             if (filter.eCardNumber) query.equalTo("cardNumber", filter.eCardNumber);
             if (filter.start2) {
-                query.greaterThanOrEqualTo("endDate", filter.start2);
+                query.greaterThanOrEqualTo("endDate", moment(filter.start2).format("YYYY-MM-DDT00:00:00"));
             }
             if(filter.end2){
-                query.lessThanOrEqualTo("endDate", filter.end2)
+                query.lessThanOrEqualTo("endDate", moment(filter.end2).format("YYYY-MM-DDT23:55:59"));
             }
             if (filter.start1) {
-                query.greaterThanOrEqualTo("startDate", filter.start1);
+                query.greaterThanOrEqualTo("startDate", moment(filter.start1).format("YYYY-MM-DDT00:00:00"));
             }
             if(filter.end1){
-                query.lessThanOrEqualTo("startDate", filter.end1);
+                query.lessThanOrEqualTo("startDate", moment(filter.end1).format("YYYY-MM-DDT23:55:59"));
             }
             if(filter.LastName) query.matches("chineseName", new RegExp(filter.LastName), "i");
             if(filter.FirstName) query.matches("englishName", new RegExp(filter.FirstName), "i");    
@@ -309,6 +309,20 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             if(filter.PersonType){
                 //console.log("personTpye", filter.PersonType);
                 query.equalTo("primaryWorkgroupId", +filter.PersonType);
+            }
+            if(filter.doorname){
+                
+                let doorQuery = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname),"i");
+                let alQuery = new Parse.Query(AccessLevel).matchesQuery("door", doorQuery);
+                let permTableQuery = new Parse.Query(PermissionTable).matchesQuery("accesslevels", alQuery);
+                query.matchesQuery("permissionTable", permTableQuery);
+            }
+            if(filter.doorgroupname){
+                
+                let doorGroupQuery = new Parse.Query(DoorGroup).matches("groupname", new RegExp(filter.doorgroupname),"i");
+                let alQuery = new Parse.Query(AccessLevel).matchesQuery("doorgroup", doorGroupQuery);
+                let permTableQuery = new Parse.Query(PermissionTable).matchesQuery("accesslevels", alQuery);
+                query.matchesQuery("permissionTable", permTableQuery);
             }
             return query;
         }

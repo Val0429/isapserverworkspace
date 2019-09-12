@@ -39,12 +39,15 @@ action.post(async (data) => {
     let members = oMember.map(x=>ParseObject.toOutputJSON(x));
     let total = await memberQuery.count();
     let results=[];
+    
     for(let member of members){
         for(let permission of member.permissionTable){   
             for(let access of permission.accesslevels){                
                 if(!access.doorgroup)continue;
+                if(filter.doorgroupname && access.doorgroup.groupname.search(new RegExp(filter.doorgroupname, "i"))<0)continue;
                 for(let door of access.doorgroup.doors){
                     let newMember = Object.assign({},member);
+                    delete(newMember.permissionTable);
                     newMember.accessObjectId = access.objectId;
                     newMember.permissionName = permission.tablename;
                     newMember.timeSchedule = access.timeschedule.timename;
@@ -61,6 +64,7 @@ action.post(async (data) => {
             }
             
         }
+        
     }
     /// 3) Output
     return {

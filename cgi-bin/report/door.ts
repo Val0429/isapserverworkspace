@@ -48,7 +48,9 @@ action.post(async (data) => {
             for(let access of permission.accesslevels){                
                 if(access.doorgroup){
                     for(let door of access.doorgroup.doors){
+                        if(filter.doorname && door.doorname.search(new RegExp(filter.doorname, "i"))<0)continue;
                         let newMember = Object.assign({},member);
+                        delete(newMember.permissionTable);
                         newMember.accessObjectId = access.objectId;
                         newMember.permissionName = permission.tablename;
                         newMember.timeSchedule = access.timeschedule.timename;
@@ -63,6 +65,7 @@ action.post(async (data) => {
                     }
                 }
                 if(access.door){
+                    if(filter.doorname && access.door.doorname.search(new RegExp(filter.doorname, "i"))<0)continue;
                     let newMember = Object.assign({},member);
                         newMember.accessObjectId = access.objectId;
                         newMember.permissionName = permission.tablename;
@@ -78,6 +81,7 @@ action.post(async (data) => {
             }
             
         }
+        
     }
     /// 3) Output
     return {
