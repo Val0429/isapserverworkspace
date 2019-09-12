@@ -16,6 +16,7 @@ import { mongoDBUrl } from 'helpers/mongodb/url-helper';
 import moment = require('moment');
 import MemberService, { testDate, memberFields } from './member-service';
 import { ECardholderStatus } from '../modules/acs/sipass/siPass_define';
+import { ScheduleActionEmail } from 'core/scheduler-loader';
 
 
 export class HRService {
@@ -153,10 +154,17 @@ export class HRService {
             //batch request by 100 because of lib limitation
             while (EmpNo.length > 100) {
                 let newEmpNo = EmpNo.splice(0, 100);
-                await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
+                let result1 = await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
+                newMsg+=result1.newMsg;
+                chgMsg+=result1.chgMsg;
+                offMsg+=result1.offMsg;
                 await this.getViewSupporter(newEmpNo);
+                
             }
-            await this.requestHumanInfo(EmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
+            let result2=await this.requestHumanInfo(EmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
+            newMsg+=result2.newMsg;
+            chgMsg+=result2.chgMsg;
+            offMsg+=result2.offMsg;
             await this.getViewSupporter(EmpNo);
             // 6.0 report log and send smtp 
             await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
@@ -187,14 +195,19 @@ export class HRService {
             let vieMembers = await new Parse.Query(vieMember).limit(res.length).containedIn("EmpNo", res.map(x => x["EmpNo"])).find();
             let members = await new Parse.Query(LinearMember).limit(res.length).containedIn("employeeNumber", res.map(x => x["EmpNo"])).find();
             for (let record of res) {
-                await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, members);
+                
+                let results = await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, members);
+                newMsg+=results.newMsg;
+                offMsg+=results.offMsg;
+                chgMsg+=results.chgMsg;
+                
             }
         }
         catch (ex) {
             this.checkCycleTime = 5;
             Log.Info(`${this.constructor.name}`, ex);
         }
-
+        return {newMsg,offMsg,chgMsg}
 
     }
 
@@ -344,7 +357,7 @@ export class HRService {
                 //reserve existing data
                 newMember[field] = newMember[field] || memberJson[field];
             }
-            newMember.permissionTable = memberJson.permissionTable.map(x=>x.objectId);
+            newMember.permissionTable = member.get("permissionTable");
             newMember.cardholderPortrait = memberJson.cardholderPortrait;
         }
         try {                        
@@ -381,12 +394,38 @@ export class HRService {
                     Log.Info(`${this.constructor.name}`, `6.1 send to ${rec}`);
                     var today = new Date();
                     let dd = today.toISOString().substring(0, 10);
-                    if (memNew.length >= 1) {
-                    }
-                    if (memChange.length >= 1) {
-                    }
-                    if (memOff.length >= 1) {
-                    }
+                    let msg = `Dear Sir<p>${dd}門禁系統人事資料同步更新通知<p>`;
+
+                        if (memNew.length >= 1) {
+                            msg += `新增人員之資料共${memNew.length}筆，詳細資料如下：<br><br>
+                    <table border="0" width="600">
+                    <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>英文姓名</th></tr>`;
+                            msg += newMsg;
+                            msg += `</table><p>`;
+                        }
+
+                        if (memChange.length >= 1) {
+                            msg += `異動人員之資料共${memChange.length}筆，詳細資料如下：<br><br>
+                    <table border="0" width="600">
+                    <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>英文姓名 </th><th>異動項目</th></tr>`;
+                            msg += chgMsg;
+                            msg += `</table><p>`;
+                        }
+
+                        if (memOff.length >= 1) {
+                            msg += `離職人員之資料共${memOff.length}筆，詳細資料如下：<br><br>
+                    <table border="0" width="600">
+                    <tr><th>員工工號</th><th>姓名</th><th>人員類型</th><th>部門名稱</th><th>離職日</th><th>英文姓名</th></tr>`;
+                            msg += chgMsg;
+                            msg += `</table>`;
+                        }
+
+                        let result = await new ScheduleActionEmail().do(
+                            {
+                                to: rec,
+                                subject: dd + " 門禁系統人事資料同步更新通知",
+                                body: msg
+                            });
                 }
             }
             catch (ex) {
