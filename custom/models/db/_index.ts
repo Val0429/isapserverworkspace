@@ -34,10 +34,12 @@ export class ParseObjectNotice<T> extends ParseObject<T> {
 
         (async () => {
             try {
+                let crud: 'c' | 'r' | 'u' | 'd' = !!this.id ? 'u' : 'c';
+
                 await super.save(...arguments);
 
                 ParseObjectNotice._notice$.next({
-                    crud: !!this.id ? 'u' : 'c',
+                    crud: crud,
                     data: this,
                 });
 
