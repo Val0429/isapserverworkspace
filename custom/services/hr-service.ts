@@ -147,24 +147,18 @@ export class HRService {
 
         // 4.4 request human information
         if (this.checkCycleTime != 5) {
-            let newMsg: string = "";
-            let chgMsg: string = "";
-            let offMsg: string = "";
+            
             Log.Info(`${this.constructor.name}`, `4.4 request human information ${EmpNo.length}`);
             //batch request by 100 because of lib limitation
             while (EmpNo.length > 100) {
                 let newEmpNo = EmpNo.splice(0, 100);
-                let result1 = await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
-                newMsg+=result1.newMsg;
-                chgMsg+=result1.chgMsg;
-                offMsg+=result1.offMsg;
+                let{newMsg, chgMsg, offMsg} = await this.requestHumanInfo(newEmpNo, memNew, memOff, memChange);  
                 await this.getViewSupporter(newEmpNo);
+                // 6.0 report log and send smtp 
+                await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
                 
             }
-            let result2=await this.requestHumanInfo(EmpNo, memNew, memOff, memChange, newMsg, offMsg, chgMsg);
-            newMsg+=result2.newMsg;
-            chgMsg+=result2.chgMsg;
-            offMsg+=result2.offMsg;
+            let{newMsg, chgMsg, offMsg} = await this.requestHumanInfo(EmpNo, memNew, memOff, memChange);
             await this.getViewSupporter(EmpNo);
             // 6.0 report log and send smtp 
             await this.reportLogAndMail(memNew, newMsg, memChange, chgMsg, memOff, offMsg);
@@ -186,8 +180,10 @@ export class HRService {
         }
     }
 
-    private async requestHumanInfo(EmpNo: string[], memNew: any[], memOff: any[], memChange: any[], newMsg: string, offMsg: string, chgMsg: string) {
-
+    private async requestHumanInfo(EmpNo: string[], memNew: any[], memOff: any[], memChange: any[]) {
+        let newMsg: string="";
+        let offMsg: string="";
+        let chgMsg: string="" ;
         if (EmpNo.length <= 0) return;
 
         try {
@@ -376,6 +372,9 @@ export class HRService {
             console.log("err", JSON.stringify(err));
             console.log("err data", JSON.stringify(newMember));
         }
+        console.log("new message", newMsg);
+        console.log("offMsg", offMsg);
+        console.log("chgMsg", chgMsg);
         return { newMsg, offMsg, chgMsg };
     }
 

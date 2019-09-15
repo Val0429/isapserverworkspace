@@ -248,17 +248,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         }
         return newMember;
       }
-      getFieldValue(fieldName:string, customFields:ICustomFields[], isDate:boolean){      
-        if(!customFields)return "";
-        let exists = customFields.find(x=>x.FiledName == fieldName);
-        let value = exists ? (exists.FieldValue || "") : "";
-        try{        
-            return isDate && value ?  moment(value).format("YYYY-MM-DD"): value;
-          }catch(err){
-            console.error(err);
-            return "";
-          }    
-    }
+     
         getMemberQuery(filter:any){
             let query = new Parse.Query(LinearMember).notEqualTo("status", 1)
             if (filter.objectId) {
