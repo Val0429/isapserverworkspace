@@ -389,6 +389,8 @@ export default MemberService;
 export function testDate(date:string, splitter?:string){
     try{    
         if(!date)return null;
+        // let it throws exception
+        let td = new Date(date);
         //error on date will return 'invalidDate'
         let dt = moment(date).format();         
         return splitter ? dt.split(splitter)[0] : dt;         
