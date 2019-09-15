@@ -397,7 +397,7 @@ export function testDate(date:string, splitter?:string){
   }
 }
 
-export const memberFields = [ 
+export const nonCustomFields=[
     "objectId",
     "void",
     "permissionTable",
@@ -423,60 +423,11 @@ export const memberFields = [
     "email",
     "phone",
     "extensionNumber",
-    "birthday",
-    "allCardNumber",
-    "companyName",
-    "cardCustodian",
-    "lastEditPerson",
-    "lastEditTime",
-    "cardType",    
-    "MVPN",
-    "gender",
-    "department",
-    "costCenter",
-    "area",
-    "workArea",
-    "registrationDate",
-    "resignationDate",
-    "carLicenseCategory",
-    "cardLicense",
-    "carLicense",
-    "carLicense1",
-    "carLicense2",
-    "carLicense3",    
-    "resignationNote",
-    "resignationRecordCardRecord",
-    "reasonForCard1",
-    "historyForCard1",
-    "dateForCard1",
-    "reasonForCard2",
-    "historyForCard2",
-    "dateForCard2",
-    "reasonForCard3",
-    "historyForCard3",
-    "dateForCard3",
-    "reasonForApplication1",
-    "dateForApplication1",
-    "reasonForApplication2",
-    "dateForApplication2",
-    "reasonForApplication3",
-    "dateForApplication3",
-    "resignationRecordCarLicense",    
-    "censusRecord1",
-    "censusDate1",
-    "censusRecord2",
-    "censusDate2",
-    "censusRecord3",
-    "censusDate3",
-    "infoOfViolation1",
-    "dateOfViolation1",
-    "infoOfViolation2",
-    "dateOfViolation2",
-    "infoOfViolation3",
-    "dateOfViolation3",
     "status",
     "token"
 ]
+
+
 
 export const CustomFields = [
     { fieldName:"CustomTextBoxControl1__CF", name:"allCardNumber", date:false},
@@ -531,3 +482,5 @@ export const CustomFields = [
     { fieldName:"CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"infoOfViolation3", date:false},
     { fieldName:"CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF", name:"dateOfViolation3", date:true}
 ];
+
+export const memberFields = [...CustomFields.map(cf=>cf.name),...nonCustomFields];
