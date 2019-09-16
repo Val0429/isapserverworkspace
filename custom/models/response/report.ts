@@ -317,14 +317,10 @@ export interface IDwellTimeSummaryData extends ISummaryDataBase {
     dwellTimeRanges: IReportDwellTimeRange[];
 }
 
-export interface IDwellTimeSummary {
-    weathers: ISummaryWeather[];
-    officeHours: ISummaryOfficeHour[];
-    salesRecords: ISalesRecordSummaryData[];
-    summaryDatas: IDwellTimeSummaryData[];
-}
-
-}
+/**
+ * Identity Person
+ */
+export interface IIdentityPerson {}
 
 /**
  * Template
