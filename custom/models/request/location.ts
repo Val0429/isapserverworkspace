@@ -51,6 +51,7 @@ export interface ICompaniesIndexR {
 
 export interface ICompaniesIndexU {
     objectId: string;
+    name?: string;
     floorIds?: string[];
     contactPerson?: string;
     contactNumber?: string[];

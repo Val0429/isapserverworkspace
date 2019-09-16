@@ -238,6 +238,20 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['company not found']);
                         }
 
+                        if ('name' in value) {
+                            let _company: IDB.LocationCompanies = await new Parse.Query(IDB.LocationCompanies)
+                                .notEqualTo('objectId', value.objectId)
+                                .equalTo('name', value.name)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!!_company) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['duplicate company name']);
+                            }
+
+                            company.setValue('name', value.name);
+                        }
                         if ('floorIds' in value) {
                             let floors: IDB.LocationFloors[] = await new Parse.Query(IDB.LocationFloors)
                                 .containedIn('objectId', value.floorIds)
