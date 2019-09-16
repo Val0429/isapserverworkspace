@@ -3,6 +3,7 @@ import {
 
 import { PermissionTable, PermissionTableDoor, Door } from '../../custom/models'
 import MemberService from 'workspace/custom/services/member-service';
+import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
 
 
 var action = new Action({
@@ -43,25 +44,28 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                         .limit(Number.MAX_SAFE_INTEGER)
                         .find();
     let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
-    let oCcureTables = await ccureQuery.equalTo("system",800).find();
-    let ccureTables = oCcureTables.map(x=>ParseObject.toOutputJSON(x));
-    let oTableDoors = await new Parse.Query(PermissionTableDoor).containedIn("permissionTableId", ccureTables.map(x=>x.tableid)).find();
-    
-    let tableDoors = oTableDoors.map(x=>ParseObject.toOutputJSON(x));
-    
+    let onlineCcurePermTables = await GetMigrationDataPermissionTable();
     for(let result of results){
         result.doors=[];
         result.members = members.filter(x=>x.permissionTable.find(x=>x.tablename == result.tablename));
         
-        let ccureTable = ccureTables.find(x=>x.tablename==result.tablename);
+        let ccureTable = onlineCcurePermTables[result.tablename];
         if(!ccureTable)continue;
         
-        let tableDoor = tableDoors.find(x=>x.permissionTableId== ccureTable.tableid );
-       // console.log("tableDoor", tableDoor,ccureTable.tableid)
-        if(!tableDoor)continue;
-        
-        let doors = await new Parse.Query(Door).containedIn("doorid", tableDoor.doorId).find();
-        result.doors=doors.map(x=>ParseObject.toOutputJSON(x))
+        for(let accessRule of ccureTable){
+            if(accessRule.type=="door" ){
+                let isActive = Array.isArray(accessRule.devices) && accessRule.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
+                if(!isActive) continue;
+                result.doors.push({type:"door",doorname:accessRule.name});
+            }
+            if(accessRule.type=="doorGroup"){
+                for(let door of accessRule.doors){
+                    let isActive = Array.isArray(door.devices) && door.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
+                    if(!isActive) continue;
+                    result.doors.push({type:"doorGroup",doorname:accessRule.name});
+                }            
+            }
+        }
     }
 
     
