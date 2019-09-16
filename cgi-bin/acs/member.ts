@@ -28,6 +28,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     try{        
         let memberService = new MemberService();
         /// 2) Create Object
+        data.inputType.lastEditPerson = data.user.getUsername();
         let res = await memberService.createMember(data.inputType, data.user.getUsername(), true);
         await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, data.user, false, "Member");
         return res;
@@ -82,6 +83,7 @@ action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
     /// 1) Get Object
     try{
         let memberService = new MemberService();
+        data.inputType.lastEditPerson = data.user.getUsername();
         let update = await memberService.updateMember(data.inputType, data.user.getUsername(), true);
         await Log.Info(`update`, `${update.get("employeeNumber")} ${update.get("chineseName")}`, data.user, false, "Member");
         return update;
