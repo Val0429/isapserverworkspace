@@ -249,10 +249,14 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         return newMember;
       }
      
-        getMemberQuery(filter:any){
-            let query = new Parse.Query(LinearMember).notEqualTo("status", 1)
+        getMemberQuery(filter:any,showDeleted:boolean=false){
+            let query = new Parse.Query(LinearMember);
+            
             if (filter.objectId) {
                 query.equalTo("objectId", filter.objectId);
+            }
+            if(!showDeleted){
+                query.notEqualTo("status", 1)
             }
             if(filter.objectIds && Array.isArray(filter.objectIds)){
                 query.containedIn("objectId", filter.objectIds);

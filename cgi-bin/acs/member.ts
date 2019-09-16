@@ -6,6 +6,7 @@ import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 import { CCure800SqlAdapter } from '../../custom/services/acs/CCure800SqlAdapter';
 import { Log } from 'workspace/custom/services/log';
 import MemberService, { memberFields } from 'workspace/custom/services/member-service';
+import { ECardholderStatus } from 'workspace/custom/modules/acs/sipass';
 
 
 var action = new Action({
@@ -52,7 +53,14 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     // 2) Filter data
     let filter = data.parameters as any;
     filter.ShowEmptyCardNumber="true";
-    let query = memberService.getMemberQuery(filter);
+    
+    let query = memberService.getMemberQuery(filter,true);
+    if(filter.Status=="valid"){
+        query.equalTo("status", ECardholderStatus.Valid);
+    }
+    if(filter.Status=="deleted"){
+        query.equalTo("status", ECardholderStatus.Deleted);
+    }
     let getMemberFields = Object.assign([],memberFields);
     if(filter.showImage=="true"){
         getMemberFields.push("cardholderPortrait");
