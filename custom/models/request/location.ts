@@ -29,6 +29,7 @@ export interface IFloorsIndexR {
 
 export interface IFloorsIndexU {
     objectId: string;
+    name?: string;
     buildingId?: string;
     floor?: number;
 }
