@@ -41,9 +41,15 @@ action.post(
             await Promise.all(
                 _input.map(async (value, index, array) => {
                     try {
-                        let extension = File.GetBase64Extension(value.imageBase64);
-                        if (!extension || extension.type !== 'image') {
-                            throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
+                        if (!('imageBase64' in value) && !('nric' in value)) {
+                            throw Errors.throw(Errors.CustomBadRequest, ['imageBase64 or nric must be have one']);
+                        }
+
+                        if ('imageBase64' in value) {
+                            let extension = File.GetBase64Extension(value.imageBase64);
+                            if (!extension || extension.type !== 'image') {
+                                throw Errors.throw(Errors.CustomBadRequest, ['media type error']);
+                            }
                         }
 
                         if ('organization' in value && !value.organization) {
@@ -54,43 +60,58 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['name can not be empty']);
                         }
 
-                        if (!value.nric) {
+                        if ('nric' in value && !value.nric) {
                             throw Errors.throw(Errors.CustomBadRequest, ['nric can not be empty']);
                         }
-
-                        let buffer: Buffer = Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64);
-
-                        let personId: string = '';
-                        try {
-                            let frsSetting = DataCenter.frsSetting$.value;
-                            personId = await AddBlacklist(value.name, buffer, {
-                                protocol: frsSetting.protocol,
-                                ip: frsSetting.ip,
-                                port: frsSetting.port,
-                                wsport: frsSetting.port,
-                                account: frsSetting.account,
-                                password: frsSetting.password,
-                            });
-                        } catch (e) {
-                            throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
+                        if ('nric' in value) {
+                            let _person: IDB.PersonStaffBlacklist = await new Parse.Query(IDB.PersonStaffBlacklist)
+                                .equalTo('nric', value.nric)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!!_person) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['duplicate person nric']);
+                            }
                         }
 
-                        let orignal: IDB.PersonStaffBlacklistOrignial = new IDB.PersonStaffBlacklistOrignial();
+                        let orignal: IDB.PersonStaffBlacklistOrignial = undefined;
+                        let personId: string = undefined;
+                        let buffer: Buffer = undefined;
+                        if ('imageBase64' in value) {
+                            buffer = Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64);
 
-                        orignal.setValue('imageBase64', buffer.toString(Enum.EEncoding.base64));
+                            try {
+                                let frsSetting = DataCenter.frsSetting$.value;
+                                personId = await AddBlacklist(value.name, buffer, {
+                                    protocol: frsSetting.protocol,
+                                    ip: frsSetting.ip,
+                                    port: frsSetting.port,
+                                    wsport: frsSetting.port,
+                                    account: frsSetting.account,
+                                    password: frsSetting.password,
+                                });
+                            } catch (e) {
+                                throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
+                            }
 
-                        await orignal.save(null, { useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
+                            orignal = new IDB.PersonStaffBlacklistOrignial();
 
-                        buffer = await Draw.Resize(buffer, imgSize, imgConfig.isFill, imgConfig.isTransparent);
+                            orignal.setValue('imageBase64', buffer.toString(Enum.EEncoding.base64));
+
+                            await orignal.save(null, { useMasterKey: true }).fail((e) => {
+                                throw e;
+                            });
+
+                            buffer = await Draw.Resize(buffer, imgSize, imgConfig.isFill, imgConfig.isTransparent);
+                        }
 
                         let person: IDB.PersonStaffBlacklist = new IDB.PersonStaffBlacklist();
 
                         person.setValue('creator', data.user);
                         person.setValue('updater', data.user);
                         person.setValue('company', _userInfo.company);
-                        person.setValue('imageBase64', buffer.toString(Enum.EEncoding.base64));
+                        person.setValue('imageBase64', 'imageBase64' in value ? buffer.toString(Enum.EEncoding.base64) : undefined);
                         person.setValue('imageOrignial', orignal);
                         person.setValue('organization', value.organization);
                         person.setValue('name', value.name);
@@ -170,7 +191,7 @@ action.get(
                 });
 
             let results = persons.map<IResponse.IPerson.IStaffBlacklistIndexR>((value, index, array) => {
-                let _image: string = Utility.Base64Str2HtmlSrc(value.getValue('imageBase64'));
+                let _image: string = !value.getValue('imageBase64') ? undefined : Utility.Base64Str2HtmlSrc(value.getValue('imageBase64'));
 
                 let _company: IResponse.IObject = !value.getValue('company')
                     ? undefined
@@ -355,10 +376,11 @@ action.delete(
 
                         let organization: IDB.PersonStaffBlacklistOrignial = person.getValue('imageOrignial');
 
-                        await organization.destroy({ useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
-
+                        if (!!organization) {
+                            await organization.destroy({ useMasterKey: true }).fail((e) => {
+                                throw e;
+                            });
+                        }
                         await person.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });

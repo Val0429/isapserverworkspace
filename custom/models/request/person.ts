@@ -2,10 +2,10 @@
  * Staff Blacklist
  */
 export interface IStaffBlacklistIndexC {
-    imageBase64: string;
+    imageBase64?: string;
     organization?: string;
     name: string;
-    nric: string;
+    nric?: string;
     remark: string;
 }
 
