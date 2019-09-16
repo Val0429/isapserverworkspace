@@ -1,6 +1,6 @@
 {
     "name": "isap-frs-manager-service",
-    "version": "1.00.02",
+    "version": "1.00.03",
     "config": {
         "displayname": "iSap FRS Manager Service"
     },
