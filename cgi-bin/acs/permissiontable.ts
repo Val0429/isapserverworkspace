@@ -182,7 +182,7 @@ export default action;
 
 
 async function checkSipassAccessLevel(data:any) {
-    let al = [];
+    let sipassAccessLevels :{Token:string, Name:string}[]= [];
     if (data.accesslevels) {
         let accesslevels = await new Parse.Query(AccessLevel)
             .containedIn("objectId", data.accesslevels.map(x => x.objectId))
@@ -190,10 +190,16 @@ async function checkSipassAccessLevel(data:any) {
         for (let levelGroup of accesslevels.map(x => ParseObject.toOutputJSON(x))) {
             console.log("levelGroup", levelGroup);
             let levelInSipass = await getAccessLevelInSipass(levelGroup);
-            al.push(...levelInSipass);
+            sipassAccessLevels.push(...levelInSipass);
         }
     }
-    return al;
+    let uniqueAccessLevels=[];
+    for(let al of sipassAccessLevels){
+        let exist = uniqueAccessLevels.find(x=>x.Token == al.Token && x.Name==al.Name);
+        if(!exist) uniqueAccessLevels.push(al);
+    }
+    
+    return uniqueAccessLevels;
 }
 
 async function checkCCureDevices(tablename:string, accessLevels:any[]){
