@@ -10,6 +10,7 @@ export interface IBuildingIndexC {
 
 export interface IBuildingIndexU {
     objectId: string;
+    name?: string;
     location?: ILocation.ICoordinate;
 }
 
