@@ -184,7 +184,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
                 member[customField.name]=inputFormData[customField.name] || "";
             }
             member.birthday=dob;
-            member.lastEditPerson = user;
+            member.lastEditPerson = inputFormData.lastEditPerson || user;
             member.lastEditTime = moment().format();
             //console.log("member", JSON.stringify(member));
             return member;
