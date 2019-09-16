@@ -25,14 +25,17 @@ action.post(async (data) => {
         fields.splice(fields.indexOf("permissionName"),1);
         fields.push("permissionTable.tablename")
     }
+    fields.push("permissionTable.accesslevels.type");
     fields.push("permissionTable.accesslevels.door.doorname");
     fields.push("permissionTable.accesslevels.doorgroup.groupname");
+    fields.push("permissionTable.accesslevels.doorgroup.doors.doorname");
     fields.push("permissionTable.accesslevels.timeschedule.timename");
     let memberQuery = memberService.getMemberQuery(filter)
                         .skip((page-1)*pageSize)
                         .include("permissionTable.accesslevels.door")
                         .include("permissionTable.accesslevels.timeschedule")
                         .include("permissionTable.accesslevels.doorgroup")
+                        .include("permissionTable.accesslevels.doorgroup.doors")
                         .limit(pageSize)
                         .select(...fields);
     
@@ -43,16 +46,36 @@ action.post(async (data) => {
     
     for(let member of members){
         for(let table of member.permissionTable){            
-            let newMember = Object.assign({},member); 
-            delete(newMember.permissionTable);           
+                     
             for(let access of table.accesslevels){
-                newMember.permissionName = table.tablename;
-                newMember.timeSchedule = access.timeschedule.timename;
-                newMember.doorName = access.door?access.door.doorname:'';
-                newMember.doorGroupName = access.doorgroup?access.doorgroup.groupname:'';
-                //no need to display multiple row for the same access level
-                let exists = results.find(x=>x.permissionName == newMember.permissionName && x.timeSchedule == newMember.timeSchedule && x.doorName == newMember.doorName );
-                if(!exists)results.push(newMember);
+                if(access.type=="door"){
+                    let newMember = Object.assign({},member); 
+                    delete(newMember.permissionTable); 
+
+                    newMember.permissionName = table.tablename;
+                    newMember.timeSchedule = access.timeschedule.timename;
+                    newMember.doorName = access.door?access.door.doorname:'';
+                    //newMember.doorGroupName = access.doorgroup?access.doorgroup.groupname:'';
+                    //no need to display multiple row for the same access level
+                    let exists = results.find(x=>x.permissionName == newMember.permissionName && x.timeSchedule == newMember.timeSchedule && x.doorName == newMember.doorName );
+                    if(!exists)
+                    results.push(newMember);
+                }
+                if(access.type=="doorGroup"){
+                    for(let door of access.doorgroup.doors){
+                        let newMember = Object.assign({},member); 
+                        delete(newMember.permissionTable); 
+    
+                        newMember.permissionName = table.tablename;
+                        newMember.timeSchedule = access.timeschedule.timename;
+                        newMember.doorName = door.doorname;
+                        newMember.doorGroupName = access.doorgroup?access.doorgroup.groupname:'';
+                        //no need to display multiple row for the same access level
+                        let exists = results.find(x=>x.permissionName == newMember.permissionName && x.timeSchedule == newMember.timeSchedule && x.doorName == newMember.doorName );
+                        if(!exists)
+                        results.push(newMember);
+                    }
+                }
             }
             
         }
