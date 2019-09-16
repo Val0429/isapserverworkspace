@@ -214,94 +214,94 @@ action.get(
     },
 );
 
-/**
- * Action update
- */
-type InputU = IRequest.IPerson.IStaffBlacklistIndexU[];
+// /**
+//  * Action update
+//  */
+// type InputU = IRequest.IPerson.IStaffBlacklistIndexU[];
 
-type OutputU = IResponse.IMultiData;
+// type OutputU = IResponse.IMultiData;
 
-action.put(
-    {
-        inputType: 'MultiData',
-        middlewares: [Middleware.MultiDataFromBody],
-        permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.TenantAdministrator],
-    },
-    async (data): Promise<OutputU> => {
-        let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
+// action.put(
+//     {
+//         inputType: 'MultiData',
+//         middlewares: [Middleware.MultiDataFromBody],
+//         permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.TenantAdministrator],
+//     },
+//     async (data): Promise<OutputU> => {
+//         let _input: InputU = await Ast.requestValidation('InputU', data.parameters.datas);
 
-        try {
-            let _userInfo = await Db.GetUserInfo(data.request, data.user);
-            let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
+//         try {
+//             let _userInfo = await Db.GetUserInfo(data.request, data.user);
+//             let resMessages: IResponse.IResponseMessage[] = data.parameters.resMessages;
 
-            await Promise.all(
-                _input.map(async (value, index, array) => {
-                    try {
-                        let query: Parse.Query<IDB.PersonStaffBlacklist> = new Parse.Query(IDB.PersonStaffBlacklist).equalTo('objectId', value.objectId);
+//             await Promise.all(
+//                 _input.map(async (value, index, array) => {
+//                     try {
+//                         let query: Parse.Query<IDB.PersonStaffBlacklist> = new Parse.Query(IDB.PersonStaffBlacklist).equalTo('objectId', value.objectId);
 
-                        if (!!_userInfo.company) {
-                            query.equalTo('company', _userInfo.company);
-                        }
+//                         if (!!_userInfo.company) {
+//                             query.equalTo('company', _userInfo.company);
+//                         }
 
-                        let person: IDB.PersonStaffBlacklist = await query.first().fail((e) => {
-                            throw e;
-                        });
-                        if (!person) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['blacklist not found']);
-                        }
+//                         let person: IDB.PersonStaffBlacklist = await query.first().fail((e) => {
+//                             throw e;
+//                         });
+//                         if (!person) {
+//                             throw Errors.throw(Errors.CustomBadRequest, ['blacklist not found']);
+//                         }
 
-                        person.setValue('updater', data.user);
-                        if (!!_userInfo.company) {
-                            person.setValue('company', _userInfo.company);
-                        } else {
-                            person.unset('company');
-                        }
+//                         person.setValue('updater', data.user);
+//                         if (!!_userInfo.company) {
+//                             person.setValue('company', _userInfo.company);
+//                         } else {
+//                             person.unset('company');
+//                         }
 
-                        if ('organization' in value) {
-                            if (!value.organization) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['organization can not be empty']);
-                            }
+//                         if ('organization' in value) {
+//                             if (!value.organization) {
+//                                 throw Errors.throw(Errors.CustomBadRequest, ['organization can not be empty']);
+//                             }
 
-                            person.setValue('organization', value.organization);
-                        }
-                        if ('name' in value) {
-                            if (!value.name) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['name can not be empty']);
-                            }
+//                             person.setValue('organization', value.organization);
+//                         }
+//                         if ('name' in value) {
+//                             if (!value.name) {
+//                                 throw Errors.throw(Errors.CustomBadRequest, ['name can not be empty']);
+//                             }
 
-                            person.setValue('name', value.name);
-                        }
-                        if ('nric' in value) {
-                            if (!value.nric) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['nric can not be empty']);
-                            }
+//                             person.setValue('name', value.name);
+//                         }
+//                         if ('nric' in value) {
+//                             if (!value.nric) {
+//                                 throw Errors.throw(Errors.CustomBadRequest, ['nric can not be empty']);
+//                             }
 
-                            person.setValue('nric', value.nric);
-                        }
-                        if ('remark' in value) {
-                            person.setValue('remark', value.remark);
-                        }
+//                             person.setValue('nric', value.nric);
+//                         }
+//                         if ('remark' in value) {
+//                             person.setValue('remark', value.remark);
+//                         }
 
-                        await person.save(null, { useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
-                    } catch (e) {
-                        resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
+//                         await person.save(null, { useMasterKey: true }).fail((e) => {
+//                             throw e;
+//                         });
+//                     } catch (e) {
+//                         resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
-                        Print.Log(e, new Error(), 'error');
-                    }
-                }),
-            );
+//                         Print.Log(e, new Error(), 'error');
+//                     }
+//                 }),
+//             );
 
-            return {
-                datas: resMessages,
-            };
-        } catch (e) {
-            Print.Log(e, new Error(), 'error');
-            throw e;
-        }
-    },
-);
+//             return {
+//                 datas: resMessages,
+//             };
+//         } catch (e) {
+//             Print.Log(e, new Error(), 'error');
+//             throw e;
+//         }
+//     },
+// );
 
 /**
  * Action Delete

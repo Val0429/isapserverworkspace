@@ -9,13 +9,13 @@ export interface IStaffBlacklistIndexC {
     remark: string;
 }
 
-export interface IStaffBlacklistIndexU {
-    objectId: string;
-    organization?: string;
-    name?: string;
-    nric?: string;
-    remark?: string;
-}
+// export interface IStaffBlacklistIndexU {
+//     objectId: string;
+//     organization?: string;
+//     name?: string;
+//     nric?: string;
+//     remark?: string;
+// }
 
 /**
  * Staff
