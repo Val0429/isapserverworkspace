@@ -15,7 +15,7 @@ export class SyncService{
         let objects = await new Parse.Query(AccessLevelinSiPass)
                     .limit(Number.MAX_SAFE_INTEGER)
                     .containedIn("token", records.map(r=> r["Token"]))
-                    .find();
+                    .find();        
         let parseObjects=[];
         for (const r of records) {
             if (!r["Name"] || !r["Token"]) continue;
@@ -29,15 +29,25 @@ export class SyncService{
                 };
                 let o = new AccessLevelinSiPass(d);
                 parseObjects.push(o);
+                objects.push(o);
             }
             else if( obj.get("name")!= r["Name"]) {
                 obj.set("name", r["Name"]);
-                parseObjects.push(obj);
+                parseObjects.push(obj);                
             }
             
         }
         await ParseObject.saveAll(parseObjects);
-        
+        //let GC to release memory
+        parseObjects=undefined;
+        //delete non existing access level in sipass
+        let deletedObjects = await new Parse.Query(AccessLevelinSiPass)
+        .limit(Number.MAX_SAFE_INTEGER)
+            .notContainedIn("token", objects.map(r=> r.get("token")))
+            .find();   
+        await ParseObject.destroyAll(deletedObjects)
+        //let GC to release memory
+        deletedObjects = undefined;        
     }
      async syncCcurePermissionTable() {
         Log.Info(`${this.constructor.name}`, `CCure 2.8 PermissionTables`);
