@@ -24,13 +24,14 @@ action.post(async (data) => {
         fields.splice(fields.indexOf("permissionName"),1);
         fields.push("permissionTable.tablename")
     }
-    
+    fields.push("permissionTable.accesslevels.doors.doorname");
     fields.push("permissionTable.accesslevels.door.doorname");
     fields.push("permissionTable.accesslevels.doorgroup.doors.doorname");
     fields.push("permissionTable.accesslevels.doorgroup.groupname");
     fields.push("permissionTable.accesslevels.timeschedule.timename");
     let memberQuery = memberService.getMemberQuery(filter)
                         .skip((page-1)*pageSize)
+                        .include("permissionTable.accesslevels.doors")
                         .include("permissionTable.accesslevels.door")
                         .include("permissionTable.accesslevels.timeschedule")
                         .include("permissionTable.accesslevels.doorgroup.doors")
@@ -49,6 +50,7 @@ action.post(async (data) => {
                 if(access.doorgroup){
                     for(let door of access.doorgroup.doors){
                         if(filter.doorname && door.doorname.search(new RegExp(filter.doorname, "i"))<0)continue;
+                        if(!access.doors.find(x=>x.doorname == door.doorname))continue;
                         let newMember = Object.assign({},member);
                         delete(newMember.permissionTable);
                         newMember.accessObjectId = access.objectId;
@@ -66,6 +68,7 @@ action.post(async (data) => {
                 }
                 if(access.door){
                     if(filter.doorname && access.door.doorname.search(new RegExp(filter.doorname, "i"))<0)continue;
+                    if(!access.doors.find(x=>x.doorname == access.door.doorname))continue;
                     let newMember = Object.assign({},member);
                         newMember.accessObjectId = access.objectId;
                         newMember.permissionName = permission.tablename;

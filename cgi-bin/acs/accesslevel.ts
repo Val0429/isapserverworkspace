@@ -22,7 +22,7 @@ type OutputC = Restful.OutputC<IAccessLevel>;
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
     console.log("bop0");
-    let { readers, floors } = await getAccessLevelReaders(ParseObject.toOutputJSON(data.inputType));
+    let { readers, floors, doors } = await getAccessLevelReaders(ParseObject.toOutputJSON(data.inputType));
     // if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
     //     throw Errors.throw(Errors.CustomNotExists, [`SiPass Connect fail. Please contact system administrator!`]);
@@ -121,16 +121,16 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     let firstObj = await new Parse.Query(AccessLevel).descending("levelidNumber").first();
     let max = 0;
     if (firstObj && firstObj.get("levelidNumber") >=0){
-        console.log("pass", firstObj.get("levelidNumber"));
         max = firstObj.get("levelidNumber") + 1;
     }
         
-    console.log("max", max);
     data.inputType.levelid = max + "";
     data.inputType.levelidNumber=max;
     data.inputType.levelname = "name " + data.inputType.levelidNumber;
 
     var obj = new AccessLevel(data.inputType);
+    obj.set("doors", doors);
+    
     await obj.save(null, { useMasterKey: true });
     await Log.Info(`create`, `${data.inputType.levelidNumber} ${data.inputType.levelname }`, data.user, false, "AccessLevel");
     /// 3) Output
@@ -188,12 +188,14 @@ export async function getAccessLevelReaders(accessLevel:any) {
     console.log("access level", accessLevel);
     let readers = [];
     let floors = [];
+    let doors=[];
     if (accessLevel.type == "door") {
         let door = await new Parse.Query(Door)
             .equalTo("objectId", accessLevel.door.objectId)
             .include("readerout")
             .include("readerin")
             .first();
+        doors.push(door);
         if (door.get("readerin"))
             readers.push(...door.get("readerin"));
         if (door.get("readerout"))
@@ -206,6 +208,7 @@ export async function getAccessLevelReaders(accessLevel:any) {
             .include("doors.readerout")
             .first();
         for (let door of doorGroup.get("doors")) {
+            doors.push(door);
             if (door.get("readerin"))
                 readers.push(...door.get("readerin"));
             if (door.get("readerout"))
@@ -225,6 +228,6 @@ export async function getAccessLevelReaders(accessLevel:any) {
             .first();
         floors.push(...floorGroup.get("floors"));
     }
-    return { readers, floors };
+    return { readers, floors, doors };
 }
 

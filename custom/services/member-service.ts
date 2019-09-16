@@ -301,10 +301,9 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
                 query.equalTo("primaryWorkgroupId", +filter.PersonType);
             }
             if(filter.doorname){
-                
-                let doorQuery = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname),"i");
-                let alQuery = new Parse.Query(AccessLevel).matchesQuery("door", doorQuery);
-                let permTableQuery = new Parse.Query(PermissionTable).matchesQuery("accesslevels", alQuery);
+                let doorQuery = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname),"i");             
+                let alQueryDoor = new Parse.Query(AccessLevel).matchesQuery("doors", doorQuery);
+                let permTableQuery = new Parse.Query(PermissionTable).matchesQuery("accesslevels", alQueryDoor );
                 query.matchesQuery("permissionTable", permTableQuery);
             }
             if(filter.doorgroupname){
