@@ -70,39 +70,68 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
-                        let permissionCompany: IDB.LocationCompanies = await new Parse.Query(IDB.LocationCompanies)
-                            .equalTo('objectId', value.permissionCompanyId)
-                            .include(['floor', 'floor.building'])
-                            .first()
-                            .fail((e) => {
-                                throw e;
-                            });
-                        if (!permissionCompany) {
-                            throw Errors.throw(Errors.CustomBadRequest, ['permission company not found']);
+                        if ('nric' in value) {
+                            let _person: IDB.PersonStaffBlacklist = await new Parse.Query(IDB.PersonStaffBlacklist)
+                                .equalTo('nric', value.nric)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!!_person) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['this face was in blacklist']);
+                            }
                         }
 
-                        let permissionFloors: IDB.LocationFloors[] = permissionCompany.getValue('floor').filter((value1, index1, array1) => {
-                            return value.permissionFloorIds.indexOf(value1.id) > -1;
-                        });
+                        let permissionCompany: IDB.LocationCompanies = undefined;
+                        let permissionFloors: IDB.LocationFloors[] = undefined;
+                        let permissionBuilding: IDB.LocationBuildings = undefined;
+                        if (!!_userInfo.company) {
+                            permissionCompany = _userInfo.company;
+                            permissionFloors = _userInfo.floors;
+                            permissionBuilding = _userInfo.building;
+                        } else if ('permissionCompanyId' in value) {
+                            permissionCompany = await new Parse.Query(IDB.LocationCompanies)
+                                .equalTo('objectId', value.permissionCompanyId)
+                                .include(['floor', 'floor.building'])
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!permissionCompany) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['permission company not found']);
+                            }
 
-                        let permissionBuilding: IDB.LocationBuildings = permissionCompany.getValue('floor').length > 0 ? permissionCompany.getValue('floor')[0].getValue('building') : undefined;
+                            permissionFloors = permissionCompany.getValue('floor').filter((value1, index1, array1) => {
+                                return value.permissionFloorIds.indexOf(value1.id) > -1;
+                            });
+
+                            permissionBuilding = permissionCompany.getValue('floor').length > 0 ? permissionCompany.getValue('floor')[0].getValue('building') : undefined;
+                        } else {
+                            throw Errors.throw(Errors.CustomBadRequest, ['need permission company']);
+                        }
 
                         let unitNumber: string = permissionCompany.getValue('unitNumber');
+
+                        let card: number = await ACSCard.GetNextCard('staff');
 
                         let orignal: IDB.PersonStaffOrignial = undefined;
                         let buffer: Buffer = undefined;
                         if ('imageBase64' in value) {
                             buffer = Buffer.from(File.GetBase64Data(value.imageBase64), Enum.EEncoding.base64);
 
-                            let frsSetting = DataCenter.frsSetting$.value;
-                            await VerifyBlacklist(buffer, {
-                                protocol: frsSetting.protocol,
-                                ip: frsSetting.ip,
-                                port: frsSetting.port,
-                                wsport: frsSetting.port,
-                                account: frsSetting.account,
-                                password: frsSetting.password,
-                            });
+                            try {
+                                let frsSetting = DataCenter.frsSetting$.value;
+                                await VerifyBlacklist(buffer, {
+                                    protocol: frsSetting.protocol,
+                                    ip: frsSetting.ip,
+                                    port: frsSetting.port,
+                                    wsport: frsSetting.port,
+                                    account: frsSetting.account,
+                                    password: frsSetting.password,
+                                });
+                            } catch (e) {
+                                throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
+                            }
 
                             orignal = new IDB.PersonStaffOrignial();
 
@@ -115,13 +144,11 @@ action.post(
                             buffer = await Draw.Resize(buffer, imgSize, imgConfig.isFill, imgConfig.isTransparent);
                         }
 
-                        let card: number = await ACSCard.GetNextCard('staff');
-
                         person = new IDB.PersonStaff();
 
                         person.setValue('creator', data.user);
                         person.setValue('updater', data.user);
-                        person.setValue('company', _userInfo.company);
+                        person.setValue('company', permissionCompany);
                         person.setValue('card', card);
                         person.setValue('imageBase64', 'imageBase64' in value ? buffer.toString(Enum.EEncoding.base64) : undefined);
                         person.setValue('imageOrignial', orignal);

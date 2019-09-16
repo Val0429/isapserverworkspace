@@ -96,6 +96,7 @@ export namespace Db {
         roleLists: RoleList[];
         roles: IResponse.IObject[];
         info: IDB.UserInfo;
+        building: IDB.LocationBuildings;
         company: IDB.LocationCompanies;
         floors: IDB.LocationFloors[];
     }
@@ -109,7 +110,7 @@ export namespace Db {
         try {
             let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
                 .equalTo('user', user)
-                .include(['company', 'floors'])
+                .include(['company', 'floors', 'floors.building'])
                 .first()
                 .fail((e) => {
                     throw e;
@@ -141,14 +142,19 @@ export namespace Db {
                 throw e;
             });
 
-            let company: IDB.LocationCompanies = roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1 ? undefined : info.getValue('company');
+            let isUser: boolean = !(roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1);
 
-            let floors: IDB.LocationFloors[] = roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1 ? undefined : info.getValue('floors');
+            let company: IDB.LocationCompanies = isUser ? info.getValue('company') : undefined;
+
+            let floors: IDB.LocationFloors[] = isUser ? info.getValue('floors') : undefined;
+
+            let building: IDB.LocationBuildings = isUser && floors.length > 0 ? floors[0].getValue('building') : undefined;
 
             return {
                 roleLists: roleLists,
                 roles: roles,
                 info: info,
+                building: building,
                 company: company,
                 floors: floors,
             };
