@@ -4,6 +4,6 @@ setTimeout(async () => {
     await hr.doHumanResourcesSync();
 }, 1000 * this.startDelayTime);
 
-export * from './acs-service';
+//export * from './acs-service';
 //export * from './hr-service';
 export * from './attendance-record';
