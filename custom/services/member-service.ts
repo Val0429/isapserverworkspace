@@ -381,7 +381,8 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
 export default MemberService;
 export function testDate(date:string, splitter?:string){
     try{    
-        if(!date)return null;
+        if(!date || !date.trim())return null;
+        date = date.trim();
         // let it throws exception
         let td = new Date(date);
         //error on date will return 'invalidDate'
