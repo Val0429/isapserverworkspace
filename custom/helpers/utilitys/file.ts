@@ -257,7 +257,7 @@ export namespace File {
      */
     export function GetBase64Extension(data: string): { extension: string; type: 'image' | 'application' | 'audio' | 'video' } {
         try {
-            if (data.indexOf('image/jpeg') > -1) {
+            if (data.indexOf('image/jpeg') > -1 || data.indexOf('image/jpg') > -1) {
                 return {
                     extension: 'jpeg',
                     type: 'image',
