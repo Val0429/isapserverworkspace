@@ -43,11 +43,12 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                         .limit(Number.MAX_SAFE_INTEGER)
                         .find();
     let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
-    let oCcureTables = await ccureQuery.find();
+    let oCcureTables = await ccureQuery.equalTo("system",800).find();
     let ccureTables = oCcureTables.map(x=>ParseObject.toOutputJSON(x));
     let oTableDoors = await new Parse.Query(PermissionTableDoor).containedIn("permissionTableId", ccureTables.map(x=>x.tableid)).find();
     
     let tableDoors = oTableDoors.map(x=>ParseObject.toOutputJSON(x));
+    
     for(let result of results){
         result.doors=[];
         result.members = members.filter(x=>x.permissionTable.find(x=>x.tablename == result.tablename));
@@ -55,7 +56,8 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         let ccureTable = ccureTables.find(x=>x.tablename==result.tablename);
         if(!ccureTable)continue;
         
-        let tableDoor = tableDoors.find(x=>x.tableid== ccureTable.permissionTableId );
+        let tableDoor = tableDoors.find(x=>x.permissionTableId== ccureTable.tableid );
+       // console.log("tableDoor", tableDoor,ccureTable.tableid)
         if(!tableDoor)continue;
         
         let doors = await new Parse.Query(Door).containedIn("doorid", tableDoor.doorId).find();
