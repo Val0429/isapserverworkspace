@@ -319,7 +319,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
                 let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.elevator.name == accesslevel.elevatorgroup.groupname && 
                                 x.timespec == accesslevel.timeschedule.timename && x.floor && x.floor.type=="floor" && x.floor.name == floor.floorname);
                 if (!exists)
-                    errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevator.elevatorname}-${floor.floorname}`, timename: accesslevel.timeschedule.timename });
+                    errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevatorgroup.groupname}-${floor.floorname}`, timename: accesslevel.timeschedule.timename });
             } 
             
         }
