@@ -1,7 +1,7 @@
 import {
     Action, Restful, ParseObject} from 'core/cgi-package';
 
-import { PermissionTable, PermissionTableDoor, Door } from '../../custom/models'
+import { PermissionTable, PermissionTableDoor, Door, CCureClearance as CCureClearance } from '../../custom/models'
 import MemberService from 'workspace/custom/services/member-service';
 import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
 
@@ -44,15 +44,15 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                         .limit(Number.MAX_SAFE_INTEGER)
                         .find();
     let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
-    let onlineCcurePermTables = await GetMigrationDataPermissionTable();
+    let onlineCcurePermTables = await new Parse.Query(CCureClearance).containedIn("name", results.map(x=>x.tablename)).limit(results.length).find();
     for(let result of results){
         result.doors=[];
         result.members = members.filter(x=>x.permissionTable.find(x=>x.tablename == result.tablename));
         
-        let ccureTable = onlineCcurePermTables[result.tablename];
+        let ccureTable = onlineCcurePermTables.find(x=>x.attributes.name==result.tablename);
         if(!ccureTable)continue;
         
-        for(let accessRule of ccureTable){
+        for(let accessRule of ccureTable.attributes.data){
             if(accessRule.type=="door" ){
                 let isActive = Array.isArray(accessRule.devices) && accessRule.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
                 if(!isActive) continue;
@@ -62,7 +62,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
                 for(let door of accessRule.doors){
                     let isActive = Array.isArray(door.devices) && door.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
                     if(!isActive) continue;
-                    result.doors.push({type:"doorGroup",doorname:accessRule.name});
+                    result.doors.push({type:"doorGroup",doorname:door.name});
                 }            
             }
         }

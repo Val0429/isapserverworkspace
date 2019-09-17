@@ -2,7 +2,7 @@ import {
     Action, Errors, Restful, ParseObject, TimeSchedule, Door, AccessLevel, Floor
 } from 'core/cgi-package';
 
-import { IPermissionTable, PermissionTable, PermissionTableDoor, AccessLevelinSiPass } from '../../custom/models'
+import { IPermissionTable, PermissionTable, PermissionTableDoor, AccessLevelinSiPass, CCureClearance } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from '../../custom/services/acsAdapter-Manager';
 
 import { Log } from 'workspace/custom/services/log';
@@ -205,8 +205,8 @@ async function checkSipassAccessLevel(data:any) {
 async function checkCCureDevices(tablename:string, accessLevels:any[]){
     let errors:any[]=[];
     let acsAcessLevels=[];
-    let ccureClearances = await GetMigrationDataPermissionTable();    
-    let ccureClearance = ccureClearances[tablename];
+    let ccureClearances = await new Parse.Query(CCureClearance).equalTo("name", tablename).first();    
+    let ccureClearance = ccureClearances ? ccureClearances.attributes.data : undefined;
     console.log("ccureClearance", ccureClearance);
     
     let accessLevelIsNotInCCure="accessLevelIsNotInCCure";
