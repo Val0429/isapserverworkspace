@@ -57,7 +57,7 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     
     let query = memberService.getMemberQuery(filter,true);
     if(filter.Status=="valid"){
-        query.equalTo("status", ECardholderStatus.Valid);
+        query.notEqualTo("status", ECardholderStatus.Deleted);
     }
     if(filter.Status=="deleted"){
         query.equalTo("status", ECardholderStatus.Deleted);
