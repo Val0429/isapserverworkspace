@@ -1,12 +1,10 @@
 import {
-    Action, Errors, Restful, ParseObject, TimeSchedule, Door, AccessLevel, Floor
-} from 'core/cgi-package';
+    Action, Errors, Restful, ParseObject, AccessLevel} from 'core/cgi-package';
 
-import { IPermissionTable, PermissionTable, PermissionTableDoor, AccessLevelinSiPass, CCureClearance } from '../../custom/models'
-import { siPassAdapter, cCureAdapter } from '../../custom/services/acsAdapter-Manager';
+import { IPermissionTable, PermissionTable, AccessLevelinSiPass, CCureClearance } from '../../custom/models'
+import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 import { Log } from 'workspace/custom/services/log';
-import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
 import { getAccessLevelReaders } from './accesslevel';
 
 var action = new Action({
@@ -34,22 +32,6 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
         .include("door").first();
     if (nameObject != null) {
         throw Errors.throw(Errors.CustomNotExists, [`Permssion table name is duplicate.`]);
-    }
-
-    let doorExist = [];
-    if (data.inputType.accesslevels) {
-        for (let i = 0; i < data.inputType.accesslevels.length; i++) {
-            let levelGroup = data.inputType.accesslevels[i];
-            let door=levelGroup.get("door");
-            if(door&&door["doorid"])doorExist.push(door["doorid"]);
-        }
-    }
-
-    let pt = await new Parse.Query(PermissionTableDoor).containsAll("doorid", doorExist).first();
-    if ( pt != null) {
-        let pt1 = await new Parse.Query(PermissionTable).equalTo("tableid", pt.get("permissionTableId")).first();
-
-        throw Errors.throw(Errors.CustomNotExists, [`Permssion table is duplicate with ${pt1.get("tableid")} ${pt1.get("tablename")}`]);   
     }
 
     // 2.0 Modify Access Group

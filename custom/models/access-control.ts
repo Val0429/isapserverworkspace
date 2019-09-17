@@ -339,17 +339,14 @@ export interface IPermissionTable {     // CRUD  V
 @registerSubclass()
 export class PermissionTable extends ParseObject<IPermissionTable> { }
 
-export interface IPermissionTableDoor {     // CRUD  V
-    system?: number,
-    permissionTableId?: number,
-    doorId?: number[],
-    timespecId?: number;
-    status?: number,
+
+export interface IAccessLevelDoor {     // CRUD  V
+    member:LinearMember;
+    door:Door;
+    doorgroup?:DoorGroup;
 }
 @registerSubclass()
-export class PermissionTableDoor extends ParseObject<IPermissionTableDoor> { }
-
-
+export class AccessLevelDoor extends ParseObject<IAccessLevelDoor> { }
 
 // export interface IAccessPolicy {    
 //     system?: number,

@@ -1,9 +1,8 @@
 import {
     Action, Restful, ParseObject} from 'core/cgi-package';
 
-import { PermissionTable, PermissionTableDoor, Door, CCureClearance as CCureClearance } from '../../custom/models'
+import { PermissionTable, CCureClearance as CCureClearance } from '../../custom/models'
 import MemberService from 'workspace/custom/services/member-service';
-import { GetMigrationDataPermissionTable } from 'workspace/custom/modules/acs/ccure/Migration';
 
 
 var action = new Action({

@@ -1,5 +1,5 @@
 import { Action, ParseObject } from "core/cgi-package";
-import { AccessLevel } from "core/events.gen";
+import { LinearMember, AccessLevelDoor } from "core/events.gen";
 
 var action = new Action({
     // loginRequired: true,
@@ -12,39 +12,51 @@ var action = new Action({
 
 
 action.get(async () => {
-        let accessQuery = new Parse.Query(AccessLevel).include("doorgroup.doors")
-                            .containedIn("type", ["door","doorGroup"])
-                            
-                            .doesNotExist("doors");
-        let count =  await accessQuery.count();
-        if(count<=0){
-            return {message: "all access levels have been migrated "+count}
+        let memberQuery = new Parse.Query(LinearMember)                            
+                            .select("permissionTable")
+                            .include("permissionTable.accesslevels.door")
+                            .include("permissionTable.accesslevels.doorgroup.doors");
+        let count =  await memberQuery.count();
+        let test = await new Parse.Query(AccessLevelDoor).first()
+        if(test){
+            return {message: "all member access levels have been migrated "}
         }
         
         let current=0;
-        
-        console.log("access count", count)
+        let limit=20;
+        console.log("member count", count)
         while(current<count){
-            let items = await accessQuery
-            .limit(100)
+            let members = await memberQuery
+            .limit(limit)
             .skip(current)
             .find();
-            console.log("o", items.length);
+            console.log("current", current);
             
             
-            let objects = [];
-            for(let item of items){
-                if(item.attributes.type=="door"){
-                    item.set("doors", [item.get("door")])
-                }
-                if(item.attributes.type=="doorGroup"){                    
-                    item.set("doors", item.attributes.doorgroup.attributes.doors);
-                }                
-                objects.push(item);
+          
+            for(let member of members){
+                let objects = [];
+                for(let permission of member.attributes.permissionTable){                               
+                    for(let access of permission.attributes.accesslevels){
+                        if(access.attributes.type!="door" && access.attributes.type!="doorGroup")continue;
+                        if(access.attributes.doorgroup && Array.isArray(access.attributes.doorgroup.attributes.doors)){
+                            for(let door of access.attributes.doorgroup.attributes.doors){
+                                let newAccessLevel = new AccessLevelDoor({member,door, doorgroup:access.attributes.doorgroup});
+                                objects.push(newAccessLevel);
+                            }
+                        }
+                        if(access.attributes.door){
+                            let newAccessLevel = new AccessLevelDoor({member, door:access.attributes.door});
+                            objects.push(newAccessLevel);
+                        }
+                    }                    
+                }    
+                console.log("saving objects", objects.length);
+                await ParseObject.saveAll(objects);            
             }
-            await ParseObject.saveAll(objects);
-            current+=100;
-            console.log("saving current", current);
+            
+            current+=limit;
+            
         }
         return {success:true}
 

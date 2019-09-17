@@ -1,6 +1,6 @@
 import { Log } from './log';
 
-import { Reader, Door, Floor, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, CredentialProfiles, PermissionTableDoor, AccessLevelinSiPass } from '../../custom/models'
+import { Reader, Door, Floor, TimeSchedule, AccessLevel, PermissionTable, WorkGroup, CredentialProfiles, AccessLevelinSiPass } from '../../custom/models'
 import { siPassAdapter, cCureAdapter } from './acsAdapter-Manager';
 import { ParseObject } from 'core/cgi-package';
 
@@ -86,66 +86,7 @@ export class SyncService{
         await ParseObject.saveAll(parseObjects);
     }
 
-     async syncCcurePermissionTableDoor() {
-        Log.Info(`${this.constructor.name}`, `CCure 2.6 syncCcurePermissionTableDoor`);
-        let records = await cCureAdapter.getAllPermissionTableDoor();
-
-        /*
-        [
-            { 
-                permissionTableId: 5179, 
-                doorId: 113956, 
-                timespecId: 1682 
-            },
-            { 
-                permissionTableId: 5182, 
-                doorId: 5441, 
-                timespecId: 5209 
-            }
-        ]
-        */
-
-       if(!records || records.length<=0)return;
-       let objects = await new Parse.Query(PermissionTableDoor)
-                .limit(Number.MAX_SAFE_INTEGER)
-                .containedIn("permissionTableId", records.map(r=>parseInt(r["permissionTableId"])))
-                .find();
-       let parseObjects = [];
-        for (const r of records) {
-            
-            Log.Info(`${this.constructor.name}`, `Import data CCURE800 PermissionTableDoor ${r["permissionTableId"]}-${r["doorId"]}`);
-            let obj = objects.find(x=>x.get("permissionTableId")== parseInt(r["permissionTableId"]));
-            if (!obj) {
-                let d = {
-                    system: 800,
-                    permissionTableId: +r["permissionTableId"],
-                    doorId: [r["doorId"]],
-                    timespecId: r["timespecId"],
-                    status: 1
-                };
-                let o = new PermissionTableDoor(d);
-                parseObjects.push(o);
-            }
-            else {
-                let d1 = obj.get("doorId") as number[] ;
-                let d2 = +r["doorId"] ;
-
-                if ( d1.indexOf(d2) < 0)
-                    d1.push(d2);
-
-                obj.set("system", 800);
-                obj.set("permissionTableId", +r["permissionTableId"]);
-                obj.set("doorId", d1);
-                obj.set("timespecId", r["timespecId"]);
-                parseObjects.push(obj);
-            }
-            
-        }
-        await ParseObject.saveAll(parseObjects);
-        
-    }
-
-     async syncCcureFloor() {
+      async syncCcureFloor() {
         Log.Info(`${this.constructor.name}`, `CCure 2.6 Floors`);
         let records = await cCureAdapter.getFloors();
         if(!records || records.length<=0)return;
