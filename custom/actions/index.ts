@@ -9,6 +9,7 @@ export { default as AnalysisDemographic } from './analysis-demographic';
 export { default as AnalysisHumanDetection } from './analysis-human-detection';
 export { default as AnalysisIdentityPerson } from './analysis-identity-person';
 export { default as AnalysisPeopleCounting } from './analysis-people-counting';
+export { default as AnalysisRepeatVisitor } from './analysis-repeat-visitor';
 
 export { default as SaveDemographic } from './save-demographic';
 export { default as SaveDwellTime } from './save-dwell-time';

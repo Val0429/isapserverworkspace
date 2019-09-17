@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print, Draw, DateTime, File, Demographic } from '../helpers';
+import { Print, Draw, DateTime, File } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
 
@@ -111,8 +111,6 @@ class Action {
                                 report.setValue('device', x.base.device);
                                 report.setValue('date', x.base.date);
                                 report.setValue('imageSrc', '');
-                                report.setValue('age', x.feature.age);
-                                report.setValue('gender', x.feature.gender === Enum.EGender[Enum.EGender.male] ? Enum.EGender.male : Enum.EGender.female);
                                 report.setValue('faceId', x.faceId);
 
                                 await report.save(null, { useMasterKey: true }).fail((e) => {
@@ -157,7 +155,6 @@ namespace Action {
     export interface IAction {
         base: IDB.IReportBase;
         buffer: Buffer;
-        feature: Demographic.ISap.IFeature;
         faceId: string;
     }
 }

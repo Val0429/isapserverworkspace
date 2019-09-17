@@ -91,7 +91,6 @@ export interface IVisitorC_FRSManager extends IC_Base {
     brand: Enum.EDeviceBrand.isap;
     model: Enum.EDeviceModelIsap.frsManager;
     config: ICameraFRSManager;
-    demoServerId: string;
 }
 
 export interface IHeatmapC_CMS extends IC_Base {
@@ -177,7 +176,6 @@ export interface IVisitorU_FRSManager extends IU_Base {
     brand: Enum.EDeviceBrand.isap;
     model: Enum.EDeviceModelIsap.frsManager;
     config?: ICameraFRSManager;
-    demoServerId?: string;
 }
 
 export interface IHeatmapU_CMS extends IU_Base {

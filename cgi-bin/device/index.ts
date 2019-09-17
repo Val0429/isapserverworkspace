@@ -570,8 +570,6 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
                 switch (mode) {
                     case Enum.EDeviceMode.demographic:
                         device = await DemoServer(device, value.demoServerId);
-                        device = await FRSCamera(device, value.config);
-                        break;
                     case Enum.EDeviceMode.peopleCounting:
                         device = await FRSCamera(device, value.config);
                         break;
@@ -579,11 +577,9 @@ export async function Create(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             } else if (value.model === Enum.EDeviceModelIsap.frsManager) {
                 switch (mode) {
                     case Enum.EDeviceMode.demographic:
+                        device = await DemoServer(device, value.demoServerId);
                     case Enum.EDeviceMode.dwellTime:
                     case Enum.EDeviceMode.visitor:
-                        device = await DemoServer(device, value.demoServerId);
-                        device = await FRSManagerCamera(device, value.config);
-                        break;
                     case Enum.EDeviceMode.peopleCounting:
                         device = await FRSManagerCamera(device, value.config);
                         break;
@@ -688,8 +684,6 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
                 switch (mode) {
                     case Enum.EDeviceMode.demographic:
                         if (value.demoServerId) device = await DemoServer(device, value.demoServerId);
-                        if (value.config) device = await FRSCamera(device, value.config);
-                        break;
                     case Enum.EDeviceMode.peopleCounting:
                         if (value.config) device = await FRSCamera(device, value.config);
                         break;
@@ -697,11 +691,9 @@ export async function Update(mode: Enum.EDeviceMode, value: any): Promise<IDB.De
             } else if (value.model === Enum.EDeviceModelIsap.frsManager) {
                 switch (mode) {
                     case Enum.EDeviceMode.demographic:
+                        if (value.demoServerId) device = await DemoServer(device, value.demoServerId);
                     case Enum.EDeviceMode.dwellTime:
                     case Enum.EDeviceMode.visitor:
-                        if (value.demoServerId) device = await DemoServer(device, value.demoServerId);
-                        if (value.config) device = await FRSManagerCamera(device, value.config);
-                        break;
                     case Enum.EDeviceMode.peopleCounting:
                         if (value.config) device = await FRSManagerCamera(device, value.config);
                         break;

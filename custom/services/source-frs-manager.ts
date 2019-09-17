@@ -252,7 +252,7 @@ class Service {
                                                             name: x.name,
                                                         });
                                                     } else {
-                                                        Action.AnalysisDemographic.action$.next({
+                                                        Action.AnalysisRepeatVisitor.action$.next({
                                                             type: 'repeatVisitor',
                                                             device: value1,
                                                             date: x.date,
