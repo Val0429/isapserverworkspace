@@ -25,9 +25,6 @@ type InputR = null;
 type OutputR = string;
 
 action.get(
-    {
-        inputType: 'InputR',
-    },
     async (data): Promise<OutputR> => {
         try {
             let _input: InputR = data.inputType;
