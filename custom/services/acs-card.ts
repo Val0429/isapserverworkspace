@@ -1,7 +1,7 @@
 import { Config } from 'core/config.gen';
 import * as Rx from 'rxjs';
 import { IDB } from '../models';
-import { Print } from '../helpers';
+import { Print, Utility } from '../helpers';
 import * as Enum from '../enums';
 import * as Main from '../../main';
 import { default as DataCenter } from './data-center';
@@ -20,12 +20,12 @@ class Service {
     /**
      *
      */
-    private _save$: Rx.Subject<number> = new Rx.Subject();
+    private _get$: Rx.Subject<Service.IGet> = new Rx.Subject();
 
     /**
      *
      */
-    private _saveNext$: Rx.Subject<number> = new Rx.Subject();
+    private _getNext$: Rx.Subject<Service.IGetNext> = new Rx.Subject();
 
     /**
      *
@@ -70,17 +70,55 @@ class Service {
      */
     private EnableSaveStream(): void {
         try {
-            this._save$
-                .zip(this._saveNext$.startWith(0))
-                .map((x) => {
-                    return x[0];
-                })
+            this._get$
+                .zip(this._getNext$.startWith(undefined))
+                .map((x) => x[0])
                 .subscribe({
                     next: async (x) => {
+                        let card: number = 0;
+
                         try {
+                            let range = this._staffCardRange;
+                            if (x.type === 'visitor') {
+                                range = this._visitorCardRange;
+                            }
+
+                            let query: Parse.Query<IDB.ACSCard> = new Parse.Query(IDB.ACSCard).greaterThanOrEqualTo('card', range.min).lessThanOrEqualTo('card', range.max);
+
+                            let count: number = await query.count();
+
+                            card = range.min;
+                            if (count !== 0) {
+                                let acsCard: IDB.ACSCard = await query
+                                    .skip(count - 1)
+                                    .first()
+                                    .fail((e) => {
+                                        throw e;
+                                    });
+
+                                card = acsCard.getValue('card');
+                                card = card === range.max ? range.min : card + 1;
+
+                                while (true) {
+                                    let check: IDB.ACSCard = await new Parse.Query(IDB.ACSCard)
+                                        .equalTo('card', card)
+                                        .first()
+                                        .fail((e) => {
+                                            throw e;
+                                        });
+                                    if (!check) {
+                                        break;
+                                    } else if (check.getValue('card') === acsCard.getValue('card')) {
+                                        throw 'card was full';
+                                    } else {
+                                        card = card === range.max ? range.min : card + 1;
+                                    }
+                                }
+                            }
+
                             let acsCard: IDB.ACSCard = new IDB.ACSCard();
 
-                            acsCard.setValue('card', x);
+                            acsCard.setValue('card', card);
 
                             await acsCard.save(null, { useMasterKey: true }).fail((e) => {
                                 throw e;
@@ -89,7 +127,10 @@ class Service {
                             Print.Log(e, new Error(), 'error');
                         }
 
-                        this._saveNext$.next(x);
+                        this._getNext$.next({
+                            id: x.id,
+                            card: card,
+                        });
                     },
                 });
         } catch (e) {
@@ -102,53 +143,22 @@ class Service {
      */
     public async GetNextCard(type: 'staff' | 'visitor'): Promise<number> {
         try {
-            let range = this._staffCardRange;
-            if (type === 'visitor') {
-                range = this._visitorCardRange;
-            }
+            let id: string = Utility.RandomText(20, { symbol: false });
 
-            let query: Parse.Query<IDB.ACSCard> = new Parse.Query(IDB.ACSCard).greaterThanOrEqualTo('card', range.min).lessThanOrEqualTo('card', range.max);
+            this._get$.next({
+                id: id,
+                type: type,
+            });
 
-            let count: number = await query.count();
-
-            let card: number = range.min;
-            if (count !== 0) {
-                let acsCard: IDB.ACSCard = await query
-                    .skip(count - 1)
-                    .first()
-                    .fail((e) => {
-                        throw e;
+            let card: number = await new Promise<number>((resolve, reject) => {
+                let next = this._getNext$
+                    .filter((x) => x.id === id)
+                    .subscribe({
+                        next: (x) => {
+                            next.unsubscribe();
+                            resolve(x.card);
+                        },
                     });
-
-                card = acsCard.getValue('card');
-                card = card === range.max ? range.min : card + 1;
-
-                while (true) {
-                    let check: IDB.ACSCard = await new Parse.Query(IDB.ACSCard)
-                        .equalTo('card', card)
-                        .first()
-                        .fail((e) => {
-                            throw e;
-                        });
-                    if (!check) {
-                        break;
-                    } else if (check.getValue('card') === acsCard.getValue('card')) {
-                        throw 'card was full';
-                    } else {
-                        card = card === range.max ? range.min : card + 1;
-                    }
-                }
-            }
-
-            this._save$.next(card);
-
-            await new Promise((resolve, reject) => {
-                let next = this._saveNext$.subscribe({
-                    next: (x) => {
-                        next.unsubscribe();
-                        resolve(x);
-                    },
-                });
             });
 
             return card;
@@ -160,8 +170,27 @@ class Service {
 export default new Service();
 
 namespace Service {
+    /**
+     *
+     */
     export interface IRange {
         min: number;
         max: number;
+    }
+
+    /**
+     *
+     */
+    export interface IGet {
+        id: string;
+        type: 'staff' | 'visitor';
+    }
+
+    /**
+     *
+     */
+    export interface IGetNext {
+        id: string;
+        card: number;
     }
 }
