@@ -28,7 +28,9 @@ action.post(async (data) => {
    let oMembers = await memberQuery.find();
    let total = await memberQuery.count();
    let members = oMembers.map(x=>ParseObject.toOutputJSON(x));
-   
+   for(let member of members){
+       member.endDate = moment(member.endDate).format("YYYY-MM-DD");
+   }
 
     /// 3) Output
     return {
