@@ -18,12 +18,11 @@ export interface IStaffBlacklistIndexR {
  */
 export interface IStaffIndexR {
     objectId: string;
-    card: number;
     imageBase64: string;
     company: IObject;
+    floors: IObject[];
+    card: number;
     isUseSuntecReward: boolean;
-    permissionFloors: IObject[];
-    permissionCompany: IObject;
     unitNumber: string;
     name: string;
     email: string;

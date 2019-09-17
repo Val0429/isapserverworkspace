@@ -78,41 +78,39 @@ action.post(
                                     throw e;
                                 });
                             if (!!_person) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['this face was in blacklist']);
+                                throw Errors.throw(Errors.CustomBadRequest, ['this nric was in blacklist']);
                             }
                         }
 
-                        let permissionCompany: IDB.LocationCompanies = undefined;
-                        let permissionFloors: IDB.LocationFloors[] = undefined;
-                        let permissionBuilding: IDB.LocationBuildings = undefined;
+                        let company: IDB.LocationCompanies = undefined;
+                        let floors: IDB.LocationFloors[] = undefined;
+                        let building: IDB.LocationBuildings = undefined;
                         if (!!_userInfo.company) {
-                            permissionCompany = _userInfo.company;
-                            permissionFloors = _userInfo.floors;
-                            permissionBuilding = _userInfo.building;
-                        } else if ('permissionCompanyId' in value) {
-                            permissionCompany = await new Parse.Query(IDB.LocationCompanies)
-                                .equalTo('objectId', value.permissionCompanyId)
+                            company = _userInfo.company;
+                            floors = _userInfo.floors;
+                            building = _userInfo.building;
+                        } else if ('companyId' in value) {
+                            company = await new Parse.Query(IDB.LocationCompanies)
+                                .equalTo('objectId', value.companyId)
                                 .include(['floor', 'floor.building'])
                                 .first()
                                 .fail((e) => {
                                     throw e;
                                 });
-                            if (!permissionCompany) {
-                                throw Errors.throw(Errors.CustomBadRequest, ['permission company not found']);
+                            if (!company) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['company not found']);
                             }
 
-                            permissionFloors = permissionCompany.getValue('floor').filter((value1, index1, array1) => {
-                                return value.permissionFloorIds.indexOf(value1.id) > -1;
+                            floors = company.getValue('floor').filter((value1, index1, array1) => {
+                                return value.floorIds.indexOf(value1.id) > -1;
                             });
 
-                            permissionBuilding = permissionCompany.getValue('floor').length > 0 ? permissionCompany.getValue('floor')[0].getValue('building') : undefined;
+                            building = company.getValue('floor').length > 0 ? company.getValue('floor')[0].getValue('building') : undefined;
                         } else {
-                            throw Errors.throw(Errors.CustomBadRequest, ['need permission company']);
+                            throw Errors.throw(Errors.CustomBadRequest, ['need company']);
                         }
 
-                        let unitNumber: string = permissionCompany.getValue('unitNumber');
-
-                        let card: number = await ACSCard.GetNextCard('staff');
+                        let unitNumber: string = company.getValue('unitNumber');
 
                         let orignal: IDB.PersonStaffOrignial = undefined;
                         let buffer: Buffer = undefined;
@@ -121,7 +119,7 @@ action.post(
 
                             try {
                                 let frsSetting = DataCenter.frsSetting$.value;
-                                await VerifyBlacklist(buffer, {
+                                await FRSService.VerifyBlacklist(buffer, {
                                     protocol: frsSetting.protocol,
                                     ip: frsSetting.ip,
                                     port: frsSetting.port,
@@ -144,17 +142,18 @@ action.post(
                             buffer = await Draw.Resize(buffer, imgSize, imgConfig.isFill, imgConfig.isTransparent);
                         }
 
+                        let card: number = await ACSCard.GetNextCard('staff');
+
                         person = new IDB.PersonStaff();
 
                         person.setValue('creator', data.user);
                         person.setValue('updater', data.user);
-                        person.setValue('company', permissionCompany);
-                        person.setValue('card', card);
+                        person.setValue('company', company);
+                        person.setValue('floors', floors);
                         person.setValue('imageBase64', 'imageBase64' in value ? buffer.toString(Enum.EEncoding.base64) : undefined);
                         person.setValue('imageOrignial', orignal);
+                        person.setValue('card', card);
                         person.setValue('isUseSuntecReward', value.isUseSuntecReward);
-                        person.setValue('permissionFloors', permissionFloors);
-                        person.setValue('permissionCompany', permissionCompany);
                         person.setValue('unitNumber', unitNumber);
                         person.setValue('name', value.name);
                         person.setValue('email', value.email);
@@ -171,7 +170,7 @@ action.post(
 
                         try {
                             let suntecSetting = DataCenter.suntecAppSetting$.value;
-                            await SuntecAppCreate(person, permissionBuilding, permissionCompany, {
+                            await SuntecAppService.Create(person, building, company, {
                                 host: suntecSetting.host,
                                 token: suntecSetting.token,
                             });
@@ -181,7 +180,7 @@ action.post(
 
                         try {
                             let acsServerSetting = DataCenter.acsServerSetting$.value;
-                            await EntryPassCreate(person, permissionBuilding, {
+                            await EntryPassService.Create(person, building, {
                                 ip: acsServerSetting.ip,
                                 port: acsServerSetting.port,
                                 serviceId: acsServerSetting.serviceId,
@@ -191,16 +190,20 @@ action.post(
                         }
 
                         try {
-                            await HikVisionCreate(person, !!orignal ? Buffer.from(orignal.getValue('imageBase64'), Enum.EEncoding.base64) : undefined, permissionFloors);
+                            await HikVisionService.Create(person, !!orignal ? Buffer.from(orignal.getValue('imageBase64'), Enum.EEncoding.base64) : undefined, floors);
                         } catch (e) {
                             throw Errors.throw(Errors.CustomBadRequest, [`hikvision: ${e}`]);
                         }
 
                         resMessages[index].objectId = person.id;
                     } catch (e) {
-                        try {
-                            await Delete(person);
-                        } catch (e) {}
+                        if (!!person) {
+                            try {
+                                await person.destroy({ useMasterKey: true }).fail((e) => {
+                                    throw e;
+                                });
+                            } catch (e) {}
+                        }
 
                         resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
@@ -261,7 +264,7 @@ action.get(
             let persons: IDB.PersonStaff[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['company', 'permissionFloors', 'permissionCompany'])
+                .include(['company', 'floors'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -277,8 +280,8 @@ action.get(
                           name: value.getValue('company').getValue('name'),
                       };
 
-                let _permissionFloors: IResponse.IObject[] = value
-                    .getValue('permissionFloors')
+                let _floors: IResponse.IObject[] = value
+                    .getValue('floors')
                     .filter((value, index, array) => {
                         return !!value;
                     })
@@ -289,21 +292,13 @@ action.get(
                         };
                     });
 
-                let _permissionCompany: IResponse.IObject = !value.getValue('permissionCompany')
-                    ? undefined
-                    : {
-                          objectId: value.getValue('permissionCompany').id,
-                          name: value.getValue('permissionCompany').getValue('name'),
-                      };
-
                 return {
                     objectId: value.id,
                     card: value.getValue('card'),
                     imageBase64: _image,
                     company: _company,
+                    floors: _floors,
                     isUseSuntecReward: value.getValue('isUseSuntecReward'),
-                    permissionFloors: _permissionFloors,
-                    permissionCompany: _permissionCompany,
                     unitNumber: value.getValue('unitNumber'),
                     name: value.getValue('name'),
                     email: value.getValue('email'),
@@ -376,7 +371,9 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['person not found']);
                         }
 
-                        await Delete(person);
+                        await person.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
                     } catch (e) {
                         resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
 
@@ -397,395 +394,415 @@ action.delete(
 
 /**
  *
- * @param person
  */
-export async function Delete(person: IDB.PersonStaff): Promise<IDB.PersonStaff> {
-    try {
-        let company: IDB.LocationCompanies = await new Parse.Query(IDB.LocationCompanies)
-            .equalTo('objectId', person.getValue('permissionCompany').id)
-            .include(['floor', 'floor.building'])
-            .first()
-            .fail((e) => {
-                throw e;
-            });
-        if (!company) {
-            throw Errors.throw(Errors.CustomBadRequest, ['permission company not found']);
+namespace FRSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: FRS.IConfig): Promise<FRS> {
+        try {
+            let frs: FRS = new FRS();
+            frs.config = config;
+
+            frs.Initialization();
+
+            await frs.Login();
+
+            return frs;
+        } catch (e) {
+            throw e;
         }
+    }
 
-        let floors: IDB.LocationFloors[] = person.getValue('permissionFloors');
-
-        let building: IDB.LocationBuildings = company.getValue('floor').length > 0 ? company.getValue('floor')[0].getValue('building') : undefined;
-
+    /**
+     * Verify Blacklist
+     * @param buffer
+     * @param config
+     */
+    export async function VerifyBlacklist(buffer: Buffer, config: FRS.IConfig): Promise<void> {
         try {
-            let suntecSetting = DataCenter.suntecAppSetting$.value;
-            await SuntecAppDelete(person, {
-                host: suntecSetting.host,
-                token: suntecSetting.token,
-            });
-        } catch (e) {}
+            let frs: FRS = await Login(config);
 
+            let face = await frs.VerifyBlacklist(buffer, 0.9);
+            if (!!face) {
+                throw 'this face was in blacklist';
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+}
+
+/**
+ *
+ */
+namespace SuntecAppService {
+    /**
+     * Suntec App Create
+     * @param person
+     * @param buildingName
+     * @param companyName
+     * @param config
+     */
+    export async function Create(person: IDB.PersonStaff, building: IDB.LocationBuildings, company: IDB.LocationCompanies, config: IDB.ISettingSuntecApp): Promise<void> {
         try {
-            let acsServerSetting = DataCenter.acsServerSetting$.value;
-            await EntryPassDelete(person, building, {
-                ip: acsServerSetting.ip,
-                port: acsServerSetting.port,
-                serviceId: acsServerSetting.serviceId,
-            });
-        } catch (e) {}
+            if (person.getValue('isUseSuntecReward')) {
+                let buildingName: string = !building ? '' : building.getValue('name');
+                let companyName: string = !company ? '' : company.getValue('name');
 
+                let suntec = Suntec.Suntec.getInstance();
+                suntec.setConnection({
+                    protocal: 'https',
+                    host: config.host,
+                    token: config.token,
+                });
+
+                await suntec.signup({
+                    AccessId: person.id,
+                    Email: person.getValue('email'),
+                    FirstName: person.getValue('name'),
+                    OfficeBuilding: buildingName,
+                    CompanyName: companyName,
+                });
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Suntec App Delete
+     * @param person
+     * @param config
+     */
+    export async function Delete(person: IDB.PersonStaff, config: IDB.ISettingSuntecApp): Promise<void> {
         try {
-            await HikVisionDelete(person, floors);
-        } catch (e) {}
+            if (person.getValue('isUseSuntecReward')) {
+                let suntec = Suntec.Suntec.getInstance();
+                suntec.setConnection({
+                    protocal: 'https',
+                    host: config.host,
+                    token: config.token,
+                });
 
-        let cards: IDB.ACSCard[] = await new Parse.Query(IDB.ACSCard)
-            .equalTo('card', person.getValue('card'))
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+                await suntec.revoke({
+                    AccessId: person.id,
+                });
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+}
 
-        let organization: IDB.PersonStaffOrignial = person.getValue('imageOrignial');
-
-        await Promise.all(
-            cards.map(async (value, index, array) => {
-                await value.destroy({ useMasterKey: true }).fail((e) => {
+/**
+ *
+ */
+namespace EntryPassService {
+    /**
+     * EntryPass Create
+     * @param person
+     * @param accessGroup
+     * @param config
+     */
+    export async function Create(person: IDB.PersonStaff, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
+        try {
+            let acsGroup: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
+                .equalTo('building', building)
+                .first()
+                .fail((e) => {
                     throw e;
                 });
-            }),
-        );
+            if (!acsGroup) {
+                throw 'acs group not found';
+            }
 
-        if (!!organization) {
-            await organization.destroy({ useMasterKey: true }).fail((e) => {
-                throw e;
-            });
-        }
-        await person.destroy({ useMasterKey: true }).fail((e) => {
+            let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
+            if (worker) {
+                let staffInfo: EntryPass.EntryPassStaffInfo = {
+                    name: person.getValue('name'),
+                    serialNumber: person.id,
+                };
+
+                let cardInfo: EntryPass.EntryPassCardInfo = {
+                    serialNumber: person.getValue('card').toString(),
+                    accessGroup: acsGroup.getValue('group'),
+                };
+
+                let ret: EntryPass.OperationReuslt = await worker.AddCard(staffInfo, cardInfo);
+                if (!ret.result) {
+                    throw ret.errorMessage;
+                }
+            }
+        } catch (e) {
             throw e;
-        });
-
-        return person;
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Login
- * @param config
- */
-export async function Login(config: FRS.IConfig): Promise<FRS> {
-    try {
-        let frs: FRS = new FRS();
-        frs.config = config;
-
-        frs.Initialization();
-
-        await frs.Login();
-
-        return frs;
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Verify Blacklist
- * @param buffer
- * @param config
- */
-export async function VerifyBlacklist(buffer: Buffer, config: FRS.IConfig): Promise<void> {
-    try {
-        let frs: FRS = await Login(config);
-
-        let face = await frs.VerifyBlacklist(buffer, 0.9);
-        if (!!face) {
-            throw 'this face was in blacklist';
         }
-    } catch (e) {
-        throw e;
     }
-}
 
-/**
- * Suntec App Create
- * @param person
- * @param buildingName
- * @param companyName
- * @param config
- */
-export async function SuntecAppCreate(person: IDB.PersonStaff, building: IDB.LocationBuildings, company: IDB.LocationCompanies, config: IDB.ISettingSuntecApp): Promise<void> {
-    try {
-        if (person.getValue('isUseSuntecReward')) {
-            let buildingName: string = !building ? '' : building.getValue('name');
-            let companyName: string = !company ? '' : company.getValue('name');
-
-            let suntec = Suntec.Suntec.getInstance();
-            suntec.setConnection({
-                protocal: 'https',
-                host: config.host,
-                token: config.token,
-            });
-
-            await suntec.signup({
-                AccessId: person.id,
-                Email: person.getValue('email'),
-                FirstName: person.getValue('name'),
-                OfficeBuilding: buildingName,
-                CompanyName: companyName,
-            });
-        }
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Suntec App Delete
- * @param person
- * @param config
- */
-export async function SuntecAppDelete(person: IDB.PersonStaff, config: IDB.ISettingSuntecApp): Promise<void> {
-    try {
-        if (person.getValue('isUseSuntecReward')) {
-            let suntec = Suntec.Suntec.getInstance();
-            suntec.setConnection({
-                protocal: 'https',
-                host: config.host,
-                token: config.token,
-            });
-
-            await suntec.revoke({
-                AccessId: person.id,
-            });
-        }
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * EntryPass Create
- * @param person
- * @param accessGroup
- * @param config
- */
-export async function EntryPassCreate(person: IDB.PersonStaff, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
-    try {
-        let acsGroup: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
-            .equalTo('building', building)
-            .first()
-            .fail((e) => {
-                throw e;
-            });
-        if (!acsGroup) {
-            throw 'acs group not found';
-        }
-
-        let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
-        if (worker) {
-            let staffInfo: EntryPass.EntryPassStaffInfo = {
-                name: person.getValue('name'),
-                serialNumber: person.id,
-            };
-
-            let cardInfo: EntryPass.EntryPassCardInfo = {
-                serialNumber: person.getValue('card').toString(),
-                accessGroup: acsGroup.getValue('group'),
-            };
-
-            let ret: EntryPass.OperationReuslt = await worker.AddCard(staffInfo, cardInfo);
-            if (!ret.result) {
-                throw ret.errorMessage;
+    /**
+     * EntryPass Delete
+     * @param person
+     * @param accessGroup
+     * @param config
+     */
+    export async function Delete(person: IDB.PersonStaff, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
+        try {
+            let acsGroup: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
+                .equalTo('building', building)
+                .first()
+                .fail((e) => {
+                    throw e;
+                });
+            if (!acsGroup) {
+                throw 'acs group not found';
             }
-        }
-    } catch (e) {
-        throw e;
-    }
-}
 
-/**
- * EntryPass Delete
- * @param person
- * @param accessGroup
- * @param config
- */
-export async function EntryPassDelete(person: IDB.PersonStaff, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
-    try {
-        let acsGroup: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
-            .equalTo('building', building)
-            .first()
-            .fail((e) => {
-                throw e;
-            });
-        if (!acsGroup) {
-            throw 'acs group not found';
-        }
+            let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
+            if (worker) {
+                let staffInfo: EntryPass.EntryPassStaffInfo = {
+                    name: name,
+                    serialNumber: person.id,
+                };
 
-        let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
-        if (worker) {
-            let staffInfo: EntryPass.EntryPassStaffInfo = {
-                name: name,
-                serialNumber: person.id,
-            };
+                let cardInfo: EntryPass.EntryPassCardInfo = {
+                    serialNumber: person.getValue('card').toString(),
+                    accessGroup: acsGroup.getValue('group'),
+                };
 
-            let cardInfo: EntryPass.EntryPassCardInfo = {
-                serialNumber: person.getValue('card').toString(),
-                accessGroup: acsGroup.getValue('group'),
-            };
-
-            let ret: EntryPass.OperationReuslt = await worker.DeleteCard(staffInfo, cardInfo);
-            if (!ret.result) {
-                throw ret.errorMessage;
+                let ret: EntryPass.OperationReuslt = await worker.DeleteCard(staffInfo, cardInfo);
+                if (!ret.result) {
+                    throw ret.errorMessage;
+                }
             }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw e;
     }
 }
 
 /**
- * HikVision Login
- * @param config
+ *
  */
-export async function HikVisionLogin(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
-    try {
-        let hikVision = new HikVision.Hikvision();
+namespace HikVisionService {
+    /**
+     * HikVision Login
+     * @param config
+     */
+    export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
+        try {
+            let hikVision = new HikVision.Hikvision();
 
-        let deviceInfo: HikVision.I_DeviceInfo = config;
+            let deviceInfo: HikVision.I_DeviceInfo = config;
 
-        let result = hikVision.createInstance(deviceInfo);
-        if (!!result.result) {
-            return hikVision;
-        } else {
-            throw result.errorMessage;
+            let result = hikVision.createInstance(deviceInfo);
+            if (!!result.result) {
+                return hikVision;
+            } else {
+                throw result.errorMessage;
+            }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw e;
     }
-}
 
-/**
- * Get HikVision Date
- * @param config
- */
-export function GetHikVisionDate(date: Date): HikVision.I_ValidPeriodTime {
-    try {
-        date = new Date(date || new Date(2035, 0, 1, 0, 0, 0, 0));
-        20;
-        let hikVisionDate: HikVision.I_ValidPeriodTime = {
-            year: DateTime.ToString(date, 'YYYY'),
-            month: DateTime.ToString(date, 'MM'),
-            day: DateTime.ToString(date, 'DD'),
-            hour: DateTime.ToString(date, 'HH'),
-            minute: DateTime.ToString(date, 'mm'),
-            second: DateTime.ToString(date, 'ss'),
-        };
+    /**
+     * Get HikVision Date
+     * @param config
+     */
+    export function GetDate(date: Date): HikVision.I_ValidPeriodTime {
+        try {
+            date = new Date(date || new Date(2035, 0, 1, 0, 0, 0, 0));
+            20;
+            let hikVisionDate: HikVision.I_ValidPeriodTime = {
+                year: DateTime.ToString(date, 'YYYY'),
+                month: DateTime.ToString(date, 'MM'),
+                day: DateTime.ToString(date, 'DD'),
+                hour: DateTime.ToString(date, 'HH'),
+                minute: DateTime.ToString(date, 'mm'),
+                second: DateTime.ToString(date, 'ss'),
+            };
 
-        return hikVisionDate;
-    } catch (e) {
-        throw e;
+            return hikVisionDate;
+        } catch (e) {
+            throw e;
+        }
     }
-}
 
-/**
- * HikVision Create
- * @param person
- * @param buffer
- * @param floors
- */
-export async function HikVisionCreate(person: IDB.PersonStaff, buffer: Buffer, floors: IDB.LocationFloors[]): Promise<void> {
-    try {
-        let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
-            .containedIn('floor', floors)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
-
-        await Promise.all(
-            hikVisions.map(async (value, index, array) => {
-                let hikVision: HikVision.Hikvision = await HikVisionLogin({
-                    ipAddress: value.getValue('ip'),
-                    port: value.getValue('port').toString(),
-                    account: value.getValue('account'),
-                    password: value.getValue('password'),
+    /**
+     * HikVision Create
+     * @param person
+     * @param buffer
+     * @param floors
+     */
+    export async function Create(person: IDB.PersonStaff, buffer: Buffer, floors: IDB.LocationFloors[]): Promise<void> {
+        try {
+            let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
+                .containedIn('floor', floors)
+                .find()
+                .fail((e) => {
+                    throw e;
                 });
 
-                try {
-                    let result = hikVision.createCardItem({
-                        cardNo: person.getValue('card').toString(),
-                        employeeNo: person.id,
-                        name: person.getValue('name'),
-                        beginTime: GetHikVisionDate(person.getValue('startDate')),
-                        endTime: GetHikVisionDate(person.getValue('endDate')),
+            await Promise.all(
+                hikVisions.map(async (value, index, array) => {
+                    let hikVision: HikVision.Hikvision = await Login({
+                        ipAddress: value.getValue('ip'),
+                        port: value.getValue('port').toString(),
+                        account: value.getValue('account'),
+                        password: value.getValue('password'),
                     });
-                    if (!result.result) {
-                        throw result.errorMessage;
-                    }
 
-                    if (!!buffer) {
-                        result = hikVision.enrollFace({
+                    try {
+                        let result = hikVision.createCardItem({
                             cardNo: person.getValue('card').toString(),
-                            faceLen: buffer.length,
-                            faceBuffer: buffer,
+                            employeeNo: person.id,
+                            name: person.getValue('name'),
+                            beginTime: GetDate(person.getValue('startDate')),
+                            endTime: GetDate(person.getValue('endDate')),
                         });
                         if (!result.result) {
                             throw result.errorMessage;
                         }
+
+                        if (!!buffer) {
+                            result = hikVision.enrollFace({
+                                cardNo: person.getValue('card').toString(),
+                                faceLen: buffer.length,
+                                faceBuffer: buffer,
+                            });
+                            if (!result.result) {
+                                throw result.errorMessage;
+                            }
+                        }
+                    } catch (e) {
+                        throw e;
+                    } finally {
+                        hikVision.disposeInstance();
                     }
-                } catch (e) {
+                }),
+            );
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * HikVision Delete
+     * @param person
+     * @param floors
+     */
+    export async function Delete(person: IDB.PersonStaff, floors: IDB.LocationFloors[]): Promise<void> {
+        try {
+            let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
+                .containedIn('floor', floors)
+                .find()
+                .fail((e) => {
                     throw e;
-                } finally {
-                    hikVision.disposeInstance();
-                }
-            }),
-        );
-    } catch (e) {
-        throw e;
+                });
+
+            await Promise.all(
+                hikVisions.map(async (value, index, array) => {
+                    let hikVision: HikVision.Hikvision = await Login({
+                        ipAddress: value.getValue('ip'),
+                        port: value.getValue('port').toString(),
+                        account: value.getValue('account'),
+                        password: value.getValue('password'),
+                    });
+
+                    try {
+                        let result = hikVision.removeCardItem(person.getValue('card').toString());
+                        if (!result.result) {
+                            throw result.errorMessage;
+                        }
+
+                        result = hikVision.removeFace(person.getValue('card').toString());
+                        if (!result.result) {
+                            throw result.errorMessage;
+                        }
+                    } catch (e) {
+                        throw e;
+                    } finally {
+                        hikVision.disposeInstance();
+                    }
+                }),
+            );
+        } catch (e) {
+            throw e;
+        }
     }
 }
 
 /**
- * HikVision Delete
- * @param person
- * @param floors
+ * Delete when person was delete
  */
-export async function HikVisionDelete(person: IDB.PersonStaff, floors: IDB.LocationFloors[]): Promise<void> {
-    try {
-        let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
-            .containedIn('floor', floors)
-            .find()
-            .fail((e) => {
-                throw e;
-            });
+IDB.PersonStaff.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let person: IDB.PersonStaff = x.data as IDB.PersonStaff;
 
-        await Promise.all(
-            hikVisions.map(async (value, index, array) => {
-                let hikVision: HikVision.Hikvision = await HikVisionLogin({
-                    ipAddress: value.getValue('ip'),
-                    port: value.getValue('port').toString(),
-                    account: value.getValue('account'),
-                    password: value.getValue('password'),
-                });
+                let company: IDB.LocationCompanies = await new Parse.Query(IDB.LocationCompanies)
+                    .equalTo('objectId', person.getValue('company').id)
+                    .include(['floor', 'floor.building'])
+                    .first()
+                    .fail((e) => {
+                        throw e;
+                    });
+                if (!company) {
+                    throw Errors.throw(Errors.CustomBadRequest, ['company not found']);
+                }
+
+                let floors: IDB.LocationFloors[] = person.getValue('floors');
+
+                let building: IDB.LocationBuildings = company.getValue('floor').length > 0 ? company.getValue('floor')[0].getValue('building') : undefined;
 
                 try {
-                    let result = hikVision.removeCardItem(person.getValue('card').toString());
-                    if (!result.result) {
-                        throw result.errorMessage;
-                    }
+                    let suntecSetting = DataCenter.suntecAppSetting$.value;
+                    await SuntecAppService.Delete(person, {
+                        host: suntecSetting.host,
+                        token: suntecSetting.token,
+                    });
+                } catch (e) {}
 
-                    result = hikVision.removeFace(person.getValue('card').toString());
-                    if (!result.result) {
-                        throw result.errorMessage;
-                    }
-                } catch (e) {
-                    throw e;
-                } finally {
-                    hikVision.disposeInstance();
+                try {
+                    let acsServerSetting = DataCenter.acsServerSetting$.value;
+                    await EntryPassService.Delete(person, building, {
+                        ip: acsServerSetting.ip,
+                        port: acsServerSetting.port,
+                        serviceId: acsServerSetting.serviceId,
+                    });
+                } catch (e) {}
+
+                try {
+                    await HikVisionService.Delete(person, floors);
+                } catch (e) {}
+
+                let cards: IDB.ACSCard[] = await new Parse.Query(IDB.ACSCard)
+                    .equalTo('card', person.getValue('card'))
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                let organization: IDB.PersonStaffOrignial = person.getValue('imageOrignial');
+
+                await Promise.all(
+                    cards.map(async (value, index, array) => {
+                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+
+                if (!!organization) {
+                    await organization.destroy({ useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
                 }
-            }),
-        );
-    } catch (e) {
-        throw e;
-    }
-}
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

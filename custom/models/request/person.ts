@@ -22,9 +22,9 @@ export interface IStaffBlacklistIndexC {
  */
 export interface IStaffIndexC {
     imageBase64?: string;
+    floorIds: string[];
+    companyId?: string;
     isUseSuntecReward?: boolean;
-    permissionFloorIds: string[];
-    permissionCompanyId?: string;
     name: string;
     email: string;
     nric?: string;

@@ -23,7 +23,7 @@ export interface IPersonStaff {
     /**
      *
      */
-    card: number;
+    floors: LocationFloors[];
 
     /**
      *
@@ -38,17 +38,12 @@ export interface IPersonStaff {
     /**
      *
      */
+    card: number;
+
+    /**
+     *
+     */
     isUseSuntecReward?: boolean;
-
-    /**
-     *
-     */
-    permissionFloors: LocationFloors[];
-
-    /**
-     *
-     */
-    permissionCompany: LocationCompanies;
 
     /**
      *
