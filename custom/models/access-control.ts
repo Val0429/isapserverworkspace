@@ -316,6 +316,12 @@ export interface IAccessLevel {     // CRUD  V
 }
 @registerSubclass()
 export class AccessLevel extends ParseObject<IAccessLevel> { }
+export interface ICCureClearance{
+    name:string,
+    data:any
+}
+@registerSubclass()
+export class CCureClearance extends ParseObject<ICCureClearance> { }
 export interface CCurePermissionTable{
     permissionTableId:number;
     permissionTableName:string;
