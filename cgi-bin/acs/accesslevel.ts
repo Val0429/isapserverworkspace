@@ -47,15 +47,15 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
         //console.log("bop2");
         for (let e of readers) {            
 
-            if (e.get("system") == 1) {
+            if (e.get("system") != 1) continue;
                 let readername = e.get("readername");
                 if(readername.substring(0, 2)=="A_") readername = readername.substring(2, readername.length);
                 //console.log("bop2", readername);
                 let r = {
-                    token: "-1",
-                    name: readername + "_" + data.inputType.timeschedule.get("timename"),
-                    timeScheduleToken: data.inputType.timeschedule.get("timeid"),
-                    accessRule: [
+                    Token: "-1",
+                    Name: readername + "_" + data.inputType.timeschedule.get("timename"),
+                    TimeScheduleToken: data.inputType.timeschedule.get("timeid"),
+                    AccessRule: [
                         {
                             ObjectName: readername,
                             ObjectToken: e.get("readerid"),
@@ -64,7 +64,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                         }
                     ]
                 }
-                let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.name).first();
+                let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.Name).first();
                 if(!exists){
                     let r1 = await siPassAdapter.postAccessLevel(r);
                     //console.log("bop3");
@@ -78,20 +78,21 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                         throw Errors.throw(Errors.CustomNotExists, [`Create Access Level Fail ${r1}`]);
                     }
                 }
-            }
+            
         }
     }
 
     if (floors.length > 0) {
         for (let e of floors) {
+            
             if (e.get("system") != 1) continue;
             let readername = e.get("floorname");
             if(readername.substring(0, 2)=="A_") readername = readername.substring(2, readername.length);
             let r = {
-                token: "-1",
-                name: readername + "_" + data.inputType.timeschedule.get("timename"),
-                timeScheduleToken: data.inputType.timeschedule.get("timeid"),
-                accessRule: [
+                Token: "-1",
+                Name: readername + "_" + data.inputType.timeschedule.get("timename"),
+                TimeScheduleToken: data.inputType.timeschedule.get("timeid"),
+                AccessRule: [
                     {
                         ObjectName: readername,
                         ObjectToken: e.get("floorid"),
@@ -100,7 +101,7 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                     }
                 ]
             }
-            let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.name).first();
+            let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.Name).first();
             if(!exists){
                 let r1 = await siPassAdapter.postAccessLevel(r);
                 if (r1["Token"] != undefined) {

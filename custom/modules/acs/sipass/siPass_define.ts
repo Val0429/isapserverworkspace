@@ -251,11 +251,11 @@ export interface IAccessGroupObject {
 }
 
 export interface IAccessLevelObject {
-    name?: string;
-    token?: string;
-    accessRule?: ICardholderAccessRule[];
-    timeScheduleToken?: string;
-    isFavourite?: boolean;
+    Name?: string;
+    Token?: string;
+    AccessRule?: ICardholderAccessRule[];
+    TimeScheduleToken?: string;
+    IsFavourite?: boolean;
 }
 
 

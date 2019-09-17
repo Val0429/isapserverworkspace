@@ -465,7 +465,7 @@ async function getAccessLevelInSipass(accessLevel:any){
         //console.log("readers in sipass", sipassReaders);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassReaders).find();
     }
-    else if((accessLevel.type=="floor" || accessLevel.type=="floorGroup" || accessLevel.type=="elevator" || accessLevel.type=="elevatorGroup") && floors.length>0){
+    else if((accessLevel.type=="floor" || accessLevel.type=="floorGroup" || accessLevel.type=="elevator" || accessLevel.type=="elevatorFloorGroup" || accessLevel.type=="elevatorGroup") && floors.length>0){
         let sipassFloors = floors.map(x=>(x.get("floorname").substring(0, 2)=="A_" ? x.get("floorname").substring(2, x.get("floorname").length) : x.get("floorname"))+"_"+accessLevel.timeschedule.timename);
         //console.log("floors in sipass", sipassFloors);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassFloors).find();

@@ -282,7 +282,7 @@ export class SiPassPermissionService {
             'clientUniqueId': data.uniqueId
         };
 
-        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/AccessLevels/${data2.token}`;
+        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/AccessLevels/${data2.Token}`;
 
         // console.info(`\n\n`);
         // console.info(`url = ${url}`);
@@ -346,38 +346,21 @@ export class SiPassPermissionService {
         //console.log(`requestBody = ${requestBody}`);
         //console.dir(requestHeader, {depth: null})
 
-        let result: any = await new Promise<any>((resolve, reject) => {
-            try {
-                HttpClient.post(
-                    {
-                        url: url,
-                        json: true,
-                        body: requestBody,
-                        headers: requestHeader
-                    },
-                    (error, response, body) => {
-                        if (error) {
-                            return reject(error);
-                        } else if (response.statusCode !== 201) {
-                            console.log(`statusCode = ${response.statusCode}`);
-                            return reject(body);
-                        }
+        const options = {
+            uri: url,
+            timeout: 0, 
+            method: 'POST',
+            headers: requestHeader,
+            rejectUnauthorized: false,
+            body: JSON.stringify(requestBody)
+        };
 
-                        resolve(body);
-                    },
-                );
-            } catch (e) {
-                return reject(e);
-            }
-        }).catch((e) => {
-            console.log(e);
-            return JSON.stringify(e);
-        });
+    
+        return await request(options);
         //console.dir(result, {depth: null})        
         //console.log('\n.........................................');        
         //console.info(`result = ` + JSON.stringify(result));      
-        //console.log('\n.........................................');        
-        return JSON.stringify(result);
+        //console.log('\n.........................................');      
     }
     public async UpdatePermission(data: SiPassDataStructure.SiPassHrApiGlobalParameter, data2: SiPassDataStructure.IAccessLevelObject,sessionId:string) {
 
@@ -392,7 +375,7 @@ export class SiPassPermissionService {
             'clientUniqueId': data.uniqueId
         };
 
-        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/AccessLevels/${data2.token}`;
+        let url: string = `https://${data.domain}:${data.port}/api/V1/hr/AccessLevels/${data2.Token}`;
 
         // console.info(`url = ${url}`);
         // console.log(`requestHeader =` + JSON.stringify(requestHeader));
