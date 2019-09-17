@@ -21,7 +21,7 @@ type OutputC = Restful.OutputC<IAccessLevel>;
 
 action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     /// 1) Sync to ACS Services
-    console.log("bop0");
+    //console.log("bop0");
     let { readers, floors, doors } = await getAccessLevelReaders(ParseObject.toOutputJSON(data.inputType));
     // if ((siPassAdapter.sessionToken == undefined) || (siPassAdapter.sessionToken == "")) {
     //     Log.Info(`CGI acsSync`, `SiPass Connect fail. Please contact system administrator!`);
@@ -42,15 +42,15 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
     // IntrusionAreaPoint = 10
     // OfflineAccessGroup = 11
     // VenueBooking = 12
-    console.log("bop1");
+    //console.log("bop1");
     if (readers.length > 0) {
-        console.log("bop2");
+        //console.log("bop2");
         for (let e of readers) {            
 
             if (e.get("system") == 1) {
                 let readername = e.get("readername");
                 if(readername.substring(0, 2)=="A_") readername = readername.substring(2, readername.length);
-                console.log("bop2", readername);
+                //console.log("bop2", readername);
                 let r = {
                     token: "-1",
                     name: readername + "_" + data.inputType.timeschedule.get("timename"),
@@ -66,8 +66,8 @@ action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
                 }
                 let exists = await new Parse.Query(AccessLevelinSiPass).equalTo("name", r.name).first();
                 if(!exists){
-                    let r1 = await siPassAdapter.postAccessLevel(r, 10000);
-                    console.log("bop3");
+                    let r1 = await siPassAdapter.postAccessLevel(r);
+                    //console.log("bop3");
                     if (r1["Token"] != undefined) {
                         await Log.Info(`create`, `${r1["Token"]} ${r1["Name"]}`, data.user, false, "AccessLevelinSiPass");
 
@@ -185,7 +185,7 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 
 export default action;
 export async function getAccessLevelReaders(accessLevel:any) {
-    console.log("access level", accessLevel);
+    //console.log("access level", accessLevel);
     let readers = [];
     let floors = [];
     let doors=[];
@@ -221,7 +221,7 @@ export async function getAccessLevelReaders(accessLevel:any) {
             .first();
         floors.push(floor);
     }
-    else if (accessLevel.type == "floorGroup") {
+    else if (accessLevel.type == "floorGroup" || accessLevel.type=="elevatorFloorGroup") {
         let floorGroup = await new Parse.Query(FloorGroup)
             .equalTo("objectId", accessLevel.floorgroup.objectId)
             .include("floors")

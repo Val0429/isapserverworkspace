@@ -55,7 +55,7 @@ action.post<InputC, any>({ inputType: "InputC" }, async (data) => {
     // 2.0 Modify Access Group
     
     let al = await checkSipassAccessLevel(ParseObject.toOutputJSON(data.inputType));
-    console.log("access levels", al);
+    //console.log("access levels", al);
     if ( al.length <= 0) {
         throw Errors.throw(Errors.CustomNotExists, [`accessLevelIsNotInSipass`]);
     }
@@ -188,7 +188,7 @@ async function checkSipassAccessLevel(data:any) {
             .containedIn("objectId", data.accesslevels.map(x => x.objectId))
             .include("timeschedule").find();
         for (let levelGroup of accesslevels.map(x => ParseObject.toOutputJSON(x))) {
-            console.log("levelGroup", levelGroup);
+            //console.log("levelGroup", levelGroup);
             let levelInSipass = await getAccessLevelInSipass(levelGroup);
             sipassAccessLevels.push(...levelInSipass);
         }
@@ -207,7 +207,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
     let acsAcessLevels=[];
     let ccureClearances = await new Parse.Query(CCureClearance).equalTo("name", tablename).first();    
     let ccureClearance = ccureClearances ? ccureClearances.attributes.data : undefined;
-    console.log("ccureClearance", ccureClearance);
+    //console.log("ccureClearance", ccureClearance);
     
     let accessLevelIsNotInCCure="accessLevelIsNotInCCure";
     let clearanceIsNotInCCure="clearanceIsNotInCCure";
@@ -225,7 +225,7 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             .include("timeschedule")
             .first();
         let accesslevel = ParseObject.toOutputJSON(accesslevelObject);
-        console.log("accesslevel", accesslevel)
+        //console.log("accesslevel", accesslevel)
         
         if(accesslevel.type=="door"){
             if(!accesslevel.door || !accesslevel.timeschedule)continue;
@@ -323,6 +323,38 @@ async function checkCCureDevices(tablename:string, accessLevels:any[]){
             } 
             
         }
+        if(accesslevel.type=="elevatorFloorGroup"){
+            
+            if(!accesslevel.elevatorgroup || !(accesslevel.floorgroup && accesslevel.floorgroup.floors.length>0) || !accesslevel.timeschedule)continue;
+            //compare content with ccure floor name and timename 
+            for(let alFloor of accesslevel.floorgroup.floors){
+                let { floorIsInCCure, floor } = getCCureFloor(alFloor);            
+                if(!floorIsInCCure) continue;
+                acsAcessLevels.push(accesslevel);
+                if (!ccureClearance) {
+                    errors.push({ type: clearanceIsNotInCCure });
+                }
+                else {
+                    let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.elevator.name == accesslevel.elevatorgroup.groupname && 
+                                    x.timespec == accesslevel.timeschedule.timename && x.floor  && x.floor.type=="floorGroup" && x.floor.floors && 
+                                    Array.isArray(x.floor.floors) && x.floor.floors.find(y=>y.name == floor.floorname));
+                    if (!exists)
+                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.floorgroup.groupname}-${floor.floorname}`, timename: accesslevel.timeschedule.timename });
+                }
+            }    
+            for(let alElevator of accesslevel.elevatorgroup.elevators){
+                if (!ccureClearance) {
+                    errors.push({ type: clearanceIsNotInCCure });
+                }
+                else {
+                    let exists = ccureClearance.find(x => x.type == "elevatorFloor" && x.elevator.name == accesslevel.elevatorgroup.groupname && 
+                                    x.timespec == accesslevel.timeschedule.timename && x.elevator  && x.elevator.type=="elevatorGroup" && x.elevator.elevators && 
+                                    Array.isArray(x.elevator.elevators) && x.elevator.elevators.find(y=>y.name == alElevator.elevatorname));
+                    if (!exists)
+                        errors.push({ type: accessLevelIsNotInCCure, devicename: `${accesslevel.elevatorgroup.groupname}-${alElevator.elevatorname}`, timename: accesslevel.timeschedule.timename });
+                }
+            }
+        }
     }
     return {ccureClearance, acsAcessLevels, errors};
 
@@ -337,13 +369,13 @@ function getCCureDoor(door: any) {
     if (door.readerout && door.readerout.length > 0)
         readers.push(...door.readerout);
     let doorIsInCCure = readers.find(x=>x.readername.length>=2  && x.system==800 && x.readername.substring(0,2)!="D_")
-    console.log("doorIsInCcure", doorIsInCCure, "readers", readers);
+    //console.log("doorIsInCcure", doorIsInCCure, "readers", readers);
     return { doorIsInCCure, door };
 }
 
 function getCCureFloor(floor: any) {    
     let floorIsInCCure = floor.floorname.length>=2 && floor.system==800 && floor.floorname.substring(0,2)!="D_";
-    console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
+    //console.log("foorIsInCCure", floorIsInCCure, "floor", floor);
     return { floorIsInCCure, floor };
 }
 function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors:any[]){
@@ -400,6 +432,26 @@ function checkCcureClearance(ccureClearance:any[], acsAccessLevels:any[], errors
                 if (!exists)
                     errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${accessRule.floor.name}`, timename: accessRule.timespec });          
         }
+        if(accessRule.type=="elevatorFloor" && accessRule.elevator.type== "elevatorGroup" && accessRule.floor.type=="floorGroup"){
+            for(let floor of accessRule.floor.floors){                
+                let isActive = floor.name.length>2 && floor.name.substring(0,2)!="D_";
+                if(!isActive) continue;                
+                let exists = acsAccessLevels.find(x => x.type == "elevatorFloorGroup" && 
+                            x.elevatorgroup.groupname == accessRule.elevator.name &&
+                            accessRule.timespec == x.timeschedule.timename && 
+                            x.floorgroup.floors.find(y=>floor.name==y.floorname));
+                
+                 if(!exists)  errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.floor.name}-${floor.name}`, timename: accessRule.timespec });
+            }    
+            for(let elevator of accessRule.elevator.elevators){              
+                let exists = acsAccessLevels.find(x => x.type == "elevatorFloorGroup" && 
+                            x.elevatorgroup.groupname == accessRule.elevator.name &&
+                            accessRule.timespec == x.timeschedule.timename && 
+                            x.elevatorgroup.elevators.find(y=>elevator.name==y.elevatorname));
+                
+                 if(!exists)  errors.push({ type: accessLevelIsNotInAcs, devicename: `${accessRule.elevator.name}-${elevator.name}`, timename: accessRule.timespec });
+            }
+        }
     }
 
     
@@ -410,12 +462,12 @@ async function getAccessLevelInSipass(accessLevel:any){
     let results:any[]=[];
     if((accessLevel.type=="door" || accessLevel.type=="doorGroup") && readers.length>0){
         let sipassReaders = readers.map(x=>(x.get("readername").substring(0, 2)=="A_" ? x.get("readername").substring(2, x.get("readername").length) : x.get("readername"))+"_"+accessLevel.timeschedule.timename);
-        console.log("readers in sipass", sipassReaders);
+        //console.log("readers in sipass", sipassReaders);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassReaders).find();
     }
     else if((accessLevel.type=="floor" || accessLevel.type=="floorGroup" || accessLevel.type=="elevator" || accessLevel.type=="elevatorGroup") && floors.length>0){
         let sipassFloors = floors.map(x=>(x.get("floorname").substring(0, 2)=="A_" ? x.get("floorname").substring(2, x.get("floorname").length) : x.get("floorname"))+"_"+accessLevel.timeschedule.timename);
-        console.log("floors in sipass", sipassFloors);
+        //console.log("floors in sipass", sipassFloors);
         results = await new Parse.Query(AccessLevelinSiPass).containedIn("name", sipassFloors).find();
     }
     return results.map(x=>ParseObject.toOutputJSON(x)).map(x=>{return{Token:x.token, Name:x.name}});

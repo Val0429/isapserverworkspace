@@ -312,7 +312,7 @@ export interface IAccessLevel {     // CRUD  V
     floorgroup?:FloorGroup,
     timeschedule?: TimeSchedule,
     //save doors the moment it was created
-    doors:Door[]
+    doors?:Door[]
 }
 @registerSubclass()
 export class AccessLevel extends ParseObject<IAccessLevel> { }
