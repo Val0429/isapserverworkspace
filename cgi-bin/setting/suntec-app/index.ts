@@ -59,7 +59,7 @@ action.put(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             try {
-                await Check({
+                await SuntecAppService.Check({
                     host: _input.host,
                     token: _input.token,
                 });
@@ -81,30 +81,35 @@ action.put(
 );
 
 /**
- * Check
- * @param config
+ *
  */
-export async function Check(config: { host: string; token: string }): Promise<void> {
-    try {
-        let suntec = Suntec.Suntec.getInstance();
-        suntec.setConnection({
-            protocal: 'https',
-            host: config.host,
-            token: config.token,
-        });
-
+namespace SuntecAppService {
+    /**
+     * Check
+     * @param config
+     */
+    export async function Check(config: { host: string; token: string }): Promise<void> {
         try {
-            let accessId: string = Utility.RandomText(10, { symbol: false, EN: false, en: false });
-
-            await suntec.revoke({
-                AccessId: accessId,
+            let suntec = Suntec.Suntec.getInstance();
+            suntec.setConnection({
+                protocal: 'https',
+                host: config.host,
+                token: config.token,
             });
-        } catch (e) {
-            if (e !== 'AccessId is not exist') {
-                throw e;
+
+            try {
+                let accessId: string = Utility.RandomText(10, { symbol: false, EN: false, en: false });
+
+                await suntec.revoke({
+                    AccessId: accessId,
+                });
+            } catch (e) {
+                if (e !== 'AccessId is not exist') {
+                    throw e;
+                }
             }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw e;
     }
 }

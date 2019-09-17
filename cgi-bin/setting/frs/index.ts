@@ -62,7 +62,7 @@ action.put(
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
             try {
-                await Login({
+                await FRSService.Login({
                     protocol: _input.protocol,
                     ip: _input.ip,
                     port: _input.port,
@@ -91,20 +91,25 @@ action.put(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: FRS.IConfig): Promise<FRS> {
-    try {
-        let frs: FRS = new FRS();
-        frs.config = config;
+namespace FRSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: FRS.IConfig): Promise<FRS> {
+        try {
+            let frs: FRS = new FRS();
+            frs.config = config;
 
-        frs.Initialization();
+            frs.Initialization();
 
-        await frs.Login();
+            await frs.Login();
 
-        return frs;
-    } catch (e) {
-        throw e;
+            return frs;
+        } catch (e) {
+            throw e;
+        }
     }
 }

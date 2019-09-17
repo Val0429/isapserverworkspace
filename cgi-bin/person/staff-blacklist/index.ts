@@ -83,7 +83,7 @@ action.post(
 
                             try {
                                 let frsSetting = DataCenter.frsSetting$.value;
-                                personId = await AddBlacklist(value.name, buffer, {
+                                personId = await FRSService.AddBlacklist(value.name, buffer, {
                                     protocol: frsSetting.protocol,
                                     ip: frsSetting.ip,
                                     port: frsSetting.port,
@@ -362,7 +362,7 @@ action.delete(
 
                         try {
                             let frsSetting = DataCenter.frsSetting$.value;
-                            await RemoveBlacklist(person.getValue('personId'), {
+                            await FRSService.RemoveBlacklist(person.getValue('personId'), {
                                 protocol: frsSetting.protocol,
                                 ip: frsSetting.ip,
                                 port: frsSetting.port,
@@ -403,63 +403,68 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: FRS.IConfig): Promise<FRS> {
-    try {
-        let frs: FRS = new FRS();
-        frs.config = config;
-
-        frs.Initialization();
-
-        await frs.Login();
-
-        return frs;
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Add Blacklist
- * @param name
- * @param buffer
- * @param config
- */
-export async function AddBlacklist(name: string, buffer: Buffer, config: FRS.IConfig): Promise<string> {
-    try {
-        let frs: FRS = await Login(config);
-
-        let groups = await frs.GetUserGroups();
-        let blacklist = groups.find((n) => n.name.toLocaleLowerCase() === 'blacklist');
-        if (!blacklist) {
-            throw 'group blacklist not found';
-        }
-
-        let personId: string = await frs.AddPerson(name, new Date(2035, 0, 1, 0, 0, 0, 0), [blacklist], buffer);
-
-        return personId;
-    } catch (e) {
-        throw e;
-    }
-}
-
-/**
- * Remove Blacklist
- * @param personId
- * @param config
- */
-export async function RemoveBlacklist(personId: string, config: FRS.IConfig): Promise<void> {
-    try {
-        let frs: FRS = await Login(config);
-
+namespace FRSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: FRS.IConfig): Promise<FRS> {
         try {
-            await frs.RemovePerson(personId);
+            let frs: FRS = new FRS();
+            frs.config = config;
+
+            frs.Initialization();
+
+            await frs.Login();
+
+            return frs;
         } catch (e) {
-            Print.Log(e, new Error(), 'error');
+            throw e;
         }
-    } catch (e) {
-        throw e;
+    }
+
+    /**
+     * Add Blacklist
+     * @param name
+     * @param buffer
+     * @param config
+     */
+    export async function AddBlacklist(name: string, buffer: Buffer, config: FRS.IConfig): Promise<string> {
+        try {
+            let frs: FRS = await Login(config);
+
+            let groups = await frs.GetUserGroups();
+            let blacklist = groups.find((n) => n.name.toLocaleLowerCase() === 'blacklist');
+            if (!blacklist) {
+                throw 'group blacklist not found';
+            }
+
+            let personId: string = await frs.AddPerson(name, new Date(2035, 0, 1, 0, 0, 0, 0), [blacklist], buffer);
+
+            return personId;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Remove Blacklist
+     * @param personId
+     * @param config
+     */
+    export async function RemoveBlacklist(personId: string, config: FRS.IConfig): Promise<void> {
+        try {
+            let frs: FRS = await Login(config);
+
+            try {
+                await frs.RemovePerson(personId);
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        } catch (e) {
+            throw e;
+        }
     }
 }

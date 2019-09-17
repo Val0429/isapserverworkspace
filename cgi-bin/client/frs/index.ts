@@ -41,7 +41,7 @@ action.post(
                         }
 
                         try {
-                            await Login({
+                            await FRSService.Login({
                                 protocol: value.protocol,
                                 ip: value.ip,
                                 port: value.port,
@@ -255,7 +255,7 @@ action.put(
                         }
 
                         try {
-                            await Login({
+                            await FRSService.Login({
                                 protocol: frs.getValue('protocol'),
                                 ip: frs.getValue('ip'),
                                 port: frs.getValue('port'),
@@ -343,37 +343,42 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: FRS.IConfig): Promise<FRS> {
-    try {
-        let frs: FRS = new FRS();
-        frs.config = config;
+namespace FRSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: FRS.IConfig): Promise<FRS> {
+        try {
+            let frs: FRS = new FRS();
+            frs.config = config;
 
-        frs.Initialization();
+            frs.Initialization();
 
-        await frs.Login();
+            await frs.Login();
 
-        return frs;
-    } catch (e) {
-        throw e;
+            return frs;
+        } catch (e) {
+            throw e;
+        }
     }
-}
 
-/**
- * Get device list
- * @param config
- */
-export async function GetDeviceList(config: FRS.IConfig): Promise<FRS.IDevice[]> {
-    try {
-        let frs: FRS = await Login(config);
+    /**
+     * Get device list
+     * @param config
+     */
+    export async function GetDeviceList(config: FRS.IConfig): Promise<FRS.IDevice[]> {
+        try {
+            let frs: FRS = await Login(config);
 
-        let devices = await frs.GetDeviceList();
+            let devices = await frs.GetDeviceList();
 
-        return devices;
-    } catch (e) {
-        throw e;
+            return devices;
+        } catch (e) {
+            throw e;
+        }
     }
 }
 

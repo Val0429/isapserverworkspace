@@ -41,7 +41,7 @@ action.post(
                         }
 
                         try {
-                            await Login({
+                            await VMSService.Login({
                                 protocol: value.protocol,
                                 ip: value.ip,
                                 port: value.port,
@@ -224,7 +224,7 @@ action.put(
                         }
 
                         try {
-                            await Login({
+                            await VMSService.Login({
                                 protocol: vms.getValue('protocol'),
                                 ip: vms.getValue('ip'),
                                 port: vms.getValue('port'),
@@ -311,20 +311,25 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: VMS.IConfig): Promise<VMS> {
-    try {
-        let vms: VMS = new VMS();
-        vms.config = config;
+namespace VMSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: VMS.IConfig): Promise<VMS> {
+        try {
+            let vms: VMS = new VMS();
+            vms.config = config;
 
-        vms.Initialization();
+            vms.Initialization();
 
-        await vms.Login();
+            await vms.Login();
 
-        return vms;
-    } catch (e) {
-        throw e;
+            return vms;
+        } catch (e) {
+            throw e;
+        }
     }
 }

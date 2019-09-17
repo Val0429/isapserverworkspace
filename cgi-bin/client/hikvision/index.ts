@@ -41,7 +41,7 @@ action.post(
                         }
 
                         try {
-                            await GetDeviceStatus({
+                            await HikVisionService.GetDeviceStatus({
                                 ipAddress: value.ip,
                                 port: value.port.toString(),
                                 account: value.account,
@@ -253,7 +253,7 @@ action.put(
                         }
 
                         try {
-                            await GetDeviceStatus({
+                            await HikVisionService.GetDeviceStatus({
                                 ipAddress: hikVision.getValue('ip'),
                                 port: hikVision.getValue('port').toString(),
                                 account: hikVision.getValue('account'),
@@ -339,45 +339,50 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
-    try {
-        let hikVision = new HikVision.Hikvision();
+namespace HikVisionService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
+        try {
+            let hikVision = new HikVision.Hikvision();
 
-        let deviceInfo: HikVision.I_DeviceInfo = config;
+            let deviceInfo: HikVision.I_DeviceInfo = config;
 
-        let result = hikVision.createInstance(deviceInfo);
-        if (!!result.result) {
-            return hikVision;
-        } else {
-            throw result.errorMessage;
+            let result = hikVision.createInstance(deviceInfo);
+            if (!!result.result) {
+                return hikVision;
+            } else {
+                throw result.errorMessage;
+            }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw e;
     }
-}
 
-/**
- * Get device status
- * @param config
- */
-export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<void> {
-    let hikVision: HikVision.Hikvision = undefined;
+    /**
+     * Get device status
+     * @param config
+     */
+    export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<void> {
+        let hikVision: HikVision.Hikvision = undefined;
 
-    try {
-        hikVision = await Login(config);
+        try {
+            hikVision = await Login(config);
 
-        let result = hikVision.checkDeviceStatus();
-        if (!result.result) {
-            throw result.errorMessage;
-        }
-    } catch (e) {
-        throw e;
-    } finally {
-        if (!!hikVision) {
-            hikVision.disposeInstance();
+            let result = hikVision.checkDeviceStatus();
+            if (!result.result) {
+                throw result.errorMessage;
+            }
+        } catch (e) {
+            throw e;
+        } finally {
+            if (!!hikVision) {
+                hikVision.disposeInstance();
+            }
         }
     }
 }
