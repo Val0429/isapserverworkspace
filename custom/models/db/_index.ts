@@ -112,6 +112,7 @@ export * from './client-vms';
 
 export * from './location-buildings';
 export * from './location-companies';
+export * from './location-door';
 export * from './location-floors';
 
 export * from './notify-person-blacklist';

@@ -1,5 +1,6 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
 import { ParseObjectNotice, LocationFloors, LocationCompanies } from './_index';
+import * as Enum from '../../enums';
 
 /**
  * Door
@@ -23,7 +24,7 @@ export interface ILocationDoor {
     /**
      *
      */
-    range: 'none' | 'building' | 'floor';
+    range: Enum.EDoorRange;
 }
 
 @registerSubclass()
