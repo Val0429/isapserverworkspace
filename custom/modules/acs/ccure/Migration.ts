@@ -110,15 +110,16 @@ export async function GetMigrationDataPermissionTable() {
         let permIdjsonArr = permtableDoorGroupby[permissionTableId];
         for (var i = 0; i < permIdjsonArr.length; i++) {
             let doorId = permIdjsonArr[i]["doorId"];
-            if (!devicesGroupby[doorId]) continue;//////
             let devices = [];
-            for (var j = 0; j < devicesGroupby[doorId].length; j++) {
-                devices.push(
-                    {
-                        "name": devicesGroupby[doorId][j]["deviceName"] ? devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g, ""):"",
-                        "inOut": devicesGroupby[doorId][j]["inOut"]
-                    }
-                );
+            if (!!devicesGroupby[doorId]) {
+                for (var j = 0; j < devicesGroupby[doorId].length; j++) {
+                    devices.push(
+                        {
+                            "name": devicesGroupby[doorId][j]["deviceName"] ? devicesGroupby[doorId][j]["deviceName"].replace(/\r\n|\n|\r/g, "") : "",
+                            "inOut": devicesGroupby[doorId][j]["inOut"]
+                        }
+                    );
+                }
             }
             pushDoor(result, permissionTableId, permIdjsonArr[i]["timespecId"], doorId, devices);
         }
@@ -138,27 +139,28 @@ export async function GetMigrationDataPermissionTable() {
         let permIdjsonArr = permtableDoorGroupGroupby[permissionTableId];
         for (var i = 0; i < permIdjsonArr.length; i++) {
             let groupId: string = permIdjsonArr[i]["groupId"];
-            if (!groupMemberGroupby[groupId]) continue;
             let doorDevices = [];
-            for (var j = 0; j < groupMemberGroupby[groupId].length; j++) {
-                let doorId = groupMemberGroupby[groupId][j]["objectId"];
-                if (!devicesGroupby[doorId]) continue;
-                let devicesJson = [];
-                for (var n = 0; n < devicesGroupby[doorId].length; n++) {
-                    devicesJson.push(
+            if (!!groupMemberGroupby[groupId]) {
+                for (var j = 0; j < groupMemberGroupby[groupId].length; j++) {
+                    let doorId = groupMemberGroupby[groupId][j]["objectId"];
+                    if (!devicesGroupby[doorId]) continue;
+                    let devicesJson = [];
+                    for (var n = 0; n < devicesGroupby[doorId].length; n++) {
+                        devicesJson.push(
+                            {
+                                "name": devicesGroupby[doorId][n]["deviceName"] ? devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g, "") : "",
+                                "inOut": devicesGroupby[doorId][n]["inOut"]
+                            }
+                        );
+                    }
+                    doorDevices.push(
                         {
-                            "name":devicesGroupby[doorId][n]["deviceName"]?devicesGroupby[doorId][n]["deviceName"].replace(/\r\n|\n|\r/g, ""):"",
-                            "inOut":devicesGroupby[doorId][n]["inOut"]
+                            "type": "door",
+                            "name": doorKeyMap[doorId],
+                            "devices": devicesJson
                         }
                     );
                 }
-                doorDevices.push(
-                    {
-                        "type": "door",
-                        "name": doorKeyMap[doorId],
-                        "devices": devicesJson
-                    }
-                );
             }
             pushGroup(result, permissionTableId, permIdjsonArr[i]["timespecId"], groupId, doorDevices)
         }
@@ -185,25 +187,25 @@ export async function GetMigrationDataPermissionTable() {
             let elevatorJson;
 
             // All elevators
-            if (elevatorOrGroupId == 1669){
-                    let tempJson = [];
-                    Object.keys(elevatorsGroupby).forEach(key=>{
-                        let deviceId = elevatorsGroupby[key][0]["deviceId"];
-                        tempJson.push
+            if (elevatorOrGroupId == 1669) {
+                let tempJson = [];
+                Object.keys(elevatorsGroupby).forEach(key => {
+                    let deviceId = elevatorsGroupby[key][0]["deviceId"];
+                    tempJson.push
                         (
                             {
                                 "type": "elevator",
                                 "name": elevatorsGroupby[key][0]["elevatorName"],
-                                "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
+                                "device": devicesKeyMap[deviceId] ? devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "") : ""
                             }
                         );
-                    });
-                    elevatorJson =
-                        {
-                            "type": "elevatorGroup",
-                            "name": elevatorGroupsKeyMap[1669],
-                            "elevators": tempJson
-                        };
+                });
+                elevatorJson =
+                    {
+                        "type": "elevatorGroup",
+                        "name": elevatorGroupsKeyMap[1669],
+                        "elevators": tempJson
+                    };
             }
             // 4.1.1 Check Elevator
             else if (isNullOrUndefined(elevatorsGroupby[elevatorOrGroupId]) == false) {
@@ -213,13 +215,13 @@ export async function GetMigrationDataPermissionTable() {
                     {
                         "type": "elevator",
                         "name": elevatorsGroupby[elevatorId][0]["elevatorName"],
-                        "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
+                        "device": devicesKeyMap[deviceId] ? devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "") : ""
                     }
             }
             // 4.1.2 Check Group
             else {
                 let groupId = elevatorOrGroupId;
-                if (groupMemberGroupby[groupId]){
+                if (groupMemberGroupby[groupId]) {
                     let tempJson = [];
                     for (var j = 0; j < groupMemberGroupby[groupId].length; j++) {
                         let elevatorId = groupMemberGroupby[groupId][j]["objectId"];
@@ -229,7 +231,7 @@ export async function GetMigrationDataPermissionTable() {
                                 {
                                     "type": "elevator",
                                     "name": elevatorsGroupby[elevatorId][0]["elevatorName"],
-                                    "device": devicesKeyMap[deviceId]?devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, ""):""
+                                    "device": devicesKeyMap[deviceId] ? devicesKeyMap[deviceId].replace(/\r\n|\n|\r/g, "") : ""
                                 }
                             );
                     }
@@ -305,7 +307,7 @@ export async function GetMigrationDataPerson(csvPath: string) {
     return result;
 }
 
-export async function GetMigrationDataPersonWithImage(csvPath: string, folderPath : string, batchCount : number, OnRows : (rows: JSON[])=>void) {
+export async function GetMigrationDataPersonWithImage(csvPath: string, folderPath: string, batchCount: number, OnRows: (rows: JSON[]) => void) {
     console.log("=====Start GetMigrationDataPerson=====");
 
     let signal = new SignalObject(false);
@@ -314,14 +316,14 @@ export async function GetMigrationDataPersonWithImage(csvPath: string, folderPat
 
     const fs = require('fs');
     await fs.readdir(folderPath, (err, fileList) => {
-        if(err) throw err;
-        fileList.forEach((fileName,err) => {
+        if (err) throw err;
+        fileList.forEach((fileName, err) => {
             let dotPos = fileName.indexOf('.');
             let len = fileName.length;
-            let pId = fileName.substring(0,dotPos);
-            let ext = fileName.substring(dotPos + 1,len);
-            if(ext.toLowerCase() != "jpg" || isNaN(pId) == true) return;
-            idMap[pId]=`${folderPath}${fileName}`;
+            let pId = fileName.substring(0, dotPos);
+            let ext = fileName.substring(dotPos + 1, len);
+            if (ext.toLowerCase() != "jpg" || isNaN(pId) == true) return;
+            idMap[pId] = `${folderPath}${fileName}`;
         });
         signal.set(true);
     });
@@ -339,24 +341,24 @@ export async function GetMigrationDataPersonWithImage(csvPath: string, folderPat
         let bCount = 1;
         jsonObj.forEach(r => {
             let tempResult = JSON.parse(JSON.stringify(r));
-            try{
-                if(isNullOrUndefined(idMap[r["Person_ID"]]) == false){
+            try {
+                if (isNullOrUndefined(idMap[r["Person_ID"]]) == false) {
                     let data = fs.readFileSync(`${idMap[r["Person_ID"]]}`);
                     let base64Image = new Buffer(data, 'binary').toString('base64');
-                    tempResult["img"]= base64Image;
+                    tempResult["img"] = base64Image;
                     hasImage++;
                 }
             }
-            catch(err){
+            catch (err) {
                 throw err;
             }
-            finally{
+            finally {
                 totalData++;
                 result.push(tempResult);
-                if(bCount++ >= batchCount){
-                    console.log(`GetMigrationDataPersonWithImage : Call Batch || Finish : ${(100*(totalData)/jsonObj.length).toFixed(2)} %`);
+                if (bCount++ >= batchCount) {
+                    console.log(`GetMigrationDataPersonWithImage : Call Batch || Finish : ${(100 * (totalData) / jsonObj.length).toFixed(2)} %`);
                     OnRows(result);
-                    bCount=1;
+                    bCount = 1;
                     result = [];
                 }
             }
@@ -397,13 +399,13 @@ export async function GetOldAccessReport(config, onRaw: (rows: JSON[]) => void, 
         onRaw(result);
     }
 
-    let DateTimeStringFormater = dt =>{
+    let DateTimeStringFormater = dt => {
         return `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
     }
 
     let startTimestring: string = DateTimeStringFormater(startDatetime);
     let endTimestring: string = DateTimeStringFormater(endDatetime);
-    
+
     _reader.queryStreamAsync(
         ReaderQueryContent.Reports,
         onRawCallback,
@@ -413,48 +415,48 @@ export async function GetOldAccessReport(config, onRaw: (rows: JSON[]) => void, 
         false);
 }
 
-export async function GetPersonImages(folderPath : string, batchCount : number, OnRows : (rows: JSON[])=>void){
+export async function GetPersonImages(folderPath: string, batchCount: number, OnRows: (rows: JSON[]) => void) {
     const folder = folderPath;
     const fs = require('fs');
-    
+
     let count = 1;
     let batch = 1;
     let calltimes = 1;
 
     await fs.readdir(folder, (err, fileList) => {
 
-        if(err) throw err;
+        if (err) throw err;
 
         let result = [];
-        
-        fileList.forEach((fileName,err) => {
-            
+
+        fileList.forEach((fileName, err) => {
+
             let dotPos = fileName.indexOf('.');
             let len = fileName.length;
-            let pId = fileName.substring(0,dotPos);
-            let ext = fileName.substring(dotPos + 1,len);
+            let pId = fileName.substring(0, dotPos);
+            let ext = fileName.substring(dotPos + 1, len);
 
             ++count;
 
-            if(ext.toLowerCase() != "jpg" || isNaN(pId) == true) return;
+            if (ext.toLowerCase() != "jpg" || isNaN(pId) == true) return;
 
-            try{
+            try {
                 let data = fs.readFileSync(`${folder}${fileName}`);
                 let base64Image = new Buffer(data, 'binary').toString('base64');
                 result.push({
-                    "personId" : pId,
-                    "img":base64Image
+                    "personId": pId,
+                    "img": base64Image
                 });
             }
-            catch(err){
+            catch (err) {
                 throw err;
             }
 
             console.info(
-                `Total read photo % : ${(100*(count)/fileList.length).toFixed(2)} || Batch (${calltimes}) read photo % : ${(100*++batch/batchCount).toFixed(2)}`
+                `Total read photo % : ${(100 * (count) / fileList.length).toFixed(2)} || Batch (${calltimes}) read photo % : ${(100 * ++batch / batchCount).toFixed(2)}`
             );
 
-            if(batch >= batchCount){
+            if (batch >= batchCount) {
                 calltimes++;
                 batch = 1;
                 let rows = Array.from(result);
@@ -464,7 +466,7 @@ export async function GetPersonImages(folderPath : string, batchCount : number, 
         });
 
         console.info(
-            `Total read photo % : ${(100*(count)/fileList.length).toFixed(2)} || Batch (${calltimes}) read photo % : ${(100*++batch/batchCount).toFixed(2)}`
+            `Total read photo % : ${(100 * (count) / fileList.length).toFixed(2)} || Batch (${calltimes}) read photo % : ${(100 * ++batch / batchCount).toFixed(2)}`
         );
 
         OnRows(result);
