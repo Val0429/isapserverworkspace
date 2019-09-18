@@ -1,7 +1,7 @@
 import {
     Action, Errors, Restful, ParseObject, AccessLevel} from 'core/cgi-package';
 
-import { IPermissionTable, PermissionTable, AccessLevelinSiPass, CCureClearance } from '../../custom/models'
+import { IPermissionTable, PermissionTable, AccessLevelinSiPass, CCureClearance, AccessLevelDoor, LinearMember } from '../../custom/models'
 import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 import { Log } from 'workspace/custom/services/log';
@@ -111,6 +111,8 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     var { objectId } = data.inputType;
     var obj = await new Parse.Query(PermissionTable).get(objectId);
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`PermissionTable <${objectId}> not exists.`]);
+    let newAccessLevels = Object.assign([],data.inputType.accesslevels);    
+    let oldAccessLevels = Object.assign([],obj.attributes.accesslevels);
     
     // 2.0 Modify Access Group
     let al = await checkSipassAccessLevel(ParseObject.toOutputJSON(data.inputType));
@@ -134,6 +136,7 @@ action.put<InputU, any>({ inputType: "InputU" }, async (data) => {
     /// 2) Modify
     await obj.save({ ...data.inputType, objectId: undefined });
     await Log.Info(`update`, `${obj.get("tableid")} ${obj.get("tablename")}`, data.user, false, "PermissionTable");
+    updateAccessLevelDoor(obj, oldAccessLevels, newAccessLevels);
     /// 3) Output
     return {ccureClearance, acsAcessLevels, errors};
 });
@@ -161,7 +164,70 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
 /// CRUD end ///////////////////////////////////
 
 export default action;
+function updateAccessLevelDoor(permission:PermissionTable, oldAccessLevels:AccessLevel[], newAccessLevels:AccessLevel[]){
+    setTimeout(async()=>{
+        console.log("oldCount", oldAccessLevels.length);
+        console.log("newCount", newAccessLevels.length);
+        let deleted:AccessLevel[]=[];
+        for(let level of oldAccessLevels){
+            let exist = newAccessLevels.find(x=>x.id == level.id);
+            if(!exist){
+                let access = await new Parse.Query(AccessLevel).equalTo("objectId", level.id).first();
+                if(access)deleted.push(access);
+            }
+        }
+        console.log("deleted", deleted.length);
+        for(let del of deleted){
+            let levels = await new Parse.Query(AccessLevelDoor).equalTo("accesslevel", del).limit(Number.MAX_SAFE_INTEGER).find();
+            console.log("deleted levels", levels.length);
+            if(levels.length>0)await ParseObject.destroyAll(levels);            
+        }
+        
 
+        let createdAccessLevels:AccessLevel[]=[];
+        for(let level of newAccessLevels){
+            let exist = oldAccessLevels.find(x=>x.id == level.id);
+            let access = await new Parse.Query(AccessLevel)
+                            .equalTo("objectId", level.id)
+                            .first();
+            if(!exist && access)createdAccessLevels.push(access);
+        }
+        console.log("created", createdAccessLevels.length);
+        if(deleted.length>0)await ParseObject.destroyAll(deleted);
+        if(createdAccessLevels.length<=0)return;
+        let memberQuery = new Parse.Query(LinearMember).equalTo("permissionTable", permission).select("objectId");
+        let count = await memberQuery.count();        
+        
+        console.log("affected members", count);
+        let current=0;
+        let limit=100;
+        while(current<count){
+            let members = await memberQuery
+            .limit(limit)
+            .skip(current)
+            .find();
+            console.log("current", current);
+            
+            for(let member of members){
+                let objects=[];
+                for(let access of createdAccessLevels){
+                    if(access.attributes.type=="door" && access.attributes.door){
+                        let accessDoor = new AccessLevelDoor({member, permissiontable:permission, accesslevel:access, door:access.attributes.door});
+                        objects.push(accessDoor);
+                    }
+                    if(access.attributes.type=="doorGroup" && Array.isArray(access.attributes.doorgroup.attributes.doors)){
+                        for(let door of access.attributes.doorgroup.attributes.doors){
+                            let accessDoor = new AccessLevelDoor({member, permissiontable:permission, accesslevel:access, door, doorgroup:access.attributes.doorgroup});
+                            objects.push(accessDoor);
+                        }
+                    }                    
+                }
+                await ParseObject.saveAll(objects);   
+            }
+            current+=limit;            
+        }
+    },1000);
+}
 
 async function checkSipassAccessLevel(data:any) {
     let sipassAccessLevels :{Token:string, Name:string}[]= [];
