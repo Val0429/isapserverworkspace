@@ -26,6 +26,7 @@ action.post(async (data) => {
     let query = new Parse.Query(AccessLevelDoor);
     
     if(filter.ResignationDate){
+        filter.ShowEmptyCardNumber=true;
         let memberQuery = memberService.getMemberQuery(filter);
         query.matchesQuery("member", memberQuery);
     }

@@ -32,6 +32,7 @@ action.post(async (data) => {
     }
                         
     if(filter.doorgroupname){
+        filter.ShowEmptyCardNumber=true;
         let doorgroupQuery = new Parse.Query(DoorGroup).matches("groupname", new RegExp(filter.doorgroupname),"i")
         query.matchesQuery("doorgroup", doorgroupQuery);
     }

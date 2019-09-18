@@ -1,6 +1,7 @@
 import { Action, ParseObject } from "core/cgi-package";
 import { LinearMember, AccessLevelDoor } from "core/events.gen";
 import moment = require("moment");
+import MemberService from "workspace/custom/services/member-service";
 
 var action = new Action({
     loginRequired: true,
@@ -14,6 +15,7 @@ var action = new Action({
 
 action.get(async () => {
     setTimeout(async () => {
+        let memberService=new MemberService();
         console.log("start", moment().format())
         let memberQuery = new Parse.Query(LinearMember)                            
                             .select("permissionTable")
@@ -38,24 +40,7 @@ action.get(async () => {
             
           
             for(let member of members){
-                let objects = [];
-                for(let permission of member.attributes.permissionTable){                               
-                    for(let access of permission.attributes.accesslevels){
-                        if(access.attributes.type!="door" && access.attributes.type!="doorGroup")continue;
-                        if(access.attributes.doorgroup && Array.isArray(access.attributes.doorgroup.attributes.doors)){
-                            for(let door of access.attributes.doorgroup.attributes.doors){
-                                let newAccessLevel = new AccessLevelDoor({member,door, doorgroup:access.attributes.doorgroup,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
-                                objects.push(newAccessLevel);
-                            }
-                        }
-                        if(access.attributes.door){
-                            let newAccessLevel = new AccessLevelDoor({member, door:access.attributes.door,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
-                            objects.push(newAccessLevel);
-                        }
-                    }                    
-                }    
-                console.log("saving objects", objects.length);
-                await ParseObject.saveAll(objects);            
+                await memberService.normalizePermissionTable(member);  
             }
             
             current+=limit;

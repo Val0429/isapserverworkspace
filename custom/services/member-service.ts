@@ -1,5 +1,5 @@
 import moment = require("moment");
-import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member, Door, AccessLevel, DoorGroup } from "../models/access-control";
+import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member, Door, AccessLevel, DoorGroup, AccessLevelDoor } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
 import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/acs/sipass/siPass_define";
@@ -33,7 +33,41 @@ export class MemberService {
         //let resizedBase64 = `data:${mimType};base64,${resizedImageData}`;
         
     }
-
+    normalizeAccessLevel(member:LinearMember){
+        setTimeout(async()=>{
+            let memberAccessLevels = await new Parse.Query(AccessLevelDoor).equalTo("member",member).limit(Number.MAX_SAFE_INTEGER).find();
+            console.log("destroy existing member access level", memberAccessLevels.length);
+            await ParseObject.destroyAll(memberAccessLevels);
+            let m = await new Parse.Query(LinearMember)
+                        .select("permissionTable")
+                        .include("permissionTable.accesslevels.door")
+                        .include("permissionTable.accesslevels.doorgroup.doors")
+                        .equalTo("objectId", member.id)
+                        .first();
+                        
+            await this.normalizePermissionTable(m);
+        },1000);
+    }
+    async normalizePermissionTable(member:LinearMember){
+                let objects = [];
+                for(let permission of member.attributes.permissionTable){                        
+                    for(let access of permission.attributes.accesslevels){
+                        if(access.attributes.type!="door" && access.attributes.type!="doorGroup")continue;
+                        if(access.attributes.doorgroup && Array.isArray(access.attributes.doorgroup.attributes.doors)){
+                            for(let door of access.attributes.doorgroup.attributes.doors){
+                                let newAccessLevel = new AccessLevelDoor({member,door, doorgroup:access.attributes.doorgroup,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
+                                objects.push(newAccessLevel);
+                            }
+                        }
+                        if(access.attributes.door){
+                            let newAccessLevel = new AccessLevelDoor({member, door:access.attributes.door,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
+                            objects.push(newAccessLevel);
+                        }
+                    }                    
+                }    
+                console.log("saving AccessLevelDoor", objects.length);
+                await ParseObject.saveAll(objects);  
+    }
 async createSipassCardHolder (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
@@ -317,6 +351,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
                 let permTableQuery = new Parse.Query(PermissionTable).matchesQuery("accesslevels", alQuery);
                 query.matchesQuery("permissionTable", permTableQuery);
             }
+            
             return query;
         }
         async updateMember(data: ILinearMember, user:string, checkDuplicate:boolean) {
@@ -339,7 +374,8 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             let cCure800SqlAdapter = new CCure800SqlAdapter();
             await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x => x.ObjectName));
             /// 5) to Monogo        
-            await update.save();            
+            await update.save(); 
+            this.normalizeAccessLevel(update);           
             /// 3) Output
             return update;
         }
@@ -358,6 +394,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x=>x.ObjectName));
 
             await obj.save(null, { useMasterKey: true });
+            this.normalizeAccessLevel(obj);
             /// 2) Output
             return obj;
         }
