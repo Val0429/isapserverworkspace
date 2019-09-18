@@ -1,4 +1,4 @@
 export enum EDoorRange {
-    building,
+    building = 1,
     floor,
 }
