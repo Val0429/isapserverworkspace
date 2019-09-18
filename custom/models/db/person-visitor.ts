@@ -8,12 +8,12 @@ export interface IPersonVisitor {
     /**
      *
      */
-    floors: LocationFloors[];
+    company: LocationCompanies;
 
     /**
      *
      */
-    company: LocationCompanies;
+    floors: LocationFloors[];
 
     /**
      *

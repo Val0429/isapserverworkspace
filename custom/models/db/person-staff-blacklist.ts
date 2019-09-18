@@ -23,12 +23,12 @@ export interface IPersonStaffBlacklist {
     /**
      *
      */
-    imageBase64: string;
+    imageBase64?: string;
 
     /**
      *
      */
-    imageOrignial: PersonStaffBlacklistOrignial;
+    imageOrignial?: PersonStaffBlacklistOrignial;
 
     /**
      *
@@ -43,7 +43,7 @@ export interface IPersonStaffBlacklist {
     /**
      *
      */
-    nric: string;
+    nric?: string;
 
     /**
      * 備註

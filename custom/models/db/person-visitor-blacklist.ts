@@ -13,12 +13,12 @@ export interface IPersonVisitorBlacklist {
     /**
      *
      */
-    imageBase64: string;
+    imageBase64?: string;
 
     /**
      *
      */
-    imageOrignial: PersonVisitorBlacklistOrignial;
+    imageOrignial?: PersonVisitorBlacklistOrignial;
 
     /**
      *
@@ -38,7 +38,7 @@ export interface IPersonVisitorBlacklist {
     /**
      * 備註
      */
-    remark?: string;
+    remark: string;
 
     /**
      * FRS person id
