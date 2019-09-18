@@ -76,7 +76,7 @@ action.post(
                         if (!Regex.IsEmail(value.email)) {
                             throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
                         }
-                        if (value.phone && (!Regex.IsNum(value.phone) || Regex.IsInternationalPhone(value.phone))) {
+                        if (value.phone && !(Regex.IsNum(value.phone) || Regex.IsInternationalPhone(value.phone))) {
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
@@ -95,7 +95,9 @@ action.post(
                         info.setValue('account', value.username);
                         info.setValue('name', value.name);
                         info.setValue('email', value.email);
-                        info.setValue('phone', value.phone || '');
+                        info.setValue('phone', value.phone);
+                        info.setValue('position', value.position);
+                        info.setValue('remark', value.remark);
                         info.setValue('mobileType', Enum.EMobileType.none);
                         info.setValue('mobileToken', '');
 
@@ -216,6 +218,7 @@ action.get(
                     name: value.getValue('name') || '',
                     email: value.getValue('email') || '',
                     phone: value.getValue('phone') || '',
+                    position: value.getValue('position') || '',
                     remark: value.getValue('remark') || '',
                     company: _company,
                     floors: _floors,
@@ -273,7 +276,7 @@ action.put(
                         if ('email' in value && !Regex.IsEmail(value.email)) {
                             throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
                         }
-                        if ('phone' in value && !Regex.IsInternationalPhone(value.phone)) {
+                        if ('phone' in value && !(Regex.IsNum(value.phone) || Regex.IsInternationalPhone(value.phone))) {
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
@@ -304,6 +307,9 @@ action.put(
                         }
                         if ('phone' in value) {
                             info.setValue('phone', value.phone);
+                        }
+                        if ('position' in value) {
+                            info.setValue('position', value.position);
                         }
                         if ('remark' in value) {
                             info.setValue('remark', value.remark);

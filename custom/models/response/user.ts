@@ -14,6 +14,7 @@ export interface IWebIndexR {
     name: string;
     email: string;
     phone: string;
+    position: string;
     remark: string;
     company: IObject;
     floors: IObject[];

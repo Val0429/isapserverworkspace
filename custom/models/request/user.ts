@@ -45,6 +45,7 @@ export interface IWebIndexC_Base extends ILogin_User {
     name: string;
     email: string;
     phone?: string;
+    position?: string;
     remark?: string;
 }
 
@@ -63,6 +64,7 @@ export interface IWebIndexU {
     name?: string;
     email?: string;
     phone?: string;
+    position?: string;
     remark?: string;
     floorIds?: string[];
 }
