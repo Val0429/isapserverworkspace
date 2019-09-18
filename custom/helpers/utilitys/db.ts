@@ -92,13 +92,21 @@ export namespace Db {
         }
     }
 
+    interface IRegionTree1 {
+        [key: string]: {
+            building: IDB.LocationBuildings;
+            floors: IDB.LocationFloors[];
+        };
+    }
+
     interface IUserInfo {
         roleLists: RoleList[];
         roles: IResponse.IObject[];
         info: IDB.UserInfo;
-        building: IDB.LocationBuildings;
         company: IDB.LocationCompanies;
         floors: IDB.LocationFloors[];
+        buildings: IDB.LocationBuildings[];
+        treeIdDictionary: IRegionTree1;
     }
 
     /**
@@ -144,19 +152,39 @@ export namespace Db {
 
             let isUser: boolean = !(roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1);
 
-            let company: IDB.LocationCompanies = isUser ? info.getValue('company') : undefined;
+            let company: IDB.LocationCompanies = undefined;
+            let floors: IDB.LocationFloors[] = undefined;
+            let buildings: IDB.LocationBuildings[] = undefined;
+            let treeIdDictionary: IRegionTree1 = undefined;
+            if (isUser) {
+                company = info.getValue('company');
+                floors = info.getValue('floors');
+                buildings = [];
+                treeIdDictionary = {};
 
-            let floors: IDB.LocationFloors[] = isUser ? info.getValue('floors') : undefined;
+                floors.forEach((value, index, array) => {
+                    let building: IDB.LocationBuildings = value.getValue('building');
+                    let buildingId: string = building.id;
 
-            let building: IDB.LocationBuildings = isUser && floors.length > 0 ? floors[0].getValue('building') : undefined;
+                    if (!treeIdDictionary[buildingId]) {
+                        treeIdDictionary[buildingId] = {
+                            building: building,
+                            floors: [],
+                        };
+                    }
+
+                    treeIdDictionary[buildingId].floors.push(value);
+                });
+            }
 
             return {
                 roleLists: roleLists,
                 roles: roles,
                 info: info,
-                building: building,
                 company: company,
                 floors: floors,
+                buildings: buildings,
+                treeIdDictionary: treeIdDictionary,
             };
         } catch (e) {
             throw e;

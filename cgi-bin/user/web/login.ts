@@ -84,6 +84,34 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
                   };
               });
 
+        let _tree: IResponse.IUser.IWebLoginUserTree = undefined;
+        if (!!_userInfo.treeIdDictionary) {
+            _tree = {};
+
+            Object.keys(_userInfo.treeIdDictionary).forEach((value, index, array) => {
+                let l1 = _userInfo.treeIdDictionary[value];
+                let building: IDB.LocationBuildings = l1.building;
+                let buildingName: string = building.getValue('name');
+
+                if (!_tree[buildingName]) {
+                    _tree[buildingName] = {
+                        building: {
+                            objectId: building.id,
+                            name: buildingName,
+                        },
+                        floors: [],
+                    };
+                }
+
+                _tree[buildingName].floors = l1.floors.map((value1, index1, array1) => {
+                    return {
+                        objectId: value1.id,
+                        name: value1.getValue('name'),
+                    };
+                });
+            });
+        }
+
         return {
             sessionId: sessionId,
             user: {
@@ -97,6 +125,7 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
                 webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
                 company: _company,
                 floors: _floors,
+                tree: _tree,
             },
         };
     } catch (e) {
