@@ -519,7 +519,7 @@ namespace EntryPassService {
             }
 
             let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
-            if (worker) {
+            if (!!worker) {
                 let staffInfo: EntryPass.EntryPassStaffInfo = {
                     name: person.getValue('name'),
                     serialNumber: person.id,
@@ -559,9 +559,9 @@ namespace EntryPassService {
             }
 
             let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
-            if (worker) {
+            if (!!worker) {
                 let staffInfo: EntryPass.EntryPassStaffInfo = {
-                    name: name,
+                    name: person.getValue('name'),
                     serialNumber: person.id,
                 };
 
@@ -764,7 +764,9 @@ IDB.PersonStaff.notice$
                         host: suntecSetting.host,
                         token: suntecSetting.token,
                     });
-                } catch (e) {}
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
 
                 try {
                     let acsServerSetting = DataCenter.acsServerSetting$.value;
@@ -773,11 +775,15 @@ IDB.PersonStaff.notice$
                         port: acsServerSetting.port,
                         serviceId: acsServerSetting.serviceId,
                     });
-                } catch (e) {}
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
 
                 try {
                     await HikVisionService.Delete(person, floors);
-                } catch (e) {}
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
 
                 let cards: IDB.ACSCard[] = await new Parse.Query(IDB.ACSCard)
                     .equalTo('card', person.getValue('card'))

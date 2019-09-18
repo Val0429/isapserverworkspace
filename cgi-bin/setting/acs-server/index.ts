@@ -88,7 +88,7 @@ namespace ACSServerService {
     export async function Check(config: { ip: string; port: number; serviceId: string }): Promise<void> {
         try {
             let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
-            if (worker) {
+            if (!!worker) {
                 let name: string = Utility.RandomText(10, { symbol: false });
                 let serialNumber: string = `${name}_${Utility.RandomText(10, { symbol: false, EN: false, en: false })}`;
 
