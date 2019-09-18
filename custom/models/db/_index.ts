@@ -120,6 +120,10 @@ export * from './person-staff-blacklist-orignial';
 export * from './person-staff-blacklist';
 export * from './person-staff-orignial';
 export * from './person-staff';
+export * from "./person-visitor-blacklist-orignial";
+export * from "./person-visitor-blacklist";
+export * from "./person-visitor-orignial";
+export * from "./person-visitor";
 
 export * from './setting-acs-group';
 export * from './setting-acs-server';

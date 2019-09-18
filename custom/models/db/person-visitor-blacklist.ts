@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationCompanies } from './_index';
+import { ParseObjectNotice, LocationCompanies,PersonVisitorBlacklistOrignial } from './_index';
 
 /**
  * Person
@@ -8,12 +8,22 @@ export interface IPersonVisitorBlacklist {
     /**
      *
      */
-    image: Parse.File;
+    company: LocationCompanies;
 
     /**
      *
      */
-    company: LocationCompanies;
+    imageBase64: string;
+
+    /**
+     *
+     */
+    imageOrignial: PersonVisitorBlacklistOrignial;
+
+    /**
+     *
+     */
+    organization?: string;
 
     /**
      * 姓名
@@ -29,6 +39,11 @@ export interface IPersonVisitorBlacklist {
      * 備註
      */
     remark?: string;
+
+    /**
+     * FRS person id
+     */
+    personId: string;
 }
 
 @registerSubclass()

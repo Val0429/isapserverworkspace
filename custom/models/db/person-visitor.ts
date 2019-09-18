@@ -1,20 +1,10 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationFloors, LocationCompanies } from './_index';
+import { ParseObjectNotice, LocationFloors, LocationCompanies, PersonVisitorOrignial } from './_index';
 
 /**
  * Person
  */
 export interface IPersonVisitor {
-    /**
-     *
-     */
-    card: string;
-
-    /**
-     *
-     */
-    image?: Parse.File;
-
     /**
      *
      */
@@ -28,7 +18,27 @@ export interface IPersonVisitor {
     /**
      *
      */
+    imageBase64?: string;
+
+    /**
+     *
+     */
+    imageOrignial?: PersonVisitorOrignial;
+
+    /**
+     *
+     */
+    card: string;
+
+    /**
+     *
+     */
     unitNumber: string;
+
+    /**
+     *
+     */
+    organization?: string;
 
     /**
      * 姓名
