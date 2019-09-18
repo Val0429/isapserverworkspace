@@ -402,3 +402,64 @@ action.delete(
         }
     },
 );
+
+/**
+ * Unbinding when floor was delete
+ */
+IDB.LocationFloors.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                    .containedIn('floor', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    userInfos.map(async (value, index, array) => {
+                        let floors: IDB.LocationFloors[] = value.getValue('floors').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('floors', floors);
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Delete when company was delete
+ */
+IDB.LocationCompanies.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                    .equalTo('company', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    userInfos.map(async (value, index, array) => {
+                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
