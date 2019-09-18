@@ -121,6 +121,7 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
                 name: _userInfo.info.getValue('name') || '',
                 email: _userInfo.info.getValue('email') || '',
                 phone: _userInfo.info.getValue('phone') || '',
+                position: _userInfo.info.getValue('position') || '',
                 remark: _userInfo.info.getValue('remark') || '',
                 webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
                 company: _company,

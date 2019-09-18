@@ -38,6 +38,7 @@ export interface IWebLoginUser {
     name: string;
     email: string;
     phone: string;
+    position: string;
     remark: string;
     webLestUseDate: Date;
     company: IObject;
