@@ -3,8 +3,8 @@ import { LinearMember, AccessLevelDoor } from "core/events.gen";
 import moment = require("moment");
 
 var action = new Action({
-    // loginRequired: true,
-    // apiToken: "door_member_CRUD"
+    loginRequired: true,
+    apiToken: "door_member_CRUD"
 });
 /********************************
  * R: read object
