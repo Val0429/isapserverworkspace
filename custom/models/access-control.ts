@@ -344,6 +344,9 @@ export interface IAccessLevelDoor {     // CRUD  V
     member:LinearMember;
     door:Door;
     doorgroup?:DoorGroup;
+    timeschedule:TimeSchedule;
+    accesslevel:AccessLevel;
+    permissiontable:PermissionTable;
 }
 @registerSubclass()
 export class AccessLevelDoor extends ParseObject<IAccessLevelDoor> { }

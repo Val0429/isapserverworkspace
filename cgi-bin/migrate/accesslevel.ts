@@ -1,5 +1,6 @@
 import { Action, ParseObject } from "core/cgi-package";
 import { LinearMember, AccessLevelDoor } from "core/events.gen";
+import moment = require("moment");
 
 var action = new Action({
     // loginRequired: true,
@@ -12,6 +13,8 @@ var action = new Action({
 
 
 action.get(async () => {
+    setTimeout(async () => {
+        console.log("start", moment().format())
         let memberQuery = new Parse.Query(LinearMember)                            
                             .select("permissionTable")
                             .include("permissionTable.accesslevels.door")
@@ -41,12 +44,12 @@ action.get(async () => {
                         if(access.attributes.type!="door" && access.attributes.type!="doorGroup")continue;
                         if(access.attributes.doorgroup && Array.isArray(access.attributes.doorgroup.attributes.doors)){
                             for(let door of access.attributes.doorgroup.attributes.doors){
-                                let newAccessLevel = new AccessLevelDoor({member,door, doorgroup:access.attributes.doorgroup});
+                                let newAccessLevel = new AccessLevelDoor({member,door, doorgroup:access.attributes.doorgroup,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
                                 objects.push(newAccessLevel);
                             }
                         }
                         if(access.attributes.door){
-                            let newAccessLevel = new AccessLevelDoor({member, door:access.attributes.door});
+                            let newAccessLevel = new AccessLevelDoor({member, door:access.attributes.door,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
                             objects.push(newAccessLevel);
                         }
                     }                    
@@ -58,6 +61,9 @@ action.get(async () => {
             current+=limit;
             
         }
+        console.log("end", moment().format())
+    },1000);
+        
         return {success:true}
 
 });
