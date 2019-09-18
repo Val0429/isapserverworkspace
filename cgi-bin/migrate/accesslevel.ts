@@ -28,21 +28,24 @@ action.get(async () => {
         }
         
         let current=0;
-        let limit=20;
+        let limit=100;
         console.log("member count", count)
         while(current<count){
             let members = await memberQuery
             .limit(limit)
             .skip(current)
             .find();
-            console.log("current", current);
-            
-            
+            console.log("current", current);           
+           
+            let objects = [];
           
             for(let member of members){
-                await memberService.normalizePermissionTable(member);  
+                let res = memberService.normalizePermissionTable(member);  
+                if(!Array.isArray(res))continue;
+                objects.push(...res);
             }
-            
+            console.log("saving AccessLevelDoor", objects.length);
+            await ParseObject.saveAll(objects); 
             current+=limit;
             
         }

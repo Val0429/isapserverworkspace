@@ -1,5 +1,5 @@
 import moment = require("moment");
-import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member, Door, AccessLevel, DoorGroup, AccessLevelDoor } from "../models/access-control";
+import { WorkGroup, PermissionTable, IMember, ILinearMember, LinearMember, Member, Door, AccessLevel, DoorGroup, AccessLevelDoor, TimeSchedule } from "../models/access-control";
 import sharp = require("sharp");
 import sizeOf = require('image-size');
 import { ICardholderObject, ECardholderStatus, ICustomFields } from "../modules/acs/sipass/siPass_define";
@@ -44,30 +44,60 @@ export class MemberService {
                         .include("permissionTable.accesslevels.doorgroup.doors")
                         .equalTo("objectId", member.id)
                         .first();
-                        
-            await this.normalizePermissionTable(m);
+                  
+            let objects=this.normalizePermissionTable(m);
+             console.log("saving AccessLevelDoor", objects.length);             
+             await ParseObject.saveAll(objects); 
         },1000);
     }
-    async normalizePermissionTable(member:LinearMember){
-                let objects = [];
-                for(let permission of member.attributes.permissionTable){                        
-                    for(let access of permission.attributes.accesslevels){
-                        if(access.attributes.type!="door" && access.attributes.type!="doorGroup")continue;
-                        if(access.attributes.doorgroup && Array.isArray(access.attributes.doorgroup.attributes.doors)){
-                            for(let door of access.attributes.doorgroup.attributes.doors){
-                                let newAccessLevel = new AccessLevelDoor({member,door, doorgroup:access.attributes.doorgroup,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
+    normalizePermissionTable(m:LinearMember){
+        let objects:any[]=[];
+                let member = ParseObject.toOutputJSON(m);
+                if(!Array.isArray(member.permissionTable))return;
+                for(let permission of member.permissionTable){                        
+                    for(let access of permission.accesslevels){
+                        if(access.type!="door" && access.type!="doorGroup")continue;
+                        if(access.doorgroup && Array.isArray(access.doorgroup.doors)){
+                            for(let door of access.doorgroup.doors){
+                                let newAccessLevel = this.createAccessLevelDoor(door, member, access, permission);
                                 objects.push(newAccessLevel);
                             }
                         }
-                        if(access.attributes.door){
-                            let newAccessLevel = new AccessLevelDoor({member, door:access.attributes.door,permissiontable:permission,accesslevel:access,timeschedule:access.attributes.timeschedule});
-                            objects.push(newAccessLevel);
+                        if(access.door){
+                            let newAccessLevel = this.createAccessLevelDoor(access.door, member, access, permission);
+                                objects.push(newAccessLevel);
                         }
                     }                    
                 }    
-                console.log("saving AccessLevelDoor", objects.length);
-                await ParseObject.saveAll(objects);  
+        return objects;
     }
+    private createAccessLevelDoor(door: any, member: any, access: any, permission: any) {
+        let pDoor = new Door();
+        pDoor.id = door.objectId;
+        let pMember = new LinearMember();
+        pMember.id = member.objectId;
+        let pDoorGroup:any;
+        if(access.doorgroup){
+            pDoorGroup = new DoorGroup();
+            pDoorGroup.id = access.doorgroup.objectId;
+        }
+        let pAccess = new AccessLevel();
+        pAccess.id = access.objectId;
+        let pTime = new TimeSchedule();
+        pTime.id = access.timeschedule.objectId;
+        let pTable = new PermissionTable();
+        pTable.id = permission.objectId;
+        let newAccessLevel = new AccessLevelDoor({
+        member: pMember,
+            door: pDoor,
+            doorgroup: pDoorGroup,
+            permissiontable: pTable,
+            accesslevel: pAccess,
+            timeschedule: pTime
+        });
+        return newAccessLevel;
+    }
+
 async createSipassCardHolder (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
