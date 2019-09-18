@@ -161,7 +161,7 @@ export namespace Db {
                 throw e;
             });
 
-            let isUser: boolean = !(roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1);
+            let isUser: boolean = !(roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1 || roleLists.indexOf(RoleList.VMS) > -1);
 
             let company: IDB.LocationCompanies = undefined;
             let floors: IDB.LocationFloors[] = undefined;
