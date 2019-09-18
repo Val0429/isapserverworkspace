@@ -10,24 +10,35 @@ export namespace Db {
      */
     export async function CreateDefaultRole(): Promise<void> {
         try {
-            let role = await new Parse.Query(Parse.Role).first().fail((e) => {
+            let roles = await new Parse.Query(Parse.Role).find().fail((e) => {
                 throw e;
             });
-            if (!role) {
-                for (let key in RoleList) {
-                    let name = RoleList[key];
 
+            let roleNames = Object.keys(RoleList)
+                .map((value, index, array) => {
+                    return value;
+                })
+                .filter((value, index, array) => {
+                    return !roles.find((value1, index1, array1) => {
+                        return value1.getName() === RoleList[value];
+                    });
+                });
+
+            await Promise.all(
+                roleNames.map(async (value, index, array) => {
                     let roleACL = new Parse.ACL();
                     roleACL.setPublicReadAccess(true);
 
-                    role = new Parse.Role(name, roleACL);
+                    let role = new Parse.Role(RoleList[value], roleACL);
 
                     await role.save(null, { useMasterKey: true }).fail((e) => {
                         throw e;
                     });
-                }
+                }),
+            );
 
-                let roles: string[] = Object.keys(RoleList).map((value, index, array) => {
+            if (roleNames.length > 0) {
+                let roles: string[] = roleNames.map((value, index, array) => {
                     return `<${value}>`;
                 });
                 Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Roles:  ' }, { message: roles.join(', '), color: Print.FontColor.cyan });
