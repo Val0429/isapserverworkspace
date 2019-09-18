@@ -279,7 +279,7 @@ export class SiPassAdapter {
         Log.Info(`info`, `getAccessLevel ${accessToken}`);
         
         let token = await this.Login();
-        let a = await this.siPassPermission.GetPermission(this.siPassHrParam, { token: accessToken }, token);
+        let a = await this.siPassPermission.GetPermission(this.siPassHrParam, { Token: accessToken }, token);
         // console.log(a);
         // {
         //     "Name":"大門",
