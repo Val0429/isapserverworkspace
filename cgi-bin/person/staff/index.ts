@@ -88,7 +88,7 @@ action.post(
                         if (!!_userInfo.company) {
                             company = _userInfo.company;
                             floors = _userInfo.floors;
-                            building = _userInfo.building;
+                            building = _userInfo.buildings[0];
                         } else if ('companyId' in value) {
                             company = await new Parse.Query(IDB.LocationCompanies)
                                 .equalTo('objectId', value.companyId)

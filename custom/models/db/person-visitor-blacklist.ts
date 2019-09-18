@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationCompanies,PersonVisitorBlacklistOrignial } from './_index';
+import { ParseObjectNotice, LocationCompanies, PersonVisitorBlacklistOrignial } from './_index';
 
 /**
  * Person
