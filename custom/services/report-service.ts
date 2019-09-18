@@ -46,7 +46,7 @@ export class ReportService{
             newAccess.companyName = access.member.companyName;
             newAccess.workArea = access.member.workArea;
             newAccess.employeeNumber = access.member.employeeNumber;
-            newAccess.resignationDate = access.member.resignationDate;
+            newAccess.resignationDate = access.member.resignationDate? moment(access.member.resignationDate).format("YYYY-MM-DD"):undefined;
             newAccess.status = access.member.status;
         }
         return newAccess;
