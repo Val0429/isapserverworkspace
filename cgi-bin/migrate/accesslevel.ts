@@ -28,7 +28,7 @@ action.get(async () => {
         }
         
         let current=0;
-        let limit=100;
+        let limit=50;
         console.log("member count", count)
         while(current<count){
             let members = await memberQuery

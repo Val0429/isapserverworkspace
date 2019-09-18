@@ -59,44 +59,30 @@ export class MemberService {
                         if(access.type!="door" && access.type!="doorGroup")continue;
                         if(access.doorgroup && Array.isArray(access.doorgroup.doors)){
                             for(let door of access.doorgroup.doors){
-                                let newAccessLevel = this.createAccessLevelDoor(door, member, access, permission);
+                                let newAccessLevel = createAccessLevelDoor(door.objectId, 
+                                                access.doorgroup.objectId, 
+                                                member.objectId, 
+                                                access.objectId, 
+                                                permission.objectId, 
+                                                access.timeschedule.objectId);
                                 objects.push(newAccessLevel);
                             }
                         }
                         if(access.door){
-                            let newAccessLevel = this.createAccessLevelDoor(access.door, member, access, permission);
-                                objects.push(newAccessLevel);
+                            let newAccessLevel = createAccessLevelDoor(
+                                access.door.objectId, 
+                                undefined, 
+                                member.objectId, 
+                                access.objectId, 
+                                permission.objectId, 
+                                access.timeschedule.objectId);
+                            objects.push(newAccessLevel);
                         }
                     }                    
                 }    
         return objects;
     }
-    private createAccessLevelDoor(door: any, member: any, access: any, permission: any) {
-        let pDoor = new Door();
-        pDoor.id = door.objectId;
-        let pMember = new LinearMember();
-        pMember.id = member.objectId;
-        let pDoorGroup:any;
-        if(access.doorgroup){
-            pDoorGroup = new DoorGroup();
-            pDoorGroup.id = access.doorgroup.objectId;
-        }
-        let pAccess = new AccessLevel();
-        pAccess.id = access.objectId;
-        let pTime = new TimeSchedule();
-        pTime.id = access.timeschedule.objectId;
-        let pTable = new PermissionTable();
-        pTable.id = permission.objectId;
-        let newAccessLevel = new AccessLevelDoor({
-        member: pMember,
-            door: pDoor,
-            doorgroup: pDoorGroup,
-            permissiontable: pTable,
-            accesslevel: pAccess,
-            timeschedule: pTime
-        });
-        return newAccessLevel;
-    }
+    
 
 async createSipassCardHolder (inputFormData:ILinearMember) {
     
@@ -446,6 +432,32 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         }
 }
 export default MemberService;
+export function createAccessLevelDoor(doorObjectId: any, doorgroupObjectId:any, memberObjectId: any, accessObjectId: any, permissionObjectId: any, timescheduleObjectId:any) {
+    let pDoor = new Door();
+    pDoor.id = doorObjectId;
+    let pMember = new LinearMember();
+    pMember.id = memberObjectId;
+    let pDoorGroup:any;
+    if(doorgroupObjectId){
+        pDoorGroup = new DoorGroup();
+        pDoorGroup.id = doorgroupObjectId;
+    }
+    let pAccess = new AccessLevel();
+    pAccess.id = accessObjectId;
+    let pTime = new TimeSchedule();
+    pTime.id = timescheduleObjectId;
+    let pTable = new PermissionTable();
+    pTable.id = permissionObjectId;
+    let newAccessLevel = new AccessLevelDoor({
+    member: pMember,
+        door: pDoor,
+        doorgroup: pDoorGroup,
+        permissiontable: pTable,
+        accesslevel: pAccess,
+        timeschedule: pTime
+    });
+    return newAccessLevel;
+}
 export function testDate(date:string, splitter?:string){
     try{    
         if(!date || !date.trim())return null;

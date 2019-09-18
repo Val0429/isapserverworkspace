@@ -6,6 +6,7 @@ import { siPassAdapter } from '../../custom/services/acsAdapter-Manager';
 
 import { Log } from 'workspace/custom/services/log';
 import { getAccessLevelReaders } from './accesslevel';
+import { createAccessLevelDoor } from 'workspace/custom/services/member-service';
 
 var action = new Action({
     loginRequired: true,
@@ -200,30 +201,41 @@ function updateAccessLevelDoor(permission:PermissionTable, oldAccessLevels:Acces
         
         console.log("affected members", count);
         let current=0;
-        let limit=100;
+        let limit=50;
         while(current<count){
             let members = await memberQuery
             .limit(limit)
             .skip(current)
             .find();
             console.log("current", current);
-            
+            let objects=[];
             for(let member of members){
-                let objects=[];
-                for(let access of createdAccessLevels){
-                    if(access.attributes.type=="door" && access.attributes.door){
-                        let accessDoor = new AccessLevelDoor({member, permissiontable:permission, accesslevel:access, door:access.attributes.door});
+                
+                for(let access of createdAccessLevels.map(x=>ParseObject.toOutputJSON(x))){
+                    if(access.type=="door" && access.door){
+                        let accessDoor = createAccessLevelDoor(access.door.objectId, 
+                                                        undefined,
+                                                        member.id, 
+                                                        access.objectId, 
+                                                        permission.id,
+                                                        access.timeschedule.objectId);
                         objects.push(accessDoor);
                     }
-                    if(access.attributes.type=="doorGroup" && Array.isArray(access.attributes.doorgroup.attributes.doors)){
-                        for(let door of access.attributes.doorgroup.attributes.doors){
-                            let accessDoor = new AccessLevelDoor({member, permissiontable:permission, accesslevel:access, door, doorgroup:access.attributes.doorgroup});
+                    if(access.type=="doorGroup" && Array.isArray(access.doorgroup.doors)){
+                        for(let door of access.doorgroup.doors){
+                            let accessDoor = createAccessLevelDoor(door.objectId, 
+                                access.doorgroup.objectId,
+                                member.id, 
+                                access.objectId, 
+                                permission.id,
+                                access.timeschedule.objectId);
                             objects.push(accessDoor);
                         }
                     }                    
                 }
-                await ParseObject.saveAll(objects);   
+                
             }
+            await ParseObject.saveAll(objects);   
             current+=limit;            
         }
     },1000);
