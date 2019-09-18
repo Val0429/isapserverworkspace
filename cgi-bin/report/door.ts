@@ -1,6 +1,7 @@
-import { Action, Restful, ParseObject} from 'core/cgi-package';
+import { Action, Restful, ParseObject, AccessLevelDoor, Door} from 'core/cgi-package';
 
 import MemberService from 'workspace/custom/services/member-service';
+import { ReportService } from 'workspace/custom/services/report-service';
 
 
 var action = new Action({
@@ -20,70 +21,29 @@ action.post(async (data) => {
     let pageSize = filter.paging.pageSize || 10;
     let page = filter.paging.page || 1;
     let fields = filter.selectedColumns.map(x=>x.key);
-    if(fields.find(x=>x=="permissionName")){
-        fields.splice(fields.indexOf("permissionName"),1);
-        fields.push("permissionTable.tablename")
+    let reportService = new ReportService();
+    let newFields = reportService.getMapFields(fields);
+    let query = new Parse.Query(AccessLevelDoor);
+    
+    if(filter.ResignationDate){
+        let memberQuery = memberService.getMemberQuery(filter);
+        query.matchesQuery("member", memberQuery);
     }
-    fields.push("permissionTable.accesslevels.doors.doorname");
-    fields.push("permissionTable.accesslevels.door.doorname");
-    fields.push("permissionTable.accesslevels.doorgroup.doors.doorname");
-    fields.push("permissionTable.accesslevels.doorgroup.groupname");
-    fields.push("permissionTable.accesslevels.timeschedule.timename");
-    let memberQuery = memberService.getMemberQuery(filter)
+                        
+    if(filter.doorname){
+        let doorQuery = new Parse.Query(Door).matches("groupname", new RegExp(filter.doorname),"i")
+        query.matchesQuery("door", doorQuery);
+    }
+    
+    let accesslevels = await query
+                        .select(...newFields)
                         .skip((page-1)*pageSize)
-                        .include("permissionTable.accesslevels.doors")
-                        .include("permissionTable.accesslevels.door")
-                        .include("permissionTable.accesslevels.timeschedule")
-                        .include("permissionTable.accesslevels.doorgroup.doors")
-                        .limit(pageSize)
-                        .select(...fields);
-    
-    let oMember = await memberQuery.find();
-    let members = oMember.map(x=>ParseObject.toOutputJSON(x));
-    
-    let total = await memberQuery.count();
+                        .limit(pageSize).find();
+    let total = await query.count();
     let results=[];
-    for(let member of members){
-        for(let permission of member.permissionTable){           
-            
-            for(let access of permission.accesslevels){                
-                if(access.doorgroup){
-                    for(let door of access.doorgroup.doors){
-                        if(filter.doorname && door.doorname.search(new RegExp(filter.doorname, "i"))<0)continue;
-                        if(!access.doors.find(x=>x.doorname == door.doorname))continue;
-                        let newMember = Object.assign({},member);
-                        delete(newMember.permissionTable);
-                        newMember.accessObjectId = access.objectId;
-                        newMember.permissionName = permission.tablename;
-                        newMember.timeSchedule = access.timeschedule.timename;
-                        newMember.doorGroupName = access.doorgroup.groupname;
-                        newMember.doorGroupObjectId = access.doorgroup.objectId;
-                        newMember.doorName = door.doorname;
-                        //no need to display multiple row for the same access level
-                        let exists = results.find(x=> x.objectId == newMember.objectId && 
-                                                        x.accessObjectId == newMember.accessObjectId &&                                                     
-                                                        x.doorGroupObjectId == newMember.doorGroupObjectId );
-                        if(!exists)results.push(newMember);
-                    }
-                }
-                if(access.door){
-                    if(filter.doorname && access.door.doorname.search(new RegExp(filter.doorname, "i"))<0)continue;
-                    if(!access.doors.find(x=>x.doorname == access.door.doorname))continue;
-                    let newMember = Object.assign({},member);
-                        newMember.accessObjectId = access.objectId;
-                        newMember.permissionName = permission.tablename;
-                        newMember.timeSchedule = access.timeschedule.timename;
-                        newMember.doorName = access.door.doorname;
-                        newMember.doorObjectId = access.door.objectId;
-                        //no need to display multiple row for the same access level
-                        let exists = results.find(x=> x.objectId == newMember.objectId && 
-                                                        x.accessObjectId == newMember.accessObjectId &&                                                     
-                                                        x.doorObjectId == newMember.doorObjectId );
-                        if(!exists)results.push(newMember);
-                }
-            }
-            
-        }
+    for(let access of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
+        let newAccess: any = reportService.mapAccessRow(access);
+        results.push(newAccess);
         
     }
     /// 3) Output
@@ -100,3 +60,5 @@ action.post(async (data) => {
 
 
 export default action;
+ 
+

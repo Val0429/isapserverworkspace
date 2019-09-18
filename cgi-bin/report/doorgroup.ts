@@ -1,4 +1,4 @@
-import { Action, Restful, ParseObject} from 'core/cgi-package';
+import { Action, Restful, ParseObject, AccessLevelDoor, DoorGroup} from 'core/cgi-package';
 
 import { ReportService } from 'workspace/custom/services/report-service';
 import MemberService from 'workspace/custom/services/member-service';
@@ -17,53 +17,34 @@ var action = new Action({
 
 action.post(async (data) => {
     let memberService = new MemberService();
+    
     let filter = data.parameters as any;
     let pageSize = filter.paging.pageSize || 10;
     let page = filter.paging.page || 1;
     let fields = filter.selectedColumns.map(x=>x.key);
-    if(fields.find(x=>x=="permissionName")){
-        fields.splice(fields.indexOf("permissionName"),1);
-        fields.push("permissionTable.tablename")
+    let reportService = new ReportService();
+    let newFields = reportService.getMapFields(fields);
+    let query = new Parse.Query(AccessLevelDoor).exists("doorgroup")
+    
+    if(filter.ResignationDate){
+        let memberQuery = memberService.getMemberQuery(filter);
+        query.matchesQuery("member", memberQuery);
     }
-    fields.push("permissionTable.accesslevels.doorgroup.doors.doorname");
-    fields.push("permissionTable.accesslevels.doorgroup.groupname");
-    fields.push("permissionTable.accesslevels.timeschedule.timename");
-    let memberQuery = memberService.getMemberQuery(filter)
+                        
+    if(filter.doorgroupname){
+        let doorgroupQuery = new Parse.Query(DoorGroup).matches("groupname", new RegExp(filter.doorgroupname),"i")
+        query.matchesQuery("doorgroup", doorgroupQuery);
+    }
+    
+    let accesslevels = await query
+                        .select(...newFields)
                         .skip((page-1)*pageSize)
-                        .include("permissionTable.accesslevels.timeschedule")
-                        .include("permissionTable.accesslevels.doorgroup.doors")
-                        .limit(pageSize)
-                        .select(...fields);
-    
-    let oMember = await memberQuery.find();
-    let members = oMember.map(x=>ParseObject.toOutputJSON(x));
-    let total = await memberQuery.count();
+                        .limit(pageSize).find();
+    let total = await query.count();
     let results=[];
-    
-    for(let member of members){
-        for(let permission of member.permissionTable){   
-            for(let access of permission.accesslevels){                
-                if(!access.doorgroup)continue;
-                if(filter.doorgroupname && access.doorgroup.groupname.search(new RegExp(filter.doorgroupname, "i"))<0)continue;
-                for(let door of access.doorgroup.doors){
-                    let newMember = Object.assign({},member);
-                    delete(newMember.permissionTable);
-                    newMember.accessObjectId = access.objectId;
-                    newMember.permissionName = permission.tablename;
-                    newMember.timeSchedule = access.timeschedule.timename;
-                    newMember.doorGroupName = access.doorgroup.groupname;
-                    newMember.doorGroupObjectId = access.doorgroup.objectId;
-                    newMember.doorName = door.doorname;
-                    //no need to display multiple row for the same access level
-                    let exists = results.find(x=> x.objectId == newMember.objectId && 
-                                                    x.accessObjectId == newMember.accessObjectId &&                                                     
-                                                    x.doorGroupObjectId == newMember.doorGroupObjectId );
-                    if(!exists)results.push(newMember);
-                }
-                
-            }
-            
-        }
+    for(let access of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
+        let newAccess: any = reportService.mapAccessRow(access);
+        results.push(newAccess);
         
     }
     /// 3) Output
@@ -80,3 +61,5 @@ action.post(async (data) => {
 
 
 export default action;
+
+

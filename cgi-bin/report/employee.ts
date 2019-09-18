@@ -1,4 +1,4 @@
-import { Action, Restful, ParseObject} from 'core/cgi-package';
+import { Action, Restful, ParseObject, Door, AccessLevelDoor} from 'core/cgi-package';
 
 import { ReportService } from 'workspace/custom/services/report-service';
 import MemberService from 'workspace/custom/services/member-service';
@@ -21,64 +21,24 @@ action.post(async (data) => {
     let pageSize = filter.paging.pageSize || 10;
     let page = filter.paging.page || 1;
     let fields = filter.selectedColumns.map(x=>x.key);
-    if(fields.find(x=>x=="permissionName")){
-        fields.splice(fields.indexOf("permissionName"),1);
-        fields.push("permissionTable.tablename")
-    }
-    fields.push("permissionTable.accesslevels.type");
-    fields.push("permissionTable.accesslevels.door.doorname");
-    fields.push("permissionTable.accesslevels.doorgroup.groupname");
-    fields.push("permissionTable.accesslevels.doorgroup.doors.doorname");
-    fields.push("permissionTable.accesslevels.timeschedule.timename");
-    let memberQuery = memberService.getMemberQuery(filter)
-                        .skip((page-1)*pageSize)
-                        .include("permissionTable.accesslevels.door")
-                        .include("permissionTable.accesslevels.timeschedule")
-                        .include("permissionTable.accesslevels.doorgroup")
-                        .include("permissionTable.accesslevels.doorgroup.doors")
-                        .limit(pageSize)
-                        .select(...fields);
-    
-    let oMember = await memberQuery.find();
-    let members = oMember.map(x=>ParseObject.toOutputJSON(x));
-    let total = await memberQuery.count();
-    let results=[];
-    
-    for(let member of members){
-        for(let table of member.permissionTable){            
-                     
-            for(let access of table.accesslevels){
-                if(access.type=="door"){
-                    let newMember = Object.assign({},member); 
-                    delete(newMember.permissionTable); 
+    let reportService = new ReportService();
+    let newFields = reportService.getMapFields(fields);
 
-                    newMember.permissionName = table.tablename;
-                    newMember.timeSchedule = access.timeschedule.timename;
-                    newMember.doorName = access.door?access.door.doorname:'';
-                    //newMember.doorGroupName = access.doorgroup?access.doorgroup.groupname:'';
-                    //no need to display multiple row for the same access level
-                    let exists = results.find(x=>x.permissionName == newMember.permissionName && x.timeSchedule == newMember.timeSchedule && x.doorName == newMember.doorName );
-                    if(!exists)
-                    results.push(newMember);
-                }
-                if(access.type=="doorGroup"){
-                    for(let door of access.doorgroup.doors){
-                        let newMember = Object.assign({},member); 
-                        delete(newMember.permissionTable); 
+    let query = new Parse.Query(AccessLevelDoor);    
+    if(Object.keys(filter).length>3){
+        let memberQuery = memberService.getMemberQuery(filter);
+        query.matchesQuery("member", memberQuery);
+    }
     
-                        newMember.permissionName = table.tablename;
-                        newMember.timeSchedule = access.timeschedule.timename;
-                        newMember.doorName = door.doorname;
-                        newMember.doorGroupName = access.doorgroup?access.doorgroup.groupname:'';
-                        //no need to display multiple row for the same access level
-                        let exists = results.find(x=>x.permissionName == newMember.permissionName && x.timeSchedule == newMember.timeSchedule && x.doorName == newMember.doorName );
-                        if(!exists)
-                        results.push(newMember);
-                    }
-                }
-            }
-            
-        }
+    let accesslevels = await query
+                        .select(...newFields)
+                        .skip((page-1)*pageSize)
+                        .limit(pageSize).find();
+    let total = await query.count();
+    let results=[];
+    for(let access of accesslevels.map(x=>ParseObject.toOutputJSON(x))){
+        let newAccess: any = reportService.mapAccessRow(access);
+        results.push(newAccess);
         
     }
     /// 3) Output
