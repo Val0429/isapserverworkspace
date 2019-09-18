@@ -52,14 +52,10 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
         
         for(let accessRule of result.data){
             if(accessRule.type=="door" ){
-                let isActive = Array.isArray(accessRule.devices) && accessRule.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
-                if(!isActive) continue;
                 result.doors.push({doorname:accessRule.name});
             }
             if(accessRule.type=="doorGroup"){
                 for(let door of accessRule.doors){
-                    let isActive = Array.isArray(door.devices) && door.devices.find(x=>x.name.length>2 && x.name.substring(0,2)!="D_");
-                    if(!isActive) continue;
                     result.doors.push({groupname:accessRule.name, doorname:door.name});
                 }            
             }
