@@ -49,7 +49,7 @@ action.post(
                                 password: value.password,
                             });
                         } catch (e) {
-                            throw `vms: ${e}`;
+                            throw Errors.throw(Errors.CustomBadRequest, [`vms: ${e}`]);
                         }
 
                         let vms: IDB.ClientVMS = await new Parse.Query(IDB.ClientVMS)
@@ -232,7 +232,7 @@ action.put(
                                 password: vms.getValue('password'),
                             });
                         } catch (e) {
-                            throw `vms: ${e}`;
+                            throw Errors.throw(Errors.CustomBadRequest, [`vms: ${e}`]);
                         }
 
                         await vms.save(null, { useMasterKey: true }).fail((e) => {

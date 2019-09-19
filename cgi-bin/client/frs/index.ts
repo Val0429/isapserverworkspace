@@ -50,7 +50,7 @@ action.post(
                                 password: value.password,
                             });
                         } catch (e) {
-                            throw `frs: ${e}`;
+                            throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
                         }
 
                         let floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
@@ -264,7 +264,7 @@ action.put(
                                 password: frs.getValue('password'),
                             });
                         } catch (e) {
-                            throw `frs: ${e}`;
+                            throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
                         }
 
                         await frs.save(null, { useMasterKey: true }).fail((e) => {
