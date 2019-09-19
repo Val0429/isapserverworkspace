@@ -51,3 +51,28 @@ export interface IVisitorBlacklistIndexR {
     nric: string;
     remark: string;
 }
+
+/**
+ * Visitor
+ */
+export interface IVisitorIndexC {
+    objectId: string;
+    card: number;
+}
+
+export interface IVisitorIndexR {
+    objectId: string;
+    imageBase64: string;
+    company: IObject;
+    floors: IObject[];
+    card: number;
+    unitNumber: string;
+    organization: string;
+    name: string;
+    email: string;
+    nric: string;
+    phone: string;
+    remark: string;
+    startDate: Date;
+    endDate: Date;
+}

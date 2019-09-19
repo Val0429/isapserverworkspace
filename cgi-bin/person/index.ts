@@ -168,7 +168,7 @@ export namespace EntryPassService {
      * @param accessGroup
      * @param config
      */
-    export async function Create(person: IDB.PersonStaff, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
+    export async function Create(person: IDB.PersonStaff | IDB.PersonVisitor, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
         try {
             let acsGroup: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
                 .equalTo('building', building)
@@ -183,12 +183,12 @@ export namespace EntryPassService {
             let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
             if (!!worker) {
                 let staffInfo: EntryPass.EntryPassStaffInfo = {
-                    name: person.getValue('name'),
+                    name: person.get('name'),
                     serialNumber: person.id,
                 };
 
                 let cardInfo: EntryPass.EntryPassCardInfo = {
-                    serialNumber: person.getValue('card').toString(),
+                    serialNumber: person.get('card').toString(),
                     accessGroup: acsGroup.getValue('group'),
                 };
 
@@ -208,7 +208,7 @@ export namespace EntryPassService {
      * @param accessGroup
      * @param config
      */
-    export async function Delete(person: IDB.PersonStaff, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
+    export async function Delete(person: IDB.PersonStaff | IDB.PersonVisitor, building: IDB.LocationBuildings, config: { ip: string; port: number; serviceId: string }): Promise<void> {
         try {
             let acsGroup: IDB.SettingACSGroup = await new Parse.Query(IDB.SettingACSGroup)
                 .equalTo('building', building)
@@ -223,12 +223,12 @@ export namespace EntryPassService {
             let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
             if (!!worker) {
                 let staffInfo: EntryPass.EntryPassStaffInfo = {
-                    name: person.getValue('name'),
+                    name: person.get('name'),
                     serialNumber: person.id,
                 };
 
                 let cardInfo: EntryPass.EntryPassCardInfo = {
-                    serialNumber: person.getValue('card').toString(),
+                    serialNumber: person.get('card').toString(),
                     accessGroup: acsGroup.getValue('group'),
                 };
 
@@ -297,7 +297,7 @@ export namespace HikVisionService {
      * @param buffer
      * @param floors
      */
-    export async function Create(person: IDB.PersonStaff, buffer: Buffer, floors: IDB.LocationFloors[]): Promise<void> {
+    export async function Create(person: IDB.PersonStaff | IDB.PersonVisitor, buffer: Buffer, floors: IDB.LocationFloors[]): Promise<void> {
         try {
             let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
                 .containedIn('floor', floors)
@@ -317,11 +317,11 @@ export namespace HikVisionService {
 
                     try {
                         let result = hikVision.createCardItem({
-                            cardNo: person.getValue('card').toString(),
+                            cardNo: person.get('card').toString(),
                             employeeNo: person.id,
-                            name: person.getValue('name'),
-                            beginTime: GetDate(person.getValue('startDate')),
-                            endTime: GetDate(person.getValue('endDate')),
+                            name: person.get('name'),
+                            beginTime: GetDate(person.get('startDate')),
+                            endTime: GetDate(person.get('endDate')),
                         });
                         if (!result.result) {
                             throw result.errorMessage;
@@ -329,7 +329,7 @@ export namespace HikVisionService {
 
                         if (!!buffer) {
                             result = hikVision.enrollFace({
-                                cardNo: person.getValue('card').toString(),
+                                cardNo: person.get('card').toString(),
                                 faceLen: buffer.length,
                                 faceBuffer: buffer,
                             });
@@ -354,7 +354,7 @@ export namespace HikVisionService {
      * @param person
      * @param floors
      */
-    export async function Delete(person: IDB.PersonStaff, floors: IDB.LocationFloors[]): Promise<void> {
+    export async function Delete(person: IDB.PersonStaff | IDB.PersonVisitor, floors: IDB.LocationFloors[]): Promise<void> {
         try {
             let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
                 .containedIn('floor', floors)
@@ -373,12 +373,12 @@ export namespace HikVisionService {
                     });
 
                     try {
-                        let result = hikVision.removeCardItem(person.getValue('card').toString());
+                        let result = hikVision.removeCardItem(person.get('card').toString());
                         if (!result.result) {
                             throw result.errorMessage;
                         }
 
-                        result = hikVision.removeFace(person.getValue('card').toString());
+                        result = hikVision.removeFace(person.get('card').toString());
                         if (!result.result) {
                             throw result.errorMessage;
                         }

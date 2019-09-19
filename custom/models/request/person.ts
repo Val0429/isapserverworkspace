@@ -65,3 +65,24 @@ export interface IVisitorBlacklistIndexC {
 export interface IVisitorBlacklistIndexD {
     objectId: string;
 }
+
+/**
+ * Visitor
+ */
+export interface IVisitorIndexC {
+    imageBase64?: string;
+    floorIds: string[];
+    companyId?: string;
+    organization?: string;
+    name: string;
+    email: string;
+    nric?: string;
+    phone?: string;
+    remark?: string;
+    startDate: Date;
+    endDate?: Date;
+}
+
+export interface IVisitorIndexD {
+    objectId: string;
+}

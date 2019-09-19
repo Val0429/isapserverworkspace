@@ -28,7 +28,7 @@ export interface IPersonVisitor {
     /**
      *
      */
-    card: string;
+    card: number;
 
     /**
      *
