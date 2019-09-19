@@ -67,16 +67,19 @@ export class CCUREReader {
 
         this._conn = new this._sql.ConnectionPool(config);
 
-        try {
+        //try {
             return await this._conn.connect().then(() => {
                 this._isConnected = true;
                 console.log(`=>Connect Successful`);
-            });
-        }
-        catch (err) {
-            this._conn = null;
-            return Promise.reject(`Internal Error: <CCUREReader::connectAsync> Try connect error : ${err}.`);
-        }
+            }).catch(err=>{
+                    console.log(`Internal Error: <CCUREReader::connectAsync> Try connect error : ${err}.`);
+                    this._conn=null;
+                });
+        // }
+        // catch (err) {
+        //     this._conn = null;
+        //     return Promise.reject(`Internal Error: <CCUREReader::connectAsync> Try connect error : ${err}.`);
+        // }
     }
 
     /**
