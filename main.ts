@@ -10,7 +10,7 @@ export let ready$: Rx.Subject<{}> = new Rx.Subject();
 app.use(history());
 app.use(`/logs`, express.static(`workspace/custom/assets/logs`));
 
-import { Print, Utility, DateTime, File } from './custom/helpers';
+import { Print, Utility, DateTime, File, HikVision } from './custom/helpers';
 
 import './custom/shells/create-index';
 import './custom/shells/create-default';
@@ -20,6 +20,8 @@ import * as Action from './custom/actions';
 import './custom/services';
 
 setTimeout(() => {
+    HikVision.Hikvision.initHikvisionSdk();
+
     let node_env: string = !process.env.NODE_ENV || process.env.NODE_ENV !== 'development' ? 'Production' : 'Development';
     let description: string = process.env.npm_package_description;
     let version: string = process.env.npm_package_version;
