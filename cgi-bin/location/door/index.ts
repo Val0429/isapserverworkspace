@@ -50,6 +50,29 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['floor not found']);
                         }
 
+                        let client: IDB.ClientFRS | IDB.ClientHikVision = undefined;
+                        if (value.endpoint.model === Enum.EEndpoint.frs) {
+                            client = await new Parse.Query(IDB.ClientFRS)
+                                .equalTo('objectId', value.endpoint.clientId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!client) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['client frs not found']);
+                            }
+                        } else {
+                            client = await new Parse.Query(IDB.ClientHikVision)
+                                .equalTo('objectId', value.endpoint.clientId)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!client) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['client hikvision not found']);
+                            }
+                        }
+
                         let company: IDB.LocationCompanies = undefined;
                         if ('companyId' in value) {
                             company = await new Parse.Query(IDB.LocationCompanies)
@@ -88,6 +111,18 @@ action.post(
                             door.setValue('company', company);
                         } else {
                             door.setValue('range', value.range);
+                        }
+                        if (value.endpoint.model === Enum.EEndpoint.frs) {
+                            door.setValue('endpoint', {
+                                model: value.endpoint.model,
+                                client: client,
+                                sourceId: value.endpoint.sourceId,
+                            });
+                        } else {
+                            door.setValue('endpoint', {
+                                model: value.endpoint.model,
+                                client: client,
+                            });
                         }
 
                         await door.save(null, { useMasterKey: true }).fail((e) => {
@@ -178,7 +213,7 @@ action.get(
             let doors: IDB.LocationDoor[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['floor', 'company'])
+                .include(['floor', 'company', 'endpoint.client'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -201,12 +236,35 @@ action.get(
 
                 let _range: string = !value.getValue('range') ? undefined : Enum.EDoorRange[value.getValue('range')];
 
+                let endpoint = value.getValue('endpoint');
+                let _endpoint: IResponse.ILocation.IEndpointFRS | IResponse.ILocation.IEndpointHikVision = undefined;
+                if (!!endpoint) {
+                    let _client: IResponse.IObject = {
+                        objectId: endpoint.client.id,
+                        name: endpoint.client.getValue('name'),
+                    };
+
+                    if (endpoint.model === Enum.EEndpoint.frs) {
+                        _endpoint = {
+                            model: Enum.EEndpoint[Enum.EEndpoint.frs],
+                            client: _client,
+                            sourceId: endpoint.sourceId,
+                        };
+                    } else {
+                        _endpoint = {
+                            model: Enum.EEndpoint[Enum.EEndpoint.hikvision],
+                            client: _client,
+                        };
+                    }
+                }
+
                 return {
                     objectId: value.id,
                     name: value.getValue('name'),
                     floor: _floor,
                     company: _comapny,
                     range: _range,
+                    endpoint: _endpoint,
                 };
             });
 
@@ -293,6 +351,40 @@ action.put(
                             }
 
                             door.setValue('floor', floor);
+                        }
+                        if ('endpoint' in value) {
+                            if (value.endpoint.model === Enum.EEndpoint.frs) {
+                                let client: IDB.ClientFRS | IDB.ClientHikVision = await new Parse.Query(IDB.ClientFRS)
+                                    .equalTo('objectId', value.endpoint.clientId)
+                                    .first()
+                                    .fail((e) => {
+                                        throw e;
+                                    });
+                                if (!client) {
+                                    throw Errors.throw(Errors.CustomBadRequest, ['client frs not found']);
+                                }
+
+                                door.setValue('endpoint', {
+                                    model: value.endpoint.model,
+                                    client: client,
+                                    sourceId: value.endpoint.sourceId,
+                                });
+                            } else {
+                                let client: IDB.ClientFRS | IDB.ClientHikVision = await new Parse.Query(IDB.ClientHikVision)
+                                    .equalTo('objectId', value.endpoint.clientId)
+                                    .first()
+                                    .fail((e) => {
+                                        throw e;
+                                    });
+                                if (!client) {
+                                    throw Errors.throw(Errors.CustomBadRequest, ['client hikvision not found']);
+                                }
+
+                                door.setValue('endpoint', {
+                                    model: value.endpoint.model,
+                                    client: client,
+                                });
+                            }
                         }
                         if ('companyId' in value) {
                             let company: IDB.LocationCompanies = await new Parse.Query(IDB.LocationCompanies)
@@ -441,6 +533,37 @@ IDB.LocationCompanies.notice$
                 await Promise.all(
                     doors.map(async (value, index, array) => {
                         await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Unbinding when client was delete
+ */
+IDB.ClientFRS.notice$
+    .merge(IDB.ClientHikVision.notice$)
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let doors: IDB.LocationDoor[] = await new Parse.Query(IDB.LocationDoor)
+                    .equalTo('endpoint.client.objectId', x.data.id)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    doors.map(async (value, index, array) => {
+                        value.unset('endpoint');
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
                         });
                     }),

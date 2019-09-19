@@ -58,4 +58,19 @@ export interface IDoorIndexR {
     floor: IObject;
     company: IObject;
     range: string;
+    endpoint: IEndpointFRS | IEndpointHikVision;
+}
+
+/**
+ * Endpoint
+ */
+export interface IEndpointFRS {
+    model: string;
+    client: Object;
+    sourceId: string;
+}
+
+export interface IEndpointHikVision {
+    model: string;
+    client: Object;
 }
