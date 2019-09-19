@@ -48,7 +48,7 @@ action.post(
                                 password: value.password,
                             });
                         } catch (e) {
-                            throw `hikvision: ${e}`;
+                            throw Errors.throw(Errors.CustomBadRequest, [`hikvision: ${e}`]);
                         }
 
                         let floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
@@ -260,7 +260,7 @@ action.put(
                                 password: hikVision.getValue('password'),
                             });
                         } catch (e) {
-                            throw `hikvision: ${e}`;
+                            throw Errors.throw(Errors.CustomBadRequest, [`hikvision: ${e}`]);
                         }
 
                         await hikVision.save(null, { useMasterKey: true }).fail((e) => {

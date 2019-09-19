@@ -93,7 +93,7 @@ action.put(
 /**
  *
  */
-namespace FRSService {
+export namespace FRSService {
     /**
      * Login
      * @param config
