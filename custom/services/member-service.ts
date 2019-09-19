@@ -87,7 +87,7 @@ export class MemberService {
 async createSipassCardHolder (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
-        let dob= testDate(inputFormData.birthday, "T");
+        let dob= testDate(inputFormData.birthday);
           // AccessRules
     
     let accessRules=[];
@@ -144,7 +144,8 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
           let tempCustomFieldsList: any = [];
           for(let field of CustomFields){
             if(field.name=="birthday"){
-                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: inputFormData[field.name] ? moment(inputFormData[field.name]).format("YYYY-MM-DD") : ""});
+                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: inputFormData[field.name] ? 
+                    moment(inputFormData[field.name]).format("YYYY-MM-DD") : null});
             }
             else if(field.date) {
                 tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: testDate(inputFormData[field.name])});
@@ -188,6 +189,52 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
               CustomFields: tempCustomFieldsList,
               CardholderPortrait:imageBase64,
               IsImageChanged: inputFormData.isImageChanged
+            };
+            //console.log("member", JSON.stringify(member));
+            return member;
+    }
+    async createSipassCardHolderForHrUpdate (inputFormData:ILinearMember) {
+    
+        let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
+        let dob= testDate(inputFormData.birthday);
+        
+          let tempPersonalDetails: any = {
+                ContactDetails: {
+                    Email: inputFormData.email || undefined,
+                    MobileNumber: inputFormData.extensionNumber || undefined,
+                    PhoneNumber: inputFormData.phone || undefined,
+                },
+                DateOfBirth: dob || undefined
+          };
+          let now = new Date();
+          let tempCustomFieldsList: any = [];
+          for(let field of CustomFields){
+            if(!field[field.name])continue;
+            if(field.name=="birthday"){
+                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: moment(inputFormData[field.name]).format("YYYY-MM-DD")});
+            }
+            else if(field.date) {
+                tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: testDate(inputFormData[field.name])});
+            }
+            else tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue:inputFormData[field.name]});
+          }
+
+          let wg= workGroupSelectItems.find(x=>x.get("groupid")== inputFormData.primaryWorkgroupId);
+          
+          let member:ICardholderObject = {        
+              // master
+              PrimaryWorkgroupId: wg ? wg.get("groupid") : undefined,
+              ApbWorkgroupId: wg ? wg.get("groupid") : undefined,
+              PrimaryWorkgroupName: wg? wg.get("groupname"): undefined,
+              EmployeeNumber: inputFormData.employeeNumber.toString(),
+              LastName: inputFormData.chineseName || undefined,
+              FirstName: inputFormData.englishName || undefined,
+              EndDate: inputFormData.endDate || undefined,
+              StartDate:inputFormData.startDate || undefined,
+              Token: inputFormData.token,
+              // special
+              PersonalDetails: tempPersonalDetails,
+              CustomFields: tempCustomFieldsList
             };
             //console.log("member", JSON.stringify(member));
             return member;
@@ -402,7 +449,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             let linearMember = await this.createLinearMember(data, user);
             if(checkDuplicate)await this.checkDuplication(linearMember);
             if(createToSipass){
-                //sipass and ccure requires this format
+                //sipass requires this format
                 let member = await this.createSipassCardHolder(linearMember);
                 let holder = await siPassAdapter.postCardHolder(member);
 

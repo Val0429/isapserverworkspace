@@ -17,6 +17,7 @@ import moment = require('moment');
 import MemberService, { testDate, memberFields } from './member-service';
 import { ECardholderStatus } from '../modules/acs/sipass/siPass_define';
 import { ScheduleActionEmail } from 'core/scheduler-loader';
+import { siPassAdapter } from './acsAdapter-Manager';
 
 
 export class HRService {
@@ -361,7 +362,34 @@ export class HRService {
                 let res =  await memberService.createMember(newMember, "SYSTEM", false);
                 await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
             }else{
-                let res = await memberService.updateMember(newMember, "SYSTEM", false);
+                let cardHolder = await memberService.createSipassCardHolderForHrUpdate({
+                    primaryWorkgroupId:workgroupId,            
+                    employeeNumber: empNo,
+                    endDate: testDate(record["OffDate"]),
+                    englishName: record["EngName"],            
+                    chineseName: record["EmpName"],
+                    email: record["EMail"],
+                    extensionNumber: record["Cellular"],
+                    phone: record["Extension"],            
+                    birthday: testDate(record["BirthDate"], "T"),
+                    startDate:testDate(record["EntDate"]),
+                    lastEditTime: testDate(record["UpdDate"]),
+                    lastEditPerson: record["AddUser"],
+                    companyName: record["CompName"],
+                    gender: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : undefined,
+                    MVPN: record["MVPN"],
+                    department: record["DeptChiName"], //value is from vieDept deptMark2
+                    costCenter:record["CostCenter"],
+                    workArea: record["LocationName"],
+                    registrationDate: testDate(record["EntDate"]),
+                    resignationDate: testDate(record["OffDate"]),
+                    token:newMember.token
+                });
+                
+                await siPassAdapter.putCardHolder(cardHolder);
+
+                let res = await memberService.updateMember(newMember, "SYSTEM", false, false);
+                
                 await Log.Info(`update`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
             }
             
@@ -521,7 +549,33 @@ export class HRService {
                             let res =  await memberService.createMember(newMember, "SYSTEM", false);
                             await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
                         }else{
-                            let res = await memberService.updateMember(newMember, "SYSTEM", false);
+                            let cardHolder = await memberService.createSipassCardHolderForHrUpdate({
+                                primaryWorkgroupId:workgroupId,            
+                                employeeNumber: record["SupporterNo"],
+                                endDate: testDate(record["OffDate"]),
+                                englishName: record["EngName"],            
+                                chineseName: record["EmpName"],
+                                email: record["EMail"],
+                                extensionNumber: record["Cellular"],
+                                birthday: testDate(record["BirthDate"]),
+                                startDate:testDate(record["EntDate"]),
+                                lastEditTime: testDate(record["UpdDate"]),
+                                lastEditPerson: record["AddUser"],
+                                companyName: record["CompName"],
+                                gender: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : undefined,
+                                MVPN: record["MVPN"],
+                                department: record["DeptChiName"], //value is from vieDept deptMark2
+                                costCenter:record["CostCenter"],
+                                area: record["LocationName"],
+                                workArea: record["RegionName"],
+                                registrationDate: testDate(record["EntDate"]),
+                                resignationDate: testDate(record["OffDate"]),
+                                token:newMember.token
+                            });
+                            
+                            await siPassAdapter.putCardHolder(cardHolder);
+            
+                            let res = await memberService.updateMember(newMember, "SYSTEM", false, false);
                             await Log.Info(`update`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
                         }
                         
