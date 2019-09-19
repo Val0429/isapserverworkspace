@@ -67,6 +67,12 @@ export interface IACSServerU extends ISettingACSServer {}
  */
 export interface IFRSU extends ISettingFRS {}
 
+export interface IFRSCompareFace {
+    config?: ISettingFRS;
+    image1Base64: string;
+    image2Base64: string;
+}
+
 /**
  * ACS Group
  */

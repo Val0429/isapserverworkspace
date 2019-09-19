@@ -52,6 +52,11 @@ export interface IACSServerR extends ISettingACSServer {}
  */
 export interface IFRSR extends ISettingFRS {}
 
+export interface IFRSCompareFace {
+    message: string;
+    score: number;
+}
+
 /**
  * ACS Group
  */
