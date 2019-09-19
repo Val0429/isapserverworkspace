@@ -87,7 +87,7 @@ export class MemberService {
 async createSipassCardHolder (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
-        let dob= testDate(inputFormData.birthday);
+        let dob= testDate(inputFormData.birthday,"T");
           // AccessRules
     
     let accessRules=[];
@@ -196,20 +196,42 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
     async createSipassCardHolderForHrUpdate (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
-        let dob= testDate(inputFormData.birthday);
+        let dob= testDate(inputFormData.birthday, "T");
         
+        let credential = {
+            CardNumber: inputFormData.cardNumber,
+            Pin: inputFormData.pin,
+            FacilityCode: inputFormData.deviceNumber,
+            ProfileId: inputFormData.cardCertificate,
+            ProfileName : inputFormData.profileName,
+            CardTechnologyCode : inputFormData.technologyCode,
+            PinMode: inputFormData.pinMode,          
+            PinDigit: inputFormData.pinDigit,
+            EndDate: inputFormData.endDate,
+            StartDate: inputFormData.startDate
+          };
+          
+      let tempCredentials:any[] = credential.CardNumber && credential.CardNumber.trim()!="" ? [credential] : [];
           let tempPersonalDetails: any = {
+                Address: "",
                 ContactDetails: {
                     Email: inputFormData.email || undefined,
                     MobileNumber: inputFormData.extensionNumber || undefined,
                     PhoneNumber: inputFormData.phone || undefined,
+                    PagerNumber: ""
                 },
-                DateOfBirth: dob || undefined
+                DateOfBirth: dob || undefined,
+                PayrollNumber: "",
+                Title: "",
+                UserDetails: {
+                    Password: "",
+                    UserName:  ""
+                }
           };
-          let now = new Date();
-          let tempCustomFieldsList: any = [];
+          
+          let tempCustomFieldsList: ICustomFields[] = [];
           for(let field of CustomFields){
-            if(!field[field.name])continue;
+            if(!inputFormData[field.name])continue;
             if(field.name=="birthday"){
                 tempCustomFieldsList.push({FiledName:field.fieldName, FieldValue: moment(inputFormData[field.name]).format("YYYY-MM-DD")});
             }
@@ -228,13 +250,23 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
               PrimaryWorkgroupName: wg? wg.get("groupname"): undefined,
               EmployeeNumber: inputFormData.employeeNumber.toString(),
               LastName: inputFormData.chineseName || undefined,
-              FirstName: inputFormData.englishName || undefined,
+              FirstName: inputFormData.englishName || "-",
               EndDate: inputFormData.endDate || undefined,
               StartDate:inputFormData.startDate || undefined,
               Token: inputFormData.token,
               // special
               PersonalDetails: tempPersonalDetails,
-              CustomFields: tempCustomFieldsList
+              CustomFields: tempCustomFieldsList,
+              Vehicle1: { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""},
+              Vehicle2: { CarColor:"", CarModelNumber:"", CarRegistrationNumber: ""},              
+              VisitorDetails: {
+                  VisitorCardStatus: 0,
+                  VisitorCustomValues: {}
+              },
+              TraceDetails: {},
+              GeneralInformation:"",
+              Attributes:{},
+              Credentials:tempCredentials
             };
             //console.log("member", JSON.stringify(member));
             return member;
@@ -513,14 +545,14 @@ export function createAccessLevelDoor(doorObjectId: any, doorgroupObjectId:any, 
     });
     return newAccessLevel;
 }
-export function testDate(date:string, splitter?:string){
+export function testDate(date:string, splitter?:string, format?:string){
     try{    
         if(!date || !date.trim())return null;
         date = date.trim();
         // let it throws exception
         let td = new Date(date);
         //error on date will return 'invalidDate'
-        let dt = moment(date).format();         
+        let dt = format　?　moment(date,format).format():moment(date).format();         
         return splitter ? dt.split(splitter)[0] : dt;         
   }catch (err){
       return null;

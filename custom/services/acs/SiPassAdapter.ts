@@ -751,9 +751,9 @@ export class SiPassAdapter {
         return JSON.parse(a);
     }
     processStartEndDate(cardholder: siPassClient.ICardholderObject): any {
-        cardholder.StartDate = moment(cardholder.StartDate).format("YYYY-MM-DDT00:00:00");
-        cardholder.EndDate = moment(cardholder.EndDate).format("YYYY-MM-DDT00:00:00");
-        if(cardholder.Credentials.length>0){
+        if(cardholder.StartDate)cardholder.StartDate = moment(cardholder.StartDate).format("YYYY-MM-DDT00:00:00");
+        if(cardholder.EndDate)cardholder.EndDate = moment(cardholder.EndDate).format("YYYY-MM-DDT00:00:00");
+        if(Array.isArray(cardholder.Credentials) && cardholder.Credentials.length>0){
             cardholder.Credentials[0].StartDate = cardholder.StartDate;
             cardholder.Credentials[0].EndDate = cardholder.EndDate;
         }
@@ -768,7 +768,7 @@ export class SiPassAdapter {
             if(cf.date && exist.FieldValue){
                 //remove timezone
                 exist.FieldValue = moment(exist.FieldValue).format("YYYY-MM-DDTHH:mm:ss");
-                console.log("fieldname", exist.FieldValue);
+                //console.log("fieldname", exist.FieldValue);
             }
             fields.push(exist);
         }

@@ -76,7 +76,7 @@ export class HRService {
     }
 
     async doSync() {
-        this.defaultPermission = await new Parse.Query(PermissionTable)
+        this.defaultPermission  = await new Parse.Query(PermissionTable)
             .equalTo("tablename", "NH-Employee")
             .equalTo("system", 0)
             .first();
@@ -317,9 +317,11 @@ export class HRService {
         }
 
 
-        let member = await new Parse.Query(LinearMember).equalTo("employeeNumber", record["EmpNo"]).first();        
-        let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
-        let startDate = testDate(record["EntDate"]) || moment().format();
+        let member = await new Parse.Query(LinearMember)
+                        .include("permissionTable")
+                        .equalTo("employeeNumber", record["EmpNo"]).first();        
+        let endDate = testDate(record["OffDate"],undefined,"YYYY/MM/DD") || moment("2100-12-31T23:59:59+08:00").format();
+        let startDate = testDate(record["EntDate"],undefined,"YYYY/MM/DD") || moment().format();
         let newMember:ILinearMember = {
             permissionTable: [this.defaultPermission],
             primaryWorkgroupId:workgroupId,            
@@ -330,11 +332,11 @@ export class HRService {
             email: record["EMail"] || "",
             extensionNumber: record["Cellular"] || "",
             phone: record["Extension"] || "",            
-            birthday: testDate(record["BirthDate"], "T")|| "",
+            birthday: testDate(record["BirthDate"], "T","YYYY/MM/DD")|| "",
             startDate,
             status: ECardholderStatus.Void,
             token: "",
-            lastEditTime: testDate(record["UpdDate"]),
+            lastEditTime: testDate(record["UpdDate"],undefined,"YYYY/MM/DD"),
             lastEditPerson: record["AddUser"] || "",
             companyName: record["CompName"] || "",
             gender: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : "",
@@ -342,14 +344,14 @@ export class HRService {
             department: record["DeptChiName"] || "", //value is from vieDept deptMark2
             costCenter:record["CostCenter"] || "",
             workArea: record["LocationName"] || "",
-            registrationDate: testDate(record["EntDate"]),
-            resignationDate: testDate(record["OffDate"])
+            registrationDate: testDate(record["EntDate"],undefined,"YYYY/MM/DD"),
+            resignationDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD")
         }
         if(member){
             let memberJson:any = ParseObject.toOutputJSON(member);            
             for(let field of memberFields){
                 if(field == "permissionTable") continue;
-                //preserve existing data
+                //reserve existing data
                 newMember[field] = newMember[field] || memberJson[field];
             }
             newMember.permissionTable = member.get("permissionTable");
@@ -362,7 +364,37 @@ export class HRService {
                 let res =  await memberService.createMember(newMember, "SYSTEM", false);
                 await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
             }else{
-                let cardHolder = await memberService.createSipassCardHolderForHrUpdate(this.createSipassUpdate(empNo, workgroupId, newMember.token, record));
+                let cardHolder = await memberService.createSipassCardHolderForHrUpdate({
+                    primaryWorkgroupId:workgroupId,            
+                    employeeNumber: empNo,
+                    endDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD"),
+                    englishName: record["EngName"],            
+                    chineseName: record["EmpName"],
+                    email: record["EMail"],
+                    extensionNumber: record["Cellular"],
+                    phone: record["Extension"],            
+                    birthday: testDate(record["BirthDate"], "T","YYYY/MM/DD"),
+                    startDate:testDate(record["EntDate"],undefined,"YYYY/MM/DD"),
+                    lastEditTime: testDate(record["UpdDate"],undefined,"YYYY/MM/DD"),
+                    lastEditPerson: record["AddUser"],
+                    companyName: record["CompName"],
+                    gender: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : undefined,
+                    MVPN: record["MVPN"],
+                    department: record["DeptChiName"], //value is from vieDept deptMark2
+                    costCenter:record["CostCenter"],
+                    workArea: record["LocationName"],
+                    registrationDate: testDate(record["EntDate"],undefined,"YYYY/MM/DD"),
+                    resignationDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD"),
+                    token:newMember.token,
+                    cardNumber: newMember.cardNumber,
+                    pin: newMember.pin,
+                    deviceNumber: newMember.deviceNumber,
+                    cardCertificate: newMember.cardCertificate,
+                    profileName : newMember.profileName,
+                    technologyCode : newMember.technologyCode,
+                    pinMode: newMember.pinMode,          
+                    pinDigit: newMember.pinDigit
+                });
                 
                 await siPassAdapter.putCardHolder(cardHolder);
 
@@ -373,8 +405,8 @@ export class HRService {
             
 
         } catch (err) {
-            console.log("err", JSON.stringify(err));
-            console.log("err data", JSON.stringify(newMember));
+            console.log("err", err);
+            console.log("err data", newMember);
         }
         
         return { newMsg, offMsg, chgMsg };
@@ -463,7 +495,7 @@ export class HRService {
                                 Email: record["Email"],
                                 MobileNumber: record["Cellular"]
                             },
-                            DateOfBirth: testDate(record["BirthDate"], "T")
+                            DateOfBirth: testDate(record["BirthDate"], "T","YYYY/MM/DD")
                         });
                         obj.set("primaryWorkgroupId", workgroupId);
                         obj.set("apbWorkgroupId", workgroupId);
@@ -478,10 +510,12 @@ export class HRService {
                         await obj.save();
                     }
 
-                    let member = await new Parse.Query(LinearMember).equalTo("employeeNumber", supporterNo).first();
+                    let member = await new Parse.Query(LinearMember)
+                                .include("permissionTable")
+                                .equalTo("employeeNumber", supporterNo).first();
                     
-                    let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
-                    let startDate = testDate(record["EntDate"]) || moment().format();
+                    let endDate = testDate(record["OffDate"],undefined,"YYYY/MM/DD") || moment("2100-12-31T23:59:59+08:00").format();
+                    let startDate = testDate(record["EntDate"],undefined,"YYYY/MM/DD") || moment().format();
                     
                     let newMember:ILinearMember = {
                         permissionTable:[],
@@ -492,11 +526,11 @@ export class HRService {
                         chineseName: record["SupporterName"] || "",
                         email: record["EMail"] || "",
                         extensionNumber: record["Cellular"] || "",
-                        birthday: testDate(record["BirthDate"], "T")||"",                        
+                        birthday: testDate(record["BirthDate"], "T","YYYY/MM/DD")||"",                        
                         primaryWorkgroupName: workgroupName,                        
                         startDate,
                         status: ECardholderStatus.Void,
-                        lastEditTime: testDate(record["UpdDate"])||"",
+                        lastEditTime: testDate(record["UpdDate"],undefined,"YYYY/MM/DD")||"",
                         cardType: workgroupId + "",
                         allCardNumber: record["EmpNo"] || "",
                         lastEditPerson: record["AddUser"] || "",
@@ -507,14 +541,14 @@ export class HRService {
                         costCenter: record["CostCenter"] || "",
                         area: record["LocationName"] || "",
                         workArea: record["RegionName"] || "",
-                        registrationDate: testDate(record["EntDate"])||"",
-                        resignationDate: testDate(record["OffDate"])||""
+                        registrationDate: testDate(record["EntDate"],undefined,"YYYY/MM/DD")||"",
+                        resignationDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD")||""
                     }
                     if(member){
                         let memberJson:any = ParseObject.toOutputJSON(member);            
                         for(let field of memberFields){
                             if(field == "permissionTable") continue;
-                            //preserve existing data
+                            //reserve existing data
                             newMember[field] = newMember[field] || memberJson[field];
                         }
                         newMember.permissionTable = memberJson.permissionTable.map(x=>x.objectId);
@@ -527,7 +561,37 @@ export class HRService {
                             let res =  await memberService.createMember(newMember, "SYSTEM", false);
                             await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
                         }else{
-                            let cardHolder = await memberService.createSipassCardHolderForHrUpdate(this.createSipassUpdate(record["SupporterNo"], workgroupId, newMember.token, record));
+                            let cardHolder = await memberService.createSipassCardHolderForHrUpdate({
+                                primaryWorkgroupId:workgroupId,            
+                                employeeNumber: record["SupporterNo"],
+                                endDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD"),
+                                englishName: record["EngName"],            
+                                chineseName: record["EmpName"],
+                                email: record["EMail"],
+                                extensionNumber: record["Cellular"],
+                                birthday: testDate(record["BirthDate"],"T","YYYY/MM/DD"),
+                                startDate:testDate(record["EntDate"],undefined,"YYYY/MM/DD"),
+                                lastEditTime: testDate(record["UpdDate"],undefined,"YYYY/MM/DD"),
+                                lastEditPerson: record["AddUser"],
+                                companyName: record["CompName"],
+                                gender: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : undefined,
+                                MVPN: record["MVPN"],
+                                department: record["DeptChiName"], //value is from vieDept deptMark2
+                                costCenter:record["CostCenter"],
+                                area: record["LocationName"],
+                                workArea: record["RegionName"],
+                                registrationDate: testDate(record["EntDate"],undefined,"YYYY/MM/DD"),
+                                resignationDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD"),
+                                token:newMember.token,
+                                cardNumber: newMember.cardNumber,
+                                pin: newMember.pin,
+                                deviceNumber: newMember.deviceNumber,
+                                cardCertificate: newMember.cardCertificate,
+                                profileName : newMember.profileName,
+                                technologyCode : newMember.technologyCode,
+                                pinMode: newMember.pinMode,          
+                                pinDigit: newMember.pinDigit
+                            });
                             
                             await siPassAdapter.putCardHolder(cardHolder);
             
@@ -537,8 +601,8 @@ export class HRService {
                         
             
                     } catch (err) {
-                        console.log("err", JSON.stringify(err));
-                        console.log("err data", JSON.stringify(newMember));
+                        console.log("err",  err);
+                        console.log("err data",  newMember);
                     }
                 }
             }
@@ -547,32 +611,6 @@ export class HRService {
                 Log.Info(`${this.constructor.name}`, ex);
             }
         }
-    }
-
-    private createSipassUpdate(employeeNumber:string, workgroupId: number, token:string, record: any): ILinearMember {
-        return {
-            primaryWorkgroupId: workgroupId,
-            employeeNumber,
-            endDate: testDate(record["OffDate"]),
-            englishName: record["EngName"],
-            chineseName: record["EmpName"],
-            email: record["EMail"],
-            extensionNumber: record["Cellular"],
-            birthday: testDate(record["BirthDate"]),
-            startDate: testDate(record["EntDate"]),
-            lastEditTime: testDate(record["UpdDate"]),
-            lastEditPerson: record["AddUser"],
-            companyName: record["CompName"],
-            gender: record["Sex"] ? (record["Sex"] == "M" ? "男" : "女") : undefined,
-            MVPN: record["MVPN"],
-            department: record["DeptChiName"],
-            costCenter: record["CostCenter"],
-            area: record["LocationName"],
-            workArea: record["RegionName"],
-            registrationDate: testDate(record["EntDate"]),
-            resignationDate: testDate(record["OffDate"]),
-            token
-        };
     }
 
     private async cleanTempData() {
