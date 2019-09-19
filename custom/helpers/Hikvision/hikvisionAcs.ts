@@ -13,6 +13,17 @@ export class Hikvision {
     constructor() {
         this._instance = new addon.AcsGateWay();
     }
+
+    public static initHikvisionSdk() : AcsDataStructure.I_SdkResponse{
+
+        return addon.initSdk();
+    }
+
+    public static releaseHikvisionSdk() : AcsDataStructure.I_SdkResponse{
+      
+        return addon.releaseSdk();        
+    }
+
     public createInstance(data:AcsDataStructure.I_DeviceInfo) : AcsDataStructure.I_SdkResponse {
         return this._instance.createInstance(data);
     }
