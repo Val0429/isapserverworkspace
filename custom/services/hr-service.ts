@@ -188,11 +188,10 @@ export class HRService {
 
         try {
             let res = await this.humanResource.getViewMember(EmpNo);
-            let vieMembers = await new Parse.Query(vieMember).limit(res.length).containedIn("EmpNo", res.map(x => x["EmpNo"])).find();
-            let members = await new Parse.Query(LinearMember).limit(res.length).containedIn("employeeNumber", res.map(x => x["EmpNo"])).find();
+           
             for (let record of res) {
                 
-                let results = await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, vieMembers, chgMsg, members);
+                let results = await this.impotFromViewMember(record, memNew, newMsg, memOff, offMsg, memChange, chgMsg);
                 newMsg+=results.newMsg;
                 offMsg+=results.offMsg;
                 chgMsg+=results.chgMsg;
@@ -207,7 +206,7 @@ export class HRService {
 
     }
 
-    private async impotFromViewMember(record: any, memNew: any[], newMsg: string, memOff: any[], offMsg: string, memChange: any[], vieMembers: vieMember[], chgMsg: string, members: LinearMember[]) {
+    private async impotFromViewMember(record: any, memNew: any[], newMsg: string, memOff: any[], offMsg: string, memChange: any[],  chgMsg: string) {
         let english = /^[A-Za-z]*$/;
         let empNo = record["EmpNo"];
         Log.Info(`${this.constructor.name}`, `Import data vieMember ${empNo}`);
@@ -242,7 +241,7 @@ export class HRService {
         }
         if (memChange.indexOf(record["EmpNo"] >= 0)) {
             let change = "";
-            let dbParse = vieMembers.find(x => x.get("EmpNo") == empNo);
+            let dbParse = await new Parse.Query(vieMember).equalTo("EmpNo", empNo).first();
             if (dbParse) {
                 let db = ParseObject.toOutputJSON(dbParse);
                 if (record["CompCode"] != db["CompCode"])
@@ -289,11 +288,10 @@ export class HRService {
             chgMsg += `<tr><td>${record["EmpNo"]}</td><td>${record["EmpName"]}</td><td>${workgroupName}</td><td>${record["EngName"]}</td><td>${change}</td></tr>`;
         }
         Log.Info(`${this.constructor.name}`, `5.0 write data to SQL database ${empNo}`);
-        let obj = vieMembers.find(x => x.get("EmpNo") == empNo);
+        let obj = await new Parse.Query(vieMember).equalTo("EmpNo", empNo).first();
         if (!obj) {
             obj = new vieMember(record);
             await obj.save();
-            vieMembers.push(obj);
         }
         else {
             obj.set("attributes", record["attributes"]);
@@ -318,7 +316,7 @@ export class HRService {
         }
 
 
-        let member = members.find(x => x.get("employeeNumber") == record["EmpNo"]);        
+        let member = await new Parse.Query(LinearMember).equalTo("employeeNumber", record["EmpNo"]).first();        
         let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
         let startDate = testDate(record["EntDate"]) || moment().format();
         let newMember:ILinearMember = {
@@ -372,9 +370,7 @@ export class HRService {
             console.log("err", JSON.stringify(err));
             console.log("err data", JSON.stringify(newMember));
         }
-        console.log("new message", newMsg);
-        console.log("offMsg", offMsg);
-        console.log("chgMsg", chgMsg);
+        
         return { newMsg, offMsg, chgMsg };
     }
 
@@ -432,7 +428,7 @@ export class HRService {
                 Log.Info(`${this.constructor.name}`, ex);
             }
         }
-        return { newMsg, chgMsg, offMsg }
+        
     }
 
     private async getViewSupporter(EmpNo: string[]) {
@@ -440,8 +436,6 @@ export class HRService {
             if (EmpNo.length <= 0) return;
             try {
                 let res = await this.humanResource.getViewSupporter(EmpNo);                
-                let vieMembers = await new Parse.Query(vieMember).equalTo("EmpNo", res.map(x => x["SupporterNo"])).find();
-                let members = await new Parse.Query(LinearMember).equalTo("employeeNumber", res.map(x => x["SupporterNo"])).find();
                 for (let record of res) {
                     let supporterNo = record["SupporterNo"];
                     Log.Info(`${this.constructor.name}`, `Import data vieSupporter ${supporterNo}`);
@@ -449,10 +443,9 @@ export class HRService {
                     let workgroupId = 2000000007;
                     let workgroupName = "契約商";
                     
-                    let obj = vieMembers.find(x => x.get("EmpNo") == supporterNo);
+                    let obj = await new Parse.Query(vieMember).equalTo("EmpNo", supporterNo).first();
                     if (!obj) {
                         obj = new vieMember(record);
-                        vieMembers.push(obj);
                         await obj.save();
                     }
                     else {
@@ -479,7 +472,7 @@ export class HRService {
                         await obj.save();
                     }
 
-                    let member = members.find(x => x.get("employeeNumber") == supporterNo);
+                    let member = await new Parse.Query(LinearMember).equalTo("employeeNumber", supporterNo).first();
                     
                     let endDate = testDate(record["OffDate"]) || moment("2100-12-31T23:59:59+08:00").format();
                     let startDate = testDate(record["EntDate"]) || moment().format();
