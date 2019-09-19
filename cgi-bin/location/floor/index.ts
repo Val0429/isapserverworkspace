@@ -218,6 +218,20 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['floor not found']);
                         }
 
+                        if ('name' in value) {
+                            let _floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
+                                .notEqualTo('objectId', value.objectId)
+                                .equalTo('name', value.name)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!!_floor) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['duplicate floor name']);
+                            }
+
+                            floor.setValue('name', value.name);
+                        }
                         if ('buildingId' in value) {
                             let building: IDB.LocationBuildings = await new Parse.Query(IDB.LocationBuildings)
                                 .equalTo('objectId', value.buildingId)

@@ -186,6 +186,20 @@ action.put(
                             throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
                         }
 
+                        if ('name' in value) {
+                            let _building: IDB.LocationBuildings = await new Parse.Query(IDB.LocationBuildings)
+                                .notEqualTo('objectId', value.objectId)
+                                .equalTo('name', value.name)
+                                .first()
+                                .fail((e) => {
+                                    throw e;
+                                });
+                            if (!!_building) {
+                                throw Errors.throw(Errors.CustomBadRequest, ['duplicate building name']);
+                            }
+
+                            building.setValue('name', value.name);
+                        }
                         if ('location' in value) {
                             building.setValue('location', value.location);
                         }

@@ -58,10 +58,14 @@ action.put(
             let _input: InputU = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            await Check({
-                host: _input.host,
-                token: _input.token,
-            });
+            try {
+                await SuntecAppService.Check({
+                    host: _input.host,
+                    token: _input.token,
+                });
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [`suntec app: ${e}`]);
+            }
 
             DataCenter.suntecAppSetting$.next({
                 host: _input.host,
@@ -77,28 +81,35 @@ action.put(
 );
 
 /**
- * Check
- * @param config
+ *
  */
-export async function Check(config: { host: string; token: string }): Promise<void> {
-    try {
-        let suntec = Suntec.Suntec.getInstance();
-        suntec.setConnection({
-            protocal: 'https',
-            host: config.host,
-            token: config.token,
-        });
-
+namespace SuntecAppService {
+    /**
+     * Check
+     * @param config
+     */
+    export async function Check(config: { host: string; token: string }): Promise<void> {
         try {
-            await suntec.revoke({
-                AccessId: '9876432101',
+            let suntec = Suntec.Suntec.getInstance();
+            suntec.setConnection({
+                protocal: 'https',
+                host: config.host,
+                token: config.token,
             });
-        } catch (e) {
-            if (e !== 'AccessId is not exist') {
-                throw e;
+
+            try {
+                let accessId: string = Utility.RandomText(10, { symbol: false, EN: false, en: false });
+
+                await suntec.revoke({
+                    AccessId: accessId,
+                });
+            } catch (e) {
+                if (e !== 'AccessId is not exist') {
+                    throw e;
+                }
             }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }

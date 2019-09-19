@@ -40,13 +40,17 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate vms name']);
                         }
 
-                        await Login({
-                            protocol: value.protocol,
-                            ip: value.ip,
-                            port: value.port,
-                            account: value.account,
-                            password: value.password,
-                        });
+                        try {
+                            await VMSService.Login({
+                                protocol: value.protocol,
+                                ip: value.ip,
+                                port: value.port,
+                                account: value.account,
+                                password: value.password,
+                            });
+                        } catch (e) {
+                            throw `vms: ${e}`;
+                        }
 
                         let vms: IDB.ClientVMS = await new Parse.Query(IDB.ClientVMS)
                             .equalTo('name', value.name)
@@ -148,7 +152,7 @@ action.get(
 
             if ('objectId' in _input) {
                 if (results.length === 0) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
+                    throw Errors.throw(Errors.CustomBadRequest, ['vms not found']);
                 }
 
                 return results[0];
@@ -219,13 +223,17 @@ action.put(
                             vms.setValue('password', value.password);
                         }
 
-                        await Login({
-                            protocol: vms.getValue('protocol'),
-                            ip: vms.getValue('ip'),
-                            port: vms.getValue('port'),
-                            account: vms.getValue('account'),
-                            password: vms.getValue('password'),
-                        });
+                        try {
+                            await VMSService.Login({
+                                protocol: vms.getValue('protocol'),
+                                ip: vms.getValue('ip'),
+                                port: vms.getValue('port'),
+                                account: vms.getValue('account'),
+                                password: vms.getValue('password'),
+                            });
+                        } catch (e) {
+                            throw `vms: ${e}`;
+                        }
 
                         await vms.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -303,20 +311,25 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: VMS.IConfig): Promise<VMS> {
-    try {
-        let vms: VMS = new VMS();
-        vms.config = config;
+namespace VMSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: VMS.IConfig): Promise<VMS> {
+        try {
+            let vms: VMS = new VMS();
+            vms.config = config;
 
-        vms.Initialization();
+            vms.Initialization();
 
-        await vms.Login();
+            await vms.Login();
 
-        return vms;
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+            return vms;
+        } catch (e) {
+            throw e;
+        }
     }
 }

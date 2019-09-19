@@ -68,6 +68,50 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
 
         let _userInfo = await Db.GetUserInfo(data.request, user);
 
+        let _company: IResponse.IObject = !_userInfo.company
+            ? undefined
+            : {
+                  objectId: _userInfo.company.id,
+                  name: _userInfo.company.getValue('name'),
+              };
+
+        let _floors: IResponse.IObject[] = !_userInfo.floors
+            ? undefined
+            : _userInfo.floors.map<IResponse.IObject>((value, index, array) => {
+                  return {
+                      objectId: value.id,
+                      name: value.getValue('name'),
+                  };
+              });
+
+        let _tree: IResponse.IUser.IWebLoginUserTree = undefined;
+        if (!!_userInfo.treeIdDictionary) {
+            _tree = {};
+
+            Object.keys(_userInfo.treeIdDictionary).forEach((value, index, array) => {
+                let l1 = _userInfo.treeIdDictionary[value];
+                let building: IDB.LocationBuildings = l1.building;
+                let buildingName: string = building.getValue('name');
+
+                if (!_tree[buildingName]) {
+                    _tree[buildingName] = {
+                        building: {
+                            objectId: building.id,
+                            name: buildingName,
+                        },
+                        floors: [],
+                    };
+                }
+
+                _tree[buildingName].floors = l1.floors.map((value1, index1, array1) => {
+                    return {
+                        objectId: value1.id,
+                        name: value1.getValue('name'),
+                    };
+                });
+            });
+        }
+
         return {
             sessionId: sessionId,
             user: {
@@ -77,8 +121,12 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
                 name: _userInfo.info.getValue('name') || '',
                 email: _userInfo.info.getValue('email') || '',
                 phone: _userInfo.info.getValue('phone') || '',
+                position: _userInfo.info.getValue('position') || '',
                 remark: _userInfo.info.getValue('remark') || '',
                 webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
+                company: _company,
+                floors: _floors,
+                tree: _tree,
             },
         };
     } catch (e) {

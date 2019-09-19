@@ -4,7 +4,7 @@ import { DateTime } from "../utilitys";
 
 export class Suntec {
     //Singleton
-    private static _instance: Suntec;
+    private static _instance: Suntec = null;
 
     public static getInstance(): Suntec {
         if (isNullOrUndefined(this._instance) === true) this._instance = new Suntec();
@@ -26,11 +26,15 @@ export class Suntec {
         this._token = ext.token;
     }
 
-    public async signup(contect: ISignup) {
-        let body = contect;
-        body["SubtypeId"] = "1";     // 1: Staff, 2: Others
-        body["PrivacyPolicy"] = "1"; // 1 : agree (cannot be 0 or others)
+    public async signup(content: ISignup) {
+        let body = content;
 
+        body["PrivacyPolicy"] = "1";    // 1 : agree (cannot be 0 or others)
+        body["LastName"] = " ";         // Use blank space
+        body["Country"] = "Singapore";  // Singapore forever
+        body["OfficeBuilding"] = `Suntec ${body["OfficeBuilding"]}`;
+
+        console.log(JSON.stringify(body));
         var options = 
         {
             method: 'POST',
@@ -58,8 +62,8 @@ export class Suntec {
         });
     }
 
-    public async revoke(contect: IRevoke) {
-        let body = contect;
+    public async revoke(content: IRevoke) {
+        let body = content;
         body["TimeStamp"] = DateTime.ToString(new Date(),"YYYY-MM-DD HH:mm:ss");
 
         var options = 

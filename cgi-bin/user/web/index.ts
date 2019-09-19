@@ -1,7 +1,7 @@
 import { IUser, Action, Restful, RoleList, Errors, Config } from 'core/cgi-package';
 import { default as Ast } from 'services/ast-services/ast-client';
 import { IRequest, IResponse, IDB } from '../../../custom/models';
-import { Print, Regex, Db, Permission, Utility, Email } from '../../../custom/helpers';
+import { Print, Regex, Db, Permission, Utility } from '../../../custom/helpers';
 import * as Middleware from '../../../custom/middlewares';
 import * as Enum from '../../../custom/enums';
 import { permissionMapC, permissionMapR, permissionMapU, permissionMapD } from '../../../define/userRoles/userPermission.define';
@@ -76,7 +76,7 @@ action.post(
                         if (!Regex.IsEmail(value.email)) {
                             throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
                         }
-                        if (value.phone && !Regex.IsInternationalPhone(value.phone)) {
+                        if (value.phone && !(Regex.IsNum(value.phone) || Regex.IsInternationalPhone(value.phone))) {
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
@@ -95,7 +95,9 @@ action.post(
                         info.setValue('account', value.username);
                         info.setValue('name', value.name);
                         info.setValue('email', value.email);
-                        info.setValue('phone', value.phone || '');
+                        info.setValue('phone', value.phone);
+                        info.setValue('position', value.position);
+                        info.setValue('remark', value.remark);
                         info.setValue('mobileType', Enum.EMobileType.none);
                         info.setValue('mobileToken', '');
 
@@ -216,6 +218,7 @@ action.get(
                     name: value.getValue('name') || '',
                     email: value.getValue('email') || '',
                     phone: value.getValue('phone') || '',
+                    position: value.getValue('position') || '',
                     remark: value.getValue('remark') || '',
                     company: _company,
                     floors: _floors,
@@ -273,7 +276,7 @@ action.put(
                         if ('email' in value && !Regex.IsEmail(value.email)) {
                             throw Errors.throw(Errors.CustomBadRequest, ['email format error']);
                         }
-                        if ('phone' in value && !Regex.IsInternationalPhone(value.phone)) {
+                        if ('phone' in value && !(Regex.IsNum(value.phone) || Regex.IsInternationalPhone(value.phone))) {
                             throw Errors.throw(Errors.CustomBadRequest, ['phone format error']);
                         }
 
@@ -304,6 +307,9 @@ action.put(
                         }
                         if ('phone' in value) {
                             info.setValue('phone', value.phone);
+                        }
+                        if ('position' in value) {
+                            info.setValue('position', value.position);
                         }
                         if ('remark' in value) {
                             info.setValue('remark', value.remark);
@@ -402,3 +408,64 @@ action.delete(
         }
     },
 );
+
+/**
+ * Unbinding when floor was delete
+ */
+IDB.LocationFloors.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                    .containedIn('floor', [x.data])
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    userInfos.map(async (value, index, array) => {
+                        let floors: IDB.LocationFloors[] = value.getValue('floors').filter((value1, index1, array1) => {
+                            return value1.id !== x.data.id;
+                        });
+                        value.setValue('floors', floors);
+
+                        await value.save(null, { useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Delete when company was delete
+ */
+IDB.LocationCompanies.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let userInfos: IDB.UserInfo[] = await new Parse.Query(IDB.UserInfo)
+                    .equalTo('company', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    userInfos.map(async (value, index, array) => {
+                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });

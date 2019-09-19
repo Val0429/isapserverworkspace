@@ -14,6 +14,7 @@ export interface IWebIndexR {
     name: string;
     email: string;
     phone: string;
+    position: string;
     remark: string;
     company: IObject;
     floors: IObject[];
@@ -23,20 +24,31 @@ export interface IWebIndexR {
 /**
  * Web Login
  */
-export interface IWebLoginuser {
+export interface IWebLoginUserTree {
+    [key: string]: {
+        building: IObject;
+        floors: IObject[];
+    };
+}
+
+export interface IWebLoginUser {
     objectId: string;
     roles: IObject[];
     username: string;
     name: string;
     email: string;
     phone: string;
+    position: string;
     remark: string;
     webLestUseDate: Date;
+    company: IObject;
+    floors: IObject[];
+    tree: IWebLoginUserTree;
 }
 
 export interface IWebLogin {
     sessionId: string;
-    user: IWebLoginuser;
+    user: IWebLoginUser;
 }
 
 /**

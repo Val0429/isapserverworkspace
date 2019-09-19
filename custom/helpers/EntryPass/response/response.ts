@@ -61,31 +61,25 @@ function GetErrorMessage(code: number): string {
 }
 
 export function ParseResponse(resp: string): OperationReuslt {
+    if (resp.includes("error:")) {
+        return { result: false, errorMessage: resp } as OperationReuslt
+    }
+
     // Successful: `<RESULT STCODE="0"><TRACKID ID="20190909_000051"><SUB_RESULT ID="1" STCODE="0"></SUB_RESULT></TRACKID></RESULT>`
     // Failure: `<RESULT STCODE="18"><TRACKID ID="20190909_000052"><COMMAND ID="1"></COMMAND><PARAMETER>STAFF_NO</PARAMETER></TRACKID></RESULT>`
-    let op = {
-        result: true,
-        errorMessage: ""
-    } as OperationReuslt
-
     let xmlDoc = libxmljs.parseXmlString(resp)
     let codeAttr = xmlDoc.get('/RESULT')!.attr('STCODE')
-    if (codeAttr === null) {
-        op.result = false
-        op.errorMessage = "Invalid response"
-        return op
-    }
+    if (codeAttr === null) { return { result: false, errorMessage: "error: Invalid response" } as OperationReuslt }
 
     if (codeAttr.value() !== '0') {
-        op.result = false
-        op.errorMessage = GetErrorMessage(parseInt(codeAttr.value(), 10))
+        return { result: false, errorMessage: GetErrorMessage(parseInt(codeAttr.value(), 10)) } as OperationReuslt
     }
 
-    return op
+    return { result: true } as OperationReuslt
 }
 
-export function ParseTrackID(xml: string) {
+export function ParseTrackID(xml: string): string {
     let xmlDoc = libxmljs.parseXmlString(xml);
     let idAttr = xmlDoc.get(`//TRACKID`)!.attr('ID');
-    return idAttr !== null ? idAttr.value() : "";
+    return idAttr !== null ? idAttr.value() : "error: Parse response error";
 }

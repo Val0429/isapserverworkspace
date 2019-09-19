@@ -94,9 +94,14 @@ class Action {
                             await Promise.all(
                                 x.map(async (value, index, array) => {
                                     try {
-                                        let result = await this._email.Send(value.title, value.message, {
-                                            tos: value.tos.map((x) => x.email),
-                                        });
+                                        let result = await this._email.Send(
+                                            value.title,
+                                            value.message,
+                                            {
+                                                tos: value.tos.map((x) => x.email),
+                                            },
+                                            value.attachments,
+                                        );
 
                                         value.tos.forEach((value, index, array) => {
                                             Print.Log(`Email: ${value.name} -> success`, new Error(), 'success');
@@ -128,7 +133,9 @@ namespace Action {
 
     export interface IAction {
         tos: ITo[];
+        ccs?: ITo[];
         title: string;
         message: string;
+        attachments?: Email.Attachment[];
     }
 }

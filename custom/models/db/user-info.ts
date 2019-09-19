@@ -37,6 +37,11 @@ export interface IUserInfo {
     phone?: string;
 
     /**
+     * 職稱
+     */
+    position?: string;
+
+    /**
      * 備註
      */
     remark?: string;

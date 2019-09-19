@@ -40,14 +40,18 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate frs name']);
                         }
 
-                        await Login({
-                            protocol: value.protocol,
-                            ip: value.ip,
-                            port: value.port,
-                            wsport: value.port,
-                            account: value.account,
-                            password: value.password,
-                        });
+                        try {
+                            await FRSService.Login({
+                                protocol: value.protocol,
+                                ip: value.ip,
+                                port: value.port,
+                                wsport: value.port,
+                                account: value.account,
+                                password: value.password,
+                            });
+                        } catch (e) {
+                            throw `frs: ${e}`;
+                        }
 
                         let floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
                             .equalTo('objectId', value.floorId)
@@ -166,7 +170,7 @@ action.get(
 
             if ('objectId' in _input) {
                 if (results.length === 0) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
+                    throw Errors.throw(Errors.CustomBadRequest, ['frs not found']);
                 }
 
                 return results[0];
@@ -250,14 +254,18 @@ action.put(
                             frs.setValue('password', value.password);
                         }
 
-                        await Login({
-                            protocol: frs.getValue('protocol'),
-                            ip: frs.getValue('ip'),
-                            port: frs.getValue('port'),
-                            wsport: frs.getValue('port'),
-                            account: frs.getValue('account'),
-                            password: frs.getValue('password'),
-                        });
+                        try {
+                            await FRSService.Login({
+                                protocol: frs.getValue('protocol'),
+                                ip: frs.getValue('ip'),
+                                port: frs.getValue('port'),
+                                wsport: frs.getValue('port'),
+                                account: frs.getValue('account'),
+                                password: frs.getValue('password'),
+                            });
+                        } catch (e) {
+                            throw `frs: ${e}`;
+                        }
 
                         await frs.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -335,37 +343,42 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: FRS.IConfig): Promise<FRS> {
-    try {
-        let frs: FRS = new FRS();
-        frs.config = config;
+namespace FRSService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: FRS.IConfig): Promise<FRS> {
+        try {
+            let frs: FRS = new FRS();
+            frs.config = config;
 
-        frs.Initialization();
+            frs.Initialization();
 
-        await frs.Login();
+            await frs.Login();
 
-        return frs;
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+            return frs;
+        } catch (e) {
+            throw e;
+        }
     }
-}
 
-/**
- * Get device list
- * @param config
- */
-export async function GetDeviceList(config: FRS.IConfig): Promise<FRS.IDevice[]> {
-    try {
-        let frs: FRS = await Login(config);
+    /**
+     * Get device list
+     * @param config
+     */
+    export async function GetDeviceList(config: FRS.IConfig): Promise<FRS.IDevice[]> {
+        try {
+            let frs: FRS = await Login(config);
 
-        let devices = await frs.GetDeviceList();
+            let devices = await frs.GetDeviceList();
 
-        return devices;
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
+            return devices;
+        } catch (e) {
+            throw e;
+        }
     }
 }
 

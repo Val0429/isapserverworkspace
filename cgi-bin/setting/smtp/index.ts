@@ -74,7 +74,7 @@ action.put(
             try {
                 email.Initialization();
             } catch (e) {
-                throw Errors.throw(Errors.CustomBadRequest, [e]);
+                throw Errors.throw(Errors.CustomBadRequest, [`smtp: ${e}`]);
             }
 
             DataCenter.emailSetting$.next({

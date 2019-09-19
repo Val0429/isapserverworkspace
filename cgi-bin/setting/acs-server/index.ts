@@ -53,11 +53,15 @@ action.put(
             let _input: InputU = data.inputType;
             let _userInfo = await Db.GetUserInfo(data.request, data.user);
 
-            await Check({
-                ip: _input.ip,
-                port: _input.port,
-                serviceId: _input.serviceId,
-            });
+            try {
+                await ACSServerService.Check({
+                    ip: _input.ip,
+                    port: _input.port,
+                    serviceId: _input.serviceId,
+                });
+            } catch (e) {
+                throw Errors.throw(Errors.CustomBadRequest, [`acs server: ${e}`]);
+            }
 
             DataCenter.acsServerSetting$.next({
                 ip: _input.ip,
@@ -74,32 +78,37 @@ action.put(
 );
 
 /**
- * Check
- * @param config
+ *
  */
-export async function Check(config: { ip: string; port: number; serviceId: string }): Promise<void> {
-    try {
-        let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
-        if (worker) {
-            let name: string = Utility.RandomText(10, { symbol: false });
-            let serialNumber: string = `${name}_${Utility.RandomText(10, { symbol: false, EN: false, en: false })}`;
+namespace ACSServerService {
+    /**
+     * Check
+     * @param config
+     */
+    export async function Check(config: { ip: string; port: number; serviceId: string }): Promise<void> {
+        try {
+            let worker = EntryPass.CreateInstance(config.ip, config.port, config.serviceId);
+            if (!!worker) {
+                let name: string = Utility.RandomText(10, { symbol: false });
+                let serialNumber: string = `${name}_${Utility.RandomText(10, { symbol: false, EN: false, en: false })}`;
 
-            let staffInfo: EntryPass.EntryPassStaffInfo = {
-                name: name,
-                serialNumber: serialNumber,
-            };
+                let staffInfo: EntryPass.EntryPassStaffInfo = {
+                    name: name,
+                    serialNumber: serialNumber,
+                };
 
-            let ret: EntryPass.OperationReuslt = await worker.AddStaff(staffInfo);
-            if (!ret.result) {
-                throw ret.errorMessage;
+                let ret: EntryPass.OperationReuslt = await worker.AddStaff(staffInfo);
+                if (!ret.result) {
+                    throw ret.errorMessage;
+                }
+
+                ret = await worker.DeleteStaff(staffInfo);
+                if (!ret.result) {
+                    throw ret.errorMessage;
+                }
             }
-
-            ret = await worker.DeleteStaff(staffInfo);
-            if (!ret.result) {
-                throw ret.errorMessage;
-            }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }

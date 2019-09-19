@@ -40,12 +40,16 @@ action.post(
                             throw Errors.throw(Errors.CustomBadRequest, ['duplicate hik vision name']);
                         }
 
-                        await GetDeviceStatus({
-                            ipAddress: value.ip,
-                            port: value.port.toString(),
-                            account: value.account,
-                            password: value.password,
-                        });
+                        try {
+                            await HikVisionService.GetDeviceStatus({
+                                ipAddress: value.ip,
+                                port: value.port.toString(),
+                                account: value.account,
+                                password: value.password,
+                            });
+                        } catch (e) {
+                            throw `hikvision: ${e}`;
+                        }
 
                         let floor: IDB.LocationFloors = await new Parse.Query(IDB.LocationFloors)
                             .equalTo('objectId', value.floorId)
@@ -164,7 +168,7 @@ action.get(
 
             if ('objectId' in _input) {
                 if (results.length === 0) {
-                    throw Errors.throw(Errors.CustomBadRequest, ['building not found']);
+                    throw Errors.throw(Errors.CustomBadRequest, ['hikVision not found']);
                 }
 
                 return results[0];
@@ -248,12 +252,16 @@ action.put(
                             hikVision.setValue('password', value.password);
                         }
 
-                        await GetDeviceStatus({
-                            ipAddress: hikVision.getValue('ip'),
-                            port: hikVision.getValue('port').toString(),
-                            account: hikVision.getValue('account'),
-                            password: hikVision.getValue('password'),
-                        });
+                        try {
+                            await HikVisionService.GetDeviceStatus({
+                                ipAddress: hikVision.getValue('ip'),
+                                port: hikVision.getValue('port').toString(),
+                                account: hikVision.getValue('account'),
+                                password: hikVision.getValue('password'),
+                            });
+                        } catch (e) {
+                            throw `hikvision: ${e}`;
+                        }
 
                         await hikVision.save(null, { useMasterKey: true }).fail((e) => {
                             throw e;
@@ -331,40 +339,51 @@ action.delete(
 );
 
 /**
- * Login
- * @param config
+ *
  */
-export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
-    try {
-        let hikVision = new HikVision.Hikvision();
+namespace HikVisionService {
+    /**
+     * Login
+     * @param config
+     */
+    export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
+        try {
+            let hikVision = new HikVision.Hikvision();
 
-        let deviceInfo: HikVision.I_DeviceInfo = config;
+            let deviceInfo: HikVision.I_DeviceInfo = config;
 
-        let result = hikVision.createInstance(deviceInfo);
-        if (!!result.result) {
-            return hikVision;
-        } else {
-            throw result.errorMessage;
+            let result = hikVision.createInstance(deviceInfo);
+            if (!!result.result) {
+                return hikVision;
+            } else {
+                throw result.errorMessage;
+            }
+        } catch (e) {
+            throw e;
         }
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
-}
 
-/**
- * Get device status
- * @param config
- */
-export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<void> {
-    try {
-        let hikVision = await Login(config);
+    /**
+     * Get device status
+     * @param config
+     */
+    export async function GetDeviceStatus(config: HikVision.I_DeviceInfo): Promise<void> {
+        let hikVision: HikVision.Hikvision = undefined;
 
-        let result = hikVision.checkDeviceStatus();
-        if (!result.result) {
-            throw result.errorMessage;
+        try {
+            hikVision = await Login(config);
+
+            let result = hikVision.checkDeviceStatus();
+            if (!result.result) {
+                throw result.errorMessage;
+            }
+        } catch (e) {
+            throw e;
+        } finally {
+            if (!!hikVision) {
+                hikVision.disposeInstance();
+            }
         }
-    } catch (e) {
-        throw Errors.throw(Errors.CustomBadRequest, [e]);
     }
 }
 

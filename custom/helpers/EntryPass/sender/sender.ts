@@ -1,8 +1,11 @@
 import * as net from 'net';
 
-export async function SendSingleReqeust(address: string, port: number, request: string) {
+function ComposeErrorMessage(errorType: string): string{
+    return "error: Connection " + errorType
+}
 
-    let result = await new Promise(resolve => {
+export async function SendSingleReqeust(address: string, port: number, request: string): Promise<string> {
+    return await new Promise<string>((resolve) => {
         let client = new net.Socket()
         client.once("data", (data: string) => {
             //console.log("reiceved data=" + data);
@@ -13,17 +16,17 @@ export async function SendSingleReqeust(address: string, port: number, request: 
             client.write(request, () => {
                 //console.log("write completed")
             })
-        }).on("end", () => {
-            //console.log("received end event");
+        }).once("end", () => {
+            resolve(ComposeErrorMessage("end"))
             client.end();
-        }).on("close", () => {
-            //console.log("received close event");
+        }).once("close", () => {
+            resolve(ComposeErrorMessage("close"))
             client.end();
-        }).on("timeout", () => {
-            //console.log("received timeout event");
+        }).once("timeout", () => {
+            resolve(ComposeErrorMessage("timeout"))
             client.destroy();
-        }).on("error", () => {
-            //console.log("received error event");
+        }).once("error", () => {
+            resolve(ComposeErrorMessage("error"))
             client.destroy();
         });
 
@@ -31,5 +34,4 @@ export async function SendSingleReqeust(address: string, port: number, request: 
         client.setTimeout(3000);
         client.connect(port, address);
     })
-    return result;
 }

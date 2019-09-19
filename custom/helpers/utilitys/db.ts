@@ -10,24 +10,35 @@ export namespace Db {
      */
     export async function CreateDefaultRole(): Promise<void> {
         try {
-            let role = await new Parse.Query(Parse.Role).first().fail((e) => {
+            let roles = await new Parse.Query(Parse.Role).find().fail((e) => {
                 throw e;
             });
-            if (!role) {
-                for (let key in RoleList) {
-                    let name = RoleList[key];
 
+            let roleNames = Object.keys(RoleList)
+                .map((value, index, array) => {
+                    return value;
+                })
+                .filter((value, index, array) => {
+                    return !roles.find((value1, index1, array1) => {
+                        return value1.getName() === RoleList[value];
+                    });
+                });
+
+            await Promise.all(
+                roleNames.map(async (value, index, array) => {
                     let roleACL = new Parse.ACL();
                     roleACL.setPublicReadAccess(true);
 
-                    role = new Parse.Role(name, roleACL);
+                    let role = new Parse.Role(RoleList[value], roleACL);
 
                     await role.save(null, { useMasterKey: true }).fail((e) => {
                         throw e;
                     });
-                }
+                }),
+            );
 
-                let roles: string[] = Object.keys(RoleList).map((value, index, array) => {
+            if (roleNames.length > 0) {
+                let roles: string[] = roleNames.map((value, index, array) => {
                     return `<${value}>`;
                 });
                 Print.Message({ message: '  ', background: Print.BackColor.blue }, { message: 'Create Default:', color: Print.FontColor.blue }, { message: '- Roles:  ' }, { message: roles.join(', '), color: Print.FontColor.cyan });
@@ -92,10 +103,21 @@ export namespace Db {
         }
     }
 
+    interface IRegionTree1 {
+        [key: string]: {
+            building: IDB.LocationBuildings;
+            floors: IDB.LocationFloors[];
+        };
+    }
+
     interface IUserInfo {
         roleLists: RoleList[];
         roles: IResponse.IObject[];
         info: IDB.UserInfo;
+        company: IDB.LocationCompanies;
+        floors: IDB.LocationFloors[];
+        buildings: IDB.LocationBuildings[];
+        treeIdDictionary: IRegionTree1;
     }
 
     /**
@@ -107,6 +129,7 @@ export namespace Db {
         try {
             let info: IDB.UserInfo = await new Parse.Query(IDB.UserInfo)
                 .equalTo('user', user)
+                .include(['company', 'floors', 'floors.building'])
                 .first()
                 .fail((e) => {
                     throw e;
@@ -138,10 +161,41 @@ export namespace Db {
                 throw e;
             });
 
+            let isUser: boolean = !(roleLists.indexOf(RoleList.SystemAdministrator) > -1 || roleLists.indexOf(RoleList.Administrator) > -1 || roleLists.indexOf(RoleList.VMS) > -1);
+
+            let company: IDB.LocationCompanies = undefined;
+            let floors: IDB.LocationFloors[] = undefined;
+            let buildings: IDB.LocationBuildings[] = undefined;
+            let treeIdDictionary: IRegionTree1 = undefined;
+            if (isUser) {
+                company = info.getValue('company');
+                floors = info.getValue('floors');
+                buildings = [];
+                treeIdDictionary = {};
+
+                floors.forEach((value, index, array) => {
+                    let building: IDB.LocationBuildings = value.getValue('building');
+                    let buildingId: string = building.id;
+
+                    if (!treeIdDictionary[buildingId]) {
+                        treeIdDictionary[buildingId] = {
+                            building: building,
+                            floors: [],
+                        };
+                    }
+
+                    treeIdDictionary[buildingId].floors.push(value);
+                });
+            }
+
             return {
                 roleLists: roleLists,
                 roles: roles,
                 info: info,
+                company: company,
+                floors: floors,
+                buildings: buildings,
+                treeIdDictionary: treeIdDictionary,
             };
         } catch (e) {
             throw e;

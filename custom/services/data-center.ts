@@ -6,6 +6,8 @@ import * as Enum from '../enums';
 import * as Main from '../../main';
 
 class Service {
+    public ready$: Rx.Subject<{}> = new Rx.Subject();
+
     /**
      *
      */
@@ -20,6 +22,11 @@ class Service {
      *
      */
     public emailSetting$: Rx.BehaviorSubject<IDB.ISettingEmail> = new Rx.BehaviorSubject(undefined);
+
+    /**
+     *
+     */
+    public frsSetting$: Rx.BehaviorSubject<IDB.ISettingFRS> = new Rx.BehaviorSubject(undefined);
 
     /**
      *
@@ -69,6 +76,14 @@ class Service {
                 },
             });
 
+        this.frsSetting$
+            .filter((x) => !!x)
+            .subscribe({
+                next: async (x) => {
+                    await this.UpdateFRSSetting();
+                },
+            });
+
         this.pushNotificationSetting$
             .filter((x) => !!x)
             .subscribe({
@@ -114,8 +129,9 @@ class Service {
     private async Initialization(): Promise<void> {
         try {
             await this.Search();
+
+            this.ready$.next();
         } catch (e) {
-            console.log(e);
             Print.Log(e, new Error(), 'error');
         }
     }
@@ -130,6 +146,7 @@ class Service {
             tasks.push(this.SearchACSServerSetting());
             tasks.push(this.SearchACSSetting());
             tasks.push(this.SearchEmailSetting());
+            tasks.push(this.SearchFRSSetting());
             tasks.push(this.SearchPushNotificationSetting());
             tasks.push(this.SearchSuntecAppSetting());
             tasks.push(this.SearchSystemSetting());
@@ -185,11 +202,13 @@ class Service {
                         min: 2185475001,
                         max: 2185500000,
                     },
+                    isUseACSServer: true,
                 });
             } else {
                 this.acsSetting$.next({
                     staffCardRange: setting.getValue('staffCardRange'),
                     visitorCardRange: setting.getValue('visitorCardRange'),
+                    isUseACSServer: setting.getValue('isUseACSServer'),
                 });
             }
         } catch (e) {
@@ -219,6 +238,36 @@ class Service {
                     host: setting.getValue('host'),
                     port: setting.getValue('port'),
                     email: setting.getValue('email'),
+                    password: setting.getValue('password'),
+                });
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Search FRS Setting
+     */
+    private async SearchFRSSetting(): Promise<void> {
+        try {
+            let setting: IDB.SettingFRS = await new Parse.Query(IDB.SettingFRS).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                this.frsSetting$.next({
+                    protocol: 'http',
+                    ip: '127.0.0.1',
+                    port: 80,
+                    account: 'Admin',
+                    password: '123456',
+                });
+            } else {
+                this.frsSetting$.next({
+                    protocol: setting.getValue('protocol'),
+                    ip: setting.getValue('ip'),
+                    port: setting.getValue('port'),
+                    account: setting.getValue('account'),
                     password: setting.getValue('password'),
                 });
             }
@@ -377,6 +426,7 @@ class Service {
 
             setting.setValue('staffCardRange', value.staffCardRange);
             setting.setValue('visitorCardRange', value.visitorCardRange);
+            setting.setValue('isUseACSServer', value.isUseACSServer);
 
             await setting.save(null, { useMasterKey: true }).fail((e) => {
                 throw e;
@@ -404,6 +454,34 @@ class Service {
             setting.setValue('host', value.host);
             setting.setValue('port', value.port);
             setting.setValue('email', value.email);
+            setting.setValue('password', value.password);
+
+            await setting.save(null, { useMasterKey: true }).fail((e) => {
+                throw e;
+            });
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Update FRS Setting
+     */
+    private async UpdateFRSSetting(): Promise<void> {
+        try {
+            let value = this.frsSetting$.value;
+
+            let setting: IDB.SettingFRS = await new Parse.Query(IDB.SettingFRS).first().fail((e) => {
+                throw e;
+            });
+            if (!setting) {
+                setting = new IDB.SettingFRS();
+            }
+
+            setting.setValue('protocol', value.protocol);
+            setting.setValue('ip', value.ip);
+            setting.setValue('port', value.port);
+            setting.setValue('account', value.account);
             setting.setValue('password', value.password);
 
             await setting.save(null, { useMasterKey: true }).fail((e) => {

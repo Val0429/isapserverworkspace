@@ -48,3 +48,14 @@ export interface ICompaniesAll {
     name: string;
     floors: IObject[];
 }
+
+/**
+ * Door
+ */
+export interface IDoorIndexR {
+    objectId: string;
+    name: string;
+    floor: IObject;
+    company: IObject;
+    range: string;
+}
