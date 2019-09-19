@@ -24,6 +24,7 @@ action.post(
     {
         inputType: 'InputC',
         permission: [RoleList.SystemAdministrator, RoleList.Administrator, RoleList.VMS],
+        postSizeLimit: 100000000,
     },
     async (data): Promise<OutputC> => {
         try {
