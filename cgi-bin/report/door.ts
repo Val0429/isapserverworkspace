@@ -32,7 +32,7 @@ action.post(async (data) => {
     }
                         
     if(filter.doorname){
-        let doorQuery = new Parse.Query(Door).matches("groupname", new RegExp(filter.doorname),"i")
+        let doorQuery = new Parse.Query(Door).matches("doorname", new RegExp(filter.doorname),"i")
         query.matchesQuery("door", doorQuery);
     }
     
