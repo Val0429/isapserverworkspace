@@ -255,10 +255,10 @@ action.delete(
                 throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
             }
 
-            let organization: IDB.PersonVisitorBlacklistOrignial = person.getValue('imageOrignial');
+            let orignial: IDB.PersonVisitorBlacklistOrignial = person.getValue('imageOrignial');
 
-            if (!!organization) {
-                await organization.destroy({ useMasterKey: true }).fail((e) => {
+            if (!!orignial) {
+                await orignial.destroy({ useMasterKey: true }).fail((e) => {
                     throw e;
                 });
             }

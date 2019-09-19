@@ -452,7 +452,7 @@ IDB.PersonStaff.notice$
                         throw e;
                     });
 
-                let organization: IDB.PersonStaffOrignial = person.getValue('imageOrignial');
+                let orignial: IDB.PersonStaffOrignial = person.getValue('imageOrignial');
 
                 await Promise.all(
                     cards.map(async (value, index, array) => {
@@ -462,8 +462,8 @@ IDB.PersonStaff.notice$
                     }),
                 );
 
-                if (!!organization) {
-                    await organization.destroy({ useMasterKey: true }).fail((e) => {
+                if (!!orignial) {
+                    await orignial.destroy({ useMasterKey: true }).fail((e) => {
                         throw e;
                     });
                 }
