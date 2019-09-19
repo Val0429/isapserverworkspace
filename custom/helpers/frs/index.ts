@@ -541,6 +541,55 @@ export class FRS {
     }
 
     /**
+     * Compare Face
+     * @param buffer1
+     * @param buffer2
+     * @param sessionId
+     */
+    public async CompareFace(buffer1: Buffer, buffer2: Buffer): Promise<number>;
+    public async CompareFace(buffer1: Buffer, buffer2: Buffer, sessionId: string): Promise<number>;
+    public async CompareFace(buffer1: Buffer, buffer2: Buffer, sessionId?: string): Promise<number> {
+        try {
+            let url: string = `${this._baseUrl}/frs/cgi/compareface`;
+
+            let result: number = await new Promise<number>((resolve, reject) => {
+                try {
+                    HttpClient.post(
+                        {
+                            url: url,
+                            json: true,
+                            body: {
+                                session_id: sessionId,
+                                image_1: buffer1.toString(Enum.EEncoding.base64),
+                                image_2: buffer2.toString(Enum.EEncoding.base64),
+                            },
+                        },
+                        (error, response, body) => {
+                            if (error) {
+                                return reject(error);
+                            } else if (response.statusCode !== 200) {
+                                return reject(`${response.statusCode}, ${body.toString().replace(/(\r)?\n/g, '; ')}`);
+                            } else if (body.message.toLowerCase() !== 'ok') {
+                                return reject(body.message);
+                            }
+
+                            resolve(body.score);
+                        },
+                    );
+                } catch (e) {
+                    return reject(e);
+                }
+            }).catch((e) => {
+                throw e;
+            });
+
+            return result;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Enable Live Subject
      * @param sessionId
      */
