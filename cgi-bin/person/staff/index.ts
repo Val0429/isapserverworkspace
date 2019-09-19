@@ -203,7 +203,9 @@ action.post(
                                 await person.destroy({ useMasterKey: true }).fail((e) => {
                                     throw e;
                                 });
-                            } catch (e) {}
+                            } catch (e1) {
+                                e = e1;
+                            }
                         }
 
                         resMessages[index] = Utility.E2ResMessage(e, resMessages[index]);
