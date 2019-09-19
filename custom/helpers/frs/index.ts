@@ -332,7 +332,7 @@ export class FRS {
                                             if (camera === sourceId) {
                                                 if (result.type === FRSCore.UserType.Recognized) {
                                                     let name: string = result.person_info.fullname;
-                                                    let groups: FRS.IObject[] = result.person_info['group_list'].map((value, index, array) => {
+                                                    let groups: FRS.IObject[] = (result.person_info['group_list'] || []).map((value, index, array) => {
                                                         return {
                                                             objectId: value.id,
                                                             name: value.groupname,
