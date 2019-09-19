@@ -103,7 +103,7 @@ type OutputD = Restful.OutputD<ILinearMember>;
 action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
     /// 1) Get Object
     var { objectId } = data.inputType;
-    var obj = await new Parse.Query(LinearMember).equalTo("objectId", objectId).first();
+    var obj = await new Parse.Query(LinearMember).equalTo("objectId", objectId).include("permissionTable").first();
     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Member <${objectId}> not exists.`]);
 
    
@@ -111,12 +111,10 @@ action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
         
        
         obj.set("status", 1);
-        let ret = ParseObject.toOutputJSON(obj);
-        let memberService = new MemberService();
-        let cardholder = await memberService.createSipassCardHolder(ret);
-        cardholder.Status=1;
+        let member = ParseObject.toOutputJSON(obj);
+        
         let cCure800SqlAdapter = new CCure800SqlAdapter();        
-        await cCure800SqlAdapter.writeMember(cardholder, cardholder.AccessRules.map(x=>x.ObjectName));
+        await cCure800SqlAdapter.writeMember(member, member.permissionTable.map(x=>x.tablename));
 
         if(obj.get("token")&&obj.get("token")!="-1")await siPassAdapter.delCardHolder(obj.get("token"));
         /// 2) Delete

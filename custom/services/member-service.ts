@@ -370,44 +370,52 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             
             return query;
         }
-        async updateMember(data: ILinearMember, user:string, checkDuplicate:boolean) {
+        async updateMember(data: ILinearMember, user:string, checkDuplicate:boolean, updateToSipass:boolean=true) {
             var { objectId } = data;
-            var obj = await new Parse.Query(LinearMember).get(objectId);
+            var obj = await new Parse.Query(LinearMember).equalTo("objectId", objectId).include("permissionTable").first();
             if (!obj) throw new Error(`Member <${objectId}> not exists.`);
 
             let linearMember = await this.createLinearMember(data, user);
             if(checkDuplicate) await this.checkDuplication(linearMember);
-            let member = await this.createSipassCardHolder(linearMember);
-            member.Status = obj.get("status");
-            member.Token, obj.get("token");
-            await siPassAdapter.putCardHolder(member);
+            if(updateToSipass){
+                let member = await this.createSipassCardHolder(linearMember);
+                member.Status = obj.get("status");
+                member.Token, obj.get("token");
+                await siPassAdapter.putCardHolder(member);
+            }
+            
             /// 2) Modify
             
             let update = new LinearMember(linearMember);
             update.set("status", obj.get("status"));
             update.set("token", obj.get("token"));
-            
+            let ret = ParseObject.toOutputJSON(update);
             let cCure800SqlAdapter = new CCure800SqlAdapter();
-            await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x => x.ObjectName));
+            await cCure800SqlAdapter.writeMember(ret, ret.permissionTable.map(x => x.tablename));
             /// 5) to Monogo        
             await update.save(); 
             this.normalizeAccessLevel(update);           
             /// 3) Output
             return update;
         }
-        async createMember(data:ILinearMember, user:string, checkDuplicate:boolean){
+        async createMember(data:ILinearMember, user:string, checkDuplicate:boolean, createToSipass:boolean=true){
             let linearMember = await this.createLinearMember(data, user);
             if(checkDuplicate)await this.checkDuplication(linearMember);
-            //sipass and ccure requires this format
-            let member = await this.createSipassCardHolder(linearMember);
-            let holder = await siPassAdapter.postCardHolder(member);
+            if(createToSipass){
+                //sipass and ccure requires this format
+                let member = await this.createSipassCardHolder(linearMember);
+                let holder = await siPassAdapter.postCardHolder(member);
+
+                linearMember.token= holder["Token"];
+            }
             
-            linearMember.token= holder["Token"];
-            var obj = new LinearMember(linearMember);
-            
+            let obj = new LinearMember(linearMember);
+            let ret = ParseObject.toOutputJSON(obj);
             let cCure800SqlAdapter = new CCure800SqlAdapter();
+            let permTables = await new Parse.Query(PermissionTable).containedIn("objectId", ret.permissionTable.map(x=>x.objectId)).find();
             //todo: we need to refactor this to accept linear membe instead of sipass object
-            await cCure800SqlAdapter.writeMember(member, member.AccessRules.map(x=>x.ObjectName));
+            // done 2019-09-19
+            await cCure800SqlAdapter.writeMember(ret, permTables.map(x=>x.get("tablename")));
 
             await obj.save(null, { useMasterKey: true });
             this.normalizeAccessLevel(obj);

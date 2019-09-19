@@ -4,18 +4,14 @@ import { Log } from 'helpers/utility';
 // import * as msSQL from 'mssql';
 import * as adodb from 'node-adodb';
 import * as p from 'path';
-import { PermissionTable } from 'core/cgi-package';
-import { ICardholderObject, ECardholderStatus } from 'workspace/custom/modules/acs/sipass';
+import { PermissionTable, ILinearMember } from 'core/cgi-package';
+import { ECardholderStatus } from 'workspace/custom/modules/acs/sipass';
 
 export class CCure800SqlAdapter {
-    private waitTimer = null;
-    private startDelayTime: number = 1 // sec
 
-    private sqlClient = null;
     private adodbConn = null;
     private adodbConn2 = null;
     constructor() {
-        var me = this;
         let dbPath=Config.ccureconnect.mdbpath || (p.dirname(__filename)+"\\mdb\\ccure800.mdb");
         let dbPath2=Config.ccureconnect.mdbpath2 || (p.dirname(__filename)+"\\mdb\\ccure8002.mdb");
         console.log("mdbpath", dbPath);
@@ -27,7 +23,7 @@ export class CCure800SqlAdapter {
         // }, 1000 * this.startDelayTime);
     }
 
-    async connect(config) {
+    async connect() {
         Log.Info(`${this.constructor.name}`, `connect`);
 
         // try {
@@ -57,7 +53,7 @@ export class CCure800SqlAdapter {
             await this.adodbConn
                 .execute(delData);
     }
-    async writeMember(data:ICardholderObject, accessRules:string[]) {
+    async writeMember(data:ILinearMember, accessRules:string[]) {
         console.log("write to mdb");
         let ccurePermissionTables = await new Parse.Query(PermissionTable)
                             .equalTo("system", 800)
@@ -70,13 +66,11 @@ export class CCure800SqlAdapter {
                 ccureAccessRules.push(accessRule);
             }
         }
-        for(let cf of data.CustomFields){
-            cf.FieldValue = cf.FieldValue || "";
-        }
+        
         Log.Info(`${this.constructor.name}`, `writeMember ${JSON.stringify(data).substring(0, 100)}`);
         await this.writeToMdb(data, ccureAccessRules);        
     }
-    async writeToMdb(data:ICardholderObject, ccureAccessRules:string[], tableName:string="Member"){
+    async writeToMdb(data:ILinearMember, ccureAccessRules:string[], tableName:string="Member"){
         let rules = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
         
         for (let i = 0; i < rules.length; i++) {
@@ -84,109 +78,7 @@ export class CCure800SqlAdapter {
             rules[i] = ccureAccessRules[i];
         }
 
-        let CustomDateControl3__CF1 = "";
-        let CustomDateControl3__CF2 = "";
-        let CustomDateControl3__CF3 = "";
-        let CustomDateControl3__CF4 = "";
-        let CustomDateControl3__CF5 = "";
-        let CustomDateControl3__CF6 = "";
-        let CustomDateControl3__CF7 = "";
-        let CustomDateControl3__CF8 = "";
-        let CustomDateControl3__CF9 = "";
-        let CustomDateControl3__CF10 = "";
-        let CustomDateControl3__CF11 = "";
-        let CustomDateControl3__CF12 = "";
-        let CustomDateControl4__CF = "";
-        let CustomDropdownControl1__CF = "";
-        let CustomDropdownControl2__CF1 = "";
-        let CustomDropdownControl2__CF2 = "";
-        let CustomDropdownControl3__CF1 = "";
-        let CustomDropdownControl3__CF2 = "";
-        let CustomDropdownControl3__CF3 = "";
-        let CustomDropdownControl3__CF4 = "";
-        let CustomDropdownControl3__CF5 = "";
-        let CustomDropdownControl3__CF6 = "";
-        let CustomTextBoxControl1__CF = "";
-        let CustomTextBoxControl2__CF = "";
-        let CustomTextBoxControl3__CF = "";
-        let CustomTextBoxControl5__CF1 = "";
-        let CustomTextBoxControl5__CF2 = "";
-        let CustomTextBoxControl5__CF3 = "";
-        let CustomTextBoxControl5__CF4 = "";
-        let CustomTextBoxControl5__CF5 = "";
-        let CustomTextBoxControl5__CF6 = "";
-        let CustomTextBoxControl5__CF8 = "";
-        let CustomTextBoxControl5__CF9 = "";
-        let CustomTextBoxControl5__CF10 = "";
-        let CustomTextBoxControl5__CF11 = "";
-        let CustomTextBoxControl6__CF = "";
-        let CustomTextBoxControl7__CF1 = "";
-        let CustomTextBoxControl7__CF2 = "";
-        let CustomTextBoxControl7__CF3 = "";
-        let CustomTextBoxControl7__CF4 = "";
-        let CustomTextBoxControl7__CF5 = "";
-        let CustomTextBoxControl7__CF6 = "";
-        let CustomTextBoxControl7__CF7 = "";
-        let CustomTextBoxControl7__CF8 = "";
-        let CustomTextBoxControl7__CF9 = "";
-        let CustomTextBoxControl7__CF10 = "";
-        let CustomTextBoxControl7__CF11 = "";
-        let CustomTextBoxControl7__CF12 = "";
         
-        for (let field of data.CustomFields) {
-            
-            switch (field["FiledName"]) {
-                case "CustomDateControl3__CF": CustomDateControl3__CF1 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF": CustomDateControl3__CF2 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF": CustomDateControl3__CF3 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF": CustomDateControl3__CF4 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF": CustomDateControl3__CF5 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF": CustomDateControl3__CF6 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF7 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF8 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF9 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF10 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF11 = field["FieldValue"]; break;
-                case "CustomDateControl3__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomDateControl3__CF12 = field["FieldValue"]; break;
-                case "CustomDateControl4__CF": CustomDateControl4__CF = field["FieldValue"]; break;
-                case "CustomDropdownControl1__CF": CustomDropdownControl1__CF = field["FieldValue"]; break;
-                case "CustomDropdownControl2__CF": CustomDropdownControl2__CF1 = field["FieldValue"]; break;
-                case "CustomDropdownControl2__CF_CF": CustomDropdownControl2__CF2 = field["FieldValue"]; break;
-                case "CustomDropdownControl3__CF": CustomDropdownControl3__CF1 = field["FieldValue"]; break;
-                case "CustomDropdownControl3__CF_CF": CustomDropdownControl3__CF2 = field["FieldValue"]; break;
-                case "CustomDropdownControl3__CF_CF_CF": CustomDropdownControl3__CF3 = field["FieldValue"]; break;
-                case "CustomDropdownControl3__CF_CF_CF_CF": CustomDropdownControl3__CF4 = field["FieldValue"]; break;
-                case "CustomDropdownControl3__CF_CF_CF_CF_CF": CustomDropdownControl3__CF5 = field["FieldValue"]; break;
-                case "CustomDropdownControl3__CF_CF_CF_CF_CF_CF": CustomDropdownControl3__CF6 = field["FieldValue"]; break;
-                case "CustomTextBoxControl1__CF": CustomTextBoxControl1__CF = field["FieldValue"]; break;
-                case "CustomTextBoxControl2__CF": CustomTextBoxControl2__CF = field["FieldValue"]; break;
-                case "CustomTextBoxControl3__CF": CustomTextBoxControl3__CF = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF": CustomTextBoxControl5__CF1 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF": CustomTextBoxControl5__CF2 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF": CustomTextBoxControl5__CF3 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF": CustomTextBoxControl5__CF4 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF_CF": CustomTextBoxControl5__CF5 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF": CustomTextBoxControl5__CF6 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl5__CF8 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl5__CF9 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl5__CF10 = field["FieldValue"]; break;
-                case "CustomTextBoxControl5__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl5__CF11 = field["FieldValue"]; break;
-                case "CustomTextBoxControl6__CF": CustomTextBoxControl6__CF = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF": CustomTextBoxControl7__CF1 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF": CustomTextBoxControl7__CF2 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF": CustomTextBoxControl7__CF3 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF": CustomTextBoxControl7__CF4 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF": CustomTextBoxControl7__CF5 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF6 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF7 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF8 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF9 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF10 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF11 = field["FieldValue"]; break;
-                case "CustomTextBoxControl7__CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF_CF": CustomTextBoxControl7__CF12 = field["FieldValue"]; break;
-            }
-        }
-        let credential = data["Credentials"] && data["Credentials"][0]? data["Credentials"][0]:undefined;
         let insert = `INSERT INTO ${tableName}(
         EmployeeNumber, PD_DateOfBirth, PD_CD_MobileNumber, CustomTextBoxControl6__CF, CustomTextBoxControl5__CF4
         ,CustomTextBoxControl5__CF3, PD_CD_Email,LastName ,PrimaryWorkgroupName ,CustomDropdownControl1__CF
@@ -208,56 +100,56 @@ export class CCure800SqlAdapter {
         ,CustomDateControl3__CF4 ,CustomDateControl3__CF8  ,CustomDateControl3__CF9 
         ,CustomDateControl3__CF10, Deleted, Disabled
         ) VALUES ( 
-         '${data["EmployeeNumber"]}'     
-        , ${data["PersonalDetails"]["DateOfBirth"] ? "'" + data["PersonalDetails"]["DateOfBirth"]+ "'" : "NULL"}
-        ,'${data["PersonalDetails"]["ContactDetails"]["MobileNumber"]}'
-        ,'${CustomTextBoxControl6__CF}'
-        ,'${CustomTextBoxControl5__CF4}'
-        ,'${CustomTextBoxControl5__CF3}'
-        ,'${data["PersonalDetails"]["ContactDetails"]["Email"]}'
-        ,'${data["LastName"]}'
-        ,'${data["PrimaryWorkgroupName"]}'
-        ,'${CustomDropdownControl1__CF == '' ? '無' : CustomDropdownControl1__CF}'
-        ,'${data["FirstName"]}'
-        ,'${ data["StartDate"].split("T")[0]}'
-        ,'${data["PersonalDetails"]["ContactDetails"]["PhoneNumber"]}'
-        ,'${CustomTextBoxControl5__CF6}'
-        ,'${CustomTextBoxControl5__CF2}'
-        ,'${CustomDropdownControl2__CF2 == '' ? '無' : CustomDropdownControl2__CF2}'
-        ,'${ data["EndDate"].split("T")[0]}'
-        ,'${data["EndDate"].split("T")[0]}'
-        ,'${credential? credential.CardNumber  : ""}'
+         '${data.employeeNumber || ""}'     
+        , ${data.birthday? "'" + data.birthday.split("T")[0]+ "'" : "NULL"}
+        ,'${data.extensionNumber || ""}'
+        ,'${data.companyName || ""}'
+        ,'${data.costCenter || ""}'
+        ,'${data.department || ""}'
+        ,'${data.email || ""}'
+        ,'${data.chineseName || ""}'
+        ,'${data.primaryWorkgroupName}'
+        ,'${data.cardType  || "無"}'
+        ,'${data.englishName || "-"}'
+        ,'${data.startDate.split("T")[0]}'
+        ,'${data.phone || ""}'
+        ,'${data.workArea || ""}'
+        ,'${data.MVPN || ""}'
+        ,'${data.gender || "無" }'
+        ,'${data.endDate.split("T")[0]}'
+        ,'${data.endDate.split("T")[0]}'
+        ,'${data.cardNumber || ""}'
         ,'${rules[39] == undefined ? '' : rules[39]}'
-        ,'${ data["StartDate"].split("T")[0]}'
-        ,'${CustomTextBoxControl1__CF ||""}'
-        ,'${credential ? credential.Pin:""}'
-        ,'${CustomTextBoxControl3__CF}'
-        ,'${CustomDropdownControl3__CF5 == '' ? '無' : CustomDropdownControl3__CF5}'
-        ,'${CustomDropdownControl3__CF6 == '' ? '無' : CustomDropdownControl3__CF6}'
-        ,'${CustomDropdownControl3__CF1 == '' ? '無' : CustomDropdownControl3__CF1}'
-        ,'${CustomTextBoxControl5__CF5}'
-        ,'${CustomTextBoxControl5__CF9}'
-        ,'${CustomTextBoxControl5__CF1}'
-        ,'${CustomTextBoxControl5__CF10}'
-        ,'${CustomTextBoxControl5__CF11}'
-        ,'${CustomTextBoxControl5__CF8}'
-        ,'${CustomDropdownControl2__CF1 == '' ? '無' : CustomDropdownControl2__CF1}'
-        ,'${CustomTextBoxControl7__CF11}'
-        ,'${CustomTextBoxControl7__CF12}'
-        ,'${CustomTextBoxControl7__CF1}'
-        ,'${CustomTextBoxControl7__CF8}'
-        ,'${CustomTextBoxControl7__CF9}'
-        ,'${CustomTextBoxControl7__CF10}'
-        ,'${CustomDropdownControl3__CF2 == '' ? '無' : CustomDropdownControl3__CF2}'
-        ,'${CustomDropdownControl3__CF3 == '' ? '無' : CustomDropdownControl3__CF3}'
-        ,'${CustomDropdownControl3__CF4 == '' ? '無' : CustomDropdownControl3__CF4}'
-        ,'${CustomTextBoxControl7__CF4}'
-        ,'${CustomTextBoxControl7__CF5}'
-        ,'${CustomTextBoxControl7__CF6}'
-        ,'${CustomTextBoxControl7__CF2}'
-        ,'${CustomTextBoxControl7__CF7}'
-        ,'${CustomTextBoxControl7__CF3}'
-        ,'${CustomTextBoxControl2__CF}'
+        ,'${data.startDate.split("T")[0]}'
+        ,'${data.allCardNumber || ""}'
+        ,'${data.pin || ""}'
+        ,'${data.lastEditPerson || ""}'
+        ,'${data.reasonForApplication1 || "無" }'
+        ,'${data.reasonForApplication2 || "無" }'
+        ,'${data.reasonForApplication3 || "無" }'
+        ,'${data.area || ""}'
+        ,'${data.carLicense || ""}'
+        ,'${data.carLicense1 || ""}'
+        ,'${data.carLicense2 || ""}'
+        ,'${data.carLicense3 || ""}'
+        ,'${data.cardLicense || ""}'
+        ,'${data.carLicenseCategory || "無" }'
+        ,'${data.censusRecord1 || "" }'
+        ,'${data.censusRecord2 || "" }'
+        ,'${data.censusRecord3 || "" }'
+        ,'${data.infoOfViolation1 || "" }'
+        ,'${data.infoOfViolation2 || "" }'
+        ,'${data.infoOfViolation3 || "" }'
+        ,'${data.reasonForCard1 || "無" }'
+        ,'${data.reasonForCard2 || "無" }'
+        ,'${data.reasonForCard3 || "無" }'
+        ,'${data.historyForCard1 || "" }'
+        ,'${data.historyForCard2 || "" }'
+        ,'${data.historyForCard3 || "" }'
+        ,'${data.resignationNote || "" }'
+        ,'${data.resignationRecordCarLicense || "" }'
+        ,'${data.resignationRecordCardRecord || "" }'
+        ,'${data.cardCustodian || "" }'
         ,'${rules[0] == undefined ? '' : rules[0]}' 
         ,'${rules[1] == undefined ? '' : rules[1]}'
         ,'${rules[2] == undefined ? '' : rules[2]}'
@@ -297,20 +189,20 @@ export class CCure800SqlAdapter {
         ,'${rules[36] == undefined ? '' : rules[36]}'
         ,'${rules[37] == undefined ? '' : rules[37]}'
         ,'${rules[38] == undefined ? '' : rules[38]}'
-        ,${CustomDateControl4__CF ? "'"+CustomDateControl4__CF.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF11 ? "'"+CustomDateControl3__CF11.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF12 ? "'"+CustomDateControl3__CF12.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF1 ? "'"+CustomDateControl3__CF1.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF2 ? "'"+CustomDateControl3__CF2.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF6 ? "'"+CustomDateControl3__CF6.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF7 ? "'"+CustomDateControl3__CF7.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF5 ? "'"+CustomDateControl3__CF5.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF3 ? "'"+CustomDateControl3__CF3.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF4 ? "'"+CustomDateControl3__CF4.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF8 ? "'"+CustomDateControl3__CF8.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF9 ? "'"+CustomDateControl3__CF9.split("T")[0] + "'" : "NULL" }
-        ,${CustomDateControl3__CF10 ? "'"+CustomDateControl3__CF10.split("T")[0] + "'" : "NULL" }
-        ,${data.Status == ECardholderStatus.Deleted ? -1 : 0}, ${data.Attributes && data.Attributes.Void==true ? -1 : 0}
+        ,${data.lastEditTime ? "'"+data.lastEditTime.split("T")[0] + "'" : "NULL" }
+        ,${data.censusDate1 ? "'"+data.censusDate1.split("T")[0] + "'" : "NULL" }
+        ,${data.censusDate2 ? "'"+data.censusDate2.split("T")[0] + "'" : "NULL" }
+        ,${data.censusDate3 ? "'"+data.censusDate3.split("T")[0] + "'" : "NULL" }
+        ,${data.dateForCard1 ? "'"+data.dateForCard1.split("T")[0] + "'" : "NULL" }
+        ,${data.dateForCard2 ? "'"+data.dateForCard2.split("T")[0] + "'" : "NULL" }
+        ,${data.dateForCard3 ? "'"+data.dateForCard3.split("T")[0] + "'" : "NULL" }
+        ,${data.dateForApplication1 ? "'"+data.dateForApplication1.split("T")[0] + "'" : "NULL" }
+        ,${data.dateForApplication2 ? "'"+data.dateForApplication2.split("T")[0] + "'" : "NULL" }
+        ,${data.dateForApplication3 ? "'"+data.dateForApplication3.split("T")[0] + "'" : "NULL" }
+        ,${data.dateOfViolation1 ? "'"+data.dateOfViolation1.split("T")[0] + "'" : "NULL" }
+        ,${data.dateOfViolation2 ? "'"+data.dateOfViolation2.split("T")[0] + "'" : "NULL" }
+        ,${data.dateOfViolation3 ? "'"+data.dateOfViolation3.split("T")[0] + "'" : "NULL" }
+        ,${data.status == ECardholderStatus.Deleted ? -1 : 0}, ${data.void==true ? -1 : 0}
         )`;
         
         //console.log(insert);
