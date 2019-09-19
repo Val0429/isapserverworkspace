@@ -50,3 +50,18 @@ export interface IStaffIndexC {
 //     startDate?: Date;
 //     endDate?: Date;
 // }
+
+/**
+ * Visitor Blacklist
+ */
+export interface IVisitorBlacklistIndexC {
+    imageBase64?: string;
+    organization?: string;
+    name: string;
+    nric?: string;
+    remark: string;
+}
+
+export interface IVisitorBlacklistIndexD {
+    objectId: string;
+}

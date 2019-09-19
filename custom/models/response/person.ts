@@ -33,3 +33,21 @@ export interface IStaffIndexR {
     startDate: Date;
     endDate: Date;
 }
+
+/**
+ * Visitor Blacklist
+ */
+export interface IVisitorBlacklistIndexC {
+    objectId: string;
+    personId: string;
+}
+
+export interface IVisitorBlacklistIndexR {
+    objectId: string;
+    imageBase64: string;
+    company: IObject;
+    organization: string;
+    name: string;
+    nric: string;
+    remark: string;
+}
