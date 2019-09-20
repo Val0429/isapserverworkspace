@@ -23,7 +23,7 @@ type InputC = IRequest.IPerson.IVisitorBlacklistIndexC;
 
 type OutputC = IResponse.IPerson.IVisitorBlacklistIndexC;
 
-action.post(
+action.post<InputC, OutputC>(
     {
         inputType: 'InputC',
         permission: [RoleList.VMS],
@@ -221,7 +221,7 @@ type InputD = IRequest.IPerson.IVisitorBlacklistIndexD;
 
 type OutputD = Date;
 
-action.delete(
+action.delete<InputD, OutputD>(
     {
         inputType: 'InputD',
         permission: [RoleList.VMS],
