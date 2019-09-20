@@ -182,6 +182,8 @@ export namespace Db {
                             building: building,
                             floors: [],
                         };
+
+                        buildings.push(building);
                     }
 
                     treeIdDictionary[buildingId].floors.push(value);

@@ -43,6 +43,7 @@ export interface IWebLoginUser {
     webLestUseDate: Date;
     company: IObject;
     floors: IObject[];
+    buildings: IObject[];
     tree: IWebLoginUserTree;
 }
 

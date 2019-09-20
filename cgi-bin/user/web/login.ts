@@ -84,6 +84,15 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
                   };
               });
 
+        let _buildings: IResponse.IObject[] = !_userInfo.floors
+            ? undefined
+            : _userInfo.buildings.map<IResponse.IObject>((value, index, array) => {
+                  return {
+                      objectId: value.id,
+                      name: value.getValue('name'),
+                  };
+              });
+
         let _tree: IResponse.IUser.IWebLoginUserTree = undefined;
         if (!!_userInfo.treeIdDictionary) {
             _tree = {};
@@ -126,6 +135,7 @@ export async function Login(data: ActionParam<any>, input: IRequest.IUser.ILogin
                 webLestUseDate: _userInfo.info.getValue('webLestUseDate'),
                 company: _company,
                 floors: _floors,
+                buildings: _buildings,
                 tree: _tree,
             },
         };
