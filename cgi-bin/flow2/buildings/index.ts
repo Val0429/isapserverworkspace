@@ -21,20 +21,20 @@ var action = new Action({
 });
 
 /// CRUD start /////////////////////////////////
-/********************************
- * C: create object
- ********************************/
-type InputC = Restful.InputC<IBuildings>;
-type OutputC = Restful.OutputC<IBuildings>;
+// /********************************
+//  * C: create object
+//  ********************************/
+// type InputC = Restful.InputC<IBuildings>;
+// type OutputC = Restful.OutputC<IBuildings>;
 
-action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    /// 1) Create Object
-    var obj = new Buildings(data.inputType);
-    await obj.save(null, { useMasterKey: true });
+// action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+//     /// 1) Create Object
+//     var obj = new Buildings(data.inputType);
+//     await obj.save(null, { useMasterKey: true });
 
-    /// 2) Output
-    return ParseObject.toOutputJSON(obj);
-});
+//     /// 2) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 
 /********************************
  * R: get object
@@ -52,41 +52,41 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     return Restful.Pagination(query, data.parameters);
 });
 
-/********************************
- * U: update object
- ********************************/
-type InputU = Restful.InputU<IBuildings>;
-type OutputU = Restful.OutputU<IBuildings>;
+// /********************************
+//  * U: update object
+//  ********************************/
+// type InputU = Restful.InputU<IBuildings>;
+// type OutputU = Restful.OutputU<IBuildings>;
 
-action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
-    /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Buildings).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Buildings <${objectId}> not exists.`]);
-    /// 2) Modify
-    await obj.save({ ...data.inputType, objectId: undefined });
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
-});
+// action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+//     /// 1) Get Object
+//     var { objectId } = data.inputType;
+//     var obj = await new Parse.Query(Buildings).get(objectId);
+//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Buildings <${objectId}> not exists.`]);
+//     /// 2) Modify
+//     await obj.save({ ...data.inputType, objectId: undefined });
+//     /// 3) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 
-/********************************
- * D: delete object
- ********************************/
-type InputD = Restful.InputD<IBuildings>;
-type OutputD = Restful.OutputD<IBuildings>;
+// /********************************
+//  * D: delete object
+//  ********************************/
+// type InputD = Restful.InputD<IBuildings>;
+// type OutputD = Restful.OutputD<IBuildings>;
 
-action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
-    /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Buildings).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Buildings <${objectId}> not exists.`]);
+// action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+//     /// 1) Get Object
+//     var { objectId } = data.inputType;
+//     var obj = await new Parse.Query(Buildings).get(objectId);
+//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Buildings <${objectId}> not exists.`]);
 
-    /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+//     /// 2) Delete
+//     obj.destroy({ useMasterKey: true });
 
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
-});
-/// CRUD end ///////////////////////////////////
+//     /// 3) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
+// /// CRUD end ///////////////////////////////////
 
 export default action;

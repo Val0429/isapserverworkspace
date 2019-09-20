@@ -21,26 +21,26 @@ var action = new Action({
 });
 
 /// CRUD start /////////////////////////////////
-/********************************
- * C: create object
- ********************************/
-type InputC = Restful.InputC<ICompanies>;
-type OutputC = Restful.OutputC<ICompanies>;
+// /********************************
+//  * C: create object
+//  ********************************/
+// type InputC = Restful.InputC<ICompanies>;
+// type OutputC = Restful.OutputC<ICompanies>;
 
-action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    /// 1) Create Object
-    var obj = new Companies(data.inputType);
-    await obj.save(null, { useMasterKey: true });
+// action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+//     /// 1) Create Object
+//     var obj = new Companies(data.inputType);
+//     await obj.save(null, { useMasterKey: true });
 
-    var ev = new EventFlow2CompanyAdd({
-        owner: data.user,
-        company: obj
-    });
-    Events.save(ev);
+//     var ev = new EventFlow2CompanyAdd({
+//         owner: data.user,
+//         company: obj
+//     });
+//     Events.save(ev);
 
-    /// 2) Output
-    return ParseObject.toOutputJSON(obj);
-});
+//     /// 2) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 
 /********************************
  * R: get object
@@ -58,54 +58,54 @@ action.get<InputR, OutputR>({ inputType: "InputR" }, async (data) => {
     return Restful.Pagination(query, data.parameters);
 });
 
-/********************************
- * U: update object
- ********************************/
-type InputU = Restful.InputU<ICompanies>;
-type OutputU = Restful.OutputU<ICompanies>;
+// /********************************
+//  * U: update object
+//  ********************************/
+// type InputU = Restful.InputU<ICompanies>;
+// type OutputU = Restful.OutputU<ICompanies>;
 
-action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
-    /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Companies).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Companies <${objectId}> not exists.`]);
-    /// 2) Modify
-    await obj.save({ ...data.inputType, objectId: undefined });
+// action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+//     /// 1) Get Object
+//     var { objectId } = data.inputType;
+//     var obj = await new Parse.Query(Companies).get(objectId);
+//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Companies <${objectId}> not exists.`]);
+//     /// 2) Modify
+//     await obj.save({ ...data.inputType, objectId: undefined });
 
-    var ev = new EventFlow2CompanyEdit({
-        owner: data.user,
-        company: obj
-    });
-    Events.save(ev);
+//     var ev = new EventFlow2CompanyEdit({
+//         owner: data.user,
+//         company: obj
+//     });
+//     Events.save(ev);
 
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
-});
+//     /// 3) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 
-/********************************
- * D: delete object
- ********************************/
-type InputD = Restful.InputD<ICompanies>;
-type OutputD = Restful.OutputD<ICompanies>;
+// /********************************
+//  * D: delete object
+//  ********************************/
+// type InputD = Restful.InputD<ICompanies>;
+// type OutputD = Restful.OutputD<ICompanies>;
 
-action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
-    /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Companies).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Companies <${objectId}> not exists.`]);
+// action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+//     /// 1) Get Object
+//     var { objectId } = data.inputType;
+//     var obj = await new Parse.Query(Companies).get(objectId);
+//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Companies <${objectId}> not exists.`]);
 
-    var ev = new EventFlow2CompanyRemove({
-        owner: data.user,
-        name: obj.get("name")
-    });
-    Events.save(ev);
+//     var ev = new EventFlow2CompanyRemove({
+//         owner: data.user,
+//         name: obj.get("name")
+//     });
+//     Events.save(ev);
 
-    /// 2) Delete
-    obj.destroy({ useMasterKey: true });
+//     /// 2) Delete
+//     obj.destroy({ useMasterKey: true });
 
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
-});
+//     /// 3) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 /// CRUD end ///////////////////////////////////
 
 export default action;

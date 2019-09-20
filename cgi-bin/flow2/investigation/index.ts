@@ -57,7 +57,15 @@ export async function InvestigationResult(data) {
     end && (query.lessThan("createdAt", end));
 
     /// V1.1) Filter company or user
-    /// Raffle Link only Administrator can see
+    function containRole(roles: Parse.Role[], role: RoleList): boolean {
+        for (let r of roles) if (r.getName() === role) return true;
+        return false;
+    }
+    if (containRole(data.role, RoleList.TenantAdministrator)) {
+        query.equalTo("data.company.objectId", data.user.get("data").company.id);
+    } else if (containRole(data.role, RoleList.TenantUser)) {
+        query.equalTo("data.owner.objectId", data.user.id);
+    }
 
     /// V1.2) Text search
     if (name) {

@@ -16,19 +16,19 @@ var action = new Action({
 });
 
 /// CRUD start /////////////////////////////////
-/********************************
- * C: create object
- ********************************/
-type InputC = Restful.InputC<IFloors>;
-type OutputC = Restful.OutputC<IFloors>;
+// /********************************
+//  * C: create object
+//  ********************************/
+// type InputC = Restful.InputC<IFloors>;
+// type OutputC = Restful.OutputC<IFloors>;
 
-action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
-    /// 1) Create Object
-    var obj = new Floors(data.inputType);
-    await obj.save(null, { useMasterKey: true });
-    /// 2) Output
-    return ParseObject.toOutputJSON(obj);
-});
+// action.post<InputC, OutputC>({ inputType: "InputC" }, async (data) => {
+//     /// 1) Create Object
+//     var obj = new Floors(data.inputType);
+//     await obj.save(null, { useMasterKey: true });
+//     /// 2) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 
 /********************************
  * R: get object
@@ -46,39 +46,39 @@ action.get<InputR, OutputR>({ inputType: "InputR", permission: [RoleList.SystemA
     return Restful.Pagination(query, data.parameters);
 });
 
-/********************************
- * U: update object
- ********************************/
-type InputU = Restful.InputU<IFloors>;
-type OutputU = Restful.OutputU<IFloors>;
+// /********************************
+//  * U: update object
+//  ********************************/
+// type InputU = Restful.InputU<IFloors>;
+// type OutputU = Restful.OutputU<IFloors>;
 
-action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
-    /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Floors).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
-    /// 2) Modify
-    await obj.save({ ...data.inputType, objectId: undefined });
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
-});
+// action.put<InputU, OutputU>({ inputType: "InputU" }, async (data) => {
+//     /// 1) Get Object
+//     var { objectId } = data.inputType;
+//     var obj = await new Parse.Query(Floors).get(objectId);
+//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
+//     /// 2) Modify
+//     await obj.save({ ...data.inputType, objectId: undefined });
+//     /// 3) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 
-/********************************
- * D: delete object
- ********************************/
-type InputD = Restful.InputD<IFloors>;
-type OutputD = Restful.OutputD<IFloors>;
+// /********************************
+//  * D: delete object
+//  ********************************/
+// type InputD = Restful.InputD<IFloors>;
+// type OutputD = Restful.OutputD<IFloors>;
 
-action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
-    /// 1) Get Object
-    var { objectId } = data.inputType;
-    var obj = await new Parse.Query(Floors).get(objectId);
-    if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
-    /// 2) Delete
-    obj.destroy({ useMasterKey: true });
-    /// 3) Output
-    return ParseObject.toOutputJSON(obj);
-});
+// action.delete<InputD, OutputD>({ inputType: "InputD" }, async (data) => {
+//     /// 1) Get Object
+//     var { objectId } = data.inputType;
+//     var obj = await new Parse.Query(Floors).get(objectId);
+//     if (!obj) throw Errors.throw(Errors.CustomNotExists, [`Floors <${objectId}> not exists.`]);
+//     /// 2) Delete
+//     obj.destroy({ useMasterKey: true });
+//     /// 3) Output
+//     return ParseObject.toOutputJSON(obj);
+// });
 /// CRUD end ///////////////////////////////////
 
 export default action;
