@@ -361,27 +361,6 @@ action.delete(
                             throw Errors.throw(Errors.CustomBadRequest, ['blacklist not found']);
                         }
 
-                        try {
-                            let frsSetting = DataCenter.frsSetting$.value;
-                            await Person.FRSService.RemoveBlacklist(person.getValue('personId'), {
-                                protocol: frsSetting.protocol,
-                                ip: frsSetting.ip,
-                                port: frsSetting.port,
-                                wsport: frsSetting.port,
-                                account: frsSetting.account,
-                                password: frsSetting.password,
-                            });
-                        } catch (e) {
-                            throw Errors.throw(Errors.CustomBadRequest, [`frs: ${e}`]);
-                        }
-
-                        let orignial: IDB.PersonStaffBlacklistOrignial = person.getValue('imageOrignial');
-
-                        if (!!orignial) {
-                            await orignial.destroy({ useMasterKey: true }).fail((e) => {
-                                throw e;
-                            });
-                        }
                         await person.destroy({ useMasterKey: true }).fail((e) => {
                             throw e;
                         });
@@ -402,3 +381,68 @@ action.delete(
         }
     },
 );
+
+/**
+ * Delete when company was delete
+ */
+IDB.LocationCompanies.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let persons: IDB.PersonStaffBlacklist[] = await new Parse.Query(IDB.PersonStaffBlacklist)
+                    .equalTo('company', x.data)
+                    .find()
+                    .fail((e) => {
+                        throw e;
+                    });
+
+                await Promise.all(
+                    persons.map(async (value, index, array) => {
+                        await value.destroy({ useMasterKey: true }).fail((e) => {
+                            throw e;
+                        });
+                    }),
+                );
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
+
+/**
+ * Delete when person was delete
+ */
+IDB.PersonStaffBlacklist.notice$
+    .filter((x) => x.crud === 'd')
+    .subscribe({
+        next: async (x) => {
+            try {
+                let person: IDB.PersonStaffBlacklist = x.data as IDB.PersonStaffBlacklist;
+
+                try {
+                    let frsSetting = DataCenter.frsSetting$.value;
+                    await Person.FRSService.RemoveBlacklist(person.getValue('personId'), {
+                        protocol: frsSetting.protocol,
+                        ip: frsSetting.ip,
+                        port: frsSetting.port,
+                        wsport: frsSetting.port,
+                        account: frsSetting.account,
+                        password: frsSetting.password,
+                    });
+                } catch (e) {
+                    Print.Log(e, new Error(), 'error');
+                }
+
+                let orignial: IDB.PersonStaffBlacklistOrignial = person.getValue('imageOrignial');
+
+                if (!!orignial) {
+                    await orignial.destroy({ useMasterKey: true }).fail((e) => {
+                        throw e;
+                    });
+                }
+            } catch (e) {
+                Print.Log(e, new Error(), 'error');
+            }
+        },
+    });
