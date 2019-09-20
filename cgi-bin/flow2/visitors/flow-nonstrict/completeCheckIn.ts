@@ -15,6 +15,7 @@ import { FRSService } from 'workspace/custom/services/frs-service';
 import 'workspace/custom/services/frs-service/modules/group-and-person';
 import { ruleCombineVisitors } from '../__api__/core';
 import { Flow2ScheduleControllerEmail_CompleteInvitation } from 'workspace/custom/schedulers/Flow2';
+import { FRSManagerService } from 'workspace/custom/services/frs-manager-service';
 
 type Invitations = Flow2Invitations;
 let Invitations = Flow2Invitations;
@@ -114,7 +115,7 @@ export default new Action<Input, Output>({
     }
     let event = saveEvent();
 
-    /// issue card
+    /// issue card - old
     let pin = await VisitorCode.next();
     let year = now.getFullYear()-2000, month = padLeft(now.getMonth()+1, 2), day = padLeft(now.getDate(), 2);
     let encrypted = [
@@ -126,6 +127,13 @@ export default new Action<Input, Output>({
         `${year}${month}${day}2359`,
     ].join("");
     let qrcode = await QRCode.make(encrypted);
+
+    // /// issue card - new, via frsm
+    // let frsm = FRSManagerService.sharedInstance();
+    // frsm.createPerson({
+
+    // })
+
     /// send email
     for (let visitor of visitors) {
         let email = visitor.getValue("email");
