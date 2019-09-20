@@ -2,8 +2,19 @@ import { ParseObject } from 'helpers/parse-server/parse-helper';
 import { Tree } from 'models/nodes';
 import * as Rx from 'rxjs';
 
+type INotice =
+    | {
+          crud: 'c' | 'd';
+          data: Parse.Object;
+      }
+    | {
+          crud: 'u';
+          data: Parse.Object;
+          prev: Parse.Object;
+      };
+
 export class ParseObjectNotice<T> extends ParseObject<T> {
-    protected static _notice$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd'; data: Parse.Object }> = new Rx.Subject();
+    protected static _notice$: Rx.Subject<INotice> = new Rx.Subject();
 
     destroy(options?: Parse.Object.DestroyOptions): Parse.Promise<this> {
         let promise = new Parse.Promise<this>();
@@ -35,13 +46,22 @@ export class ParseObjectNotice<T> extends ParseObject<T> {
         (async () => {
             try {
                 let crud: 'c' | 'r' | 'u' | 'd' = !!this.id ? 'u' : 'c';
+                let prev = crud === 'c' ? undefined : await new Parse.Query(this.className).equalTo('objectId', this.id).first();
 
                 await super.save(...arguments);
 
-                ParseObjectNotice._notice$.next({
-                    crud: crud,
-                    data: this,
-                });
+                if (crud === 'c') {
+                    ParseObjectNotice._notice$.next({
+                        crud: 'c',
+                        data: this,
+                    });
+                } else {
+                    ParseObjectNotice._notice$.next({
+                        crud: 'u',
+                        data: this,
+                        prev: prev,
+                    });
+                }
 
                 promise.resolve(this);
             } catch (e) {
@@ -56,7 +76,7 @@ export class ParseObjectNotice<T> extends ParseObject<T> {
 export abstract class TreeNotice<T> extends Tree<T> {
     abstract groupBy: keyof T | null;
 
-    protected static _notice$: Rx.Subject<{ crud: 'c' | 'r' | 'u' | 'd'; data: Parse.Object }> = new Rx.Subject();
+    protected static _notice$: Rx.Subject<INotice> = new Rx.Subject();
 
     destroy(options?: Parse.Object.DestroyOptions): Parse.Promise<this> {
         let promise = new Parse.Promise<this>();
@@ -87,12 +107,23 @@ export abstract class TreeNotice<T> extends Tree<T> {
 
         (async () => {
             try {
+                let crud: 'c' | 'r' | 'u' | 'd' = !!this.id ? 'u' : 'c';
+                let prev = crud === 'c' ? undefined : await new Parse.Query(this.className).equalTo('objectId', this.id).first();
+
                 await super.save(...arguments);
 
-                TreeNotice._notice$.next({
-                    crud: !!this.id ? 'u' : 'c',
-                    data: this,
-                });
+                if (crud === 'c') {
+                    TreeNotice._notice$.next({
+                        crud: 'c',
+                        data: this,
+                    });
+                } else {
+                    TreeNotice._notice$.next({
+                        crud: 'u',
+                        data: this,
+                        prev: prev,
+                    });
+                }
 
                 promise.resolve(this);
             } catch (e) {
