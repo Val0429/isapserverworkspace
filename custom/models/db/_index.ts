@@ -110,6 +110,9 @@ export * from './client-frs';
 export * from './client-hikvision';
 export * from './client-vms';
 
+export * from './endpoint-frs';
+export * from './endpoint-hikvision';
+
 export * from './location-buildings';
 export * from './location-companies';
 export * from './location-door';

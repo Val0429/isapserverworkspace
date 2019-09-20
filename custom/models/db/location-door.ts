@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationFloors, LocationCompanies } from './_index';
+import { ParseObjectNotice, LocationFloors, LocationCompanies, IEndpointFRS, IEndpointHikVision } from './_index';
 import * as Enum from '../../enums';
 
 /**
@@ -25,6 +25,11 @@ export interface ILocationDoor {
      *
      */
     range: Enum.EDoorRange;
+
+    /**
+     *
+     */
+    endpoint: IEndpointFRS | IEndpointHikVision;
 }
 
 @registerSubclass()

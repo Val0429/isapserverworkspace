@@ -60,11 +60,27 @@ export interface ICompaniesIndexU {
 }
 
 /**
+ * Endpoint
+ */
+export interface IEndpointFRS {
+    model: Enum.EEndpoint.frs;
+    clientId: string;
+    sourceId: string;
+}
+
+export interface IEndpointHikVision {
+    model: Enum.EEndpoint.hikvision;
+    clientId: string;
+}
+
+/**
  * Door
  */
+
 export interface IDoorIndexC_Base {
     name: string;
     floorId: string;
+    endpoint: IEndpointFRS | IEndpointHikVision;
 }
 
 export interface IDoorIndexC_A extends IDoorIndexC_Base {
@@ -86,6 +102,7 @@ export interface IDoorIndexU_Base {
     objectId: string;
     name?: string;
     floorId?: string;
+    endpoint?: IEndpointFRS | IEndpointHikVision;
 }
 
 export interface IDoorIndexU_A extends IDoorIndexU_Base {
@@ -97,3 +114,17 @@ export interface IDoorIndexU_B extends IDoorIndexU_Base {
 }
 
 export type IDoorIndexU = IDoorIndexU_Base | IDoorIndexU_A | IDoorIndexU_B;
+
+/**
+ * Endpoint
+ */
+export interface IEndpointFRS {
+    model: Enum.EEndpoint.frs;
+    clientId: string;
+    sourceId: string;
+}
+
+export interface IEndpointHikVision {
+    model: Enum.EEndpoint.hikvision;
+    clientId: string;
+}
