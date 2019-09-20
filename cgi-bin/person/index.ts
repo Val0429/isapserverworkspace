@@ -19,7 +19,7 @@ export namespace FRSService {
      * Login
      * @param config
      */
-    export async function Login(config: FRS.IConfig): Promise<FRS> {
+    async function Login(config: FRS.IConfig): Promise<FRS> {
         try {
             let frs: FRS = new FRS();
             frs.config = config;
@@ -249,13 +249,18 @@ export namespace EntryPassService {
 export namespace HikVisionService {
     /**
      * HikVision Login
-     * @param config
+     * @param client
      */
-    export async function Login(config: HikVision.I_DeviceInfo): Promise<HikVision.Hikvision> {
+    async function Login(client: IDB.ClientHikVision): Promise<HikVision.Hikvision> {
         try {
             let hikVision = new HikVision.Hikvision();
 
-            let deviceInfo: HikVision.I_DeviceInfo = config;
+            let deviceInfo: HikVision.I_DeviceInfo = {
+                ipAddress: client.getValue('ip'),
+                port: client.getValue('port').toString(),
+                account: client.getValue('account'),
+                password: client.getValue('password'),
+            };
 
             let result = hikVision.createInstance(deviceInfo);
             if (!!result.result) {
@@ -272,10 +277,10 @@ export namespace HikVisionService {
      * Get HikVision Date
      * @param config
      */
-    export function GetDate(date: Date): HikVision.I_ValidPeriodTime {
+    function GetDate(date: Date): HikVision.I_ValidPeriodTime {
         try {
             date = new Date(date || new Date(2035, 0, 1, 0, 0, 0, 0));
-            20;
+
             let hikVisionDate: HikVision.I_ValidPeriodTime = {
                 year: DateTime.ToString(date, 'YYYY'),
                 month: DateTime.ToString(date, 'MM'),
@@ -292,28 +297,44 @@ export namespace HikVisionService {
     }
 
     /**
-     * HikVision Create
-     * @param person
-     * @param buffer
-     * @param floors
+     * Convert Doors to HikVisions
+     * @param doors
      */
-    export async function Create(person: IDB.PersonStaff | IDB.PersonVisitor, buffer: Buffer, floors: IDB.LocationFloors[]): Promise<void> {
+    async function Doors2HikVisions(doors: IDB.LocationDoor[]): Promise<IDB.ClientHikVision[]> {
         try {
-            let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
-                .containedIn('floor', floors)
-                .find()
-                .fail((e) => {
-                    throw e;
+            let hikVisions: IDB.ClientHikVision[] = doors
+                .filter((value, index, array) => {
+                    return value.getValue('endpoint').model === Enum.EEndpoint.hikvision;
+                })
+                .map((value, index, array) => {
+                    return value.getValue('endpoint').client;
                 });
 
             await Promise.all(
                 hikVisions.map(async (value, index, array) => {
-                    let hikVision: HikVision.Hikvision = await Login({
-                        ipAddress: value.getValue('ip'),
-                        port: value.getValue('port').toString(),
-                        account: value.getValue('account'),
-                        password: value.getValue('password'),
-                    });
+                    value = await value.fetch();
+                }),
+            );
+
+            return hikVisions;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * HikVision Create
+     * @param person
+     * @param buffer
+     * @param doors
+     */
+    export async function Create(person: IDB.PersonStaff | IDB.PersonVisitor, buffer: Buffer, doors: IDB.LocationDoor[]): Promise<void> {
+        try {
+            let hikVisions: IDB.ClientHikVision[] = await Doors2HikVisions(doors);
+
+            await Promise.all(
+                hikVisions.map(async (value, index, array) => {
+                    let hikVision: HikVision.Hikvision = await Login(value);
 
                     try {
                         let result = hikVision.createCardItem({
@@ -352,25 +373,15 @@ export namespace HikVisionService {
     /**
      * HikVision Delete
      * @param person
-     * @param floors
+     * @param doors
      */
-    export async function Delete(person: IDB.PersonStaff | IDB.PersonVisitor, floors: IDB.LocationFloors[]): Promise<void> {
+    export async function Delete(person: IDB.PersonStaff | IDB.PersonVisitor, doors: IDB.LocationDoor[]): Promise<void> {
         try {
-            let hikVisions: IDB.ClientHikVision[] = await new Parse.Query(IDB.ClientHikVision)
-                .containedIn('floor', floors)
-                .find()
-                .fail((e) => {
-                    throw e;
-                });
+            let hikVisions: IDB.ClientHikVision[] = await Doors2HikVisions(doors);
 
             await Promise.all(
                 hikVisions.map(async (value, index, array) => {
-                    let hikVision: HikVision.Hikvision = await Login({
-                        ipAddress: value.getValue('ip'),
-                        port: value.getValue('port').toString(),
-                        account: value.getValue('account'),
-                        password: value.getValue('password'),
-                    });
+                    let hikVision: HikVision.Hikvision = await Login(value);
 
                     try {
                         let result = hikVision.removeCardItem(person.get('card').toString());

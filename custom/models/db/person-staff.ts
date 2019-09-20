@@ -1,5 +1,5 @@
 import { registerSubclass } from 'helpers/parse-server/parse-helper';
-import { ParseObjectNotice, LocationFloors, LocationCompanies, PersonStaffOrignial } from './_index';
+import { ParseObjectNotice, LocationFloors, LocationCompanies, LocationDoor, PersonStaffOrignial } from './_index';
 
 /**
  * Person
@@ -24,6 +24,11 @@ export interface IPersonStaff {
      *
      */
     floors: LocationFloors[];
+
+    /**
+     *
+     */
+    doors: LocationDoor[];
 
     /**
      *

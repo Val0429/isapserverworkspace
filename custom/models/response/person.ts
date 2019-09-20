@@ -21,6 +21,7 @@ export interface IStaffIndexR {
     imageBase64: string;
     company: IObject;
     floors: IObject[];
+    doors: IObject[];
     card: number;
     isUseSuntecReward: boolean;
     unitNumber: string;

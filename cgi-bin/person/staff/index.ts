@@ -85,11 +85,11 @@ action.post(
 
                         let company: IDB.LocationCompanies = undefined;
                         let floors: IDB.LocationFloors[] = undefined;
-                        let building: IDB.LocationBuildings = undefined;
+                        let buildings: IDB.LocationBuildings[] = undefined;
                         if (!!_userInfo.company) {
                             company = _userInfo.company;
                             floors = _userInfo.floors;
-                            building = _userInfo.buildings[0];
+                            buildings = _userInfo.buildings;
                         } else if ('companyId' in value) {
                             company = await new Parse.Query(IDB.LocationCompanies)
                                 .equalTo('objectId', value.companyId)
@@ -106,10 +106,14 @@ action.post(
                                 return value.floorIds.indexOf(value1.id) > -1;
                             });
 
-                            building = company.getValue('floor').length > 0 ? company.getValue('floor')[0].getValue('building') : undefined;
+                            buildings = company.getValue('floor').map((value1, index1, array1) => {
+                                return value1.getValue('building');
+                            });
                         } else {
                             throw Errors.throw(Errors.CustomBadRequest, ['need company']);
                         }
+
+                        let doors: IDB.LocationDoor[] = await GetDoors(buildings, floors, company, value.doorIds);
 
                         let unitNumber: string = company.getValue('unitNumber');
 
@@ -151,6 +155,7 @@ action.post(
                         person.setValue('updater', data.user);
                         person.setValue('company', company);
                         person.setValue('floors', floors);
+                        person.setValue('doors', doors);
                         person.setValue('imageBase64', 'imageBase64' in value ? buffer.toString(Enum.EEncoding.base64) : undefined);
                         person.setValue('imageOrignial', orignal);
                         person.setValue('card', card);
@@ -171,7 +176,7 @@ action.post(
 
                         try {
                             let suntecSetting = DataCenter.suntecAppSetting$.value;
-                            await Person.SuntecAppService.Create(person, building, company, {
+                            await Person.SuntecAppService.Create(person, buildings[0], company, {
                                 host: suntecSetting.host,
                                 token: suntecSetting.token,
                             });
@@ -181,7 +186,7 @@ action.post(
 
                         try {
                             let acsServerSetting = DataCenter.acsServerSetting$.value;
-                            await Person.EntryPassService.Create(person, building, {
+                            await Person.EntryPassService.Create(person, buildings[0], {
                                 ip: acsServerSetting.ip,
                                 port: acsServerSetting.port,
                                 serviceId: acsServerSetting.serviceId,
@@ -191,7 +196,7 @@ action.post(
                         }
 
                         try {
-                            await Person.HikVisionService.Create(person, !!orignal ? Buffer.from(orignal.getValue('imageBase64'), Enum.EEncoding.base64) : undefined, floors);
+                            await Person.HikVisionService.Create(person, !!orignal ? Buffer.from(orignal.getValue('imageBase64'), Enum.EEncoding.base64) : undefined, doors);
                         } catch (e) {
                             throw Errors.throw(Errors.CustomBadRequest, [`hikvision: ${e}`]);
                         }
@@ -267,7 +272,7 @@ action.get(
             let persons: IDB.PersonStaff[] = await query
                 .skip((_paging.page - 1) * _paging.pageSize)
                 .limit(_paging.pageSize)
-                .include(['company', 'floors'])
+                .include(['company', 'floors', 'doors'])
                 .find()
                 .fail((e) => {
                     throw e;
@@ -295,12 +300,24 @@ action.get(
                         };
                     });
 
+                let _doors: IResponse.IObject[] = (value.getValue('doors') || [])
+                    .filter((value, index, array) => {
+                        return !!value;
+                    })
+                    .map<IResponse.IObject>((value, index, array) => {
+                        return {
+                            objectId: value.id,
+                            name: value.getValue('name'),
+                        };
+                    });
+
                 return {
                     objectId: value.id,
                     card: value.getValue('card'),
                     imageBase64: _image,
                     company: _company,
                     floors: _floors,
+                    doors: _doors,
                     isUseSuntecReward: value.getValue('isUseSuntecReward'),
                     unitNumber: value.getValue('unitNumber'),
                     name: value.getValue('name'),
@@ -396,6 +413,76 @@ action.delete(
 );
 
 /**
+ * Get floors
+ * @param buildings
+ * @param floors
+ * @param company
+ * @param doorIds
+ */
+async function GetDoors(buildings: IDB.LocationBuildings[], floors: IDB.LocationFloors[], company: IDB.LocationCompanies, doorIds: string[]): Promise<IDB.LocationDoor[]> {
+    try {
+        let buildingFloors: IDB.LocationFloors[] = await new Parse.Query(IDB.LocationFloors)
+            .containedIn('building', buildings)
+            .find()
+            .fail((e) => {
+                throw e;
+            });
+
+        let tasks = [];
+        let doors: IDB.LocationDoor[] = [];
+
+        tasks.push(
+            (async () => {
+                doors.push(
+                    ...(await new Parse.Query(IDB.LocationDoor)
+                        .containedIn('objectId', doorIds)
+                        .containedIn('floor', floors)
+                        .equalTo('company', company)
+                        .find()
+                        .fail((e) => {
+                            throw e;
+                        })),
+                );
+            })(),
+        );
+        tasks.push(
+            (async () => {
+                doors.push(
+                    ...(await new Parse.Query(IDB.LocationDoor)
+                        .equalTo('range', Enum.EDoorRange.floor)
+                        .containedIn('floor', floors)
+                        .find()
+                        .fail((e) => {
+                            throw e;
+                        })),
+                );
+            })(),
+        );
+        tasks.push(
+            (async () => {
+                doors.push(
+                    ...(await new Parse.Query(IDB.LocationDoor)
+                        .equalTo('range', Enum.EDoorRange.building)
+                        .containedIn('floor', buildingFloors)
+                        .find()
+                        .fail((e) => {
+                            throw e;
+                        })),
+                );
+            })(),
+        );
+
+        await Promise.all(tasks).catch((e) => {
+            throw e;
+        });
+
+        return doors;
+    } catch (e) {
+        throw e;
+    }
+}
+
+/**
  * Delete when person was delete
  */
 IDB.PersonStaff.notice$
@@ -418,7 +505,16 @@ IDB.PersonStaff.notice$
 
                 let floors: IDB.LocationFloors[] = person.getValue('floors');
 
-                let building: IDB.LocationBuildings = company.getValue('floor').length > 0 ? company.getValue('floor')[0].getValue('building') : undefined;
+                let buildings: IDB.LocationBuildings[] = (company.getValue('floor') || []).map((value, index, array) => {
+                    return value.getValue('building');
+                });
+
+                let doors: IDB.LocationDoor[] = person.getValue('doors');
+                await Promise.all(
+                    doors.map(async (value, index, array) => {
+                        await value.fetch();
+                    }),
+                );
 
                 try {
                     let suntecSetting = DataCenter.suntecAppSetting$.value;
@@ -432,7 +528,7 @@ IDB.PersonStaff.notice$
 
                 try {
                     let acsServerSetting = DataCenter.acsServerSetting$.value;
-                    await Person.EntryPassService.Delete(person, building, {
+                    await Person.EntryPassService.Delete(person, buildings[0], {
                         ip: acsServerSetting.ip,
                         port: acsServerSetting.port,
                         serviceId: acsServerSetting.serviceId,
@@ -442,7 +538,7 @@ IDB.PersonStaff.notice$
                 }
 
                 try {
-                    await Person.HikVisionService.Delete(person, floors);
+                    await Person.HikVisionService.Delete(person, doors);
                 } catch (e) {
                     Print.Log(e, new Error(), 'error');
                 }
