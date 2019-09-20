@@ -34,6 +34,8 @@ export interface IFlow2Visitors {
      * It's privacy. Don't input this field manually.
      */
     privacy?: Flow2Privacies;
+
+    blacklisted?: boolean;
 }
 @registerSubclass() export class Flow2Visitors extends ParseObject<IFlow2Visitors> {
     constructor(data?: Partial<IFlow2Visitors>) {

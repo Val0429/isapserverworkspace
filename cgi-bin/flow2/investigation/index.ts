@@ -38,7 +38,7 @@ type OutputR = Restful.OutputR<Output>;
 
 var action = new Action<Input, Output>({
     loginRequired: true,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Administrator, RoleList.TenantAdministrator, RoleList.TenantUser]
 });
 
 export async function InvestigationResult(data) {

@@ -18,7 +18,7 @@ let Invitations = Flow2Invitations;
 
 var action = new Action({
     loginRequired: true,
-    permission: [RoleList.Administrator]
+    permission: [RoleList.Administrator, RoleList.TenantAdministrator, RoleList.TenantUser]
 });
 
 action.ws( async (data) => {
