@@ -317,6 +317,21 @@ export interface IDwellTimeSummaryData extends ISummaryDataBase {
     dwellTimeRanges: IReportDwellTimeRange[];
 }
 
+export interface IDwellTimeSummary {
+    weathers: ISummaryWeather[];
+    officeHours: ISummaryOfficeHour[];
+    salesRecords: ISalesRecordSummaryData[];
+    summaryDatas: IDwellTimeSummaryData[];
+}
+
+export interface IDwellTimeIndex extends IIndexBase {
+    isEmployee: boolean;
+    inDate: Date;
+    outDate: Date;
+    dwellTimeSecond: number;
+    dwellTimeLevel: number;
+}
+
 /**
  * Identity Person
  */

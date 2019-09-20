@@ -110,6 +110,18 @@ export interface IHeatmapSummary extends IDate.IRange {
  */
 export interface IDwellTimeSummary extends ISummaryBase {}
 
+export interface IDwellTimeIndex extends IIndexBase {
+    isEmployee?: boolean;
+}
+
+/**
+ * Identity Person
+ */
+export interface IIdentityPerson extends IDate.IRange {
+    type: Enum.ESummaryType;
+    tagIds: string[];
+}
+
 /**
  * Template
  */
