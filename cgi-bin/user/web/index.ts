@@ -429,11 +429,18 @@ IDB.LocationFloors.notice$
                         let floors: IDB.LocationFloors[] = value.getValue('floors').filter((value1, index1, array1) => {
                             return value1.id !== x.data.id;
                         });
-                        value.setValue('floors', floors);
 
-                        await value.save(null, { useMasterKey: true }).fail((e) => {
-                            throw e;
-                        });
+                        if (floors.length === 0) {
+                            await value.destroy({ useMasterKey: true }).fail((e) => {
+                                throw e;
+                            });
+                        } else {
+                            value.setValue('floors', floors);
+
+                            await value.save(null, { useMasterKey: true }).fail((e) => {
+                                throw e;
+                            });
+                        }
                     }),
                 );
             } catch (e) {
