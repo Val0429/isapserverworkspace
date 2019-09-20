@@ -90,22 +90,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
         let dob= testDate(inputFormData.birthday,"T");
           // AccessRules
     
-    let accessRules=[];
-    for (let oPermission of inputFormData.permissionTable) {  
-        let permissionJson = ParseObject.toOutputJSON(oPermission);
-             
-        let permission = await new Parse.Query(PermissionTable).get(permissionJson.objectId)
-              
-        let newRule = {
-            ObjectName: permission.get("tablename"),
-            ObjectToken:  permission.get("tableid").toString(),
-            RuleToken: permission.get("tableid").toString(),
-            RuleType: 4,
-            Side: 0,
-            TimeScheduleToken: "0"
-        };
-        accessRules.push(newRule);
-    }
+    let accessRules = await this.getAccessRules(inputFormData);
           console.log("accessRules", accessRules);
           let tempPersonalDetails: any = {
                 Address: "",
@@ -193,11 +178,30 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
             //console.log("member", JSON.stringify(member));
             return member;
     }
+    private async getAccessRules(inputFormData: ILinearMember) {
+        let accessRules = [];
+        for (let oPermission of inputFormData.permissionTable) {
+            let permissionJson = ParseObject.toOutputJSON(oPermission);
+            let permission = await new Parse.Query(PermissionTable).get(permissionJson.objectId);
+            let newRule = {
+                ObjectName: permission.get("tablename"),
+                ObjectToken: permission.get("tableid").toString(),
+                RuleToken: permission.get("tableid").toString(),
+                RuleType: 4,
+                Side: 0,
+                TimeScheduleToken: "0"
+            };
+            accessRules.push(newRule);
+        }
+        return accessRules;
+    }
+
     async createSipassCardHolderForHrUpdate (inputFormData:ILinearMember) {
     
         let workGroupSelectItems = await new Parse.Query(WorkGroup).find();
         let dob= testDate(inputFormData.birthday, "T");
-        
+        let accessRules = await this.getAccessRules(inputFormData);
+          console.log("accessRules", accessRules);
         let credential = {
             CardNumber: inputFormData.cardNumber,
             Pin: inputFormData.pin,
@@ -254,6 +258,7 @@ async createSipassCardHolder (inputFormData:ILinearMember) {
               EndDate: inputFormData.endDate || undefined,
               StartDate:inputFormData.startDate || undefined,
               Token: inputFormData.token,
+              AccessRules:accessRules,
               // special
               PersonalDetails: tempPersonalDetails,
               CustomFields: tempCustomFieldsList,

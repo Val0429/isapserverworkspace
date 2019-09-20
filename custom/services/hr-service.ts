@@ -365,6 +365,7 @@ export class HRService {
                 await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
             }else{
                 let cardHolder = await memberService.createSipassCardHolderForHrUpdate({
+                    permissionTable:newMember.permissionTable,
                     primaryWorkgroupId:workgroupId,            
                     employeeNumber: empNo,
                     endDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD"),
@@ -562,6 +563,7 @@ export class HRService {
                             await Log.Info(`create`, `${res.get("employeeNumber")} ${res.get("chineseName")}`, undefined, false, "Member");
                         }else{
                             let cardHolder = await memberService.createSipassCardHolderForHrUpdate({
+                                permissionTable:newMember.permissionTable,
                                 primaryWorkgroupId:workgroupId,            
                                 employeeNumber: record["SupporterNo"],
                                 endDate: testDate(record["OffDate"],undefined,"YYYY/MM/DD"),
